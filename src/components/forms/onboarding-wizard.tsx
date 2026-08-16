@@ -137,30 +137,35 @@ function StepIndicator({ current }: { current: Step }) {
         const active = idx === currentIdx;
         return (
           <React.Fragment key={s.id}>
-            <div className="flex items-center gap-space-1.5">
+            <div className="flex items-center gap-space-2">
               <div
                 className={cn(
-                  "flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-all duration-300",
+                  "flex h-7 w-7 items-center justify-center rounded-full text-caption font-semibold transition-all duration-300",
                   done
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary text-primary-foreground shadow-sm"
                     : active
-                    ? "border-2 border-primary text-primary bg-primary/5"
-                    : "border border-border text-muted-foreground"
+                    ? "border-2 border-primary text-primary bg-primary/10 shadow-sm"
+                    : "border border-border/80 text-muted-foreground bg-muted/20"
                 )}
               >
-                {done ? <Check className="h-3 w-3" strokeWidth={2.5} /> : idx + 1}
+                {done ? <Check className="h-3.5 w-3.5" strokeWidth={2.5} /> : idx + 1}
               </div>
               <span
                 className={cn(
-                  "text-[11px] font-medium hidden sm:block",
-                  active ? "text-foreground" : done ? "text-muted-foreground" : "text-muted-foreground/50"
+                  "text-caption font-medium hidden sm:block",
+                  active ? "text-foreground font-semibold" : done ? "text-muted-foreground" : "text-muted-foreground/60"
                 )}
               >
                 {s.label}
               </span>
             </div>
             {idx < STEPS.length - 1 && (
-              <div className="flex-1 h-px bg-border min-w-[16px]" />
+              <div
+                className={cn(
+                  "flex-1 h-px transition-colors duration-300",
+                  done ? "bg-primary/50" : "bg-border/60"
+                )}
+              />
             )}
           </React.Fragment>
         );
@@ -211,15 +216,15 @@ function ScreenUrl({
     <div className="space-y-space-8 animate-fade-up" style={{ animationFillMode: "both" }}>
       {/* Header */}
       <div className="space-y-space-3">
-        <div className="inline-flex items-center gap-space-2 px-space-3 py-space-1.5 rounded-full border border-primary/20 bg-primary/5">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[11px] font-semibold text-primary tracking-wide">Live AI Setup</span>
+        <div className="inline-flex items-center gap-space-2 px-space-3 py-space-1 rounded-full border border-primary/20 bg-primary/5">
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-caption font-semibold text-primary tracking-wide">Live AI Setup</span>
         </div>
         <h1 className="text-heading-lg font-bold text-foreground tracking-tight leading-heading">
           Operator<br />
           <span className="text-primary">starts here.</span>
         </h1>
-        <p className="text-body-sm text-muted-foreground leading-body max-w-[360px]">
+        <p className="text-body-sm text-muted-foreground leading-body max-w-md">
           Enter your website and we'll configure Operator automatically — greeting, services, hours, and knowledge base.
         </p>
       </div>
@@ -228,12 +233,12 @@ function ScreenUrl({
       <div className="space-y-space-4">
         {!noWebsite ? (
           <div className="space-y-space-2">
-            <Label htmlFor="ob-url">
-              Your website URL <span className="text-red-500 font-bold ml-0.5">*</span>
+            <Label htmlFor="ob-url" className="text-body-sm font-medium text-foreground">
+              Your website URL <span className="text-destructive font-bold ml-0.5">*</span>
             </Label>
             <div className="relative">
               <Globe
-                className="absolute left-space-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
+                className="absolute left-space-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
                 aria-hidden
               />
               <Input
@@ -245,13 +250,13 @@ function ScreenUrl({
                 }}
                 onKeyDown={(e) => e.key === "Enter" && handleContinue()}
                 placeholder="acmedental.com"
-                className="pl-space-10 pr-space-4 text-body-sm"
+                className="pl-space-10 pr-space-4 text-body-sm h-11 rounded-xl"
                 autoFocus
                 error={!!error}
               />
             </div>
             {error && (
-              <p className="flex items-center gap-space-1.5 text-caption text-state-error-text">
+              <p className="flex items-center gap-space-1.5 text-caption text-destructive">
                 <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                 {error}
               </p>
@@ -259,15 +264,15 @@ function ScreenUrl({
           </div>
         ) : (
           <div className="space-y-space-2">
-            <Label htmlFor="ob-nowebsite">
-              What does your business do? <span className="text-red-500 font-bold ml-0.5">*</span>
+            <Label htmlFor="ob-nowebsite" className="text-body-sm font-medium text-foreground">
+              What does your business do? <span className="text-destructive font-bold ml-0.5">*</span>
             </Label>
             <Input
               id="ob-nowebsite"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="e.g. We run a dental clinic in New York…"
-              className="text-body-sm"
+              className="text-body-sm h-11 rounded-xl"
               autoFocus
             />
           </div>
@@ -287,11 +292,11 @@ function ScreenUrl({
       </div>
 
       {/* Stats */}
-      <div className="flex items-center gap-space-6 pt-space-2">
+      <div className="grid grid-cols-3 gap-space-3 p-space-4 rounded-xl border border-border/50 bg-muted/20">
         {[["< 3 min", "to go live"], ["100%", "automated"], ["24/7", "coverage"]].map(([v, l]) => (
-          <div key={l}>
+          <div key={l} className="text-center sm:text-left">
             <div className="text-body-md font-bold text-foreground">{v}</div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{l}</div>
+            <div className="text-caption text-muted-foreground uppercase tracking-wider mt-0.5">{l}</div>
           </div>
         ))}
       </div>
@@ -566,7 +571,7 @@ function ScreenVerify({
       </div>
 
       {/* Tab navigation */}
-      <div className="flex border-b border-border">
+      <div className="flex p-1 rounded-xl bg-muted/40 border border-border/40">
         {tabs.map((t) => {
           const TIcon = t.icon;
           return (
@@ -575,13 +580,13 @@ function ScreenVerify({
               type="button"
               onClick={() => setActiveTab(t.id)}
               className={cn(
-                "flex items-center gap-space-1.5 px-space-4 py-space-2.5 text-body-sm font-medium transition-colors border-b-2 -mb-px",
+                "flex-1 flex items-center justify-center gap-space-2 py-space-2 text-body-sm font-medium rounded-lg transition-all duration-fast",
                 activeTab === t.id
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
+                  ? "bg-card text-foreground shadow-sm font-semibold border border-border/50"
+                  : "text-muted-foreground hover:text-foreground hover:bg-card/50"
               )}
             >
-              <TIcon className="h-3.5 w-3.5" />
+              <TIcon className="h-4 w-4" />
               {t.label}
             </button>
           );
@@ -591,10 +596,10 @@ function ScreenVerify({
       {/* Tab: Business Info */}
       {activeTab === "info" && (
         <div className="space-y-space-4 animate-fade-up" style={{ animationFillMode: "both" }}>
-          <div className="grid grid-cols-2 gap-space-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-3">
             <div className="space-y-space-1.5">
-              <Label htmlFor="vfy-name">
-                Business Name <span className="text-red-500 font-bold ml-0.5">*</span>
+              <Label htmlFor="vfy-name" className="text-body-sm font-medium text-foreground">
+                Business Name <span className="text-destructive font-bold ml-0.5">*</span>
               </Label>
               <div className="relative">
                 <Building2 className="absolute left-space-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -602,19 +607,19 @@ function ScreenVerify({
                   id="vfy-name"
                   value={form.businessName}
                   onChange={(e) => setForm((f) => ({ ...f, businessName: e.target.value }))}
-                  className="pl-space-10"
+                  className="pl-space-10 h-10 rounded-xl"
                 />
               </div>
             </div>
             <div className="space-y-space-1.5">
-              <Label htmlFor="vfy-industry">
-                Industry <span className="text-red-500 font-bold ml-0.5">*</span>
+              <Label htmlFor="vfy-industry" className="text-body-sm font-medium text-foreground">
+                Industry <span className="text-destructive font-bold ml-0.5">*</span>
               </Label>
               <Select
                 value={form.industry}
                 onValueChange={(v) => setForm((f) => ({ ...f, industry: v }))}
               >
-                <SelectTrigger id="vfy-industry">
+                <SelectTrigger id="vfy-industry" className="h-10 rounded-xl">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -627,8 +632,8 @@ function ScreenVerify({
           </div>
 
           <div className="space-y-space-1.5">
-            <Label htmlFor="vfy-email">
-              Email <span className="text-red-500 font-bold ml-0.5">*</span>
+            <Label htmlFor="vfy-email" className="text-body-sm font-medium text-foreground">
+              Email <span className="text-destructive font-bold ml-0.5">*</span>
             </Label>
             <div className="relative">
               <Mail className="absolute left-space-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -638,14 +643,14 @@ function ScreenVerify({
                 value={form.email}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                 placeholder="info@yourbusiness.com"
-                className="pl-space-10"
+                className="pl-space-10 h-10 rounded-xl"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-space-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-3">
             <div className="space-y-space-1.5">
-              <Label htmlFor="vfy-phone">Phone <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Label htmlFor="vfy-phone" className="text-body-sm font-medium text-foreground">Phone <span className="text-muted-foreground font-normal">(optional)</span></Label>
               <div className="relative">
                 <Phone className="absolute left-space-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
@@ -653,19 +658,19 @@ function ScreenVerify({
                   value={form.phone}
                   onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                   placeholder="+1 555-0199"
-                  className="pl-space-10"
+                  className="pl-space-10 h-10 rounded-xl"
                 />
               </div>
             </div>
             <div className="space-y-space-1.5">
-              <Label htmlFor="vfy-tz">
-                Timezone <span className="text-red-500 font-bold ml-0.5">*</span>
+              <Label htmlFor="vfy-tz" className="text-body-sm font-medium text-foreground">
+                Timezone <span className="text-destructive font-bold ml-0.5">*</span>
               </Label>
               <Select
                 value={form.timezone}
                 onValueChange={(v) => setForm((f) => ({ ...f, timezone: v }))}
               >
-                <SelectTrigger id="vfy-tz">
+                <SelectTrigger id="vfy-tz" className="h-10 rounded-xl">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -678,7 +683,7 @@ function ScreenVerify({
           </div>
 
           <div className="space-y-space-1.5">
-            <Label htmlFor="vfy-address">Address <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <Label htmlFor="vfy-address" className="text-body-sm font-medium text-foreground">Address <span className="text-muted-foreground font-normal">(optional)</span></Label>
             <div className="relative">
               <MapPin className="absolute left-space-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
@@ -686,7 +691,7 @@ function ScreenVerify({
                 value={form.address}
                 onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
                 placeholder="123 Main St, New York, NY"
-                className="pl-space-10"
+                className="pl-space-10 h-10 rounded-xl"
               />
             </div>
           </div>
@@ -712,8 +717,8 @@ function ScreenVerify({
                 className={cn(
                   "flex items-center gap-space-3 px-space-4 py-space-3 rounded-xl border transition-all duration-200 group",
                   svc.accepted
-                    ? "border-primary/20 bg-primary/5"
-                    : "border-border bg-muted/20 opacity-50"
+                    ? "border-primary/25 bg-primary/5 shadow-xs"
+                    : "border-border/60 bg-muted/20 opacity-50"
                 )}
               >
                 <button
@@ -725,10 +730,10 @@ function ScreenVerify({
                   }
                   className={cn(
                     "h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200",
-                    svc.accepted ? "bg-primary border-primary" : "border-border bg-transparent"
+                    svc.accepted ? "bg-primary border-primary text-primary-foreground" : "border-border bg-transparent"
                   )}
                 >
-                  {svc.accepted && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
+                  {svc.accepted && <Check className="h-3 w-3" strokeWidth={3} />}
                 </button>
                 <div className="flex-1 min-w-0">
                   <p className="text-body-sm font-medium text-foreground">{svc.name}</p>
@@ -737,10 +742,10 @@ function ScreenVerify({
                 <button
                   type="button"
                   onClick={() => setServices((prev) => prev.filter((_, i) => i !== idx))}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
                   title="Remove service"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="h-4 w-4" />
                 </button>
                 <Zap className="h-3.5 w-3.5 text-primary/40 shrink-0" />
               </div>
@@ -750,7 +755,7 @@ function ScreenVerify({
           {isAddingService ? (
             <div className="p-space-4 rounded-xl border border-primary/30 bg-primary/5 space-y-space-3 animate-fade-up">
               <div className="flex items-center justify-between">
-                <span className="text-[12px] font-bold text-foreground">Add New Service</span>
+                <span className="text-body-sm font-bold text-foreground">Add New Service</span>
                 <button
                   type="button"
                   onClick={() => {
@@ -770,7 +775,7 @@ function ScreenVerify({
                     value={newServiceName}
                     onChange={(e) => setNewServiceName(e.target.value)}
                     autoFocus
-                    className="text-body-sm bg-background"
+                    className="text-body-sm bg-background h-10 rounded-xl"
                   />
                 </div>
                 <div>
@@ -778,7 +783,7 @@ function ScreenVerify({
                     value={newServiceDuration}
                     onValueChange={(v) => setNewServiceDuration(v)}
                   >
-                    <SelectTrigger className="bg-background text-body-sm">
+                    <SelectTrigger className="bg-background text-body-sm h-10 rounded-xl">
                       <SelectValue placeholder="Duration" />
                     </SelectTrigger>
                     <SelectContent>
@@ -836,7 +841,7 @@ function ScreenVerify({
               onClick={() => setIsAddingService(true)}
               className="flex items-center gap-space-2 text-body-sm text-primary hover:opacity-80 transition-opacity font-medium py-space-1"
             >
-              <span className="flex h-5 w-5 items-center justify-center rounded-full border border-primary/40 text-[12px] font-semibold">+</span>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full border border-primary/40 text-caption font-semibold">+</span>
               <span>Add a service</span>
             </button>
           )}
@@ -846,7 +851,7 @@ function ScreenVerify({
       {/* Tab: AI Greeting */}
       {activeTab === "greeting" && (
         <div className="space-y-space-4 animate-fade-up" style={{ animationFillMode: "both" }}>
-          <div className="flex items-start gap-space-3 px-space-4 py-space-4 rounded-xl border border-border bg-muted/20">
+          <div className="flex items-start gap-space-3 px-space-4 py-space-4 rounded-xl border border-border/80 bg-muted/20">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 shrink-0 mt-0.5">
               <Bot className="h-4 w-4 text-primary" />
             </div>
@@ -857,8 +862,8 @@ function ScreenVerify({
           </div>
 
           <div className="space-y-space-1.5">
-            <Label htmlFor="vfy-greeting">
-              Edit greeting <span className="text-red-500 font-bold ml-0.5">*</span>
+            <Label htmlFor="vfy-greeting" className="text-body-sm font-medium text-foreground">
+              Edit greeting <span className="text-destructive font-bold ml-0.5">*</span>
             </Label>
             <textarea
               id="vfy-greeting"
@@ -866,7 +871,7 @@ function ScreenVerify({
               onChange={(e) => setForm((f) => ({ ...f, greeting: e.target.value }))}
               rows={4}
               className={cn(
-                "w-full rounded-xl border border-border bg-background px-space-4 py-space-3",
+                "w-full rounded-xl border border-border/80 bg-background px-space-4 py-space-3",
                 "text-body-sm text-foreground placeholder:text-muted-foreground",
                 "resize-none outline-none focus:border-primary focus:ring-2 focus:ring-primary/10",
                 "transition-all duration-fast"
@@ -882,11 +887,11 @@ function ScreenVerify({
       )}
 
       {/* Launch button */}
-      <div className="pt-space-2 border-t border-border">
+      <div className="pt-space-4 border-t border-border/60">
         <Button
           size="lg"
           shape="pill"
-          className="w-full"
+          className="w-full font-semibold shadow-md"
           loading={isLaunching}
           onClick={async () => {
             setIsLaunching(true);
@@ -897,7 +902,7 @@ function ScreenVerify({
         >
           {!isLaunching && (
             <>
-              <Rocket className="h-4 w-4" />
+              <Rocket className="h-4 w-4 mr-1.5" />
               Launch Operator
             </>
           )}
@@ -947,31 +952,31 @@ function ScreenLaunching() {
 
       <div className="space-y-space-2">
         <h2 className="text-title-lg font-bold text-foreground">Launching Operator…</h2>
-        <p className="text-body-sm text-muted-foreground max-w-[280px]">{LAUNCH_STEPS[step]}</p>
+        <p className="text-body-sm text-muted-foreground max-w-xs">{LAUNCH_STEPS[step]}</p>
       </div>
 
-      <div className="w-full max-w-[280px] space-y-space-2">
+      <div className="w-full max-w-xs space-y-space-2.5">
         {LAUNCH_STEPS.map((s, idx) => (
           <div key={s} className="flex items-center gap-space-3 text-left">
             <div
               className={cn(
                 "flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-all duration-300",
                 idx < step
-                  ? "bg-emerald-500/15 border border-emerald-500/30"
+                  ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-500"
                   : idx === step
-                  ? "bg-primary/10 border border-primary/30"
-                  : "bg-muted border border-border"
+                  ? "bg-primary/10 border border-primary/30 text-primary"
+                  : "bg-muted border border-border text-muted-foreground"
               )}
             >
               {idx < step ? (
-                <Check className="h-2.5 w-2.5 text-emerald-500" strokeWidth={3} />
+                <Check className="h-3 w-3 text-emerald-500" strokeWidth={3} />
               ) : idx === step ? (
-                <Loader2 className="h-2.5 w-2.5 text-primary animate-spin" />
+                <Loader2 className="h-3 w-3 text-primary animate-spin" />
               ) : null}
             </div>
             <span
               className={cn(
-                "text-[12px] leading-none",
+                "text-caption leading-none",
                 idx <= step ? "text-foreground font-medium" : "text-muted-foreground"
               )}
             >

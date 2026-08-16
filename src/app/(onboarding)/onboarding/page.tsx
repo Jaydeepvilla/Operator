@@ -52,7 +52,7 @@ export default async function OnboardingPage() {
 
       {/* Main Form & Confidence Bridge Area */}
       <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-12">
-        <div className="w-full max-w-[580px]">
+        <div className="w-full max-w-[620px] rounded-2xl border border-border/70 bg-card/90 p-6 sm:p-10 shadow-2xl backdrop-blur-xl transition-all duration-300">
           <OnboardingWizard />
         </div>
       </main>
@@ -61,7 +61,7 @@ export default async function OnboardingPage() {
       <footer className="relative z-10 flex items-center justify-center gap-space-6 px-space-8 py-space-5 text-caption text-muted-foreground border-t border-border/30 bg-background/40 backdrop-blur-sm">
         <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
         <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-        <span>© 2025 Operator</span>
+        <span>© 2026 Operator</span>
       </footer>
     </div>
   );
