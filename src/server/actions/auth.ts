@@ -29,6 +29,17 @@ import { notificationService } from "../services/notification";
 import { auditService } from "../services/audit";
 import { loginSchema, registrationSchema, forgotPasswordSchema, resetPasswordSchema } from "@/lib/validators";
 
+async function getSafeRequestMetadata() {
+  try {
+    const reqHeaders = await headers();
+    const userAgent = reqHeaders.get("user-agent") || undefined;
+    const ipAddress = reqHeaders.get("x-forwarded-for")?.split(",")[0] || reqHeaders.get("x-real-ip") || undefined;
+    return { userAgent, ipAddress };
+  } catch {
+    return { userAgent: undefined, ipAddress: undefined };
+  }
+}
+
 /**
  * Handles credentials verification, rate limiting lockout, suspension, deactivation restore, and session setup.
  */
@@ -40,9 +51,7 @@ export async function loginAction(input: any) {
     }
     const { email, password, rememberMe } = parsed.data;
 
-    const reqHeaders = await headers();
-    const userAgent = reqHeaders.get("user-agent") || undefined;
-    const ipAddress = reqHeaders.get("x-forwarded-for")?.split(",")[0] || reqHeaders.get("x-real-ip") || undefined;
+    const { userAgent, ipAddress } = await getSafeRequestMetadata();
 
     // 1. Check lockout duration (brute force protection)
     const lockoutState = await checkLoginRateLimit(email, ipAddress);
@@ -204,9 +213,7 @@ export async function registerAction(input: any) {
     const passwordHashVal = await hashPassword(password);
     const userId = "usr_" + crypto.randomUUID().replace(/-/g, "");
 
-    const reqHeaders = await headers();
-    const userAgent = reqHeaders.get("user-agent") || undefined;
-    const ipAddress = reqHeaders.get("x-forwarded-for")?.split(",")[0] || reqHeaders.get("x-real-ip") || undefined;
+    const { userAgent, ipAddress } = await getSafeRequestMetadata();
 
     // 5. Create user and configurations inside transaction
     await db.transaction(async (tx) => {
@@ -332,9 +339,7 @@ export async function verifyEmailAction(input: { token: string }) {
       return { success: false, error: "Invalid or expired verification token" };
     }
 
-    const reqHeaders = await headers();
-    const userAgent = reqHeaders.get("user-agent") || undefined;
-    const ipAddress = reqHeaders.get("x-forwarded-for")?.split(",")[0] || reqHeaders.get("x-real-ip") || undefined;
+    const { userAgent, ipAddress } = await getSafeRequestMetadata();
 
     await db.transaction(async (tx) => {
       // Mark email as verified
@@ -528,9 +533,7 @@ export async function resetPasswordAction(input: any) {
         .where(eq(passwordResetTokens.id, resetRecord.id));
     });
 
-    const reqHeaders = await headers();
-    const userAgent = reqHeaders.get("user-agent") || undefined;
-    const ipAddress = reqHeaders.get("x-forwarded-for")?.split(",")[0] || reqHeaders.get("x-real-ip") || undefined;
+    const { userAgent, ipAddress } = await getSafeRequestMetadata();
 
     // 3. Invalidate other active sessions (prevent credentials reuse)
     await logoutAllDevices(resetRecord.userId);

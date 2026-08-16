@@ -46,15 +46,17 @@ export async function createSession(
   });
 
   // Set session cookie
-  const cookieStore = await cookies();
-  cookieStore.set("session_token", sessionToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    // If rememberMe is false, omit expires to make it a session-lifetime cookie
-    ...(rememberMe ? { expires: sessionExpiresAt } : {}),
-  });
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set("session_token", sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      // If rememberMe is false, omit expires to make it a session-lifetime cookie
+      ...(rememberMe ? { expires: sessionExpiresAt } : {}),
+    });
+  } catch (e) {}
 
   // Create and set Refresh Token (expires in 30 days)
   const refreshTokenVal = crypto.randomBytes(32).toString("hex");
@@ -72,13 +74,16 @@ export async function createSession(
     isRevoked: false,
   });
 
-  cookieStore.set("refresh_token", refreshTokenVal, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    path: "/api/auth/refresh", // only expose to refresh endpoint
-    expires: refreshExpiresAt,
-  });
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set("refresh_token", refreshTokenVal, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/api/auth/refresh", // only expose to refresh endpoint
+      expires: refreshExpiresAt,
+    });
+  } catch (e) {}
 
   // Track browser fingerprint/device if provided
   if (fingerprint) {
@@ -152,14 +157,16 @@ export async function rotateSession(
     await tx.delete(sessions).where(eq(sessions.id, currentToken));
   });
 
-  const cookieStore = await cookies();
-  cookieStore.set("session_token", newSessionToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    ...(session.rememberMe ? { expires: session.expiresAt } : {}),
-  });
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set("session_token", newSessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      ...(session.rememberMe ? { expires: session.expiresAt } : {}),
+    });
+  } catch (e) {}
 
   return newSessionToken;
 }
@@ -255,9 +262,11 @@ export async function deleteSession(token: string): Promise<void> {
   await db.delete(sessions).where(eq(sessions.id, token));
   await db.delete(refreshTokens).where(eq(refreshTokens.sessionId, token));
   
-  const cookieStore = await cookies();
-  cookieStore.delete("session_token");
-  cookieStore.delete("refresh_token");
+  try {
+    const cookieStore = await cookies();
+    cookieStore.delete("session_token");
+    cookieStore.delete("refresh_token");
+  } catch (e) {}
 }
 
 /**

@@ -16,8 +16,17 @@ export interface AuthResult {
  */
 export const auth = cache(async (): Promise<AuthResult> => {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("session_token")?.value;
+    let token: string | undefined;
+    let activeOrgCookie: string | undefined;
+
+    try {
+      const cookieStore = await cookies();
+      token = cookieStore.get("session_token")?.value;
+      activeOrgCookie = cookieStore.get("active_org_id")?.value;
+    } catch {
+      // Running outside request context
+    }
+
     if (!token) {
       return { userId: null, orgId: null };
     }
@@ -26,9 +35,6 @@ export const auth = cache(async (): Promise<AuthResult> => {
     if (!session) {
       return { userId: null, orgId: null };
     }
-
-    // Check active_org_id cookie for multi-tenant switching
-    const activeOrgCookie = cookieStore.get("active_org_id")?.value;
 
     let selectedOrgId: string | null = null;
 

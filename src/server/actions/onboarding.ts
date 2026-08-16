@@ -306,52 +306,54 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
         });
       }
 
-      // 8. Sync Seeded Configurations to Knowledge Center
-      try {
-        const seededProfile = await profileRepository.getByOrg(organization.id);
-        if (seededProfile) {
-          await syncService.syncBusinessProfile(
-            organization.id,
-            organization.name,
-            seededProfile.description || "",
-            organization.email,
-            organization.phone,
-            organization.website,
-            organization.address
-          );
-        }
+      // 8. Sync Seeded Configurations to Knowledge Center (asynchronous background sync)
+      (async () => {
+        try {
+          const seededProfile = await profileRepository.getByOrg(organization.id);
+          if (seededProfile) {
+            await syncService.syncBusinessProfile(
+              organization.id,
+              organization.name,
+              seededProfile.description || "",
+              organization.email,
+              organization.phone,
+              organization.website,
+              organization.address
+            );
+          }
 
-        const seededServices = await servicesRepository.list(organization.id);
-        for (const s of seededServices) {
-          await syncService.syncServiceItem(
-            organization.id,
-            s.id,
-            s.name,
-            s.description || "",
-            s.duration,
-            s.price,
-            s.isActive
-          );
-        }
+          const seededServices = await servicesRepository.list(organization.id);
+          for (const s of seededServices) {
+            await syncService.syncServiceItem(
+              organization.id,
+              s.id,
+              s.name,
+              s.description || "",
+              s.duration,
+              s.price,
+              s.isActive
+            );
+          }
 
-        const seededFaqs = await faqRepository.list(organization.id);
-        for (const f of seededFaqs) {
-          await syncService.syncFAQ(
-            organization.id,
-            f.id,
-            f.question,
-            f.answer,
-            f.isActive
-          );
-        }
+          const seededFaqs = await faqRepository.list(organization.id);
+          for (const f of seededFaqs) {
+            await syncService.syncFAQ(
+              organization.id,
+              f.id,
+              f.question,
+              f.answer,
+              f.isActive
+            );
+          }
 
-        const seededFlows = await flowsRepository.list(organization.id);
-        if (seededFlows.length > 0) {
-          await syncService.syncQualificationFlows(organization.id, seededFlows);
+          const seededFlows = await flowsRepository.list(organization.id);
+          if (seededFlows.length > 0) {
+            await syncService.syncQualificationFlows(organization.id, seededFlows);
+          }
+        } catch (syncErr) {
+          console.error("Failed to run initial sync of seeded template configurations:", syncErr);
         }
-      } catch (syncErr) {
-        console.error("Failed to run initial sync of seeded template configurations:", syncErr);
-      }
+      })();
     } catch (dbErr: any) {
       console.warn("DB organization creation fallback due to remote cluster limits:", dbErr.message);
       // Construct fallback organization so user session proceeds without error banner

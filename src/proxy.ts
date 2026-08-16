@@ -29,8 +29,9 @@ const PUBLIC_PATHS = [
 ];
 
 function isPublicRoute(pathname: string): boolean {
-  // Always pass through: static assets, webhooks, widget, Next.js internals
+  // Always pass through: static assets, auth APIs, webhooks, widget, Next.js internals
   if (
+    pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/webhooks") ||
     pathname.startsWith("/api/widget") ||
     pathname.startsWith("/_next") ||
