@@ -17,11 +17,12 @@ import crypto from "crypto";
 import { getGoogleOAuthConfig } from "@/lib/auth/google-config";
 
 function getAppUrl(request: NextRequest): string {
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (envUrl && (envUrl.startsWith("http://") || envUrl.startsWith("https://"))) {
+    return envUrl.replace(/\/$/, "");
   }
-  const proto = request.headers.get("x-forwarded-proto") || (request.nextUrl.protocol ? request.nextUrl.protocol.replace(":", "") : "http");
-  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || request.nextUrl.host || "localhost:3000";
+  const proto = request.headers.get("x-forwarded-proto") || (request.nextUrl.protocol ? request.nextUrl.protocol.replace(":", "") : "https");
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || request.nextUrl.host || "operator-azure.vercel.app";
   return `${proto}://${host}`;
 }
 
