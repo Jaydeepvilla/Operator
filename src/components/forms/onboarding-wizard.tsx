@@ -1016,13 +1016,31 @@ function ScreenGoLive({ businessName, orgId }: { businessName: string; orgId: st
 
 // ─── Root Wizard ──────────────────────────────────────────────────────────────
 
-export function OnboardingWizard() {
+export function OnboardingWizard({ initialOrg }: { initialOrg?: { id: string; name: string } }) {
   const router = useRouter();
-  const [step, setStep] = React.useState<Step>("url");
+  const [step, setStep] = React.useState<Step>(initialOrg ? "golive" : "url");
   const [url, setUrl] = React.useState("");
-  const [generated, setGenerated] = React.useState<GeneratedData | null>(null);
+  const [generated, setGenerated] = React.useState<GeneratedData | null>(
+    initialOrg
+      ? {
+          businessName: initialOrg.name,
+          industry: "Other",
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+          email: "",
+          phone: "",
+          address: "",
+          website: "",
+          services: [
+            { name: "General Consultation", duration: 30, accepted: true },
+            { name: "Follow-up Appointment", duration: 15, accepted: true },
+          ],
+          hours: "Mon–Fri 9:00 AM – 5:00 PM",
+          greeting: `Hi, thank you for contacting ${initialOrg.name}. I'm Operator, your automated assistant. How can I help you today?`,
+        }
+      : null
+  );
   const [submitError, setSubmitError] = React.useState<string | null>(null);
-  const [createdOrgId, setCreatedOrgId] = React.useState<string | null>(null);
+  const [createdOrgId, setCreatedOrgId] = React.useState<string | null>(initialOrg?.id || null);
 
   const handleUrlNext = (inputUrl: string) => {
     setUrl(inputUrl);
