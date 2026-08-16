@@ -68,33 +68,6 @@ export async function checkUserOrganization() {
       // Continue to fallback check
     }
 
-    // 3. Check for any active default organization in database to link demo users
-    try {
-      const allOrgs = await db.select().from(organizations).limit(1);
-      if (allOrgs.length > 0) {
-        const defaultOrg = allOrgs[0];
-        // Auto-link membership
-        await membershipRepository.create({
-          organizationId: defaultOrg.id,
-          userId,
-          role: "owner",
-        }).catch(() => {});
-
-        try {
-          cookieStore.set("active_org_id", defaultOrg.id, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            path: "/",
-          });
-        } catch (e) {}
-
-        return { hasOrg: true, org: defaultOrg };
-      }
-    } catch (e) {
-      // DB lookup error
-    }
-
     return { hasOrg: false, org: null };
   } catch (err) {
     return { hasOrg: false, org: null };
