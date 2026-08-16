@@ -34,10 +34,10 @@ function getProgressTier(pct: number) {
 }
 
 const getImpactMessage = (pct: number) => {
-  if (pct === 100) return "Your AI receptionist is fully optimized to capture every opportunity.";
+  if (pct === 100) return "Operator AI is fully trained and ready to handle customer inquiries.";
   if (pct >= 70)   return "Nearly there! A few more steps unlock maximum booking automation.";
   if (pct >= 40)   return "Adding services & hours will unlock automatic booking features.";
-  return "Complete setup to activate your AI and stop missing caller opportunities.";
+  return "Complete setup to activate Operator AI and streamline front-desk operations.";
 };
 
 export function SetupProgressWidget({ progress }: SetupProgressWidgetProps) {

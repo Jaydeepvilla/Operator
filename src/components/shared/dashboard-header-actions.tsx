@@ -40,14 +40,14 @@ export function DashboardHeaderActions({
       <Link
         href="/channels"
         className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 hover:border-emerald-500/30 transition-all duration-200 group cursor-pointer"
-        title="AI Receptionist is online and auto-answering customer inquiries across Voice, WhatsApp, and Web"
+        title="Operator AI is online and auto-answering customer inquiries across Voice, WhatsApp, and Web"
       >
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
         </span>
         <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 group-hover:underline">
-          AI Active (24/7)
+          Operator AI Active (24/7)
         </span>
         <Radio className="h-3 w-3 text-emerald-500/70 shrink-0 ml-0.5" />
       </Link>

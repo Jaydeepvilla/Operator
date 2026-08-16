@@ -154,7 +154,7 @@ const INTEGRATIONS: Record<string, IntegrationData> = {
 
     benefits: "Ensures calendar state is updated instantly, eliminating manual bookings and double scheduling entirely.",
     impact: "Reduces receptionist manual scheduling friction by 100% and secures 24/7 calendar filling.",
-    useCase: "Client books a consultation on Google Calendar during a voice call with the AI receptionist."
+    useCase: "Client books a consultation on Google Calendar during a voice call with Operator AI."
   },
   Microsoft: {
     key: "Microsoft",

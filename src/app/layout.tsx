@@ -13,7 +13,7 @@ import { GeistSans } from "geist/font/sans";
 export const metadata: Metadata = {
   title: "Operator | 24/7 AI That Books, Qualifies & Answers",
   description:
-    "Deploy an AI receptionist that answers calls, books appointments, captures leads, and supports customers 24/7 — for dental clinics, law firms, salons, and any service business.",
+    "Deploy Operator AI to answer calls, book appointments, capture leads, and support customers 24/7 — for dental clinics, law firms, salons, and service businesses.",
 };
 
 export default async function RootLayout({

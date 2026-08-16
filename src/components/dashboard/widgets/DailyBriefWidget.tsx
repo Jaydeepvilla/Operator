@@ -46,8 +46,8 @@ export function DailyBriefWidget({ brief, businessName }: DailyBriefWidgetProps)
 
   const summaryText =
     summaryParts.length > 0
-      ? `Your AI ${summaryParts.join(", ")}.`
-      : "Your AI is ready and waiting for its first conversation today.";
+      ? `Operator AI ${summaryParts.join(", ")}.`
+      : "Operator AI is active and ready to handle customer inquiries.";
 
   return (
     <section className="os-card radius-2xl overflow-hidden">
@@ -65,7 +65,7 @@ export function DailyBriefWidget({ brief, businessName }: DailyBriefWidgetProps)
           </div>
           <div className="flex items-center gap-space-2 bg-bg-layer-1 border border-border-subtle px-space-3 py-space-1.5 radius-full text-caption text-neutral-500 font-medium self-start sm:self-center">
             <span className="w-2 h-2 radius-full bg-success-500 animate-pulse-soft" />
-            AI Receptionist Active
+            Operator AI Active
           </div>
         </div>
 

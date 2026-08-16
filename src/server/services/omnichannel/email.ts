@@ -45,7 +45,7 @@ export class EmailProvider implements MessagingProvider, WebhookProvider {
       const mailOptions = {
         from,
         to: recipientId,
-        subject: connectionConfig.subject || "Message from Operator AI Receptionist",
+        subject: connectionConfig.subject || "Message from Operator AI",
         text: content,
         html: content.replace(/\n/g, "<br>"),
         attachments: attachments?.map((a) => ({

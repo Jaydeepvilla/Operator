@@ -56,9 +56,9 @@ export function BillingPortalClient({
       name: "Starter Trial",
       price: "$0",
       period: "month",
-      description: "Get familiar with automated AI receptionist features.",
+      description: "Get familiar with automated Operator AI features.",
       features: [
-        "AI Voice Receptionist (100 mins)",
+        "Operator Voice AI (100 mins)",
         "Dental & Salon Agent Templates",
         "SMS & Web Chatbot integrations",
         "1 operator seat included",
@@ -299,7 +299,7 @@ export function BillingPortalClient({
               {/* AI Token meter */}
               <div className="space-y-space-2 p-space-4 radius-lg bg-background/30 border border-border/20">
                 <div className="flex justify-between text-caption ">
-                  <span>AI Receptionist Tokens</span>
+                  <span>Operator AI Tokens</span>
                   <span className="font-mono text-muted-foreground">
                     {subscription.planId === "pro" ? "1.5M / 5M tokens" : "80K / 500K tokens"}
                   </span>

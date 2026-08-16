@@ -65,7 +65,7 @@ export function PromptSettingsClient({
  <div>
  <h2 className="text-title-md font-bold text-foreground">Custom Guidelines & Rules</h2>
  <p className="text-body-sm text-muted-foreground mt-space-1">
- Inject custom guardrails, instructions, and behavior rules into the AI receptionist's prompt.
+ Inject custom guardrails, instructions, and behavior rules into Operator AI's prompt.
  </p>
  </div>
  </div>

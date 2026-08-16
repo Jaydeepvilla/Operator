@@ -88,7 +88,7 @@ export const NotificationRulesEngine = {
         notifications.push({
           ...baseFields("business-hours-missing", "alert", "critical", "urgent"),
           title: "Missing Business Hours",
-          description: "No business hours are configured. The AI Receptionist cannot inform clients of opening times or schedule bookings properly.",
+          description: "No business hours are configured. Operator AI cannot inform clients of opening times or schedule bookings properly.",
           actionUrl: "/settings",
           metadata: {
             ruleId: "business-hours-missing",
@@ -165,7 +165,7 @@ export const NotificationRulesEngine = {
           metadata: {
             ruleId: "health-score-low",
             sourceEngine: "health",
-            businessImpact: "Restores maximum receptionist capabilities and channels.",
+            businessImpact: "Restores maximum Operator AI capabilities and channels.",
             actionText: "Review Health Status",
             reason: "Critical configuration items are missing.",
           },

@@ -70,7 +70,7 @@ export function HealthDashboardClient({
   
   // Status definitions
   const statusText = isHealthy 
-    ? "AI Receptionist Active & Healthy" 
+    ? "Operator AI Active & Healthy" 
     : isWarning 
     ? "Configuration Optimization Suggested" 
     : "Blockers Preventing AI Operations";
@@ -488,7 +488,7 @@ export function HealthDashboardClient({
                   <div>
                     <h3 className="text-body-sm font-bold text-foreground">AI Fully Configured</h3>
                     <p className="text-caption text-muted-foreground max-w-48 mt-space-1 leading-snug">
-                      Zero missing requirements found. Your AI receptionist is operating at 100% capability.
+                      Zero missing requirements found. Operator AI is operating at 100% capability.
                     </p>
                   </div>
                 </div>

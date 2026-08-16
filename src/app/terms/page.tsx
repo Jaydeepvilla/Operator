@@ -6,8 +6,8 @@ import { FileText, ArrowRight } from "lucide-react";
 import { NativeA } from "@/components/shared/native";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Operator Receptionist",
-  description: "Operator's Terms of Service — your rights and obligations when using the Operatorplatform.",
+  title: "Terms of Service | Operator",
+  description: "Operator's Terms of Service — your rights and obligations when using the Operator platform.",
 };
 
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
@@ -152,7 +152,7 @@ export default function TermsPage() {
               <Section id="disclaimers" title="10. Disclaimers">
                 <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE". WE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.</p>
                 <p>We do not warrant that the Service will be uninterrupted, error-free, or completely secure. AI-generated responses may be inaccurate, incomplete, or inappropriate for specific situations. You are responsible for reviewing AI responses and configuring the system appropriately for your business.</p>
-                <p>We are not liable for any decisions made by your customers or staff based on AI-generated information. The AI receptionist is a tool to assist, not replace, professional judgment in regulated industries.</p>
+                <p>We are not liable for any decisions made by your customers or staff based on AI-generated information. Operator AI is a tool to assist, not replace, professional judgment in regulated industries.</p>
               </Section>
 
               <Section id="limitation" title="11. Limitation of Liability">
@@ -167,7 +167,7 @@ export default function TermsPage() {
                   <li>Your use of the Service in violation of these Terms</li>
                   <li>Your violation of any applicable laws or regulations</li>
                   <li>Content you upload or publish through the Service</li>
-                  <li>Your customers' interactions with your AI receptionist</li>
+                  <li>Your customers' interactions with Operator AI</li>
                   <li>Any claim that your use of the Service infringes a third party's rights</li>
                 </ul>
               </Section>

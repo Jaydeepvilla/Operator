@@ -562,7 +562,7 @@ function WidgetFrameContent() {
           <span className="h-1.5 w-1.5 radius-full bg-muted-foreground animate-bounce delay-75"/>
           <span className="h-1.5 w-1.5 radius-full bg-muted-foreground animate-bounce delay-150"/>
           <span className="h-1.5 w-1.5 radius-full bg-muted-foreground animate-bounce delay-300"/>
-          <span>AI Receptionist is drafting...</span>
+          <span>Operator AI is typing...</span>
           </div>
           )}
           </ScrollArea>

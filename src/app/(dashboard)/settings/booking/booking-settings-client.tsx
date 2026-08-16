@@ -116,7 +116,7 @@ export function BookingSettingsClient({
               <div className="space-y-space-1 flex-1 pr-space-4">
                 <span className="text-body-sm font-bold text-foreground block">Allow Cancellations</span>
                 <span className="text-caption text-muted-foreground leading-snug">
-                  Let customers cancel booked slots online or via the AI receptionist.
+                  Let customers cancel booked slots online or via Operator AI.
                 </span>
               </div>
               <div
@@ -205,7 +205,7 @@ export function BookingSettingsClient({
                 className="w-full text-body-sm min-h-60 p-space-4 radius-lg border border-border-default bg-bg-layer-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-muted-foreground transition-all duration-200 resize-y"
               />
               <p className="text-caption text-muted-foreground leading-snug">
-                This policy text is compiled directly into the AI receptionist's active references.
+                This policy text is compiled directly into Operator AI's active references.
               </p>
             </div>
           </div>

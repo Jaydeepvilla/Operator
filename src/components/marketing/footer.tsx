@@ -42,7 +42,7 @@ export function MarketingFooter() {
               <Logo iconClassName="h-5 w-5" />
             </Link>
             <p className="text-body-sm text-muted-foreground leading-relaxed max-w-xs">
-              AI-powered receptionist for service businesses.
+              The AI Operating System for service businesses.
             </p>
           </div>
 

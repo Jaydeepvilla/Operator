@@ -9,7 +9,7 @@ import { promptService } from "@/server/services/prompt";
 
 export const metadata = {
   title: "AI Prompt Configuration | Settings",
-  description: "Customize prompt system instructions, constraints, and tone profiles for your AI receptionist.",
+  description: "Customize prompt system instructions, constraints, and tone profiles for Operator AI.",
 };
 
 export default async function AIPromptSettingsPage() {
@@ -38,7 +38,7 @@ export default async function AIPromptSettingsPage() {
     <div className="space-y-space-6 animate-fade-in w-full pb-space-12">
       <PageTitle
         title="AI Prompt Configuration"
-        description="Fine-tune your receptionist's system instructions, general guidelines, and core prompt personality."
+        description="Fine-tune Operator AI's system instructions, general guidelines, and core answering persona."
       />
 
       <PromptSettingsClient 

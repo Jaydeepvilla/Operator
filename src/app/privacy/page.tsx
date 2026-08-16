@@ -6,7 +6,7 @@ import { Shield } from "lucide-react";
 import { NativeA } from "@/components/shared/native";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Operator Receptionist",
+  title: "Privacy Policy | Operator",
   description: "Operator's Privacy Policy — how we collect, use, protect, and share your information.",
 };
 
@@ -76,13 +76,13 @@ export default function PrivacyPage() {
               <Section id="overview" title="Overview">
                 <p>Operator Technologies (&quot;Operator&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) operates the Operatorplatform at nexx.ai. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.</p>
                 <p>By using our service, you agree to the collection and use of information in accordance with this policy. If you are using our service on behalf of a business or organization, you represent that you are authorized to agree to this policy on their behalf.</p>
-                <p>This policy applies to: (a) business customers who purchase Operator subscriptions; (b) end users who interact with AI receptionists deployed by our business customers; and (c) visitors to our marketing website.</p>
+                <p>This policy applies to: (a) business customers who purchase Operator subscriptions; (b) end users who interact with Operator AI instances deployed by our business customers; and (c) visitors to our marketing website.</p>
               </Section>
 
               <Section id="information" title="Information We Collect">
                 <p><strong className="text-foreground">Account Information:</strong> When you create an account, we collect your name, email address, business name, phone number, and billing information.</p>
-                <p><strong className="text-foreground">Business Configuration Data:</strong> Information you provide to configure your AI receptionist — service descriptions, pricing, business hours, staff information, and knowledge base documents.</p>
-                <p><strong className="text-foreground">Conversation Data:</strong> Records of conversations between your AI receptionist and your customers, including chat transcripts, voice call recordings, and transcriptions. This data is owned by you, the business customer.</p>
+                <p><strong className="text-foreground">Business Configuration Data:</strong> Information you provide to configure Operator AI — service descriptions, pricing, business hours, staff information, and knowledge base documents.</p>
+                <p><strong className="text-foreground">Conversation Data:</strong> Records of conversations between Operator AI and your customers, including chat transcripts, voice call recordings, and transcriptions. This data is owned by you, the business customer.</p>
                 <p><strong className="text-foreground">Lead & Contact Data:</strong> Customer information captured during AI conversations — names, email addresses, phone numbers, and inquiry details provided by your customers.</p>
                 <p><strong className="text-foreground">Calendar & Integration Data:</strong> When you connect your calendar or other integrations, we receive and process data necessary to provide the integration service (e.g., availability data from Google Calendar).</p>
                 <p><strong className="text-foreground">Usage Data:</strong> Information about how you use our platform — pages visited, features used, API calls made, session duration, and error logs.</p>
@@ -94,7 +94,7 @@ export default function PrivacyPage() {
                 <p>We use the information we collect for the following purposes:</p>
                 <ul className="list-disc list-inside space-y-space-2 pl-space-2">
                   <li><strong className="text-foreground">Service Delivery:</strong> To provide, operate, and maintain the Operator platform</li>
-                  <li><strong className="text-foreground">AI Operation:</strong> To power your AI receptionist&apos;s responses using your knowledge base and configuration</li>
+                  <li><strong className="text-foreground">AI Operation:</strong> To power Operator AI&apos;s responses using your knowledge base and configuration</li>
                   <li><strong className="text-foreground">Booking & Calendar:</strong> To check availability, create bookings, and sync with connected calendar services</li>
                   <li><strong className="text-foreground">Communications:</strong> To send account notifications, booking confirmations, and service updates</li>
                   <li><strong className="text-foreground">Billing:</strong> To process payments, generate invoices, and manage subscriptions</li>

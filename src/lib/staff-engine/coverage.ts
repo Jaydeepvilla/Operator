@@ -10,7 +10,7 @@ export function checkCoverage(state: RecommendationState): RecommendationAction[
     recommendations.push({
       id: "staff-missing-team",
       title: "Add Team Members",
-      description: "You have services defined but no staff members. The AI Receptionist needs to know who provides these services.",
+      description: "You have services defined but no staff members. Operator AI needs to know who provides these services.",
       primaryCtaText: "Add Staff",
       primaryCtaHref: "/settings/staff",
       estimatedTimeMinutes: 5,

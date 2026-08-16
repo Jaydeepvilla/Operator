@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
+import { SessionAwareCta } from "@/components/marketing/session-aware-cta";
 import {
   ArrowRight,
   Mic,
@@ -45,7 +46,7 @@ const CONVERSATIONS = {
   { from: "bot", text: "Excellent! I'm booking Wednesday July 9th at 2pm for your cleaning. May I get your full name and best callback number?" }],
 
   chat: [
-  { from: "bot", text: "👋 Hi! I'm the AI receptionist for Okonkwo Law Group. How can I help you today?" },
+  { from: "bot", text: "👋 Hi! I'm Operator AI for Okonkwo Law Group. How can I help you today?" },
   { from: "user", text: "I need help with a property dispute. What are your consultation fees?" },
   { from: "bot", text: "Our initial consultation for property disputes is $250 for 60 minutes. This includes a case review and strategy session with one of our partners.\n\nWould you like to schedule a consultation?" },
   { from: "user", text: "Yes please." },
@@ -222,8 +223,8 @@ export default function DemoPage() {
             <div className="space-y-space-5">
               {activeTab === "voice" &&
               <>
-                  <h3 className=" text-title-lg text-foreground">Voice AI Receptionist</h3>
-                  <p className="text-muted-foreground text-body-sm leading-relaxed">The AI answers real phone calls using natural language. It understands context, handles interruptions, and books appointments directly to your calendar.</p>
+                  <h3 className=" text-title-lg text-foreground">Operator Voice AI</h3>
+                  <p className="text-muted-foreground text-body-sm leading-relaxed">Operator AI answers real phone calls using natural language. It understands context, handles interruptions, and books appointments directly to your calendar.</p>
                   {["Answers in under 1 second", "Understands context across turns", "Books directly to your calendar", "Records and transcribes every call", "Escalates to humans when needed", "Works on your existing phone number"].map((f) =>
                 <div key={f} className="flex items-center gap-space-2 text-body-sm"><Check className="h-4 w-4 text-primary shrink-0" /><span className="text-foreground/80">{f}</span></div>
                 )}
@@ -375,9 +376,12 @@ export default function DemoPage() {
               Start <span className="text-primary">your free trial.</span>
             </h2>
             <p className="text-muted-foreground mb-space-8">14 days free. No credit card. Setup in 30 minutes.</p>
-            <Button asChild size="lg">
-              <Link href="/sign-up">Start Free Trial <ArrowRight className="h-4 w-4" /></Link>
-            </Button>
+            <SessionAwareCta
+              signedInText="Go to Dashboard"
+              signedOutText="Start Free Trial"
+              signedOutHref="/sign-up"
+              size="lg"
+            />
           </div>
         </section>
       </main>

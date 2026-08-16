@@ -69,7 +69,7 @@ export function runBusinessAudit(state: BusinessState): BusinessAuditResult {
     findings.push({
       id: makeId("readiness", missing),
       title: `AI Cannot Answer: "${missing}"`,
-      description: `Your AI Receptionist has no information about "${missing}". Customers asking this will get a generic response.`,
+      description: `Operator AI has no information about "${missing}". Customers asking this will get a generic response.`,
       severity: "warning",
       area: "AI Knowledge",
       impact: "Reduces AI answer quality and customer trust",
@@ -93,7 +93,7 @@ export function runBusinessAudit(state: BusinessState): BusinessAuditResult {
     ? "Your business configuration is strong. A few refinements will push you to excellence."
     : summaryScore >= 60
     ? "Your setup has a solid foundation, but several important areas need attention."
-    : "Your AI Receptionist has critical gaps that are reducing its effectiveness. Prioritize the findings below.";
+    : "Operator AI has critical gaps that are reducing its effectiveness. Prioritize the findings below.";
 
   return {
     overallScore: health.overallScore,

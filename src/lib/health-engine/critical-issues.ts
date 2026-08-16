@@ -102,7 +102,7 @@ export function detectCriticalIssues(state: BusinessState): CriticalIssue[] {
       "Automation",
       "Critical",
       "No Active Channels",
-      "The AI Receptionist is not connected to any communication channels (Web, SMS, WhatsApp).",
+      "Operator AI is not connected to any communication channels (Web, SMS, WhatsApp).",
       3,
       "Connect Channels",
       "/channels"

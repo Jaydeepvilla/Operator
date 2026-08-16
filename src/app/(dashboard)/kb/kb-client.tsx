@@ -282,7 +282,7 @@ export function KnowledgeCenterClient({
  reader.onload = (e) => {
  const text = e.target?.result as string;
  if (fileExt ==="pdf"|| fileExt ==="docx") {
- setDocContent(`[SIMULATED EXTRACTION: ${file.name}]\n\nThis is a simulated textual extraction of the uploaded ${fileExt.toUpperCase()} file (${(file.size / 1024).toFixed(1)} KB) for training the AI Receptionist. The server-side background job will parse the complete raw text, index it, and chunk it into vector databases.`);
+ setDocContent(`[SIMULATED EXTRACTION: ${file.name}]\n\nThis is a simulated textual extraction of the uploaded ${fileExt.toUpperCase()} file (${(file.size / 1024).toFixed(1)} KB) for training Operator AI. The server-side background job will parse the complete raw text, index it, and chunk it into vector databases.`);
  } else {
  setDocContent(text ||"");
  }
@@ -731,7 +731,7 @@ export function KnowledgeCenterClient({
  <div>
  <CardTitle className="text-body-sm font-semibold text-foreground">Knowledge Health Breakdown</CardTitle>
  <CardDescription className="text-caption text-muted-foreground/70">
- Review parameters required to ensure your AI Receptionist operates with accurate details.
+ Review parameters required to ensure Operator AI operates with accurate details.
  </CardDescription>
  </div>
  </CardHeader>

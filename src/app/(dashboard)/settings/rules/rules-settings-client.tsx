@@ -271,12 +271,12 @@ export function RulesSettingsClient({ initialRules }: RulesSettingsClientProps) 
 
           <div className="space-y-space-4 text-body-sm text-muted-foreground leading-relaxed">
             <p>
-              When a conversation matches any of these configured triggers, the AI receptionist does the following:
+              When a conversation matches any of these configured triggers, Operator AI executes the following protocol:
             </p>
 
             <ul className="space-y-space-3 list-decimal list-inside text-caption">
               <li>
-                <strong className="text-foreground">Halts Automated AI Responses:</strong> The AI will stop sending automated texts to the user.
+                <strong className="text-foreground">Pauses Automated AI Answering:</strong> Operator AI pauses automated replies to prevent conflicting messages.
               </li>
               <li>
                 <strong className="text-foreground">Dispatches Notifications:</strong> Dispatches alerts immediately to the staff alert channels configured.

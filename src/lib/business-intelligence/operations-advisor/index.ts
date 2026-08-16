@@ -32,7 +32,7 @@ function detectBottlenecks(state: BusinessState): OperationsBottleneck[] {
     bottlenecks.push({
       id: "ops-no-channels",
       area: "Communication Channels",
-      description: "No active communication channels are configured. Your AI Receptionist cannot receive or respond to customer inquiries.",
+      description: "No active communication channels are configured. Operator AI cannot receive or respond to customer inquiries.",
       severity: "critical",
       suggestedFix: "Connect at least one channel (website widget, WhatsApp, or phone).",
       automationAvailable: false,

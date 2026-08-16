@@ -33,8 +33,8 @@ export default async function SetupPage() {
   return (
     <div className="space-y-space-6 animate-fade-in w-full max-w-4xl mx-auto">
       <PageTitle 
-        title="AI Receptionist Setup" 
-        description="Follow this intelligent wizard to fully train and deploy your AI receptionist."
+        title="Operator AI Setup" 
+        description="Follow this intelligent wizard to fully train and deploy Operator AI for your business."
       />
       <SetupWizard state={setupState} />
     </div>

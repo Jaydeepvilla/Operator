@@ -324,7 +324,7 @@ export function AgencyClientsClient({ initialClients }: { initialClients: any[] 
           </div>
           <CardTitle className="text-title-lg ">No Client Workspaces Mapped</CardTitle>
           <CardDescription className="text-body-sm mt-space-1 max-w-sm">
-            Deploy your first client workspace to start reselling AI Receptionists under your white-labeled agency brand.
+            Deploy your first client workspace to start reselling Operator AI under your white-labeled agency brand.
           </CardDescription>
         </Card>
       ) : (

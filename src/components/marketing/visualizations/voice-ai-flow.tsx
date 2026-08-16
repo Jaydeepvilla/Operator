@@ -166,7 +166,7 @@ export function VoiceAiFlow() {
           <p className="text-[11px] text-[hsl(var(--foreground)/0.6)] leading-normal max-w-2xl transition-all duration-300 font-medium">
             {activeStep
               ? activeStep.desc
-              : "Hover over any stage above to trace how real-time calls are ingested, transcribed, and structured by the AI receptionist in milliseconds."}
+              : "Hover over any stage above to trace how real-time calls are ingested, transcribed, and structured by Operator Voice AI in milliseconds."}
           </p>
         </div>
 

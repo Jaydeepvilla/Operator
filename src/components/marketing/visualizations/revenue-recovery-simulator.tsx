@@ -341,7 +341,7 @@ export function ROISimulatorSection() {
  Ready to stop the leak?
  </p>
  <p className="text-body-sm text-muted-foreground leading-relaxed">
- Deploy your AI receptionist in under 30 minutes. No hardware. No long-term contracts.
+ Deploy Operator AI in under 30 minutes. No hardware. No long-term contracts.
  </p>
  </div>
  <div className="relative z-10 flex flex-col sm:flex-row items-center gap-space-3 mt-space-6 w-full">

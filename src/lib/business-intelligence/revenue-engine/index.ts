@@ -34,7 +34,7 @@ function detectPricingGaps(state: BusinessState): RevenueOpportunity[] {
       description: "No services are listed. Customers cannot inquire about or book anything, blocking all potential revenue.",
       type: "pricing",
       severity: "critical",
-      businessImpact: "Without services, no revenue can flow through the AI Receptionist",
+      businessImpact: "Without services, no revenue can flow through Operator AI",
       estimatedEffort: "quick",
       actionText: "Add Services",
       actionHref: "/services",

@@ -8,6 +8,7 @@ import { DashboardPreview } from"@/components/marketing/visualizations/dashboard
 import { ProductSimulation } from"@/components/marketing/visualizations/product-simulation";
 import { InteractiveIndustryExplorer } from"@/components/marketing/visualizations/industry-explorer";
 import { ROISimulatorSection } from"@/components/marketing/visualizations/revenue-recovery-simulator";
+import { SessionAwareCta } from "@/components/marketing/session-aware-cta";
 import {
  ArrowRight,
  Check,
@@ -27,26 +28,26 @@ import {
 } from"lucide-react";
 import { Button } from"@/components/shared/button";
 export const metadata = {
- title:"Operator — Never Miss Another Customer | 24/7 AI Receptionist",
+ title: "Operator — Never Miss Another Customer | 24/7 Operator AI",
  description:
  "Operator answers every call, books every appointment, and qualifies every lead — 24/7, in under 2 seconds. Built for dental, medical, salons, law firms, and service businesses.",
 };
 /* ── Trust Metrics (shown in hero) ─────────────────────────────────── */
 const TRUST_METRICS = [
- { value:"+40%", label:"Revenue increase"},
- { value:"95%", label:"Lead capture rate"},
- { value:"94%", label:"Calendar fill rate"},
- { value:"<2s", label:"Response time"},
+ { value: "+40%", label: "Revenue increase" },
+ { value: "95%", label: "Lead capture rate" },
+ { value: "94%", label: "Calendar fill rate" },
+ { value: "<2s", label: "Response time" },
 ];
 /* ── Social Proof Ticker Items ─────────────────────────────────────── */
 const TICKER_ITEMS = [
- { metric:"+40%", text:"revenue increase — Bright Smile Dental"},
- { metric:"95%", text:"lead capture rate — Okonkwo Law Group"},
- { metric:"94%", text:"calendar utilization — Luxe Skin & Beauty"},
- { metric:"2s", text:"average response time — Verified"},
- { metric:"500+", text:"service businesses trust Operator"},
- { metric:"24/7", text:"always-on receptionist coverage"},
- { metric:"EHR/CRM", text:"native calendar integrations"},
+ { metric: "+40%", text: "revenue increase — Bright Smile Dental" },
+ { metric: "95%", text: "lead capture rate — Okonkwo Law Group" },
+ { metric: "94%", text: "calendar utilization — Luxe Skin & Beauty" },
+ { metric: "2s", text: "average response time — Verified" },
+ { metric: "500+", text: "service businesses trust Operator" },
+ { metric: "24/7", text: "always-on Operator AI coverage" },
+ { metric: "EHR/CRM", text: "native calendar integrations" },
 ];
 /* ── Pain Points ───────────────────────────────────────────────────── */
 const PAIN_STATS = [
@@ -587,7 +588,7 @@ export default async function HomePage() {
  <span className="text-primary">We make it super easy.</span>
  </h2>
  <p className="text-muted-foreground text-body-md max-w-xl mx-auto leading-relaxed">
- Connect your business, train your custom receptionist, and
+ Connect your business, train your custom Operator AI, and
  launch. You will be set up in under 30 minutes.
  </p>
  </div>
@@ -651,7 +652,7 @@ export default async function HomePage() {
  </h3>
  <p className="text-body-sm text-muted-foreground leading-relaxed mb-space-6">
  Paste your website link, upload instruction PDFs, or list
- custom FAQs. Operator converts them into receptionist
+ custom FAQs. Operator converts them into business
  knowledge instantly.
  </p>
  </div>
@@ -669,7 +670,7 @@ export default async function HomePage() {
  </div>
  </div>
  <Button className="w-full bg-foreground py-space-2 text-center text-caption text-background font-normal hover:opacity-90 transition-all select-none cursor-pointer">
- Train Receptionist ✦
+ Train Operator AI ✦
  </Button>
  </div>
  </div>
@@ -684,7 +685,7 @@ export default async function HomePage() {
  Review & Go Live
  </h3>
  <p className="text-body-sm text-muted-foreground leading-relaxed mb-space-6">
- Test your AI receptionist live in a simulation chat/call
+ Test Operator AI live in a simulation chat/call
  sandbox, tune the voice style, and activate 24/7 client
  coverage.
  </p>
@@ -710,7 +711,7 @@ export default async function HomePage() {
  <span className="text-success-500 font-semibold font-mono">
  ✓
  </span>{""}
- Direct Forwarding Set (Forward to Rohan)
+ Direct Forwarding Set (Forward to Staff)
  </li>
  <li className="flex items-center gap-space-2 text-foreground/80">
  <span className="text-success-500 font-semibold font-mono">
@@ -720,7 +721,7 @@ export default async function HomePage() {
  </li>
  </ul>
  <div className="radius-md bg-success-500/10 border border-success-500/20 py-space-1.5 text-center text-caption text-success-500 font-semibold font-mono uppercase mt-space-2 select-none text-caption">
- ● Operator Receptionist Live
+ ● Operator AI Live
  </div>
  </div>
  </div>
@@ -901,11 +902,13 @@ export default async function HomePage() {
  it today.
  </p>
  <div className="flex flex-col sm:flex-row items-center justify-center gap-space-4 mb-space-6">
- <Button asChild variant="default" size="lg" className="cursor-pointer">
- <Link href="/sign-up">
- Start your free trial <ArrowRight className="h-4 w-4"/>
- </Link>
- </Button>
+ <SessionAwareCta
+ signedInText="Go to Dashboard"
+ signedOutText="Start your free trial"
+ signedOutHref="/sign-up"
+ variant="default"
+ size="lg"
+ />
  <Button asChild variant="outline" size="lg" className="cursor-pointer">
  <Link href="/demo">
  Book a live demo <ArrowRight className="h-3.5 w-3.5"/>

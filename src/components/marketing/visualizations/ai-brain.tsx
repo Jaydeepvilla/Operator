@@ -122,8 +122,8 @@ export function AiBrain() {
  </div>
  <p className="text-body-sm text-foreground">AI Brain Core</p>
  <p className="text-caption text-muted-foreground leading-relaxed">
- Hover over the network modules on the left to read detailed descriptions of how the AI Receptionist structures business data, triages requests, and automates calendar workflows.
- </p>
+  Hover over the network modules on the left to read detailed descriptions of how Operator AI structures business data, triages requests, and automates calendar workflows.
+  </p>
  </div>
           }
  </div>

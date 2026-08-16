@@ -2,14 +2,15 @@ import { ScrollReveal } from "@/components/motion/scroll-reveal";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/shared/button";
+import { SessionAwareCta } from "@/components/marketing/session-aware-cta";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 import { ArrowRight, Shield, Lock, Database, Eye, Server, FileText, Check, Mail, Clock, Key, Globe, Activity } from "lucide-react";
 import { NativeA } from "@/components/shared/native";
 
 export const metadata: Metadata = {
-  title: "Security | Operator— Enterprise Data Protection",
-  description: "Operatoris built on enterprise-grade security architecture. SOC2-ready, end-to-end encryption, multi-tenant isolation, and GDPR compliance.",
+  title: "Security | Operator — Enterprise Data Protection",
+  description: "Operator is built on enterprise-grade security architecture. SOC2-ready, end-to-end encryption, multi-tenant isolation, and GDPR compliance.",
 };
 
 const SECURITY_SECTIONS = [
@@ -121,7 +122,7 @@ export default function SecurityPage() {
               <span className="text-primary">Zero compromises.</span>
             </h1>
             <p className="mx-auto max-w-2xl text-title-lg text-muted-foreground leading-relaxed mb-space-10">
-              Your customers share sensitive information with your AI receptionist — medical needs, legal matters, financial questions. We protect that data with enterprise-grade security at every layer.
+              Your customers share sensitive information with Operator AI — medical needs, legal matters, financial questions. We protect that data with enterprise-grade security at every layer.
             </p>
 
             {/* Quick trust badges */}
@@ -283,9 +284,13 @@ export default function SecurityPage() {
               <Button asChild size="lg" className="w-full sm:w-auto">
                 <Link href="/contact">Talk to Security Team <ArrowRight className="h-4 w-4" /></Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-                <Link href="/sign-up">Start Free Trial</Link>
-              </Button>
+              <SessionAwareCta
+                signedInText="Go to Dashboard"
+                signedOutText="Start Free Trial"
+                signedOutHref="/sign-up"
+                variant="outline"
+                size="lg"
+              />
             </div>
           </div>
         

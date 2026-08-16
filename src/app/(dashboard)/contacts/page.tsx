@@ -300,7 +300,7 @@ export default function ContactsPage() {
  <div>
  <p className="text-caption font-semibold text-foreground">No contacts yet</p>
  <p className="text-caption text-muted-foreground/70 mt-space-1 leading-relaxed">
- Contacts appear automatically when someone messages your AI receptionist, books an appointment, or calls your business number.
+ Contacts appear automatically when someone messages Operator AI, books an appointment, or calls your business number.
  </p>
  </div>
  <p className="text-caption text-muted-foreground/50 italic">

@@ -264,7 +264,7 @@ export function AgencyBrandingClient({ initialBranding }: { initialBranding: any
  )}
  </div>
  <h3 className="text-title-lg text-foreground">{branding.platformName}</h3>
- <p className="text-caption text-muted-foreground">Sign in to manage your AI Receptionist</p>
+ <p className="text-caption text-muted-foreground">Sign in to manage your AI workspace</p>
  </div>
 
  <div className="space-y-space-3 text-left">

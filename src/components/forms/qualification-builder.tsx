@@ -539,7 +539,7 @@ export function QualificationBuilder({ initialQuestions }: Props) {
  :"Add Qualification Step"}
  </DialogTitle>
  <DialogDescription className="text-caption text-muted-foreground/55 mt-space-0.5">
- The AI Receptionist asks questions in configured sequence.
+ Operator AI asks questions in configured sequence.
  </DialogDescription>
  </div>
  </div>

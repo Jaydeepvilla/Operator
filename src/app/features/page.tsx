@@ -6,6 +6,7 @@ import Link from "next/link";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 import { Button } from "@/components/shared/button";
+import { SessionAwareCta } from "@/components/marketing/session-aware-cta";
 import { NativeA, NativeImg, NativeButton } from "@/components/shared/native";
 import {
  ArrowRight,
@@ -132,7 +133,7 @@ const TOUR_STEPS: TourStep[] = [
  {
  title: "Operator Answers",
  label: "AI Greeting",
- desc: "AI receptionist picks up within 1 second, answering questions with natural voice.",
+ desc: "Operator AI picks up within 1 second, answering questions with natural voice.",
  icon: <Mic className="h-4 w-4" />
  },
  {
@@ -569,7 +570,7 @@ export default function FeaturesPage() {
  <div className="h-8 flex items-center justify-start mb-space-4">
  <Mic className="h-6 w-6 text-primary" />
  </div>
- <h3 className="text-title-md font-bold text-foreground mb-space-2">Voice AI Receptionist</h3>
+ <h3 className="text-title-md font-bold text-foreground mb-space-2">Operator Voice AI</h3>
  <p className="text-caption text-muted-foreground leading-relaxed mb-space-6">
  Answer inbound calls instantly on your number. Handles complex customer queries, verifies limits, and books appointments automatically using natural conversation.
  </p>
@@ -1029,7 +1030,7 @@ export default function FeaturesPage() {
  <div>
  <h3 className="text-title-md font-bold text-foreground mb-space-2">Agency & White Label</h3>
  <p className="text-caption text-muted-foreground leading-relaxed mb-space-6">
- Resell AI receptionists under your own brand identity. Configure custom domains, set custom client pricing structures, manage reseller invoicing pipelines, and customize dashboards.
+ Resell Operator AI workspaces under your own brand identity. Configure custom domains, set custom client pricing structures, manage reseller invoicing pipelines, and customize dashboards.
  </p>
  </div>
 
@@ -1199,14 +1200,16 @@ export default function FeaturesPage() {
  your front desk <span className="text-primary">live?</span>
  </h2>
  <p className="text-muted-foreground text-body-md mb-space-8 max-w-xl mx-auto leading-relaxed">
- Set up your AI receptionist in 30 minutes. No complex setups or coding background required.
+ Set up Operator AI in 30 minutes. No complex setups or coding background required.
  </p>
  <div className="flex flex-col sm:flex-row gap-space-4 justify-center">
- <Button asChild variant="default" size="lg">
- <Link href="/sign-up">
- Start Free Trial <ArrowRight className="h-4 w-4" />
- </Link>
- </Button>
+ <SessionAwareCta
+ signedInText="Go to Dashboard"
+ signedOutText="Start Free Trial"
+ signedOutHref="/sign-up"
+ variant="default"
+ size="lg"
+ />
  <Button asChild variant="outline" size="lg">
  <Link href="/pricing">
  View Pricing Schedules

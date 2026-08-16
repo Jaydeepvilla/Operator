@@ -1,6 +1,7 @@
 import type { Metadata } from"next";
 import Link from"next/link";
 import { Button } from "@/components/shared/button";
+import { SessionAwareCta } from "@/components/marketing/session-aware-cta";
 import { MarketingNav } from"@/components/marketing/nav";
 import { MarketingFooter } from"@/components/marketing/footer";
 import { ArrowRight, Check, Heart, Zap, Globe, Shield, Users, Target } from"lucide-react";
@@ -99,7 +100,7 @@ export default function AboutPage() {
  To give every service business — regardless of size, budget, or technical skill — access to the same AI-powered customer experience that was previously only available to enterprise companies with million-dollar technology budgets.
  </p>
  <p className="text-muted-foreground leading-relaxed text-body-md mt-space-4">
- A dental clinic in Lagos should have the same 24/7 AI receptionist as a hospital chain. A solo lawyer in Mumbai should never miss a lead because they were in court.
+ A dental clinic in Lagos should have the same 24/7 Operator AI as a hospital chain. A solo lawyer in Mumbai should never miss a lead because they were in court.
  </p>
  </div>
  <div className="radius-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/65 p-space-8">
@@ -111,7 +112,7 @@ export default function AboutPage() {
  A world where no service business ever loses a customer to a missed call, a slow response, or an after-hours inquiry that goes unanswered.
  </p>
  <p className="text-muted-foreground leading-relaxed text-body-md mt-space-4">
- Where the AI receptionist is as common and essential as a point-of-sale terminal — invisible infrastructure that powers every customer interaction, automatically, everywhere.
+ Where Operator AI is as common and essential as a point-of-sale terminal — invisible infrastructure that powers every customer interaction, automatically, everywhere.
  </p>
  </div>
  </div>
@@ -145,7 +146,7 @@ export default function AboutPage() {
  The tools available were either too expensive (enterprise chatbot platforms at $2,000+/month), too complex (requiring a developer to set up), or too simple (FAQ bots that couldn't book appointments or handle real conversations).
  </p>
  <p className="text-foreground/80">
- So we built Operator. A complete AI receptionist that any business owner can deploy in 30 minutes, for the price of a part-time employee's daily rate.
+ So we built Operator. A complete Operator AI platform that any business owner can deploy in 30 minutes, for the price of a part-time employee's daily rate.
  </p>
  </div>
  </div>
@@ -307,14 +308,17 @@ export default function AboutPage() {
  <br />
  Ready to be part of the <span className="text-primary">story?</span>
  </h2>
- <p className="text-muted-foreground text-title-lg mb-space-8">Start your AI receptionist today. Free for 14 days.</p>
+ <p className="text-muted-foreground text-title-lg mb-space-8">Start your Operator AI workspace today. Free for 14 days.</p>
  <div className="flex flex-col sm:flex-row gap-space-4 justify-center">
- <Button asChild size="lg" className="w-full sm:w-auto">
-  <Link href="/sign-up">Start free trial <ArrowRight className="h-4 w-4"/></Link>
-  </Button>
-  <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-  <Link href="/contact">Talk to Us</Link>
-  </Button>
+ <SessionAwareCta
+ signedInText="Go to Dashboard"
+ signedOutText="Start free trial"
+ signedOutHref="/sign-up"
+ size="lg"
+ />
+ <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+ <Link href="/contact">Talk to Us</Link>
+ </Button>
  </div>
  </div>
  </section>

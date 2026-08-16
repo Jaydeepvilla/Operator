@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
         // Twilio Media Streams Connect XML
         xmlResponse = `
           <Response>
-            <Say>Thank you for calling. Connecting you to our AI Receptionist.</Say>
+            <Say>Thank you for calling. Connecting you to Operator AI.</Say>
             <Connect>
               <Stream url="${protocol}://${host}/api/webhooks/voice/stream">
                 <Parameter name="organizationId" value="${orgId}" />

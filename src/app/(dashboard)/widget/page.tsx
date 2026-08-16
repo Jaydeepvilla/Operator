@@ -363,7 +363,7 @@ export default function WidgetSettingsPage() {
  </div>
  <CardTitle className="text-body-sm font-semibold text-foreground mt-space-4">Allowed Whitelist Domains</CardTitle>
  <CardDescription className="text-caption text-muted-foreground mt-space-1">
- Restrict which websites can embed your AI receptionist to prevent theft or unauthorized access.
+ Restrict which websites can embed Operator AI to prevent theft or unauthorized access.
  </CardDescription>
  </CardHeader>
  <div className="p-space-6 pt-space-5 space-y-space-4 bg-transparent">

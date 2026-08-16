@@ -489,7 +489,7 @@ const HEADLINES = [
   },
   {
     headline: "Never Miss Another Appointment or Lead",
-    sub: "Our AI receptionist answers calls 24/7, qualifies inquiries, and syncs directly with your calendar.",
+    sub: "Operator AI answers calls 24/7, qualifies inquiries, and syncs directly with your calendar.",
   },
   {
     headline: "Automate Your Entire Client Journey",

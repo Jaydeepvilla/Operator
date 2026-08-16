@@ -8,7 +8,7 @@ export function checkCancellationPolicy(state: RecommendationState): Recommendat
     recommendations.push({
       id: "appointment-missing-booking-rules",
       title: "Missing Booking & Cancellation Rules",
-      description: "You have no booking rules configured. The AI Receptionist needs rules to manage appointments.",
+      description: "You have no booking rules configured. Operator AI needs rules to manage appointments.",
       primaryCtaText: "Configure Rules",
       primaryCtaHref: "/settings/appointments",
       estimatedTimeMinutes: 5,
@@ -48,7 +48,7 @@ export function checkCancellationPolicy(state: RecommendationState): Recommendat
     recommendations.push({
       id: "appointment-missing-no-show-policy",
       title: "Missing No-Show Policy",
-      description: "You haven't defined a no-show policy or penalty. The AI Receptionist needs to know how to handle customers who don't show up.",
+      description: "You haven't defined a no-show policy or penalty. Operator AI needs to know how to handle customers who don't show up.",
       primaryCtaText: "Configure Policy",
       primaryCtaHref: "/settings/appointments",
       estimatedTimeMinutes: 5,

@@ -8,6 +8,7 @@ import { MarketingNav } from"@/components/marketing/nav";
 import { MarketingFooter } from"@/components/marketing/footer";
 import { Check, X, ArrowRight, ChevronRight, Shield, Building2 } from"lucide-react";
 import { Button } from"@/components/shared/button";
+import { SessionAwareCta } from "@/components/marketing/session-aware-cta";
 import { NativeTable } from "@/components/shared/native";
 import { cn } from "@/components/shared/utils";
 
@@ -405,9 +406,12 @@ export default function PricingPage() {
  Ready to <span className="text-primary">get started?</span>
  </h2>
  <p className="text-muted-foreground text-title-lg mb-space-8">Start your 14-day free trial today. Full access. No credit card required.</p>
- <Button asChild size="lg">
-  <Link href="/sign-up">Start free trial <ArrowRight className="h-4 w-4"/></Link>
-</Button>
+ <SessionAwareCta
+    signedInText="Go to Dashboard"
+    signedOutText="Start free trial"
+    signedOutHref="/sign-up"
+    size="lg"
+  />
  </div>
  
 </ScrollReveal>

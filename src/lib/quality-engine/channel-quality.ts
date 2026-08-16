@@ -42,11 +42,11 @@ export function calculateChannelQuality(state: BusinessState): QualityScoreResul
   }
 
   const formula = "Score = 40% (Web Widget Active) + 30% (SMS Active) + 30% (WhatsApp Active)";
-  let whyLow = "Your AI receptionist is not connected to enough communication channels to receive customer queries.";
+  let whyLow = "Operator AI is not connected to enough communication channels to receive customer queries.";
   if (score === 100) {
-    whyLow = "Excellent! Your AI receptionist is connected to all active channels.";
+    whyLow = "Excellent! Operator AI is connected to all active channels.";
   } else if (score >= 70) {
-    whyLow = "Your receptionist is active on primary channels, but adding more options increases customer outreach.";
+    whyLow = "Operator AI is active on primary channels, but adding more options increases customer outreach.";
   }
 
   return {

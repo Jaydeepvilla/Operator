@@ -212,7 +212,7 @@ export default function ChannelsPage() {
  <div className="relative z-10">
  <PageTitle
  title="Channels"
- description="Where your AI receptionist talks to customers. Connect WhatsApp, SMS, email, or your website."
+ description="Where Operator AI talks to customers. Connect WhatsApp, SMS, email, or your website."
  className="mb-0"
  />
  </div>

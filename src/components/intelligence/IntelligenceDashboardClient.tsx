@@ -328,7 +328,7 @@ export function IntelligenceDashboardClient({
           </div>
           <div className="space-y-space-4">
             <p className="text-body-md font-medium text-foreground/90 leading-relaxed max-w-none">
-              "This week, your AI receptionist handled <span className="text-primary font-bold">{conversationsCount}</span> conversations.{" "}
+              "This week, Operator AI handled <span className="text-primary font-bold">{conversationsCount}</span> conversations.{" "}
               <span className="font-semibold text-foreground">{activeBlockersText}</span>{" "}
               Fixing outstanding booking and reminder configuration could increase appointments by up to{" "}
               <span className="text-emerald-500 font-bold">{increasePercentage}%</span>.{" "}

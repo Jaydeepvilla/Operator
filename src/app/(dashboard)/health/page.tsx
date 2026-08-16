@@ -36,8 +36,8 @@ import { PageTitle } from "@/components/shared/page-title";
 import { HealthDashboardClient } from "@/components/health/health-dashboard-client";
 
 export const metadata = {
-  title: "AI Command Center | Receptionist Intelligence",
-  description: "Real-time analysis of your AI Receptionist's capabilities, active blocker issues, and operational health.",
+  title: "AI Command Center | Operator",
+  description: "Real-time analysis of Operator AI's capabilities, active blocker issues, and operational health.",
 };
 
 export default async function HealthDashboardPage() {
@@ -163,7 +163,7 @@ export default async function HealthDashboardPage() {
     <div className="space-y-space-6 animate-fade-in w-full pb-space-10">
       <PageTitle 
         title="AI Command Center" 
-        description="Monitor capabilities, connected channels, and prioritized improvement vectors for your AI Receptionist."
+        description="Monitor capabilities, connected channels, and prioritized improvement vectors for Operator AI."
       />
 
       <HealthDashboardClient 

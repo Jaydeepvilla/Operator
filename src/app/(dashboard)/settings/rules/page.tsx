@@ -6,7 +6,7 @@ import { RulesSettingsClient } from "./rules-settings-client";
 
 export const metadata = {
   title: "Human Handoff Escalation Rules | Settings",
-  description: "Define criteria and triggers for when the AI receptionist should escalate calls to human staff.",
+  description: "Define criteria and triggers for when Operator AI should escalate conversations to staff.",
 };
 
 export default async function EscalationRulesPage() {
@@ -38,7 +38,7 @@ export default async function EscalationRulesPage() {
     <div className="space-y-space-6 animate-fade-in w-full pb-space-12">
       <PageTitle
         title="Human Handoff Escalation Rules"
-        description="Determine when the AI receptionist should automatically flag a conversation for human assistance."
+        description="Determine when Operator AI should automatically transfer a conversation to your team."
       />
 
       <RulesSettingsClient initialRules={rules} />

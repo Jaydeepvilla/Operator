@@ -494,7 +494,7 @@ export function BusinessSettingsForm({ settings, connections = [], bookingRules 
  <div>
  <h4 className="text-caption font-semibold text-foreground">Languages Supported</h4>
  <p className="text-caption text-muted-foreground/65 mt-space-0.5">
- Select which spoken languages your AI receptionist should answer in.
+ Select which spoken languages Operator AI should answer in.
  </p>
  </div>
  </div>
@@ -820,7 +820,7 @@ export function BusinessSettingsForm({ settings, connections = [], bookingRules 
  <div>
  <h4 className="text-caption font-semibold text-foreground">Calendar Integrations</h4>
  <p className="text-caption text-muted-foreground/65 mt-space-0.5">
- Sync the AI Receptionist scheduling engine with external calendars to prevent double bookings.
+ Sync the Operator AI scheduling engine with external calendars to prevent double bookings.
  </p>
  </div>
  </div>

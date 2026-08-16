@@ -109,11 +109,11 @@ export async function runWeeklyReview(
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function generateHeadline(completed: number, healthScore: number, issues: number): string {
-  if (healthScore >= 80 && issues === 0) return "Excellent Week — Your AI Receptionist Is Operating at Peak Performance";
+  if (healthScore >= 80 && issues === 0) return "Excellent Week — Operator AI Is Operating at Peak Performance";
   if (completed > 3) return `Strong Progress — ${completed} Improvements Made This Week`;
   if (issues >= 5) return "Action Required — Several Critical Issues Need Attention";
   if (completed > 0) return `Good Progress — ${completed} Improvement${completed > 1 ? "s" : ""} Completed This Week`;
-  return "Weekly Review — Review Your AI Receptionist's Current Status";
+  return "Weekly Review — Review Operator AI's Current Status";
 }
 
 function generateSummary(
@@ -126,7 +126,7 @@ function generateSummary(
   const parts: string[] = [];
 
   parts.push(
-    `Your AI Receptionist setup is ${progress}% complete with an overall health score of ${health.overallScore}/100 (${health.overallStatus}).`
+    `Operator AI setup is ${progress}% complete with an overall health score of ${health.overallScore}/100 (${health.overallStatus}).`
   );
 
   if (completed > 0) {

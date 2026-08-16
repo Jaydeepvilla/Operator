@@ -29,7 +29,7 @@ import { PageTitle } from "@/components/shared/page-title";
 import { IntelligenceDashboardClient } from "@/components/intelligence";
 
 export const metadata = {
-  title: "AI Executive Command Center | AI Receptionist",
+  title: "AI Executive Command Center | Operator",
   description: "Executive AI Command Center: Real-time decision metrics, AI summary review, key action recommendations, and business health matrix.",
 };
 

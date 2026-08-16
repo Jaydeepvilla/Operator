@@ -22,10 +22,10 @@ const RELEASES = [
   version: "v1.4.0",
   date: "June 21, 2025",
   type: "major",
-  title: "Voice AI Receptionist — General Availability",
+  title: "Operator Voice AI — General Availability",
   summary: "After 6 months of beta testing with 50+ businesses, Voice AI is now available to all plans.",
   changes: [
-  { type: "feature", text: "Voice AI Receptionist — answer real phone calls with natural AI conversation" },
+  { type: "feature", text: "Operator Voice AI — answer real phone calls with natural AI conversation" },
   { type: "feature", text: "Outbound call capability for follow-ups and appointment reminders" },
   { type: "feature", text: "Real-time call transcription with intent tagging" },
   { type: "feature", text: "Call recording with automatic summarization" },
