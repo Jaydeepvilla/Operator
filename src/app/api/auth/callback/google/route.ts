@@ -14,6 +14,7 @@ import { eq } from "drizzle-orm";
 import { createSession } from "@/lib/auth/session";
 import { auditService } from "@/server/services/audit";
 import crypto from "crypto";
+import { getGoogleOAuthConfig } from "@/lib/auth/google-config";
 
 function getAppUrl(request: NextRequest): string {
   if (process.env.NEXT_PUBLIC_APP_URL) {
@@ -55,8 +56,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Exchange OAuth code for access token
-    const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const { clientId, clientSecret } = getGoogleOAuthConfig();
     const redirectUri = `${appUrl}/api/auth/callback/google`;
 
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {

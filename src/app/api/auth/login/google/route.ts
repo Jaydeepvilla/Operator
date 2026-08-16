@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import crypto from "crypto";
+import { getGoogleOAuthConfig } from "@/lib/auth/google-config";
 
 function getAppUrl(request: NextRequest): string {
   if (process.env.NEXT_PUBLIC_APP_URL) {
@@ -13,10 +14,10 @@ function getAppUrl(request: NextRequest): string {
 
 export async function GET(request: NextRequest) {
   try {
-    const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    const { clientId } = getGoogleOAuthConfig();
 
     if (!clientId) {
-      console.error("[OAuth] Missing GOOGLE_CLIENT_ID environment variable.");
+      console.error("[OAuth] Missing GOOGLE_CLIENT_ID configuration.");
       return NextResponse.json({ error: "Google OAuth is not configured on the server." }, { status: 500 });
     }
 
