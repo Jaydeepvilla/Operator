@@ -14,10 +14,10 @@ const isRemoteDb =
   connectionString.includes("supabase.co") ||
   connectionString.includes("aws.connect.psdb.cloud");
 
-// Disable prepared statements for CockroachDB/pgBouncer compatibility
+// Disable prepared statements for CockroachDB/pgBouncer/Neon compatibility
 const pgOptions = {
-  max: 10,
-  idle_timeout: 20,
+  max: isRemoteDb ? 3 : 10,
+  idle_timeout: 10,
   connect_timeout: 10,
   ssl: isRemoteDb ? { rejectUnauthorized: false } : undefined,
   prepare: false, // Disable prepared statements
