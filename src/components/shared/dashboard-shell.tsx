@@ -207,12 +207,12 @@ export function DashboardShell({
             </button>
           )}
         </div>
-        {/* Scrollable Nav */}
-        <ScrollArea className="flex flex-col flex-1 min-h-0" horizontal={false}>
+        {/* Scrollable Nav — Clean fit without visible scrollbar */}
+        <div className="flex flex-col flex-1 min-h-0 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div
             className={cn(
-              "flex flex-col gap-space-0 py-space-3",
-              collapsed ? "px-space-1" : "px-space-3"
+              "flex flex-col gap-0 py-1.5",
+              collapsed ? "px-1" : "px-2"
             )}
           >
             <SidebarNavGroup title="Home" links={HOME_LINKS} />
@@ -221,12 +221,12 @@ export function DashboardShell({
 
             {isAgency && (
               <>
-                <div className="h-px bg-[hsl(var(--foreground)/0.06)] my-space-2 mx-space-3" />
+                <div className="h-px bg-[hsl(var(--foreground)/0.06)] my-1.5 mx-2" />
                 <SidebarNavGroup title="Agency" links={AGENCY_LINKS} />
               </>
             )}
           </div>
-        </ScrollArea>
+        </div>
         {/* User Footer */}
         <div className="border-t border-[hsl(var(--foreground)/0.06)] p-space-3 shrink-0">
           <div

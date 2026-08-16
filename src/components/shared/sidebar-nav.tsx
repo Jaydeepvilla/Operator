@@ -93,12 +93,12 @@ export function SidebarNavGroup({ title, links }: SidebarGroupProps) {
       <nav className="space-y-space-0" aria-label={title}>
         {/* Section title — hidden when collapsed, show divider instead */}
         {isCollapsed ? (
-          <div className="h-px bg-[hsl(var(--sidebar-border))] my-space-2 mx-space-2" />
+          <div className="h-px bg-[hsl(var(--sidebar-border))] my-1.5 mx-2" />
         ) : (
           <AnimatePresence>
             <m.p 
               {...fade}
-              className="px-space-3 pb-space-1 pt-space-3 text-caption uppercase tracking-widest text-[hsl(var(--sidebar-section-label))] font-normal select-none" 
+              className="px-2.5 pb-1 pt-2.5 text-[10px] uppercase tracking-widest text-[hsl(var(--sidebar-section-label))] font-semibold select-none" 
               aria-hidden="true"
             >
               {title}
@@ -122,12 +122,12 @@ export function SidebarNavGroup({ title, links }: SidebarGroupProps) {
               href={link.href}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex items-center radius-md transition-all duration-150 group relative select-none w-full",
+                "flex items-center radius-md transition-all duration-150 group relative select-none w-full my-0.5",
                 isCollapsed
-                  ? "justify-center mx-space-1 px-space-0 py-space-2"
-                  : "gap-space-2 px-space-3 py-space-2",
+                  ? "justify-center mx-1 px-0 py-1.5"
+                  : "gap-2.5 px-2.5 py-1.5",
                 isActive
-                  ? "bg-[hsl(var(--sidebar-item-active-bg))] text-[hsl(var(--sidebar-item-active-fg))] font-medium"
+                  ? "bg-[hsl(var(--sidebar-item-active-bg))] text-[hsl(var(--sidebar-item-active-fg))] font-medium shadow-xs"
                   : "text-[hsl(var(--sidebar-item-fg))] hover:bg-[hsl(var(--sidebar-item-hover-bg))] hover:text-foreground active:bg-[hsl(var(--sidebar-item-active-bg))]",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring)/0.3)] focus-visible:ring-inset"
               )}
