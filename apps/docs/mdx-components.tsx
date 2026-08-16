@@ -1,4 +1,4 @@
-import type { MDXComponents } from 'mdx/types';
+import type { ComponentType, ReactNode } from 'react';
 import defaultComponents from 'fumadocs-ui/mdx';
 import { Callout } from 'fumadocs-ui/components/callout';
 import { TypeTable } from 'fumadocs-ui/components/type-table';
@@ -10,7 +10,9 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 import { ImageZoom } from 'fumadocs-ui/components/image-zoom';
 import { Heading } from 'fumadocs-ui/components/heading';
 
-export function useMDXComponents(components: MDXComponents): MDXComponents {
+export type MDXComponents = Record<string, ComponentType<any> | ((props: any) => ReactNode) | any>;
+
+export function useMDXComponents(components?: MDXComponents): MDXComponents {
   return {
     ...defaultComponents,
     Callout,
