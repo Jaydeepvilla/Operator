@@ -15,7 +15,7 @@ import { VerificationStatus } from "@/server/services/verification/types";
 export default async function DashboardPage() {
   const { org } = await checkUserOrganization();
   const activeOrg = org || {
-    id: "org_default_active",
+    id: "00000000-0000-0000-0000-000000000000",
     name: "My Business",
     industry: "Other",
     verificationStatus: "verified",
