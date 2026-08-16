@@ -38,9 +38,8 @@ function VerifyEmailContent() {
         if (result.success) {
           setSuccess(true);
           setTimeout(() => {
-            router.push("/dashboard");
-            router.refresh();
-          }, 2500);
+            window.location.href = "/dashboard";
+          }, 2000);
         } else {
           setErrorMsg(result.error || "The verification link is invalid or has expired.");
         }

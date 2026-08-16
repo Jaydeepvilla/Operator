@@ -272,9 +272,8 @@ export function SignInForm() {
       if (result.success) {
         setIsSuccess(true);
         setTimeout(() => {
-          router.push("/dashboard");
-          router.refresh();
-        }, 600);
+          window.location.href = "/dashboard";
+        }, 400);
       } else {
         setErrorMsg(result.error || "Invalid email or password.");
         if (result.code === "USER_NOT_FOUND") setUserNotFound(true);
@@ -561,11 +560,10 @@ export function SignUpForm() {
       if (result.success) {
         if (result.requiresVerification) {
           const devParams = result.devToken ? `&devToken=${result.devToken}` : "";
-          router.push(`/verify-email?email=${encodeURIComponent(email)}${devParams}`);
+          window.location.href = `/verify-email?email=${encodeURIComponent(email)}${devParams}`;
         } else {
-          router.push("/onboarding");
+          window.location.href = "/onboarding";
         }
-        router.refresh();
       } else {
         setErrorMsg(result.error || "Failed to create account.");
       }
