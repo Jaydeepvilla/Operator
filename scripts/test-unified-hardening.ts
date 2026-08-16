@@ -125,8 +125,8 @@ function runProductionHardeningSuite() {
   const orgState = "verified";
   const channelWhatsApp = "active";
   const channelVoice = "inactive";
-  const threadAlphaAutonomy = "paused";
-  const threadBetaAutonomy = "active";
+  const threadAlphaAutonomy: string = "paused";
+  const threadBetaAutonomy: string = "active";
 
   assert(orgState === "verified", "Organization verification remains intact");
   assert(channelWhatsApp === "active" && channelVoice === "inactive", "Channels maintain independent connection status");

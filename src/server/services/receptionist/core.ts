@@ -5,6 +5,7 @@ import {
   leadProfiles, 
   inboxThreads, 
   inboxParticipants, 
+  communicationChannels,
   channelMessages, 
   communicationLogs 
 } from "../../db/schema";
@@ -53,6 +54,27 @@ export class AiReceptionistCore {
           .where(eq(leadProfiles.id, leadProfileId));
       }
 
+      // Resolve communication channel ID
+      let channelRecord = await db.query.communicationChannels.findFirst({
+        where: and(
+          eq(communicationChannels.organizationId, organizationId),
+          eq(communicationChannels.type, channel)
+        ),
+      });
+
+      if (!channelRecord) {
+        const [newChannel] = await db
+          .insert(communicationChannels)
+          .values({
+            organizationId,
+            type: channel,
+            name: `${channel.toUpperCase()} Channel`,
+            status: "active",
+          })
+          .returning();
+        channelRecord = newChannel;
+      }
+
       // 2. Find or Create Active Conversation & Inbox Thread
       let conversationId = message.conversationId;
       let thread = conversationId 
@@ -89,6 +111,7 @@ export class AiReceptionistCore {
           .values({
             organizationId,
             conversationId: newConv.id,
+            channelId: channelRecord.id,
             status: "open",
             unreadCount: 1,
             aiAutonomy: "active",

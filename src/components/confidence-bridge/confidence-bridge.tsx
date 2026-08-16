@@ -66,7 +66,7 @@ export function ConfidenceBridge({
     setLoading(true);
     try {
       const res = await getVerificationScenariosAction(orgId);
-      if (res.success && res.scenarios) {
+      if (res.success && 'scenarios' in res && res.scenarios) {
         setScenarios(res.scenarios);
         setVerificationStatus(res.verificationStatus || "unverified");
       } else {
@@ -89,11 +89,12 @@ export function ConfidenceBridge({
     setError(null);
     try {
       const res = await runVerificationScenarioAction(scenarioId, orgId);
-      if (res.success && res.result) {
+      if (res.success && 'result' in res && res.result) {
+        const scenarioResult = res.result;
         setScenarios((prev) =>
-          prev.map((s) => (s.id === scenarioId ? { ...s, lastResult: res.result } : s))
+          prev.map((s) => (s.id === scenarioId ? { ...s, lastResult: scenarioResult } : s))
         );
-        if (res.updatedOverallStatus) {
+        if ('updatedOverallStatus' in res && res.updatedOverallStatus) {
           setVerificationStatus(res.updatedOverallStatus);
         }
       } else {
@@ -115,11 +116,12 @@ export function ConfidenceBridge({
       setCurrentStepIndex(i);
       setRunningScenarioId(s.id);
       const res = await runVerificationScenarioAction(s.id, orgId);
-      if (res.success && res.result) {
+      if (res.success && 'result' in res && res.result) {
+        const scenarioResult = res.result;
         setScenarios((prev) =>
-          prev.map((item) => (item.id === s.id ? { ...item, lastResult: res.result } : item))
+          prev.map((item) => (item.id === s.id ? { ...item, lastResult: scenarioResult } : item))
         );
-        if (res.updatedOverallStatus) {
+        if ('updatedOverallStatus' in res && res.updatedOverallStatus) {
           setVerificationStatus(res.updatedOverallStatus);
         }
       }

@@ -144,10 +144,18 @@ export const availabilityService = {
           const connections = await calendarRepository.listConnections(organizationId);
           const staffConn = connections.find((c) => c.staffMemberId === staff.id && c.syncStatus === "active");
           if (staffConn) {
-            const provider = providerRegistry.get(staffConn.provider);
+            const provider = providerRegistry.getProvider(staffConn.provider);
             const dayStart = new Date(year, month - 1, day, 0, 0, 0);
             const dayEnd = new Date(year, month - 1, day, 23, 59, 59);
-            externalBusyPeriods = await provider.getFreeBusy(staffConn.accessToken, dayStart, dayEnd);
+            const busyList = await provider.getBusyPeriods(
+              staffConn.accessToken,
+              staffConn.refreshToken,
+              staffConn.expiresAt,
+              staffConn.externalCalendarId,
+              dayStart,
+              dayEnd
+            );
+            externalBusyPeriods = busyList.map((b) => ({ start: b.start, end: b.end }));
           }
         } catch (e) {
           // Fallback
