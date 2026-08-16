@@ -2,18 +2,23 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString =
+  process.env.DATABASE_URL ||
+  "postgres://postgres:postgres@127.0.0.1:5432/nexx_receptionist";
 
-if (!connectionString && process.env.NODE_ENV === "production") {
-  throw new Error("DATABASE_URL environment variable is missing");
-}
+const isRemoteDb =
+  connectionString.includes("sslmode=require") ||
+  connectionString.includes("cockroachlabs.cloud") ||
+  connectionString.includes("neon.tech") ||
+  connectionString.includes("supabase.co") ||
+  connectionString.includes("aws.connect.psdb.cloud");
 
-// Disable prepared statements for CockroachDB compatibility
+// Disable prepared statements for CockroachDB/pgBouncer compatibility
 const pgOptions = {
   max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
-  ssl: { rejectUnauthorized: false },
+  ssl: isRemoteDb ? { rejectUnauthorized: false } : undefined,
   prepare: false, // Disable prepared statements
 };
 
@@ -25,13 +30,10 @@ declare global {
 let client;
 
 if (process.env.NODE_ENV === "production") {
-  client = postgres(connectionString!, pgOptions);
+  client = postgres(connectionString, pgOptions);
 } else {
   if (!global.globalClient) {
-    global.globalClient = postgres(
-      connectionString || "postgres://postgres:postgres@localhost:5432/nexx_receptionist",
-      pgOptions
-    );
+    global.globalClient = postgres(connectionString, pgOptions);
   }
   client = global.globalClient;
 }
