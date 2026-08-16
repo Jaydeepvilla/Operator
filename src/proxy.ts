@@ -52,11 +52,6 @@ export default function proxy(request: NextRequest) {
 
   // Bypass public routes
   if (isPublicRoute(pathname)) {
-    // If user is already logged in and tries to access sign-in/up, redirect to dashboard
-    const hasSession = request.cookies.has("session_token");
-    if (hasSession && (pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up"))) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
     return NextResponse.next();
   }
 
