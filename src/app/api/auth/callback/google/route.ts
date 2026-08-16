@@ -15,6 +15,15 @@ import { createSession } from "@/lib/auth/session";
 import { auditService } from "@/server/services/audit";
 import crypto from "crypto";
 
+function getAppUrl(request: NextRequest): string {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
+  }
+  const proto = request.headers.get("x-forwarded-proto") || (request.nextUrl.protocol ? request.nextUrl.protocol.replace(":", "") : "http");
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || request.nextUrl.host || "localhost:3000";
+  return `${proto}://${host}`;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -22,7 +31,7 @@ export async function GET(request: NextRequest) {
     const state = searchParams.get("state");
     const errorParam = searchParams.get("error");
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = getAppUrl(request);
 
     // 1. Handle error parameters from Google OAuth
     if (errorParam) {

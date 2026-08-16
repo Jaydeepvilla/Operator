@@ -1,8 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 
-export async function GET() {
+function getAppUrl(request: NextRequest): string {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
+  }
+  const proto = request.headers.get("x-forwarded-proto") || (request.nextUrl.protocol ? request.nextUrl.protocol.replace(":", "") : "http");
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || request.nextUrl.host || "localhost:3000";
+  return `${proto}://${host}`;
+}
+
+export async function GET(request: NextRequest) {
   try {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     if (!clientId) {
@@ -10,7 +19,7 @@ export async function GET() {
       return NextResponse.json({ error: "Google OAuth is not configured on the server." }, { status: 500 });
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = getAppUrl(request);
     const redirectUri = `${appUrl}/api/auth/callback/google`;
 
     // 1. Generate a secure random CSRF token

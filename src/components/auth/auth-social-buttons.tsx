@@ -58,6 +58,7 @@ export function SocialButton({
   provider,
   isLoading = false,
   className,
+  onClick,
   ...props
 }: SocialButtonProps) {
   const config = {
@@ -65,42 +66,67 @@ export function SocialButton({
       Icon: GoogleIcon,
       label: "Continue with Google",
       iconClass: "h-[18px] w-[18px]",
+      href: "/api/auth/login/google",
     },
     apple: {
       Icon: AppleIcon,
       label: "Continue with Apple",
       iconClass: "h-[17px] w-[17px]",
+      href: undefined,
     },
   };
 
-  const { Icon, label, iconClass } = config[provider];
+  const { Icon, label, iconClass, href } = config[provider];
+
+  const buttonClasses = cn(
+    // Layout
+    "relative flex w-full items-center justify-center gap-space-3 cursor-pointer",
+    // Size
+    "h-space-10 px-space-4",
+    // Type
+    "text-body-sm font-semibold tracking-tight text-foreground no-underline",
+    // Surface
+    "bg-bg-layer-1 border border-border-default radius-full",
+    // Hover — lift + border brightens
+    "hover:-translate-y-px hover:bg-foreground/[0.03] hover:border-border-hover",
+    // Active — press down
+    "active:scale-[0.98] active:translate-y-0",
+    // Motion
+    "transition-all duration-fast",
+    // Focus ring
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    // Disabled
+    "disabled:opacity-50 disabled:pointer-events-none",
+    className
+  );
+
+  if (href && !onClick) {
+    return (
+      <a
+        href={href}
+        aria-label={label}
+        className={buttonClasses}
+      >
+        {isLoading ? (
+          <div
+            className="h-4 w-4 rounded-full border-2 border-foreground/20 border-t-foreground/60 animate-spin"
+            aria-hidden="true"
+          />
+        ) : (
+          <Icon className={cn("shrink-0", iconClass)} />
+        )}
+        <span>{label}</span>
+      </a>
+    );
+  }
 
   return (
     <button
       type="button"
       disabled={isLoading}
       aria-label={label}
-      className={cn(
-        // Layout
-        "relative flex w-full items-center justify-center gap-space-3",
-        // Size
-        "h-space-10 px-space-4",
-        // Type
-        "text-body-sm font-semibold tracking-tight text-foreground",
-        // Surface
-        "bg-bg-layer-1 border border-border-default radius-full",
-        // Hover — lift + border brightens
-        "hover:-translate-y-px hover:bg-foreground/[0.03] hover:border-border-hover",
-        // Active — press down
-        "active:scale-[0.98] active:translate-y-0",
-        // Motion
-        "transition-all duration-fast",
-        // Focus ring
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        // Disabled
-        "disabled:opacity-50 disabled:pointer-events-none",
-        className
-      )}
+      onClick={onClick || (() => { if (href) window.location.href = href; })}
+      className={buttonClasses}
       {...props}
     >
       {isLoading ? (
