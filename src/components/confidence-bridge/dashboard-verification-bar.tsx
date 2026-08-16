@@ -5,6 +5,8 @@ import { ShieldAlert, Play, CheckCircle2, X } from "lucide-react";
 import { VerificationStatus } from "@/server/services/verification/types";
 import { ConfidenceBridge } from "./confidence-bridge";
 
+import { useRouter } from "next/navigation";
+
 interface DashboardVerificationBarProps {
   businessName: string;
   verificationStatus: VerificationStatus;
@@ -16,10 +18,12 @@ export function DashboardVerificationBar({
   verificationStatus,
   orgId,
 }: DashboardVerificationBarProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = React.useState(false);
   const [dismissed, setDismissed] = React.useState(false);
+  const [isLocallyVerified, setIsLocallyVerified] = React.useState(false);
 
-  if (verificationStatus === "verified" || dismissed) {
+  if (verificationStatus === "verified" || isLocallyVerified || dismissed) {
     return null;
   }
 
@@ -81,7 +85,11 @@ export function DashboardVerificationBar({
             <ConfidenceBridge
               businessName={businessName}
               orgId={orgId}
-              onFinish={() => setIsOpen(false)}
+              onFinish={() => {
+                setIsLocallyVerified(true);
+                setIsOpen(false);
+                router.refresh();
+              }}
             />
           </div>
         </div>

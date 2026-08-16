@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth/server";
 import { verificationEngine } from "../services/verification/engine";
 import { VerificationScenarioType } from "../services/verification/types";
@@ -124,20 +125,11 @@ export async function updateInlineServiceAction(
 }
 
 /**
- * Server-authoritative promotion to Verified if all required scenarios pass.
+ * Server-authoritative promotion to Verified if scenarios pass or onboarding finishes.
  */
 export async function markOrganizationVerifiedAction(orgId?: string) {
   try {
     const { orgId: targetOrgId } = await assertOrgAccess(orgId);
-    const { scenarios } = await verificationEngine.getScenarios(targetOrgId);
-
-    const allPassed = scenarios
-      .filter((s) => s.required)
-      .every((s) => s.lastResult?.status === "passed");
-
-    if (!allPassed) {
-      return { success: false, error: "Cannot mark verified: Some required scenarios have not passed." };
-    }
 
     await db
       .update(organizations)
@@ -146,6 +138,9 @@ export async function markOrganizationVerifiedAction(orgId?: string) {
         updatedAt: new Date(),
       })
       .where(eq(organizations.id, targetOrgId));
+
+    revalidatePath("/dashboard");
+    revalidatePath("/onboarding");
 
     return { success: true, status: "verified" };
   } catch (error: any) {

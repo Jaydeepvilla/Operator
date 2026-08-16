@@ -23,6 +23,7 @@ import { cn } from "@/components/shared/utils";
 import { Button } from "@/components/shared/button";
 import { useRouter } from "next/navigation";
 import { VoicePersonaCard } from "./voice-persona-card";
+import { markOrganizationVerifiedAction } from "@/server/actions/verification";
 
 interface ChannelActivationHubProps {
   businessName: string;
@@ -147,7 +148,14 @@ export function ChannelActivationHub({
           <Button
             size="lg"
             shape="pill"
-            onClick={onFinish ? onFinish : () => router.push("/dashboard")}
+            onClick={async () => {
+              await markOrganizationVerifiedAction(orgId);
+              if (onFinish) {
+                onFinish();
+              } else {
+                window.location.href = "/dashboard";
+              }
+            }}
             className="w-full sm:w-auto font-bold gap-space-2 shadow-lg shadow-primary/25 px-8"
           >
             <Rocket className="h-4 w-4" />
