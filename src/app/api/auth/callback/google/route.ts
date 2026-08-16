@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Exchange OAuth code for access token
-    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const redirectUri = `${appUrl}/api/auth/callback/google`;
 

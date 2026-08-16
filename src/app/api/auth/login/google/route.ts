@@ -13,7 +13,8 @@ function getAppUrl(request: NextRequest): string {
 
 export async function GET(request: NextRequest) {
   try {
-    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
     if (!clientId) {
       console.error("[OAuth] Missing GOOGLE_CLIENT_ID environment variable.");
       return NextResponse.json({ error: "Google OAuth is not configured on the server." }, { status: 500 });
