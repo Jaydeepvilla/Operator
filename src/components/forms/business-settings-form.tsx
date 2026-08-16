@@ -37,12 +37,7 @@ import {
   SelectValue } from
 "@/components/shared/select";
 import { saveBusinessHoursAction, saveGeneralSettingsAction } from "@/server/actions/settings";
-import {
-  connectCalendarAction,
-  disconnectCalendarAction,
-  saveBookingRulesAction,
-  getCalendarSyncLogsAction } from
-"@/server/actions/calendar";
+import { saveBookingRulesAction } from "@/server/actions/calendar";
 import { cn } from "@/components/shared/utils";
 import {
   Dialog,
@@ -65,14 +60,13 @@ interface BusinessSettingsFormProps {
     notificationPreferences: any;
     leadAssignmentRules: any;
   };
-  connections?: any[];
   bookingRules?: any;
 }
 
 const DAYS_OF_WEEK = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
-export function BusinessSettingsForm({ settings, connections = [], bookingRules }: BusinessSettingsFormProps) {
-  const [activeTab, setActiveTab] = React.useState<"hours" | "notifications" | "bookingRules" | "calendars">("hours");
+export function BusinessSettingsForm({ settings, bookingRules }: BusinessSettingsFormProps) {
+  const [activeTab, setActiveTab] = React.useState<"hours" | "notifications" | "bookingRules">("hours");
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveSuccess, setSaveSuccess] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
@@ -95,25 +89,8 @@ export function BusinessSettingsForm({ settings, connections = [], bookingRules 
     settings.notificationPreferences?.channels || ["email"]
   );
 
-  // Calendar Connections States
-  const [connectionsList, setConnectionsList] = React.useState<any[]>(connections);
-  const [isConnecting, setIsConnecting] = React.useState(false);
-  const [connectionEmail, setConnectionEmail] = React.useState("");
-  const [connectingProvider, setConnectingProvider] = React.useState<string | null>(null);
-  const [showConnectModal, setShowConnectModal] = React.useState(false);
-  const [syncLogs, setSyncLogs] = React.useState<any[]>([]);
-  const [showLogsModal, setShowLogsModal] = React.useState(false);
-  const [selectedConnectionForLogs, setSelectedConnectionForLogs] = React.useState<any>(null);
-  const [isLoadingLogs, setIsLoadingLogs] = React.useState(false);
-
   // Booking Rules Local State
   const [rules, setRules] = React.useState({
-    minLeadTime: bookingRules?.minLeadTime ?? 2,
-    maxLookahead: bookingRules?.maxLookahead ?? 30,
-    defaultBufferBefore: bookingRules?.defaultBufferBefore ?? 0,
-    defaultBufferAfter: bookingRules?.defaultBufferAfter ?? 0,
-    allowRescheduling: bookingRules?.allowRescheduling ?? true,
-    allowCancellation: bookingRules?.allowCancellation ?? true,
     cancellationLeadTime: bookingRules?.cancellationLeadTime ?? 24
   });
 
@@ -228,112 +205,22 @@ export function BusinessSettingsForm({ settings, connections = [], bookingRules 
     }
   };
 
-  const handleConnectClick = (provider: string) => {
-    setConnectingProvider(provider);
-    setConnectionEmail("");
-    setShowConnectModal(true);
-  };
-
-  const onConnectSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!connectingProvider || !connectionEmail) return;
-
-    setIsConnecting(true);
-    setSaveError(null);
-
-    try {
-      const res = await connectCalendarAction({
-        provider: connectingProvider,
-        email: connectionEmail,
-        accessToken: `mock_access_token_${Math.random().toString(36).substring(7)}`,
-        refreshToken: `mock_refresh_token_${Math.random().toString(36).substring(7)}`,
-        expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
-        externalCalendarId: "primary"
-      });
-
-      if (res.success && res.connection) {
-        setConnectionsList((prev) => {
-          const filtered = prev.filter(
-            (c) => !(c.provider.toLowerCase() === connectingProvider.toLowerCase() && c.staffMemberId === null)
-          );
-          return [...filtered, res.connection];
-        });
-        setShowConnectModal(false);
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
-      } else {
-        setSaveError(res.error || "Failed to connect calendar");
-      }
-    } catch (err: any) {
-      setSaveError(err?.message || "An unexpected error occurred");
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const handleDisconnect = async (connectionId: string) => {
-    setIsSaving(true);
-    setSaveError(null);
-    try {
-      const res = await disconnectCalendarAction(connectionId);
-      if (res.success) {
-        setConnectionsList((prev) => prev.filter((c) => c.id !== connectionId));
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
-      } else {
-        setSaveError(res.error || "Failed to disconnect calendar");
-      }
-    } catch (err: any) {
-      setSaveError(err?.message || "An unexpected error occurred");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleViewLogs = async (conn: any) => {
-    setSelectedConnectionForLogs(conn);
-    setIsLoadingLogs(true);
-    setSyncLogs([]);
-    setShowLogsModal(true);
-    try {
-      const res = await getCalendarSyncLogsAction(conn.id);
-      if (res.success && res.logs) {
-        setSyncLogs(res.logs);
-      } else {
-        setSaveError(res.error || "Failed to load sync logs");
-      }
-    } catch (err: any) {
-      setSaveError(err?.message || "An unexpected error occurred");
-    } finally {
-      setIsLoadingLogs(false);
-    }
-  };
-
-  const getConnectedProvider = (providerName: string) => {
-    return connectionsList.find(
-      (c) => c.provider.toLowerCase() === providerName.toLowerCase() && c.staffMemberId === null
-    );
-  };
-
   return (
     <div className="space-y-space-4 w-full">
- {/* shadcn Tabs — brand color active, underline style */}
- <Tabs value={activeTab} onValueChange={(val: any) => { setActiveTab(val); setSaveSuccess(false); }} className="w-full mb-space-4">
-  <TabsList className="w-full h-auto p-1 bg-[hsl(var(--foreground)/0.04)] border border-[hsl(var(--foreground)/0.06)] rounded-lg grid grid-cols-2 sm:grid-cols-4 gap-1 mb-space-4">
-  <TabsTrigger value="hours" className="gap-1.5 text-xs font-medium">
-  <Clock className="h-3.5 w-3.5 shrink-0" /> Hours &amp; Holidays
-  </TabsTrigger>
-  <TabsTrigger value="notifications" className="gap-1.5 text-xs font-medium">
-  <Bell className="h-3.5 w-3.5 shrink-0" /> Languages &amp; Rules
-  </TabsTrigger>
-  <TabsTrigger value="bookingRules" className="gap-1.5 text-xs font-medium">
-  <Settings2 className="h-3.5 w-3.5 shrink-0" /> Booking Rules
-  </TabsTrigger>
-  <TabsTrigger value="calendars" className="gap-1.5 text-xs font-medium">
-  <CalendarDays className="h-3.5 w-3.5 shrink-0" /> Calendars
-  </TabsTrigger>
-  </TabsList>
-  </Tabs>
+      {/* shadcn Tabs — brand color active, underline style */}
+      <Tabs value={activeTab} onValueChange={(val: any) => { setActiveTab(val); setSaveSuccess(false); }} className="w-full mb-space-4">
+        <TabsList className="w-full h-auto p-1 bg-[hsl(var(--foreground)/0.04)] border border-[hsl(var(--foreground)/0.06)] rounded-lg grid grid-cols-1 sm:grid-cols-3 gap-1 mb-space-4">
+          <TabsTrigger value="hours" className="gap-1.5 text-xs font-medium">
+            <Clock className="h-3.5 w-3.5 shrink-0" /> Hours &amp; Holidays
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="gap-1.5 text-xs font-medium">
+            <Bell className="h-3.5 w-3.5 shrink-0" /> Languages &amp; Rules
+          </TabsTrigger>
+          <TabsTrigger value="bookingRules" className="gap-1.5 text-xs font-medium">
+            <Settings2 className="h-3.5 w-3.5 shrink-0" /> Booking Rules
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
  {saveSuccess &&
       <Badge variant="success" className="animate-fade-in">
@@ -803,237 +690,11 @@ export function BusinessSettingsForm({ settings, connections = [], bookingRules 
  <Save className="h-3.5 w-3.5" /> Save Booking Rules
  </>
               }
- </Button>
- </div>
- </div>
- </form>
-      }
-
- {/* Tab content 4: Calendar Connections */}
- {activeTab === "calendars" &&
-      <div className="space-y-space-4 animate-fade-in">
- <div className="bg-card border border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft-">
- <div className="p-space-4 border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)] shrink-0 flex items-center gap-space-3">
- <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
- <CalendarDays className="h-4 w-4 text-primary" />
- </div>
- <div>
- <h4 className="text-caption font-semibold text-foreground">Calendar Integrations</h4>
- <p className="text-caption text-muted-foreground/65 mt-space-0.5">
- Sync the Operator AI scheduling engine with external calendars to prevent double bookings.
- </p>
- </div>
- </div>
-
- <div className="p-space-5 bg-[hsl(var(--foreground)/0.002)]">
- <div className="grid gap-space-3.5">
- {[
-              {
-                name: "Google Calendar",
-                slug: "google",
-                desc: "Sync slots automatically with personal or workspace Google Calendar events.",
-                color: "border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)]",
-                iconColor: "text-blue-500"
-              },
-              {
-                name: "Microsoft Outlook",
-                slug: "outlook",
-                desc: "Connect Office 365 or Outlook calendar for real-time schedule matching.",
-                color: "border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)]",
-                iconColor: "text-indigo-500"
-              },
-              {
-                name: "Calendly",
-                slug: "calendly",
-                desc: "Integrate with external Calendly event routing definitions.",
-                color: "border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)]",
-                iconColor: "text-sky-500"
-              }].
-              map((prov) => {
-                const connection = getConnectedProvider(prov.slug);
-                return (
-                  <div
-                    key={prov.slug}
-                    className={cn(
-                      "flex flex-col md:flex-row md:items-center justify-between p-space-4 radius-lg border transition-all gap-space-4 rounded-xl",
-                      prov.color,
-                      connection && "border-emerald-500/15 bg-emerald-500/3"
-                    )}>
-                    
- <div className="flex items-start gap-space-3">
- <div className="p-space-2 radius-md bg-background border border-[hsl(var(--foreground)/0.06)] shrink-0 mt-space-0.5">
- <CalendarDays className={cn("h-4 w-4", prov.iconColor)} />
- </div>
- <div className="space-y-space-0.5">
- <h4 className="text-caption font-semibold text-foreground flex items-center gap-space-2">
- {prov.name}
- {connection &&
-                          <Badge variant="success">
- Connected
- </Badge>
-                          }
- </h4>
- <p className="text-caption text-muted-foreground/80 leading-relaxed max-w-xl">
- {prov.desc}
- </p>
- {connection &&
-                        <p className="text-caption text-foreground/70 font-mono mt-space-1 bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.05)] w-fit px-space-1.5 py-space-0.5 rounded-md">
- Sync email: {connection.email}
- </p>
-                        }
- </div>
- </div>
-
- <div className="flex items-center gap-space-2 shrink-0 self-end md:self-center">
- {connection ?
-                      <div className="flex items-center shrink-0 rounded-lg border border-[hsl(var(--foreground)/0.07)] bg-[hsl(var(--foreground)/0.015)] overflow-hidden">
- <Button type="button" size="sm" className="px-space-3.5 text-caption text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.04)] border-r border-[hsl(var(--foreground)/0.07)] gap-space-1" onClick={() => handleViewLogs(connection)}>
-                          
- <FileText className="h-3.5 w-3.5 text-muted-foreground/60" /> Logs
- </Button>
- <Button type="button" size="sm" variant="ghost" className="text-error-500 hover:text-error-600 hover:bg-error-500/5 gap-space-1 px-space-3" onClick={() => handleDisconnect(connection.id)}>
-                           
- <Trash2 className="h-3.5 w-3.5 opacity-60" /> Disconnect
- </Button>
- </div> :
-
-                      <Button type="button" onClick={() => handleConnectClick(prov.slug)}
-                      className="h-8 text-caption font-semibold text-white cursor-pointer gap-space-1.5 rounded-lg px-space-4 bg-primary hover:bg-primary-hover">
- <Link2 className="h-3.5 w-3.5" /> Integrate
- </Button>
-                      }
- </div>
- </div>);
-
-              })}
- </div>
- </div>
- </div>
- </div>
-      }
-
- {/* Connect Mock Calendar Modal */}
- <Dialog open={showConnectModal} onOpenChange={setShowConnectModal}>
- <DialogContent className="max-w-md bg-card border border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden">
- <form onSubmit={onConnectSubmit}>
- <div className="px-space-5 pt-space-5 pb-space-4 border-b border-[hsl(var(--foreground)/0.05)]">
- <div className="flex items-center gap-space-2.5">
- <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
- <CalendarDays className="h-4 w-4 text-primary" />
- </div>
- <div>
- <DialogTitle className="text-body-sm font-semibold text-foreground capitalize">Connect {connectingProvider}</DialogTitle>
- <DialogDescription className="text-caption text-muted-foreground/55 mt-space-0.5">
- Sync slots to prevent double appointment bookings.
- </DialogDescription>
- </div>
- </div>
- </div>
-
- <div className="px-space-5 py-space-4 space-y-space-4">
- <div className="space-y-space-1.5">
- <Label htmlFor="calendarEmail" className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/55">Account Email Address</Label>
- <div className="relative">
- <Globe className="absolute left-space-3 top-space-3 h-3.5 w-3.5 text-muted-foreground/50 z-10" />
- <Input
-                    id="calendarEmail"
-                    type="email"
-                    required
-                    placeholder="e.g. workspace@company.com"
-                    value={connectionEmail}
-                    onChange={(e) => setConnectionEmail(e.target.value)}
-                    className="h-9.5 text-caption bg-background border-[hsl(var(--foreground)/0.08)] focus-visible:ring-primary/20 pl-space-9" />
-                  
- </div>
- </div>
- </div>
-
- <DialogFooter className="px-space-5 pb-space-5 pt-space-2 border-t border-[hsl(var(--foreground)/0.05)]">
- <Button type="button" variant="outline" onClick={() => setShowConnectModal(false)}
-              disabled={isConnecting}
-              className="h-9 text-caption font-semibold px-space-4 cursor-pointer rounded-lg">
-                
- Cancel
- </Button>
- <Button type="submit" disabled={isConnecting} className="text-caption px-space-5 text-white">
- {isConnecting ?
-                <>
- <Loader2 className="mr-space-1.5 h-3.5 w-3.5 animate-spin" /> Connecting...
- </> :
-
-                "Link Account"
-                }
- </Button>
- </DialogFooter>
- </form>
- </DialogContent>
- </Dialog>
-
- {/* View Sync Logs Modal */}
- <Dialog open={showLogsModal} onOpenChange={setShowLogsModal}>
- <DialogContent className="max-w-xl bg-card border border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden">
- <div className="px-space-5 pt-space-5 pb-space-4 border-b border-[hsl(var(--foreground)/0.05)]">
- <div className="flex items-center gap-space-2.5">
- <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
- <FileText className="h-4 w-4 text-primary" />
- </div>
- <div>
- <DialogTitle className="text-body-sm font-semibold text-foreground">Sync Action Logs</DialogTitle>
- <DialogDescription className="text-caption text-muted-foreground/55 mt-space-0.5">
- Latest automated sync logs for {selectedConnectionForLogs?.email}.
- </DialogDescription>
- </div>
- </div>
- </div>
-
- <ScrollArea className="px-space-5 py-space-4 space-y-space-3.5 max-h-72 pr-space-1 bg-[hsl(var(--foreground)/0.002)]" horizontal={false}>
-                   {isLoadingLogs ?
-                              <div className="flex flex-col items-center justify-center py-space-10 text-muted-foreground/60 text-caption gap-space-2">
-                   <RefreshCw className="h-4 w-4 animate-spin text-primary" />
-                   Retrieving synchronization audit logs...
-                   </div> :
-                              syncLogs.length === 0 ?
-                              <div className="text-caption text-muted-foreground/60 italic text-center py-space-10">
-                   No sync actions captured. Connection is waiting for sync queue items.
-                   </div> :
-
-                              <div className="space-y-space-2">
-                   {syncLogs.map((log) =>
-                                <Badge
-                                  key={log.id}>
-
-                                  
-                   <div className="space-y-space-1">
-                   <div className="flex items-center gap-space-2">
-                   <span className="capitalize font-semibold text-foreground/80">{log.status}</span>
-                   <span className="text-muted-foreground/50 text-caption">
-                   {new Date(log.syncTime).toLocaleString()}
-                   </span>
-                   </div>
-                   {log.details &&
-                                    <pre className="text-caption text-muted-foreground/80 whitespace-pre-wrap max-w-md font-mono mt-space-1 p-space-2 rounded-md bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--foreground)/0.04)]"><ScrollArea className="h-full w-full" vertical={false}>
-                                                      {JSON.stringify(log.details)}
-                                                      </ScrollArea></pre>
-                                    }
-                   </div>
-                   {log.status === "sync_success" || log.status === "sync_started" ?
-                                  <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0 mt-space-1" /> :
-
-                                  <span className="h-2 w-2 rounded-full bg-rose-500 shrink-0 mt-space-1" />
-                                  }
-                   </Badge>
-                                )}
-                   </div>
-                              }
-                   </ScrollArea>
-
- <div className="px-space-5 py-space-4 border-t border-[hsl(var(--foreground)/0.05)] flex justify-end">
- <Button type="button" onClick={() => setShowLogsModal(false)} className="h-9 text-caption font-semibold px-space-4 cursor-pointer">
- Close
- </Button>
- </div>
- </DialogContent>
- </Dialog>
- </div>);
-
+            </Button>
+          </div>
+        </div>
+      </form>
+      )}
+    </div>
+  );
 }

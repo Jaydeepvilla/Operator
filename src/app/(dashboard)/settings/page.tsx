@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getBusinessSettingsAction } from "@/server/actions/settings";
 import { checkUserOrganization } from "@/server/actions/onboarding";
 import { BusinessSettingsForm } from "@/components/forms/business-settings-form";
-import { getCalendarConnectionsAction, getBookingRulesAction } from "@/server/actions/calendar";
+import { getBookingRulesAction } from "@/server/actions/calendar";
 import { PageTitle } from "@/components/shared/page-title";
 
 export default async function SettingsPage() {
@@ -11,9 +11,8 @@ export default async function SettingsPage() {
     redirect("/onboarding");
   }
 
-  const [settingsRes, connectionsRes, rulesRes] = await Promise.all([
+  const [settingsRes, rulesRes] = await Promise.all([
     getBusinessSettingsAction(),
-    getCalendarConnectionsAction(),
     getBookingRulesAction(),
   ]);
 
@@ -48,7 +47,6 @@ export default async function SettingsPage() {
 
       <BusinessSettingsForm 
         settings={settingsMapped} 
-        connections={connectionsRes.success ? (connectionsRes.connections || []) : []}
         bookingRules={rulesRes.success ? rulesRes.rules : null}
       />
     </div>
