@@ -163,7 +163,7 @@ export default function ChangelogPage() {
 
       <main className="relative z-10">
         {/* Hero */}
-        <section className="container mx-auto max-w-3xl px-space-6 pt-space-28 pb-space-16 text-center">
+        <section className="container mx-auto max-w-5xl px-space-6 pt-32 pb-space-16 text-center">
           <Badge variant="soft" className="mb-space-6">
             <Sparkles className="h-3 w-3 text-primary" /> Product Changelog
           </Badge>
@@ -182,7 +182,7 @@ export default function ChangelogPage() {
         </section>
 
         {/* Filters */}
-        <section className="container mx-auto max-w-4xl px-space-6 pb-space-8">
+        <section className="container mx-auto max-w-5xl px-space-6 pb-space-8">
           <div className="flex flex-col sm:flex-row gap-space-3 mb-space-5">
             <div className="relative flex-1">
               <Search className="absolute left-space-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
@@ -209,7 +209,7 @@ export default function ChangelogPage() {
         </section>
 
         {/* Timeline */}
-        <section className="container mx-auto max-w-4xl px-space-6 pb-space-24">
+        <section className="container mx-auto max-w-5xl px-space-6 pb-space-24">
           <div className="relative">
             {/* Timeline line */}
             <div className="absolute left-space-2 top-space-3 bottom-space-0 w-px bg-[hsl(var(--foreground)/0.08)] hidden sm:block" />

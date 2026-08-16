@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
-    <section id={id} className="scroll-mt-space-20 mb-space-10 pb-space-10 border-b border-[hsl(var(--foreground)/0.06)] last:border-0">
-      <h2 className="text-title-lg  text-foreground mb-space-4">{title}</h2>
+    <section id={id} className="scroll-mt-28 mb-space-10 pb-space-10 border-b border-[hsl(var(--foreground)/0.06)] last:border-0">
+      <h2 className="text-title-lg text-foreground mb-space-4 font-semibold">{title}</h2>
       <div className="space-y-space-3 text-body-sm text-muted-foreground leading-relaxed">{children}</div>
     </section>
   );
@@ -24,16 +24,16 @@ export default function PrivacyPage() {
     <div className="relative flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
       <MarketingNav />
 
-      <main className="flex-1">
+      <main className="flex-1 pt-28 md:pt-32">
         {/* Header */}
-        <div className="border-b border-[hsl(var(--foreground)/0.06)] py-space-14">
-          <div className="mx-auto max-w-4xl px-space-6">
+        <div className="border-b border-[hsl(var(--foreground)/0.06)] pb-space-10">
+          <div className="mx-auto max-w-5xl px-space-6">
             <div className="flex items-center gap-space-2 text-caption text-muted-foreground mb-space-4">
               <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
               <span>›</span>
               <span>Privacy Policy</span>
             </div>
-            <h1 className="text-heading-lg  tracking-tight-md text-foreground mb-space-3">Privacy Policy</h1>
+            <h1 className="text-heading-xl tracking-tight-md text-foreground mb-space-3 font-semibold">Privacy Policy</h1>
             <p className="text-muted-foreground text-body-sm">Last updated: June 21, 2025 · Effective: June 21, 2025</p>
             <div className="mt-space-5 flex items-center gap-space-3 radius-lg border border-primary/20 bg-primary/[0.03] p-space-4 max-w-lg">
               <Shield className="h-5 w-5 text-primary shrink-0" />
@@ -43,12 +43,12 @@ export default function PrivacyPage() {
         </div>
 
         {/* TOC + Content */}
-        <div className="mx-auto max-w-6xl px-space-6 py-space-12">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-space-10">
+        <div className="mx-auto max-w-5xl px-space-6 py-space-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-8 items-start">
             {/* Table of Contents */}
-            <aside className="lg:col-span-1">
-              <div className="sticky top-space-20 radius-lg border border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.02)] p-space-5">
-                <p className="text-caption  uppercase tracking-wider text-muted-foreground mb-space-3">Contents</p>
+            <aside className="lg:col-span-4 sticky top-28 self-start">
+              <div className="radius-xl border border-border-muted bg-card/60 p-space-5 backdrop-blur-md max-h-[calc(100vh-9rem)] overflow-y-auto shadow-sm">
+                <p className="text-caption font-mono uppercase tracking-wider text-muted-foreground mb-space-3 font-bold">Contents</p>
                 <nav className="space-y-space-1">
                   {[
                     ["overview", "Overview"],
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
                     ["transfers", "International Transfers"],
                     ["contact", "Contact Us"],
                   ].map(([id, label]) => (
-                    <NativeA key={id} href={`#${id}`} className="block text-caption text-muted-foreground hover:text-foreground transition-colors py-space-1">
+                    <NativeA key={id} href={`#${id}`} className="block text-caption text-muted-foreground hover:text-foreground transition-colors py-space-1 hover:pl-space-1 transition-all">
                       {label}
                     </NativeA>
                   ))}
@@ -72,7 +72,7 @@ export default function PrivacyPage() {
             </aside>
 
             {/* Content */}
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-8">
               <Section id="overview" title="Overview">
                 <p>Operator Technologies (&quot;Operator&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) operates the Operatorplatform at nexx.ai. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.</p>
                 <p>By using our service, you agree to the collection and use of information in accordance with this policy. If you are using our service on behalf of a business or organization, you represent that you are authorized to agree to this policy on their behalf.</p>

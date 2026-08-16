@@ -132,7 +132,7 @@ export default function PricingPage() {
  <div className="absolute inset-space-0 dot-grid grid-fade-b pointer-events-none"/>
  <div className="absolute top-space-0 left-1/2 -translate-x-1/2 w-[var(--bg-blob)] h-[var(--bg-blob-h)] bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.08),transparent_70%)] pointer-events-none"/>
 
- <div className="relative mx-auto max-w-6xl px-space-6 pt-space-24 pb-space-16 text-center">
+ <div className="relative mx-auto max-w-5xl px-space-6 pt-32 pb-space-16 text-center">
  <p className="text-body-sm text-primary mb-space-4">Pricing</p>
  <h1 className="text-display-xl tracking-tight-xs leading-display text-foreground mb-space-5">
  Plans for every
@@ -180,7 +180,7 @@ export default function PricingPage() {
 </section>
 
  {/* Plan Cards */}
- <section className="mx-auto max-w-6xl px-space-6 pb-space-16">
+ <section className="mx-auto max-w-5xl px-space-6 pb-space-16">
 <ScrollReveal stagger>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-5">
@@ -248,7 +248,7 @@ export default function PricingPage() {
 </section>
 
  {/* Enterprise CTA */}
- <section className="mx-auto max-w-6xl px-space-6 pb-space-16">
+ <section className="mx-auto max-w-5xl px-space-6 pb-space-16">
 <ScrollReveal stagger>
 
  <div className="radius-xl border border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.02)] p-space-8 flex flex-col sm:flex-row items-center justify-between gap-space-6">
@@ -272,7 +272,7 @@ export default function PricingPage() {
 </section>
 
  {/* Full Feature Comparison Table */}
- <section className="mx-auto max-w-6xl px-space-6 pb-space-24">
+ <section className="mx-auto max-w-5xl px-space-6 pb-space-24">
 <ScrollReveal stagger>
 
  <div className="text-center mb-space-12">
@@ -332,7 +332,7 @@ export default function PricingPage() {
  <section className="border-t border-[hsl(var(--foreground)/0.06)] py-space-16">
 <ScrollReveal stagger>
 
- <div className="mx-auto max-w-6xl px-space-6">
+ <div className="mx-auto max-w-5xl px-space-6">
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-6">
  {[
  { title:"Enterprise Security", desc:"SOC2-ready, end-to-end encryption, multi-tenant data isolation"},

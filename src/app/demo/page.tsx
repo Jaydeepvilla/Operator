@@ -89,7 +89,7 @@ export default function DemoPage() {
           <div className="absolute inset-space-0 dot-grid grid-fade-b pointer-events-none" />
           <div className="absolute top-space-0 left-1/2 -translate-x-1/2 w-[var(--bg-blob)] h-[var(--bg-blob-h)] bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.08),transparent_70%)] pointer-events-none" />
 
-          <div className="relative mx-auto max-w-4xl px-space-6 pt-space-24 pb-space-16 text-center">
+          <div className="relative mx-auto max-w-4xl px-space-6 pt-32 pb-space-16 text-center">
             <p className="text-body-sm text-primary  mb-space-4">Live Product Demo</p>
             <h1 className="text-display-xl  tracking-tight-xs leading-display text-foreground mb-space-5">
               See Operator <span className="text-primary">live in action.</span>
@@ -109,7 +109,7 @@ export default function DemoPage() {
         </section>
 
         {/* Interactive Demo */}
-        <section className="mx-auto max-w-6xl px-space-6 pb-space-20">
+        <section className="mx-auto max-w-5xl px-space-6 pb-space-20">
           {/* Tab selector */}
           <Tabs value={activeTab} onValueChange={(val: any) => setActiveTab(val)} variant="pills" className="w-full mb-space-8">
           <TabsList className="flex flex-wrap justify-center gap-space-2 w-full bg-transparent border-none">

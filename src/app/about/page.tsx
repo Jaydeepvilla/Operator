@@ -61,7 +61,7 @@ export default function AboutPage() {
  <div className="absolute inset-space-0 dot-grid grid-fade-b pointer-events-none"/>
  <div className="absolute top-space-0 left-1/2 -translate-x-1/2 w-[var(--bg-blob)] h-[var(--bg-blob-h)] bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.08),transparent_70%)] pointer-events-none"/>
 
- <div className="relative mx-auto max-w-6xl px-space-6 pt-space-24 pb-space-16 text-center">
+ <div className="relative mx-auto max-w-5xl px-space-6 pt-32 pb-space-16 text-center">
  <p className="text-body-sm text-primary mb-space-4">Our story</p>
  <h1 className="text-display-xl tracking-tight-xs leading-display text-foreground mb-space-6">
  Built for the businesses
@@ -89,7 +89,7 @@ export default function AboutPage() {
 
  {/* Mission & Vision */}
  <section className="border-y border-[hsl(var(--foreground)/0.06)] py-space-20">
- <div className="mx-auto max-w-6xl px-space-6">
+ <div className="mx-auto max-w-5xl px-space-6">
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-space-8">
  <div className="radius-2xl border border-primary/20 bg-primary/[0.03] p-space-8">
  <div className="h-10 w-10 radius-lg bg-primary/10 text-primary flex items-center justify-center mb-space-5">
@@ -154,7 +154,7 @@ export default function AboutPage() {
 
  {/* Values */}
  <section className="py-space-20 border-y border-[hsl(var(--foreground)/0.06)]">
- <div className="mx-auto max-w-6xl px-space-6">
+ <div className="mx-auto max-w-5xl px-space-6">
  <div className="mb-space-16 text-center">
  <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border border-primary/20 bg-primary/5 mb-space-6">
  <span className="text-caption uppercase tracking-widest text-primary font-semibold">Our Values</span>
@@ -234,7 +234,7 @@ export default function AboutPage() {
 
  {/* Leadership */}
  <section className="py-space-20 border-y border-[hsl(var(--foreground)/0.06)]">
- <div className="mx-auto max-w-6xl px-space-6">
+ <div className="mx-auto max-w-5xl px-space-6">
  <div className="mb-space-16 text-center">
  <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border border-primary/20 bg-primary/5 mb-space-6">
  <span className="text-caption uppercase tracking-widest text-primary font-semibold">Leadership</span>

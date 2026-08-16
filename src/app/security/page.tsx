@@ -114,7 +114,7 @@ export default function SecurityPage() {
           <div className="absolute inset-space-0 dot-grid grid-fade-b pointer-events-none" />
           <div className="absolute top-space-0 left-1/2 -translate-x-1/2 w-[var(--bg-blob)] h-[var(--bg-blob-h)] bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.08),transparent_70%)] pointer-events-none" />
 
-          <div className="relative mx-auto max-w-6xl px-space-6 pt-space-24 pb-space-16 text-center">
+          <div className="relative mx-auto max-w-5xl px-space-6 pt-32 pb-space-16 text-center">
             <p className="text-body-sm text-primary  mb-space-4">Security Trust Center</p>
             <h1 className="text-display-xl  tracking-tight-xs leading-display text-foreground mb-space-5">
               Enterprise security.
@@ -155,7 +155,7 @@ export default function SecurityPage() {
 </section>
 
         {/* Security sections */}
-        <div className="mx-auto max-w-6xl px-space-6 pb-space-20 space-y-space-6">
+        <div className="mx-auto max-w-5xl px-space-6 pb-space-20 space-y-space-6">
           {SECURITY_SECTIONS.map((section) => (
             <section key={section.id} id={section.id} className="scroll-mt-space-20 radius-xl border border-[hsl(var(--foreground)/0.06)] overflow-hidden">
 <ScrollReveal stagger>
@@ -190,7 +190,7 @@ export default function SecurityPage() {
         <section className="border-y border-[hsl(var(--foreground)/0.06)] py-space-20">
 <ScrollReveal stagger>
 
-          <div className="mx-auto max-w-6xl px-space-6">
+          <div className="mx-auto max-w-5xl px-space-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-space-10 items-start">
               <div>
                 <p className="text-body-sm text-primary  mb-space-3">Responsible Disclosure</p>
@@ -244,7 +244,7 @@ export default function SecurityPage() {
         <section className="py-space-20">
 <ScrollReveal stagger>
 
-          <div className="mx-auto max-w-6xl px-space-6">
+          <div className="mx-auto max-w-5xl px-space-6">
             <div className="mb-space-12">
               <p className="text-body-sm text-primary  mb-space-3">Certifications</p>
               <h2 className="text-heading-lg  tracking-tight-md text-foreground">Planned certifications</h2>
