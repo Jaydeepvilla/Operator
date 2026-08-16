@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/client";
 import { Button } from "@/components/shared/button";
 import { ArrowRight, LayoutDashboard } from "lucide-react";
@@ -22,13 +23,14 @@ export function SessionAwareCta({
   signedInText = "Go to Dashboard",
   signedOutText = "Get started today",
   signedInHref = "/dashboard",
-  signedOutHref = "/sign-up",
+  signedOutHref = "/sign-in",
   variant = "default",
   size = "lg",
   className,
   showIcon = true,
 }: SessionAwareCtaProps) {
   const { user, isLoading } = useAuth();
+  const router = useRouter();
   const [isClient, setIsClient] = React.useState(false);
 
   React.useEffect(() => {
@@ -36,8 +38,17 @@ export function SessionAwareCta({
   }, []);
 
   const isAuthenticated = isClient && !isLoading && Boolean(user);
-  const href = isAuthenticated ? signedInHref : signedOutHref;
+  const targetHref = isAuthenticated ? signedInHref : signedOutHref;
   const label = isAuthenticated ? signedInText : signedOutText;
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    if (isAuthenticated) {
+      router.push(signedInHref);
+    } else {
+      router.push(signedOutHref);
+    }
+  };
 
   return (
     <Button
@@ -46,7 +57,11 @@ export function SessionAwareCta({
       size={size}
       className={cn("cursor-pointer w-full sm:w-auto", className)}
     >
-      <Link href={href} className="flex items-center justify-center gap-2">
+      <Link
+        href={targetHref}
+        onClick={handleClick}
+        className="flex items-center justify-center gap-2"
+      >
         <span>{label}</span>
         {showIcon && (
           isAuthenticated ? (
@@ -59,4 +74,5 @@ export function SessionAwareCta({
     </Button>
   );
 }
+
 

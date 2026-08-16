@@ -88,7 +88,7 @@ export function MarketingNav() {
    {/* Auth controls: show sign-in/up when signed out, dashboard+avatar when signed in */}
    <Show when="signed-out">
    <Button asChild size="sm">
-   <Link href="/sign-up" className="flex items-center gap-space-1">Get started <ArrowRight className="h-3.5 w-3.5"/></Link>
+   <Link href="/sign-in" className="flex items-center gap-space-1">Get started <ArrowRight className="h-3.5 w-3.5"/></Link>
    </Button>
    </Show>
 
@@ -142,7 +142,7 @@ export function MarketingNav() {
    <div className="flex flex-col gap-space-2">
     <Show when="signed-out">
     <Link
-    href="/sign-up"
+    href="/sign-in"
     onClick={() => setMobileOpen(false)}
     className={getButtonClasses('primary', 'filled', 'medium', 'block text-body-sm text-center')}
     >

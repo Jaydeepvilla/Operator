@@ -409,7 +409,7 @@ export default function PricingPage() {
  <SessionAwareCta
     signedInText="Go to Dashboard"
     signedOutText="Start free trial"
-    signedOutHref="/sign-up"
+    signedOutHref="/sign-in"
     size="lg"
   />
  </div>

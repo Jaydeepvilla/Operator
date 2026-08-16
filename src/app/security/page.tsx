@@ -287,7 +287,7 @@ export default function SecurityPage() {
               <SessionAwareCta
                 signedInText="Go to Dashboard"
                 signedOutText="Start Free Trial"
-                signedOutHref="/sign-up"
+                signedOutHref="/sign-in"
                 variant="outline"
                 size="lg"
               />

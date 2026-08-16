@@ -313,7 +313,7 @@ export default function AboutPage() {
  <SessionAwareCta
  signedInText="Go to Dashboard"
  signedOutText="Start free trial"
- signedOutHref="/sign-up"
+ signedOutHref="/sign-in"
  size="lg"
  />
  <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">

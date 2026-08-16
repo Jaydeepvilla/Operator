@@ -174,14 +174,11 @@ export default async function HomePage() {
  </p>
  {/* CTAs */}
  <div className="flex flex-col sm:flex-row items-center justify-center gap-space-4 mb-space-12 w-full">
- <SessionAwareCta
-   signedInText="Go to Dashboard"
-   signedOutText="Get started today"
-   signedInHref="/dashboard"
-   signedOutHref="/sign-up"
-   variant="default"
-   size="lg"
- />
+  <SessionAwareCta
+    signedInText="Go to Dashboard"
+    signedOutText="Get started today"
+    size="lg"
+  />
  <Button asChild variant="outline" size="lg" className="cursor-pointer w-full sm:w-auto">
    <Link href="/demo">
      Learn more
@@ -828,16 +825,14 @@ export default async function HomePage() {
  ))}
  </ul>
  </div>
- <SessionAwareCta
-   signedInText="Go to Dashboard"
-   signedOutText={plan.cta}
-   signedInHref="/dashboard"
-   signedOutHref="/sign-up"
-   variant={plan.highlight ? "default" : "outline"}
-   size="md"
-   className="w-full"
-   showIcon={false}
- />
+  <SessionAwareCta
+    signedInText="Go to Dashboard"
+    signedOutText={plan.cta}
+    variant={plan.highlight ? "default" : "outline"}
+    size="md"
+    className="w-full"
+    showIcon={false}
+  />
  </div>
  ))}
  </div>
@@ -898,13 +893,11 @@ export default async function HomePage() {
  it today.
  </p>
  <div className="flex flex-col sm:flex-row items-center justify-center gap-space-4 mb-space-6">
- <SessionAwareCta
- signedInText="Go to Dashboard"
- signedOutText="Start your free trial"
- signedOutHref="/sign-up"
- variant="default"
- size="lg"
- />
+  <SessionAwareCta
+    signedInText="Go to Dashboard"
+    signedOutText="Start your free trial"
+    size="lg"
+  />
  <Button asChild variant="outline" size="lg" className="cursor-pointer">
  <Link href="/demo">
  Book a live demo <ArrowRight className="h-3.5 w-3.5"/>

@@ -1206,7 +1206,7 @@ export default function FeaturesPage() {
  <SessionAwareCta
  signedInText="Go to Dashboard"
  signedOutText="Start Free Trial"
- signedOutHref="/sign-up"
+ signedOutHref="/sign-in"
  variant="default"
  size="lg"
  />
