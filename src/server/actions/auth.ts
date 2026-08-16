@@ -231,7 +231,28 @@ export async function registerAction(input: any) {
       await tx.insert(securitySettings).values({ userId });
     });
 
-    // 6. Generate verification token
+    // 6. If SMTP is not configured, auto-verify and create session directly
+    const isDirectAuth = !process.env.SMTP_USER;
+    if (isDirectAuth) {
+      await db.update(users).set({ isVerified: true }).where(eq(users.id, userId));
+      await createSession(userId, userAgent, ipAddress, true);
+
+      await auditService.log({
+        userId,
+        action: "registration_direct",
+        resource: "users",
+        resourceId: userId,
+        ipAddress,
+        userAgent,
+      });
+
+      return {
+        success: true,
+        requiresVerification: false,
+      };
+    }
+
+    // 7. Generate verification token
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
@@ -242,7 +263,7 @@ export async function registerAction(input: any) {
       expiresAt,
     });
 
-    // 7. Dispatch verification email
+    // 8. Dispatch verification email
     const subject = "Verify your email address - Operator AI";
     const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/verify-email?token=${token}`;
     const html = `
@@ -268,7 +289,7 @@ export async function registerAction(input: any) {
     return { 
       success: true, 
       requiresVerification: true,
-      devToken: !process.env.SMTP_USER ? token : undefined
+      devToken: token
     };
   } catch (error: any) {
     console.error("Register action error:", error);

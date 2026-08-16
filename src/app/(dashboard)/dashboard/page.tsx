@@ -95,7 +95,7 @@ export default async function DashboardPage() {
         <DashboardVerificationBar
           businessName={businessName}
           verificationStatus={verificationStatus}
-          orgId={org.id}
+          orgId={activeOrg.id}
         />
 
         {/* 1. Hero Widget: AI Daily Brief */}

@@ -17,13 +17,17 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
   const { hasOrg, org } = await checkUserOrganization();
 
   if (!hasOrg || !org) {
     redirect("/onboarding");
   }
-
-  const { userId } = await auth();
   let subscription: any = null;
   let membership: any = null;
   let notifications: any = [];

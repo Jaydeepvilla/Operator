@@ -15,7 +15,7 @@ import { Organization } from "../../lib/types";
 import { INDUSTRY_TEMPLATES, DEFAULT_BUSINESS_HOURS } from "../../lib/constants/templates";
 import { syncService } from "../services/sync";
 import { db } from "@/server/db";
-import { users } from "@/server/db/schema";
+import { users, organizations } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { createSession } from "@/lib/auth/session";
 import { userRepository } from "../repositories/user";
@@ -26,11 +26,15 @@ import { cookies } from "next/headers";
 export async function checkUserOrganization() {
   try {
     const { userId, orgId } = await auth();
+    if (!userId) {
+      return { hasOrg: false, org: null };
+    }
+
     const cookieStore = await cookies();
     const activeOrgCookie = cookieStore.get("active_org_id")?.value;
-
     const targetOrgId = orgId || activeOrgCookie;
 
+    // 1. If explicit org ID is present, fetch it
     if (targetOrgId) {
       try {
         const org = await organizationRepository.getById(targetOrgId);
@@ -38,70 +42,62 @@ export async function checkUserOrganization() {
           return { hasOrg: true, org };
         }
       } catch (e) {
-        // Fallback below
+        // Continue to membership check
       }
-
-      return {
-        hasOrg: true,
-        org: {
-          id: targetOrgId,
-          name: "My Business",
-          slug: "my-business",
-          industry: "Other",
-          timezone: "UTC",
-          verificationStatus: "verified",
-          verificationMetadata: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } as any,
-      };
     }
 
-    if (userId) {
-      try {
-        await syncLocalUser();
-        const userMemberships = await membershipRepository.getByUser(userId);
-        if (userMemberships.length > 0) {
-          const org = await organizationRepository.getById(userMemberships[0].organizationId);
-          if (org) {
-            return { hasOrg: true, org };
-          }
+    // 2. Lookup user's memberships
+    try {
+      await syncLocalUser();
+      const userMemberships = await membershipRepository.getByUser(userId);
+      if (userMemberships.length > 0) {
+        const org = await organizationRepository.getById(userMemberships[0].organizationId);
+        if (org) {
+          try {
+            cookieStore.set("active_org_id", org.id, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "lax",
+              path: "/",
+            });
+          } catch (e) {}
+          return { hasOrg: true, org };
         }
-      } catch (e) {
-        // Fallback
       }
+    } catch (e) {
+      // Continue to fallback check
     }
 
-    // Default fallback organization for seamless experience
-    return {
-      hasOrg: true,
-      org: {
-        id: "org_default_active",
-        name: "My Business",
-        slug: "my-business",
-        industry: "Other",
-        timezone: "UTC",
-        verificationStatus: "verified",
-        verificationMetadata: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as any,
-    };
+    // 3. Check for any active default organization in database to link demo users
+    try {
+      const allOrgs = await db.select().from(organizations).limit(1);
+      if (allOrgs.length > 0) {
+        const defaultOrg = allOrgs[0];
+        // Auto-link membership
+        await membershipRepository.create({
+          organizationId: defaultOrg.id,
+          userId,
+          role: "owner",
+        }).catch(() => {});
+
+        try {
+          cookieStore.set("active_org_id", defaultOrg.id, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+          });
+        } catch (e) {}
+
+        return { hasOrg: true, org: defaultOrg };
+      }
+    } catch (e) {
+      // DB lookup error
+    }
+
+    return { hasOrg: false, org: null };
   } catch (err) {
-    return {
-      hasOrg: true,
-      org: {
-        id: "org_default_active",
-        name: "My Business",
-        slug: "my-business",
-        industry: "Other",
-        timezone: "UTC",
-        verificationStatus: "verified",
-        verificationMetadata: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as any,
-    };
+    return { hasOrg: false, org: null };
   }
 }
 

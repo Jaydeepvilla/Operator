@@ -286,6 +286,29 @@ export function SignInForm() {
     }
   };
 
+  const handleDemoLogin = async (demoEmail: string, demoPass: string) => {
+    setEmail(demoEmail);
+    setPassword(demoPass);
+    setErrorMsg(null);
+    setIsLoading(true);
+    try {
+      const result = await loginAction({ email: demoEmail, password: demoPass, rememberMe: true });
+      if (result.success) {
+        setIsSuccess(true);
+        setTimeout(() => {
+          router.push("/dashboard");
+          router.refresh();
+        }, 500);
+      } else {
+        setErrorMsg(result.error || "Login failed.");
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || "An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -296,13 +319,36 @@ export function SignInForm() {
       )}
       style={{ animationDelay: "80ms", animationFillMode: "both" }}
     >
-      {/* ── Social login ─────────────────────────────────────────────── */}
-      <div className="space-y-space-3">
-        <AuthSocialButtons
-          disabled={isLoading || isSuccess}
-          onGoogleClick={handleGoogleClick}
-        />
+      {/* ── 1-Click Quick Demo Login ──────────────────────────────────── */}
+      <div className="p-space-3.5 rounded-xl border border-primary/20 bg-primary/5 space-y-space-2.5">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-bold tracking-wider uppercase text-primary flex items-center gap-1.5">
+            <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            1-Click Demo Login
+          </span>
+          <span className="text-[10px] text-muted-foreground">password: password123</span>
+        </div>
+        <div className="grid grid-cols-2 gap-space-2">
+          <button
+            type="button"
+            disabled={isLoading || isSuccess}
+            onClick={() => handleDemoLogin("admin@operator.ai", "password123")}
+            className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-background border border-border shadow-2xs hover:border-primary/50 hover:bg-primary/5 transition-all text-foreground cursor-pointer disabled:opacity-50"
+          >
+            <span>👤 Admin</span>
+          </button>
+          <button
+            type="button"
+            disabled={isLoading || isSuccess}
+            onClick={() => handleDemoLogin("demo@example.com", "password123")}
+            className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-background border border-border shadow-2xs hover:border-primary/50 hover:bg-primary/5 transition-all text-foreground cursor-pointer disabled:opacity-50"
+          >
+            <span>👔 Manager</span>
+          </button>
+        </div>
       </div>
+
+      <AuthDivider label="Or sign in with email" />
 
       {/* ── Error banner ─────────────────────────────────────────────── */}
       <AuthErrorBanner
