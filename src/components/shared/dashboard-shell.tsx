@@ -218,7 +218,6 @@ export function DashboardShell({
             <SidebarNavGroup title="Home" links={HOME_LINKS} />
             <SidebarNavGroup title="Customers" links={CUSTOMERS_LINKS} />
             <SidebarNavGroup title="Operator AI" links={AI_LINKS} />
-            <SidebarNavGroup title="Settings" links={SETTINGS_LINKS} />
 
             {isAgency && (
               <>
