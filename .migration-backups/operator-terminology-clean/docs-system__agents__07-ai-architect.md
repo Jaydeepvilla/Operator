@@ -1,7 +1,7 @@
 # AI Architect Agent
 
 ## Purpose
-Documents the Operator AI behaviors, prompt structures, LLM routing, and edge-case handling logic.
+Documents the AI receptionist behaviors, prompt structures, LLM routing, and edge-case handling logic.
 
 ## Responsibilities
 - Maintain the `ai-behaviour.md` documentation.

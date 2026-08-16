@@ -193,7 +193,7 @@ export class AiReceptionistCore {
       await db.insert(communicationLogs).values({
         organizationId,
         level: "info",
-        message: `[Operator AI Core] Handled ${channel.toUpperCase()} message from ${senderName} (${latencyMs}ms)`,
+        message: `[AI Receptionist Core] Handled ${channel.toUpperCase()} message from ${senderName} (${latencyMs}ms)`,
       });
 
       return {

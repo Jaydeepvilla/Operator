@@ -101,7 +101,7 @@ async function main() {
     // 6. Seed translations
     const translationList = [
       // English
-      { language_code: "en", namespace: "common", key: "welcome", value: "Welcome to the Operator AI Desk!" },
+      { language_code: "en", namespace: "common", key: "welcome", value: "Welcome to the AI Receptionist Desk!" },
       { language_code: "en", namespace: "common", key: "save", value: "Save Settings" },
       { language_code: "en", namespace: "common", key: "cancel", value: "Cancel" },
       // Hindi

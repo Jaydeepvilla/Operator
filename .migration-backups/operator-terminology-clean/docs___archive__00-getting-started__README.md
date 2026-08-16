@@ -1,7 +1,7 @@
 # Product Foundation Documentation
 
 ## Purpose
-This directory serves as the definitive single source of truth for the Operator AI SaaS Platform. It defines the core product vision, principles, scope, and technical governance standards required to align product, engineering, and business teams.
+This directory serves as the definitive single source of truth for the AI Receptionist SaaS Platform. It defines the core product vision, principles, scope, and technical governance standards required to align product, engineering, and business teams.
 
 ## Folder Structure
 - `01-product-vision.md`: Strategic vision and market positioning

@@ -5,7 +5,7 @@
 - Role-based access control (RBAC) for Owner, Admin, Manager, and Staff.
 - Core entity management: Services, Staff, Customers, and Appointments.
 - Complex availability engine (handling schedules, exceptions, holidays, and buffer times).
-- Conversational Operator AI (Text-based) via Web Widget.
+- Conversational AI Receptionist (Text-based) via Web Widget.
 - Knowledge base ingestion (text, URL) for AI training context.
 - Appointment lifecycle management (booking, rescheduling, cancellation).
 - External Calendar Synchronization (Google Calendar).
@@ -20,7 +20,7 @@
 - Physical hardware integration (e.g., point-of-sale terminals, IoT devices).
 
 ## Future Scope (Roadmap)
-- Voice Operator AI (inbound and outbound telephony integration).
+- Voice AI Receptionist (inbound and outbound telephony integration).
 - SMS and WhatsApp channel integrations.
 - Native payment processing (Stripe integration for deposits and checkouts).
 - Outbound marketing campaigns (AI-driven reactivation and promotions).
@@ -47,7 +47,7 @@ V1 expands the MVP into a commercially viable SaaS product ready for general ava
 
 ## Version 2 (Scale & Voice)
 V2 introduces enterprise-grade reliability, omnichannel presence, and advanced autonomous actions.
-- Inbound Voice Operator AI (assigning dedicated phone numbers).
+- Inbound Voice AI Receptionist (assigning dedicated phone numbers).
 - Omnichannel Inbox (SMS, WhatsApp, Instagram DM, Messenger).
 - Qualification Flows (structured Q&A for lead scoring).
 - Detailed analytics (conversion rates, intent mapping, AI deflection rates).

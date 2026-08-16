@@ -20,7 +20,7 @@ The provider is selected at runtime based on the `calendarType` stored in the st
 
 ## How it works
 
-When the Operator AI wants to book an appointment:
+When the AI receptionist wants to book an appointment:
 
 1. The booking service looks up the assigned staff member
 2. It loads the staff member's calendar credentials from the `staffCalendars` table

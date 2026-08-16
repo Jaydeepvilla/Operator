@@ -1,12 +1,12 @@
 # Knowledge Base
 
-The Knowledge Base allows organizations to add business-specific information — pricing, policies, service details, FAQs, team bios, and anything else the Operator AI should know. This information is retrieved during conversations to ground the AI's responses in facts.
+The Knowledge Base allows organizations to add business-specific information — pricing, policies, service details, FAQs, team bios, and anything else the AI receptionist should know. This information is retrieved during conversations to ground the AI's responses in facts.
 
 ---
 
 ## How the AI uses it
 
-When a customer sends a message, the Operator AI retrieves relevant content from the knowledge base before generating a response. This is the RAG (Retrieval-Augmented Generation) step. The AI is instructed:
+When a customer sends a message, the AI receptionist retrieves relevant content from the knowledge base before generating a response. This is the RAG (Retrieval-Augmented Generation) step. The AI is instructed:
 
 > "Use ONLY the facts below to answer customer queries. If the answer is not contained in this knowledge, politely inform the customer you don't have that information and offer to escalate to a human agent. Do not fabricate facts or pricing."
 
@@ -148,7 +148,7 @@ If similarity ≥ 0.6 (60%), a duplicate warning is shown to the user with the m
 
 | Level | Who has access |
 |---|---|
-| `public` | Available to the Operator AI and the customer |
+| `public` | Available to the AI receptionist and the customer |
 | `internal` | Staff-only. Not injected into AI context. |
 | `ai_only` | Only available to the AI, never shown to end users |
 

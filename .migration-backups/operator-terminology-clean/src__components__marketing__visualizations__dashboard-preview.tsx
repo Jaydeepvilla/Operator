@@ -589,7 +589,7 @@ export function DashboardPreview() {
               </div>
             </div>
 
-            {/* Glowing Operator AI live status pill */}
+            {/* Glowing AI receptionist live status pill */}
             <div className="flex items-center gap-space-3 shrink-0 w-full sm:w-auto justify-start sm:justify-end">
               <div className="relative group cursor-default">
                 <div className="absolute inset-space-0 bg-emerald-500/20 blur-md radius-md group-hover:bg-emerald-500/30 transition-all duration-500" />

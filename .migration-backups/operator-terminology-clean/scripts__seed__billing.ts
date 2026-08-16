@@ -19,7 +19,7 @@ export async function seedBilling(): Promise<void> {
   // 1. Seed subscription plans
   await db.insert(subscriptionPlans).values([
     { id: "free", name: "Free Tier", description: "Standard basic receptionist setup", price: "0.00", interval: "month", features: ["1 chatbot", "50 messages/mo"] },
-    { id: "pro", name: "Professional Plan", description: "Complete Operator AI platform", price: "49.00", interval: "month", features: ["Unlimited chatbot", "5000 messages/mo", "SMS/WhatsApp Integrations"] },
+    { id: "pro", name: "Professional Plan", description: "Complete AI receptionist platform", price: "49.00", interval: "month", features: ["Unlimited chatbot", "5000 messages/mo", "SMS/WhatsApp Integrations"] },
     { id: "enterprise", name: "Enterprise Suite", description: "Custom models, voice receptionist, high limits", price: "199.00", interval: "month", features: ["Custom AI voice", "Private API", "Dedicated Support"] }
   ]).onConflictDoNothing();
 

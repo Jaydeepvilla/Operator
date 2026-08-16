@@ -4,7 +4,7 @@
 To define the human (or physical resource) capacity of the business. Without staff members, there is no one to perform the services, meaning the AI has no inventory of time to sell to customers.
 
 ## Why Module Exists
-Not all employees work the same hours. Dr. Smith might work Mondays and Wednesdays, while Dr. Jones works Tuesdays and Thursdays. Furthermore, Dr. Smith might take a week off for vacation. The Operator AI needs granular, individual-level schedules to accurately offer time slots to customers without causing double-bookings or scheduling someone who isn't working.
+Not all employees work the same hours. Dr. Smith might work Mondays and Wednesdays, while Dr. Jones works Tuesdays and Thursdays. Furthermore, Dr. Smith might take a week off for vacation. The AI Receptionist needs granular, individual-level schedules to accurately offer time slots to customers without causing double-bookings or scheduling someone who isn't working.
 
 ## Problem Solved
 - Prevents booking appointments with staff who are on vacation.

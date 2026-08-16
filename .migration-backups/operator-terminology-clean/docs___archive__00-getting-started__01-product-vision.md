@@ -1,7 +1,7 @@
 # Product Vision
 
 ## Mission
-To eliminate communication bottlenecks for service businesses by providing an intelligent, autonomous, and seamlessly integrated Operator AI that guarantees 100% lead capture and perfect scheduling.
+To eliminate communication bottlenecks for service businesses by providing an intelligent, autonomous, and seamlessly integrated AI receptionist that guarantees 100% lead capture and perfect scheduling.
 
 ## Vision
 To become the global standard for business-to-consumer communication infrastructure, where AI agents handle all routine operational friction, allowing human professionals to focus entirely on service delivery and relationship building.
@@ -10,7 +10,7 @@ To become the global standard for business-to-consumer communication infrastruct
 We believe that technology should operate invisibly in the background. Businesses should not have to learn complex software; the software should learn the business. Our AI acts as a digital employee, adapting to existing workflows rather than forcing businesses to adapt to ours.
 
 ## Long-term Vision
-Evolution from a point-solution Operator AI into a comprehensive autonomous operations platform that manages scheduling, customer relationship management, invoicing, and marketing outreach without human intervention.
+Evolution from a point-solution AI receptionist into a comprehensive autonomous operations platform that manages scheduling, customer relationship management, invoicing, and marketing outreach without human intervention.
 
 ## Product Identity
 The platform is positioned as premium, enterprise-grade, and hyper-reliable. It is not a "chatbot" but an "AI Employee." The identity is professional, highly configurable, and data-driven.

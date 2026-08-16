@@ -1,7 +1,7 @@
 # Business Onboarding
 
 ## Purpose
-This module handles the critical first steps of a new business signing up for the Operator AI SaaS Platform. It covers registration, initial tenant provisioning, organizational setup, and the foundational configuration required before the AI can be activated.
+This module handles the critical first steps of a new business signing up for the AI Receptionist SaaS Platform. It covers registration, initial tenant provisioning, organizational setup, and the foundational configuration required before the AI can be activated.
 
 ## Scope
 - Business Owner Registration (Email/Password & SSO).

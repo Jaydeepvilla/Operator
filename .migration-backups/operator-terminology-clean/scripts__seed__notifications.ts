@@ -62,7 +62,7 @@ export async function seedNotifications(): Promise<void> {
       id: "99999999-6666-5555-5555-555555555555",
       organizationId: ORG_ID,
       title: "Configure Custom Salon Voice",
-      description: "Branding Tip: Customize your Operator AI's vocal signature. Olivia's voice clone is ready to test on ElevenLabs.",
+      description: "Branding Tip: Customize your AI receptionist's vocal signature. Olivia's voice clone is ready to test on ElevenLabs.",
       priority: "low",
       severity: "info",
       category: "setup",

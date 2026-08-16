@@ -22,7 +22,7 @@
 ### Pain Points
 - Forgetting to add a holiday and dealing with angry customers who booked on a day the clinic is closed.
 
-## Operator AI (System Persona)
+## AI Receptionist (System Persona)
 ### Goals
 - Answer customer questions accurately.
 ### Responsibilities

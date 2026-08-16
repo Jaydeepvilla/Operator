@@ -24,7 +24,7 @@
 ## US-BO-03: Organization Provisioning
 **As a** verified User,
 **I want** to enter my Business Name, Industry, and Timezone,
-**So that** the system can tailor the Operator AI to my specific needs.
+**So that** the system can tailor the AI Receptionist to my specific needs.
 
 **Acceptance Criteria**:
 - Given the user is on the setup step, when they submit the form, an `Organization` record is created.

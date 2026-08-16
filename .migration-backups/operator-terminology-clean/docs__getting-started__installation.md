@@ -184,4 +184,4 @@ npm run db:seed
 - [Environment Variables Reference](environment-variables.md) — full variable list
 - [Project Structure](../getting-started/project-structure.md) — directory map
 - [Authentication Architecture](../architecture/authentication.md) — how the custom auth system works
-- [AI Pipeline](../ai/overview.md) — how the Operator AI processes conversations
+- [AI Pipeline](../ai/overview.md) — how the AI receptionist processes conversations

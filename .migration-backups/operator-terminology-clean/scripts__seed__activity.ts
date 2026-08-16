@@ -25,7 +25,7 @@ export async function seedActivity(): Promise<void> {
       offsetDays: -7
     },
     {
-      task: "Trained Operator AI on 'Booking & Cancellation Policies'",
+      task: "Trained AI Receptionist on 'Booking & Cancellation Policies'",
       category: "knowledge",
       impact: "high",
       offsetDays: -5

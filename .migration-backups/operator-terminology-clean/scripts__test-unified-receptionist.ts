@@ -8,7 +8,7 @@ import {
 
 function runUnifiedReceptionistTests() {
   console.log("\n=======================================================");
-  console.log("🤖 TESTING UNIFIED Operator AI ARCHITECTURE");
+  console.log("🤖 TESTING UNIFIED AI RECEPTIONIST ARCHITECTURE");
   console.log("=======================================================\n");
 
   let passed = 0;

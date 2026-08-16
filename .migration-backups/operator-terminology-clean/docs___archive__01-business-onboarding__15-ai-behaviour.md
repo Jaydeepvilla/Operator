@@ -1,6 +1,6 @@
 # AI Behaviour: Business Onboarding
 
-*Note: The Operator AI is not actively facing the end-customer during the onboarding module. However, the data gathered in this module directly influences the AI's baseline behavior.*
+*Note: The AI Receptionist is not actively facing the end-customer during the onboarding module. However, the data gathered in this module directly influences the AI's baseline behavior.*
 
 ## Industry-Specific Tone Seeding
 When the `industry` is selected on the Business Details screen, the system provisions default AI configuration parameters.

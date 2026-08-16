@@ -1,5 +1,5 @@
 /**
- * Canonical Types for Operator AI's Unified Operator AI Platform.
+ * Canonical Types for Operator AI's Unified AI Receptionist Platform.
  * All channels (Voice, WhatsApp, Web Widget, SMS, Email, Social) normalize to these contracts.
  */
 

@@ -25,7 +25,7 @@
 ### Pain Points
 - Showing up to work and finding out the receptionist double-booked them, or didn't leave enough time to clean up between clients.
 
-## Operator AI (System Persona)
+## AI Receptionist (System Persona)
 ### Goals
 - Find the optimal staff member for a requested service.
 ### Responsibilities

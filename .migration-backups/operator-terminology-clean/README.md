@@ -1,8 +1,8 @@
 # Operator
 
-**Production-grade Operator AI SaaS platform.**
+**Production-grade AI Receptionist SaaS platform.**
 
-Operator enables businesses to deploy a 24/7 Operator AI that handles inbound communications across voice, WhatsApp, SMS, Facebook Messenger, Instagram, web chat, and email — qualifying leads, booking appointments, and escalating to human agents when required.
+Operator enables businesses to deploy a 24/7 AI receptionist that handles inbound communications across voice, WhatsApp, SMS, Facebook Messenger, Instagram, web chat, and email — qualifying leads, booking appointments, and escalating to human agents when required.
 
 ---
 
@@ -11,7 +11,7 @@ Operator enables businesses to deploy a 24/7 Operator AI that handles inbound co
 - **Omnichannel conversations** — WhatsApp, SMS, Facebook Messenger, Instagram, email, web widget, voice (Vapi + Twilio + Deepgram + ElevenLabs)
 - **Lead qualification** — Configurable multi-step qualification flows with answer types: text, single-select, multi-select, number
 - **Appointment booking** — Natural-language date parsing, staff availability checks, Google Calendar sync, reminder scheduling
-- **Operator AI** — RAG-augmented context retrieval, LLM completion (OpenAI gpt-4o-mini primary, Gemini 2.5 Flash secondary), hallucination prevention rules
+- **AI Receptionist** — RAG-augmented context retrieval, LLM completion (OpenAI gpt-4o-mini primary, Gemini 2.5 Flash secondary), hallucination prevention rules
 - **Escalation management** — Five trigger reasons, conversation status transitions, human agent handoff
 - **Multi-tenant** — Organizations, memberships, role-based access (owner / admin / manager / staff)
 - **Billing** — Stripe, Razorpay, LemonSqueezy, Paddle, PayPal

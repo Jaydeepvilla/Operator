@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "operator:terminology:clean": "tsx scripts/verify-and-clean-operator-terminology.ts",
     "migrate:operator-terminology": "tsx scripts/migrate-operator-terminology.ts",
     "operator:doctor": "tsx scripts/doctor/index.ts",
     "db:clean": "tsx scripts/clear-system.ts",

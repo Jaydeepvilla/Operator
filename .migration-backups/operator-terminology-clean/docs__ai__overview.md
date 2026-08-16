@@ -119,7 +119,7 @@ The system prompt is assembled from multiple ordered parts:
 
 ```
 1. Organization identity block
-   "You are the official Operator AI for {org.name}.
+   "You are the official AI Receptionist for {org.name}.
    Industry: {industry}. Timezone: {timezone}. ..."
 
 2. Business description (from business_profiles)
@@ -280,7 +280,7 @@ For voice channels (inbound calls via Vapi or Twilio):
 4. AI text response is synthesized by ElevenLabs → audio
 5. Audio is played back to the caller via Vapi/Twilio
 
-This means the Operator AI uses the identical RAG → Prompt → LLM pipeline for both text and voice channels.
+This means the AI receptionist uses the identical RAG → Prompt → LLM pipeline for both text and voice channels.
 
 ---
 
