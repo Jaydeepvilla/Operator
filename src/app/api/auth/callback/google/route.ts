@@ -9,6 +9,7 @@ import {
   notificationSettings,
   securitySettings,
   loginHistory,
+  memberships,
 } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { createSession } from "@/lib/auth/session";
@@ -224,8 +225,15 @@ export async function GET(request: NextRequest) {
       userAgent,
     });
 
-    // 10. Redirect to dashboard
-    return NextResponse.redirect(`${appUrl}/dashboard`);
+    // 10. Smart redirect: New users without an organization go to /onboarding, existing go to /dashboard
+    const [membership] = await db
+      .select({ id: memberships.id })
+      .from(memberships)
+      .where(eq(memberships.userId, user.id))
+      .limit(1);
+
+    const redirectPath = membership ? "/dashboard" : "/onboarding";
+    return NextResponse.redirect(`${appUrl}${redirectPath}`);
   } catch (error) {
     console.error("[OAuth Callback] Unexpected crash:", error);
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";

@@ -38,8 +38,8 @@ function VerifyEmailContent() {
         if (result.success) {
           setSuccess(true);
           setTimeout(() => {
-            window.location.href = "/dashboard";
-          }, 2000);
+            window.location.href = "/onboarding";
+          }, 1500);
         } else {
           setErrorMsg(result.error || "The verification link is invalid or has expired.");
         }

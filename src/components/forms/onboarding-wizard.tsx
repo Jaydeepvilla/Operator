@@ -94,26 +94,37 @@ const GENERATION_LOGS = [
 
 // ─── Default generated data for demo ─────────────────────────────────────────
 
-function buildGeneratedData(url: string, detectedIndustry: string): GeneratedData {
-  const domain = url.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
-  const nameParts = domain.split(".")[0];
-  const businessName = nameParts.charAt(0).toUpperCase() + nameParts.slice(1);
+function buildGeneratedData(input: string, detectedIndustry: string): GeneratedData {
+  const isUrl = input.includes(".") && !input.includes(" ");
+  let businessName = "My Business";
+  let website = "";
+  let email = "info@mybusiness.com";
+
+  if (isUrl) {
+    const domain = input.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+    const nameParts = domain.split(".")[0];
+    businessName = nameParts.charAt(0).toUpperCase() + nameParts.slice(1);
+    website = input.startsWith("http") ? input : `https://${input}`;
+    email = `contact@${domain}`;
+  } else if (input && input !== "no-website") {
+    businessName = input.trim();
+  }
 
   return {
     businessName,
-    industry: detectedIndustry,
+    industry: detectedIndustry || "Other",
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
-    email: `info@${domain}`,
+    email,
     phone: "",
     address: "",
-    website: url.startsWith("http") ? url : `https://${url}`,
+    website,
     services: [
       { name: "General Consultation", duration: 30, accepted: true },
       { name: "Follow-up Appointment", duration: 15, accepted: true },
       { name: "Initial Assessment", duration: 60, accepted: true },
     ],
     hours: "Mon–Fri  9:00 AM – 5:00 PM",
-    greeting: `Hi, thank you for contacting ${businessName}. I'm Operator, your automated assistant, and I can help you book appointments, check availability, or answer questions. How can I help you today?`,
+    greeting: `Hi, thank you for contacting ${businessName}. I'm Operator, your automated assistant. How can I help you today?`,
   };
 }
 
