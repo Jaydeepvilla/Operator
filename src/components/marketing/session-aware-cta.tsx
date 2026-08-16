@@ -10,6 +10,7 @@ import { cn } from "@/components/shared/utils";
 interface SessionAwareCtaProps {
   signedInText?: string;
   signedOutText?: string;
+  signedInHref?: string;
   signedOutHref?: string;
   variant?: "default" | "outline" | "secondary" | "ghost";
   size?: "sm" | "md" | "lg";
@@ -20,6 +21,7 @@ interface SessionAwareCtaProps {
 export function SessionAwareCta({
   signedInText = "Go to Dashboard",
   signedOutText = "Get started today",
+  signedInHref = "/dashboard",
   signedOutHref = "/sign-up",
   variant = "default",
   size = "lg",
@@ -27,39 +29,34 @@ export function SessionAwareCta({
   showIcon = true,
 }: SessionAwareCtaProps) {
   const { user, isLoading } = useAuth();
+  const [isClient, setIsClient] = React.useState(false);
 
-  if (isLoading) {
-    return (
-      <Button
-        variant={variant}
-        size={size}
-        disabled
-        className={cn("cursor-pointer w-full sm:w-auto opacity-80", className)}
-      >
-        <span className="inline-flex items-center gap-2">
-          <span className="h-4 w-24 bg-foreground/20 rounded animate-pulse" />
-        </span>
-      </Button>
-    );
-  }
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  if (user) {
-    return (
-      <Button asChild variant={variant} size={size} className={cn("cursor-pointer w-full sm:w-auto", className)}>
-        <Link href="/dashboard" className="flex items-center gap-2">
-          {signedInText}
-          {showIcon && <LayoutDashboard className="h-4 w-4" />}
-        </Link>
-      </Button>
-    );
-  }
+  const isAuthenticated = isClient && !isLoading && Boolean(user);
+  const href = isAuthenticated ? signedInHref : signedOutHref;
+  const label = isAuthenticated ? signedInText : signedOutText;
 
   return (
-    <Button asChild variant={variant} size={size} className={cn("cursor-pointer w-full sm:w-auto", className)}>
-      <Link href={signedOutHref} className="flex items-center gap-2">
-        {signedOutText}
-        {showIcon && <ArrowRight className="h-4 w-4" />}
+    <Button
+      asChild
+      variant={variant}
+      size={size}
+      className={cn("cursor-pointer w-full sm:w-auto", className)}
+    >
+      <Link href={href} className="flex items-center justify-center gap-2">
+        <span>{label}</span>
+        {showIcon && (
+          isAuthenticated ? (
+            <LayoutDashboard className="h-4 w-4 shrink-0" />
+          ) : (
+            <ArrowRight className="h-4 w-4 shrink-0" />
+          )
+        )}
       </Link>
     </Button>
   );
 }
+

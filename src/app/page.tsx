@@ -174,26 +174,19 @@ export default async function HomePage() {
  </p>
  {/* CTAs */}
  <div className="flex flex-col sm:flex-row items-center justify-center gap-space-4 mb-space-12 w-full">
- {userId ? (
- <Button asChild variant="default" size="lg" className="cursor-pointer w-full sm:w-auto">
- <Link href="/dashboard">
- Go to Dashboard <ArrowRight className="h-4 w-4"/>
- </Link>
- </Button>
- ) : (
- <>
+ <SessionAwareCta
+   signedInText="Go to Dashboard"
+   signedOutText="Get started today"
+   signedInHref="/dashboard"
+   signedOutHref="/sign-up"
+   variant="default"
+   size="lg"
+ />
  <Button asChild variant="outline" size="lg" className="cursor-pointer w-full sm:w-auto">
- <Link href="/demo">
- Learn more
- </Link>
+   <Link href="/demo">
+     Learn more
+   </Link>
  </Button>
- <Button asChild variant="default" size="lg" className="cursor-pointer w-full sm:w-auto">
- <Link href="/sign-up">
- Get started today <ArrowRight className="h-4 w-4"/>
- </Link>
- </Button>
- </>
- )}
  </div>
  {/* Browser preview window — cropped, non-interactive */}
  <div className="relative w-full max-w-screen-xl mt-space-4">
@@ -835,13 +828,16 @@ export default async function HomePage() {
  ))}
  </ul>
  </div>
- <Button
- asChild
- variant={plan.highlight ? "default" : "outline"}
- className="w-full"
- >
- <Link href="/sign-up">{plan.cta}</Link>
- </Button>
+ <SessionAwareCta
+   signedInText="Go to Dashboard"
+   signedOutText={plan.cta}
+   signedInHref="/dashboard"
+   signedOutHref="/sign-up"
+   variant={plan.highlight ? "default" : "outline"}
+   size="md"
+   className="w-full"
+   showIcon={false}
+ />
  </div>
  ))}
  </div>

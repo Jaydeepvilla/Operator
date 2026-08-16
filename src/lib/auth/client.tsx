@@ -93,8 +93,18 @@ export function useAuth() {
  */
 export function Show({ when, children }: { when: "signed-in" | "signed-out"; children: React.ReactNode }) {
   const { isSignedIn, isLoading } = useAuth();
-  
-  if (isLoading) return null;
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || isLoading) {
+    if (when === "signed-out") {
+      return <>{children}</>;
+    }
+    return null;
+  }
   
   if (when === "signed-in") {
     return isSignedIn ? <>{children}</> : null;
