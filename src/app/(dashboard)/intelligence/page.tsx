@@ -135,7 +135,7 @@ export default async function IntelligencePage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-space-4">
         <PageTitle
           title="Executive AI Command Center"
-          description="Real-time operations dashboard, receptionist summary, priority tasks, and business growth ideas."
+          description="Real-time operations dashboard, Operator intelligence summary, priority tasks, and business growth ideas."
         />
       </div>
 

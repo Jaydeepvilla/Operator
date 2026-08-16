@@ -94,9 +94,9 @@ export function PromptSettingsClient({
  <div className="p-space-4 radius-lg bg-[hsl(var(--foreground)/0.03)] border border-border-subtle flex gap-space-3 items-start">
  <Info className="h-4.5 w-4.5 text-primary-500 shrink-0 mt-space-0.5" />
  <div className="text-caption text-muted-foreground space-y-space-1">
- <span className="font-semibold text-foreground block">How the AIReceptionist Prompt works:</span>
+ <span className="font-semibold text-foreground block">How the Operator AI prompt works:</span>
  <p>
- We compile your receptionist's prompt using active parameters: your business description, operating hours, active lead flows, services list, and custom guidelines configured here.
+ We compile your Operator AI prompt using active parameters: your business description, operating hours, active lead flows, services list, and custom guidelines configured here.
  </p>
  </div>
  </div>

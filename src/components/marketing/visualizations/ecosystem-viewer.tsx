@@ -153,7 +153,7 @@ const INTEGRATIONS: Record<string, IntegrationData> = {
     "Automatic Google Meet Coordinate Dispatch"],
 
     benefits: "Ensures calendar state is updated instantly, eliminating manual bookings and double scheduling entirely.",
-    impact: "Reduces receptionist manual scheduling friction by 100% and secures 24/7 calendar filling.",
+    impact: "Eliminates manual scheduling friction by 100% and secures 24/7 calendar filling.",
     useCase: "Client books a consultation on Google Calendar during a voice call with Operator AI."
   },
   Microsoft: {
@@ -197,7 +197,7 @@ const INTEGRATIONS: Record<string, IntegrationData> = {
     "Multi-sentence Conversational Safety Guardrails"],
 
     benefits: "Allows the AI core to understand objections and context without scripted limitations.",
-    impact: "Achieves a 94.5% caller qualification accuracy rate, identical to a senior receptionist.",
+    impact: "Achieves a 94.5% caller qualification accuracy rate, with expert accuracy.",
     useCase: "The AI answers complex pricing and insurance copay questions on the fly using stored training sheets."
   },
   Twilio: {
@@ -380,7 +380,7 @@ const WORKFLOWS: WorkflowData[] = [
   desc: "A completely automated sequence that handles incoming social/web leads, evaluates client fit, collects context, and coordinates direct booking calendar locks.",
   path: ["WhatsApp", "OpenAI", "CRM", "Alerts"],
   pathLabels: ["Inbound Message", "LLM Reasoning", "CRM Lead Card", "Staff Alert SMS"],
-  benefits: "Qualifies prospects instantly 24/7 without receptionist manual vetting cycles.",
+  benefits: "Qualifies prospects instantly 24/7 without manual vetting cycles.",
   impact: "Increases lead intake response times from hours to under 2 seconds, boosting conversion by 40%.",
   useCases: [
   "Website visitor asks about service pricing",

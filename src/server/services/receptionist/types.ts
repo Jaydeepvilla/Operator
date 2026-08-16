@@ -72,7 +72,7 @@ export interface OutboundMessage {
   };
 }
 
-export interface ReceptionistActionSummary {
+export interface OperatorActionSummary {
   type: "none" | "booking_created" | "booking_rescheduled" | "booking_cancelled" | "lead_qualified" | "escalated_to_staff";
   details?: Record<string, any>;
 }
@@ -80,7 +80,7 @@ export interface ReceptionistActionSummary {
 /**
  * The Comprehensive Receptionist Response Output
  */
-export interface ReceptionistResponse {
+export interface OperatorResponse {
   conversationId: string;
   leadProfileId: string;
   assistantReplyText: string;
@@ -91,3 +91,7 @@ export interface ReceptionistResponse {
   actionTaken: ReceptionistActionSummary;
   latencyMs: number;
 }
+
+// Canonical Aliases for Backward Compatibility
+export type ReceptionistResponse = OperatorResponse;
+export type ReceptionistActionSummary = OperatorActionSummary;

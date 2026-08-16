@@ -21,7 +21,7 @@ export const memoryService = {
       .join("\n");
 
     const provider = llmRegistry.getProvider();
-    const systemPrompt = `You are a conversation summarizer assistant. Analyze the dialogue history of our receptionist chat.
+    const systemPrompt = `You are a conversation summarizer assistant. Analyze the dialogue history of our Operator AI chat.
 Generate a summary of what the customer wanted, list of clear action items for our staff, and array of intents detected (e.g. booking, pricing, general, emergency, support).
 Return a JSON object only, in exactly this format:
 {

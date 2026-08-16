@@ -28,7 +28,7 @@ const PERSONAS: PersonaOption[] = [
     badge: "Hospitality & Salons",
     description: "Inviting, cheerful tone that builds immediate trust.",
     sampleIntro: "Hi there! I'm Emma. I will answer your calls with a warm and welcoming voice.",
-    greetingText: (biz) => `Hi there! Thanks for calling ${biz}. My name is Emma, your receptionist. How can I take care of your appointment or questions today?`,
+    greetingText: (biz) => `Hi there! Thanks for calling ${biz}. My name is Emma, your AI operator. How can I take care of your appointment or questions today?`,
     pitch: 1.15, // Bright cheerful female
     rate: 1.05,
   },

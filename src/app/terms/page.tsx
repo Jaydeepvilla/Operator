@@ -87,7 +87,7 @@ export default function TermsPage() {
               </Section>
 
               <Section id="service" title="2. Description of Service">
-                <p>Operatoris a software-as-a-service (SaaS) platform that enables businesses to deploy AI-powered receptionists capable of handling customer communications across multiple channels, including website chat, voice calls, SMS, email, WhatsApp, Instagram, and Facebook Messenger.</p>
+                <p>Operatoris a software-as-a-service (SaaS) platform that enables businesses to deploy Operator AI capable of handling customer communications across multiple channels, including website chat, voice calls, SMS, email, WhatsApp, Instagram, and Facebook Messenger.</p>
                 <p>The Service includes: an AI conversation engine, appointment booking system, lead qualification tools, knowledge base management, omnichannel messaging, voice AI infrastructure, analytics dashboard, and agency/reseller management tools.</p>
                 <p>We reserve the right to modify, suspend, or discontinue any feature of the Service at any time with reasonable notice. We will not materially reduce core functionality of paid plans without notice and the opportunity to cancel.</p>
               </Section>

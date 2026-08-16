@@ -68,7 +68,7 @@ export function KbScraper({ importUrl, importStatus }: KbScraperProps) {
         <CardHeader>
           <CardTitle>Website Knowledge Scraper</CardTitle>
           <CardDescription>
-            Input your website URL. Our crawler will index your public pages to train the receptionist.
+            Input your website URL. Our crawler will index your public pages to train Operator AI.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>

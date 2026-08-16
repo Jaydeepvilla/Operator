@@ -111,7 +111,7 @@ Do not ask multiple questions at once. Ask only this question.`);
 You can now help the user check out our services, answer any remaining questions, or guide them through finalizing their booking request.`);
     }
 
-    // Standard receptionist rules & guidelines
+    // Standard Operator AI rules & guidelines
     promptParts.push(`GENERAL BEHAVIOR RULES:
 1. Maintain a warm, premium, and extremely professional tone.
 2. Be concise. Never send long paragraphs. Keep responses under 3-4 sentences.

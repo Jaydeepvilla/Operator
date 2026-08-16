@@ -338,7 +338,7 @@ export function BusinessProfileForm({ organization, profile }: BusinessProfileFo
  <div>
  <h4 className="text-caption font-semibold text-foreground">Google Maps & Review Settings</h4>
  <p className="text-caption text-muted-foreground/65 mt-space-0.5">
- Configure review links so the receptionist can send links to satisfied callers.
+ Configure review links so Operator AI can send links to satisfied callers.
  </p>
  </div>
  </div>
@@ -387,7 +387,7 @@ export function BusinessProfileForm({ organization, profile }: BusinessProfileFo
  <div>
  <h4 className="text-caption font-semibold text-foreground">Social Profile Coordinates</h4>
  <p className="text-caption text-muted-foreground/65 mt-space-0.5">
- Help your receptionist answer user questions about your official social handles.
+ Help Operator AI answer user questions about your official social handles.
  </p>
  </div>
  </div>

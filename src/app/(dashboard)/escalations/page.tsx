@@ -299,7 +299,7 @@ export default function EscalationsPage() {
  <DialogHeader>
  <DialogTitle className="text-body-sm font-semibold text-foreground">Resolve Escalation Ticket</DialogTitle>
  <DialogDescription className="text-caption text-muted-foreground mt-space-1 leading-normal">
- Add review notes outlining what actions were taken. This returns the receptionist chatbot back to active.
+ Add review notes outlining what actions were taken. This returns Operator AI back to active.
  </DialogDescription>
  </DialogHeader>
  <div className="space-y-space-4 py-space-3 text-caption">

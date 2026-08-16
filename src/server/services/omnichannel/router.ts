@@ -168,7 +168,7 @@ export const omnichannelRouter = {
 
       // 5. Trigger AI process and reply if applicable
       if (aiEnabled && !isThreadEscalated && !isThreadPaused) {
-        // Run AI Receptionist Orchestrator
+        // Run Operator AI Orchestrator
         const aiResponse = await orchestratorService.processMessage({
           organizationId,
           conversationId,

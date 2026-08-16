@@ -262,7 +262,7 @@ export function HealthDashboardClient({
             
             <div className="space-y-space-1">
               <h3 className="text-body-md font-semibold text-foreground tracking-tight">
-                {nextBestAction?.title || "Optimize Receptionist Setup"}
+                {nextBestAction?.title || "Optimize Operator AI Setup"}
               </h3>
               <p className="text-body-sm text-muted-foreground leading-relaxed">
                 {nextBestAction?.description || "Your AI assistant is configured and operational. Review the action list below to maximize conversion rate."}

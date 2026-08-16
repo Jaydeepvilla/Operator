@@ -235,7 +235,7 @@ export const KnowledgeAnalysisService = {
 
       const categoriesListText = categories.map(c => `ID: "${c.id}", Name: "${c.name}"`).join("\n");
 
-      const prompt = `Analyze this raw document content intended for an AI Receptionist knowledge base.
+      const prompt = `Analyze this raw document content intended for an Operator AI knowledge base.
 You must extract metadata and predict retrieval properties. Return a JSON object matching this schema:
 {
   "title": "Concise, production-quality title under 80 characters",

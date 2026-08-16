@@ -34,7 +34,7 @@ export const whatsappAdapter = {
   },
 
   /**
-   * Processes a WhatsApp turn through the unified AI Receptionist core
+   * Processes a WhatsApp turn through the unified Operator AI core
    */
   async handleIncomingTurn(payload: {
     organizationId: string;

@@ -90,7 +90,7 @@ export function RulesSettingsClient({ initialRules }: RulesSettingsClientProps) 
               <div className="space-y-space-1 flex-1 pr-space-4">
                 <span className="text-body-sm font-bold text-foreground block">Customer Requests Human</span>
                 <span className="text-caption text-muted-foreground leading-snug">
-                  Triggers if user asks to "speak with a manager", "talk to receptionist", or "escalate to agent".
+                  Triggers if user asks to &quot;speak with a manager&quot;, &quot;talk to front desk&quot;, or &quot;escalate to agent&quot;.
                 </span>
               </div>
               <div

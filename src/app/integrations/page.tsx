@@ -241,7 +241,7 @@ const INTEGRATIONS: Integration[] = [
  features: ["M365 accounts sync", "Outlook calendar routing", "Real-time availability", "Teams meeting support"],
  difficulty: "Instant",
  popularity: "Standard",
- capabilities: "Monitors Outlook calendar flags to block availability dynamically on Operator receptionist grids."
+ capabilities: "Monitors Outlook calendar flags to block availability dynamically on Operator AI grids."
  },
  {
  id: "openai",

@@ -36,7 +36,7 @@ export const voiceAdapter = {
   },
 
   /**
-   * Processes a voice turn through the unified AI Receptionist core
+   * Processes a voice turn through the unified Operator AI core
    */
   async handleVoiceSpeechTurn(payload: {
     organizationId: string;

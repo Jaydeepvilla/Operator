@@ -362,7 +362,7 @@ export function BusinessSettingsForm({ settings, connections = [], bookingRules 
      </div>
      <div>
       <h4 className="text-caption font-semibold text-foreground">Operating Hours</h4>
-      <p className="text-caption text-muted-foreground/65 mt-space-0.5">Define weekly slots your receptionist can verify.</p>
+      <p className="text-caption text-muted-foreground/65 mt-space-0.5">Define weekly slots Operator AI can verify.</p>
      </div>
     </div>
 
@@ -432,7 +432,7 @@ export function BusinessSettingsForm({ settings, connections = [], bookingRules 
      </div>
      <div>
       <h4 className="text-caption font-semibold text-foreground">Holiday Closures</h4>
-      <p className="text-caption text-muted-foreground/65 mt-space-0.5">Dates when the receptionist replies the business is closed.</p>
+      <p className="text-caption text-muted-foreground/65 mt-space-0.5">Dates when the Operator AI replies the business is closed.</p>
      </div>
     </div>
 
@@ -742,7 +742,7 @@ export function BusinessSettingsForm({ settings, connections = [], bookingRules 
  Allow Rescheduling
  </Label>
  <p className="text-caption text-muted-foreground/75 leading-relaxed">
- Permit receptionist to suggest alternative times.
+ Permit Operator AI to suggest alternative times.
  </p>
  </div>
  </div>

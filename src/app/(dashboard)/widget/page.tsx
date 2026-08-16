@@ -1160,7 +1160,7 @@ export default function WidgetSettingsPage() {
  {branding.companyName ||"Your Company Name"}
  </h4>
  <p className="text-caption text-muted-foreground/70 font-semibold mt-space-1 truncate max-w-xs leading-none">
- {branding.tagline ||"Active Receptionist AI"}
+ {branding.tagline ||"Active Operator AI"}
  </p>
  </div>
  </div>

@@ -682,7 +682,7 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
                     Browser Push Toggles
                   </label>
                   <p className="text-xs text-muted-foreground leading-normal mt-0.5">
-                    Receive real-time push prompts in your browser when the receptionist AI is actively answering a call.
+                    Receive real-time push prompts in your browser when Operator AI is actively answering a call.
                   </p>
                 </div>
               </div>

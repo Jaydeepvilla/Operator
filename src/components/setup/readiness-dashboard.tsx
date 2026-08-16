@@ -32,7 +32,7 @@ export function ReadinessDashboard({
         <CardContent className="p-space-6 flex items-center justify-between gap-space-6">
           <div className="space-y-space-2 flex-1">
             <h3 className="text-body-sm font-semibold tracking-wide uppercase text-muted-foreground">
-              Receptionist Readiness
+              Operator AI Readiness
             </h3>
             <div className="flex items-baseline gap-space-2">
               <span className={`text-display-sm font-bold tracking-tight ${getScoreColor(readiness.overallScore)}`}>

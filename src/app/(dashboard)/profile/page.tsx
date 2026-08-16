@@ -6,7 +6,7 @@ import { PageTitle } from "@/components/shared/page-title";
 
 export const metadata = {
   title: "Business Profile - Operator",
-  description: "Manage your business receptionist profile and brand parameters.",
+  description: "Manage your Operator profile and brand parameters.",
 };
 
 export default async function ProfilePage() {

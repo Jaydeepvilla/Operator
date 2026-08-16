@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Setup Your Business | Operator Receptionist",
+  title: "Setup Your Business | Operator AI",
   description:
-    "Configure your business profile to activate your AI-powered receptionist in minutes.",
+    "Configure your business profile to activate your Operator AI in minutes.",
 };
 
 export default function OnboardingLayout({

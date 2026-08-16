@@ -566,7 +566,7 @@ export function DashboardPreview() {
                 <div className="h-6 w-6 radius-md bg-white/50 dark:bg-white/10 flex items-center justify-center border border-border-subtle">
                   <Inbox className="h-3.5 w-3.5 text-foreground shrink-0" />
                 </div>
-                <span>Receptionist</span>
+                <span>Operator AI</span>
                 <ChevronRight className="h-3 w-3 text-muted-foreground/40 shrink-0" />
                 <span className="text-foreground capitalize tracking-wide bg-black/5 dark:bg-white/10 px-space-2 py-space-0.5 radius-md">
                   {activeTab === "calls"

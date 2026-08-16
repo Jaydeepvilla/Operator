@@ -71,7 +71,7 @@ export function BillingPortalClient({
       period: "month",
       description: "Scale your front-desk operations with dedicated numbers.",
       features: [
-        "Unlimited Voice Receptionists",
+        "Unlimited Voice AI Operators",
         "All Industry Templates (Dental, Law, Spa, Gym)",
         "Calendar synchronization (Google, Cal.com)",
         "1,000 monthly voice minutes included",

@@ -214,3 +214,7 @@ export class AiReceptionistCore {
 }
 
 export const aiReceptionistCore = new AiReceptionistCore();
+
+// Canonical Operator AI Core Aliases
+export const operatorAICore = aiReceptionistCore;
+export const OperatorAICore = AiReceptionistCore;

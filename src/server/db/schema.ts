@@ -580,7 +580,7 @@ export const vectorEmbeddingsRelations = relations(vectorEmbeddings, ({ one }) =
   }),
 }));
 
-// --- AI RECEPTIONIST SCHEMAS ---
+// --- OPERATOR AI SCHEMAS ---
 
 export const conversations = pgTable("conversations", {
   id: uuid("id").defaultRandom().primaryKey(),

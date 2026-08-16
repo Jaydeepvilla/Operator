@@ -38,7 +38,7 @@ export const widgetAdapter = {
   },
 
   /**
-   * Processes a web chat turn through the unified AI Receptionist core
+   * Processes a web chat turn through the unified Operator AI core
    */
   async handleWidgetTurn(payload: {
     organizationId: string;

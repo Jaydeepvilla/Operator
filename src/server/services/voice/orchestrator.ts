@@ -111,7 +111,7 @@ export const voiceOrchestrator = {
         return { textResponse: content };
       }
 
-      // If user speech, trigger central AI Receptionist orchestrator to get reply
+      // If user speech, trigger central Operator AI orchestrator to get reply
       const aiResponse = await orchestratorService.processMessage({
         organizationId,
         conversationId,
@@ -213,7 +213,7 @@ export const voiceOrchestrator = {
       if (transcriptStr.trim()) {
         try {
           const llm = llmRegistry.getProvider();
-          const systemPrompt = `You are a post-call analysis assistant. Analyze the transcript of an AI Receptionist call and extract a JSON summary matching the following structure:
+          const systemPrompt = `You are a post-call analysis assistant. Analyze the transcript of an Operator AI call and extract a JSON summary matching the following structure:
 {
   "summary": "Brief 1-2 sentence summary of what was discussed",
   "actionItems": ["Action item 1", "Action item 2"],
