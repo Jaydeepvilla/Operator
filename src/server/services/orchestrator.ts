@@ -707,4 +707,98 @@ export const orchestratorService = {
       isEscalated: false,
     };
   },
+
+  /**
+   * P0 SAFEGUARD: 100% Side-Effect Free Simulation Pipeline.
+   * Evaluates prompts and RAG retrieval for Confidence Bridge tests WITHOUT writing to
+   * lead_profiles, conversations, messages, conversation_events, appointments, or notifications.
+   */
+  async evaluateSimulation(input: {
+    organizationId: string;
+    userMessage: string;
+    metadata?: Record<string, any>;
+  }): Promise<{
+    assistantMessage: string;
+    citations: any[];
+    intent: string;
+    isEscalated: boolean;
+    isSimulated: true;
+  }> {
+    const { organizationId, userMessage } = input;
+
+    // 1. Detect Intent (Pure Read)
+    const intentResult = await intentService.detectIntent(userMessage);
+
+    // 2. Check Emergency / Escalation triggers
+    const isEscalationTrigger =
+      intentResult.intent === "emergency" ||
+      intentResult.intent === "human_request";
+
+    if (isEscalationTrigger) {
+      const responseText =
+        intentResult.intent === "emergency"
+          ? "I understand this is an emergency. If you are experiencing severe pain or need urgent medical attention, please go to the nearest emergency room or dial emergency services immediately. I have flagged our human team to review this right away."
+          : "I have noted your request to speak with a human team member. Our staff will review your inquiry and follow up promptly. How else can I assist you in the meantime?";
+
+      return {
+        assistantMessage: responseText,
+        citations: [],
+        intent: intentResult.intent,
+        isEscalated: true,
+        isSimulated: true,
+      };
+    }
+
+    // 3. RAG Retrieval (Pure Read)
+    const ragContextResult = await ragService.retrieveContext(organizationId, userMessage);
+
+    // If knowledge context is empty, fall back to active services and business hours
+    let contextText = ragContextResult.contextText;
+    if (!contextText || contextText.trim().length === 0) {
+      let activeServices: any[] = [];
+      try {
+        activeServices = await db
+          .select()
+          .from(services)
+          .where(and(eq(services.organizationId, organizationId), eq(services.isActive, true)));
+      } catch (e: any) {
+        console.warn("[OrchestratorSimulation] DB fallback for active services:", e.message);
+      }
+
+      if (activeServices.length === 0) {
+        activeServices = [
+          { name: "General Consultation", price: "75.00", duration: 30 },
+        ];
+      }
+
+      const serviceList = activeServices
+        .map((s) => `${s.name}: $${s.price} (${s.duration} min)`)
+        .join(", ");
+      contextText = `Available Services: ${serviceList}`;
+    }
+
+    // 4. Build System Prompt (Pure In-Memory)
+    const systemPrompt = await promptService.buildSystemPrompt({
+      organizationId,
+      ragContext: contextText,
+      isEscalated: false,
+    });
+
+    const messagesToSend = [
+      { role: "system" as const, content: systemPrompt },
+      { role: "user" as const, content: userMessage },
+    ];
+
+    const provider = llmRegistry.getProvider();
+    const completion = await provider.generateCompletion(messagesToSend, { temperature: 0.3 });
+
+    return {
+      assistantMessage: completion.content.trim(),
+      citations: ragContextResult.citations || [],
+      intent: intentResult.intent,
+      isEscalated: false,
+      isSimulated: true,
+    };
+  },
 };
+

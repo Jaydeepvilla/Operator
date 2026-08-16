@@ -86,8 +86,8 @@ const QUICK_ACTIONS = [
 
 export function QuickActionsWidget() {
   return (
-    <m.div whileHover={hoverScale}>
-<Card className="w-full overflow-hidden border border-[hsl(var(--foreground)/0.07)]">
+    <m.div whileHover={hoverScale} className="h-full flex flex-col">
+<Card className="w-full h-full flex flex-col overflow-hidden border border-[hsl(var(--foreground)/0.07)]">
       {/* Header bar */}
       <div className="flex items-center justify-between px-space-5 py-space-3.5 border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)]">
         <div className="flex items-center gap-space-2">
@@ -108,7 +108,7 @@ export function QuickActionsWidget() {
 
       {/* Action Grid — 3 cols on md, 6 cols on xl */}
       <div className="px-space-4 pb-space-4 pt-space-5">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-space-3">
+        <div className="grid grid-cols-3 gap-space-3">
           {QUICK_ACTIONS.map((act) => {
             const IconComp = act.icon;
             return (

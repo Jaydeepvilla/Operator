@@ -117,12 +117,18 @@ export class DashboardEngine {
     };
 
     // 8. Recent Activity — from activity log
-    const recentActivityRaw = await activityRepository.list(orgId, 10);
+    let recentActivityRaw: any[] = [];
+    try {
+      recentActivityRaw = await activityRepository.list(orgId, 10);
+    } catch (actErr) {
+      console.warn("Recent activity query fallback:", actErr);
+    }
+
     const recentActivity = recentActivityRaw.map((a) => {
       // Map category/task to a type that is recognized by the widget
       let activityType = "message";
-      const cat = a.category.toLowerCase();
-      const taskName = a.task.toLowerCase();
+      const cat = (a.category || "").toLowerCase();
+      const taskName = (a.task || "").toLowerCase();
 
       if (cat.includes("booking") || taskName.includes("booking") || taskName.includes("appointment")) {
         activityType = "appointment";
@@ -143,10 +149,15 @@ export class DashboardEngine {
     });
 
     // 9. Notifications
-    const notifications = await NotificationEngine.sync(
-      orgId,
-      setupState as any
-    );
+    let notifications: any[] = [];
+    try {
+      notifications = await NotificationEngine.sync(
+        orgId,
+        setupState as any
+      );
+    } catch (notifErr) {
+      console.warn("Notification engine sync fallback:", notifErr);
+    }
 
     return {
       dailyBrief,

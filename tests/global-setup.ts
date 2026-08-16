@@ -14,9 +14,12 @@ async function globalSetup(config: FullConfig) {
   try {
     await page.goto(`${url}/sign-in`);
     
+    // Wait for form input to be rendered
+    await page.waitForSelector('#signin-email', { state: 'visible', timeout: 15000 });
+    
     // Fill in the seed user credentials
-    await page.fill('input[type="email"]', 'demo+clerk_test@example.com');
-    await page.fill('input[type="password"]', 'Dem0P@ssw0rd!2026_');
+    await page.fill('#signin-email', 'demo+clerk_test@example.com');
+    await page.fill('#signin-password', 'Dem0P@ssw0rd!2026_');
     
     // Click the submit button (it should be the primary button in the form)
     await page.click('button[type="submit"]');

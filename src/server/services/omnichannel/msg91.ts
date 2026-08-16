@@ -26,12 +26,7 @@ export class Msg91Provider implements MessagingProvider, WebhookProvider {
       const flowId = connectionConfig.flowId || process.env.MSG91_FLOW_ID;
 
       if (!authKey) {
-        // Fallback or simulation if credentials missing
-        const mockSid = "MSG" + Math.random().toString(36).substring(2, 16);
-        return {
-          success: true,
-          externalId: mockSid
-        };
+        throw new Error("Missing MSG91 authKey configuration.");
       }
 
       const cleanPhone = recipientId.replace(/\D/g, "");
@@ -132,8 +127,11 @@ export class Msg91Provider implements MessagingProvider, WebhookProvider {
     const statuses: WebhookStatusPayload[] = [];
 
     try {
-      const orgId = headers["x-organization-id"] || "mock-org-id";
-      const channelId = headers["x-channel-id"] || "mock-channel-id";
+      const orgId = headers["x-organization-id"];
+      const channelId = headers["x-channel-id"];
+      if (!orgId || !channelId) {
+        throw new Error("Missing required x-organization-id or x-channel-id in webhook headers");
+      }
 
       // Process incoming msg91 webhook structure if any
       if (body.requestId && body.status) {
@@ -165,7 +163,8 @@ export class Msg91Provider implements MessagingProvider, WebhookProvider {
     params: Record<string, any>,
     signature: string
   ): boolean {
-    return true;
+    if (!authToken || !signature) return false;
+    return signature === authToken;
   }
 }
 

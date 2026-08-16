@@ -9,7 +9,7 @@ export const calculateIntegrationGaps: GapCalculator = (state: BusinessState) =>
   
   const settings = state.settings || {};
   
-  // Use actual connection arrays from BusinessState instead of mock logic
+  // Use actual connection arrays from BusinessState
   const hasStripe = (state.billingAccounts && state.billingAccounts.length > 0) || !!settings.stripeAccountId;
   const hasCalendar = (state.calendarConnections && state.calendarConnections.length > 0) || !!settings.googleCalendarId || !!settings.outlookCalendarId;
   

@@ -121,7 +121,7 @@ export function PhoneNumbersClient({ initialNumbers }: {initialNumbers: any[];})
  <DialogHeader>
  <DialogTitle className="text-body-sm font-semibold text-foreground">Connect a Phone Number</DialogTitle>
  <DialogDescription className="text-caption text-muted-foreground mt-space-1 leading-normal">
- Search available local telephone lines to connect directly to your AI Receptionist.
+ Search available local phone numbers to connect directly to Operator.
  </DialogDescription>
  </DialogHeader>
 

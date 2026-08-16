@@ -2,6 +2,7 @@ import { db } from "../../db";
 import { voicemailMessages, callSessions, leadProfiles, callEvents } from "../../db/schema";
 import { eq, and } from "drizzle-orm";
 import { VoiceProviderRegistry } from "./types";
+import { llmRegistry } from "../llm";
 
 export const voicemailProcessor = {
   /**
@@ -47,9 +48,13 @@ export const voicemailProcessor = {
 
       if (stt) {
         try {
-          // In production, we fetch the recordingUrl audio buffer and send it to STT
-          // For now, we mock/retrieve a standard transcription callback or simulate STT
-          transcriptText = "Hello, I wanted to schedule an appointment for next Tuesday at 2 PM. Please call me back.";
+          const res = await fetch(recordingUrl);
+          if (!res.ok) {
+            throw new Error(`Failed to fetch audio from URL: ${recordingUrl} (HTTP ${res.status})`);
+          }
+          const audioBuffer = Buffer.from(await res.arrayBuffer());
+          const sttResult = await stt.processAudioStream(audioBuffer);
+          transcriptText = sttResult.text || "Voicemail audio was silent.";
         } catch (sttErr) {
           console.error("[Voicemail Processor] STT translation failed:", sttErr);
           transcriptText = "Voicemail audio translation failed.";
@@ -58,8 +63,28 @@ export const voicemailProcessor = {
         transcriptText = "STT provider not configured.";
       }
 
-      // 4. Generate Voicemail Summary
-      const summaryText = `Caller requested an appointment callback for Tuesday afternoon. Caller number: ${callerNumber}`;
+      // 4. Generate Voicemail Summary using LLM
+      let summaryText = `Caller left a voicemail callback request. Caller number: ${callerNumber}`;
+      if (transcriptText.trim() && transcriptText !== "Voicemail audio translation failed." && transcriptText !== "STT provider not configured.") {
+        try {
+          const llm = llmRegistry.getProvider();
+          const response = await llm.generateCompletion([
+            {
+              role: "system",
+              content: "You are a voicemail summary assistant. Briefly summarize this voicemail transcript in 1 short sentence."
+            },
+            {
+              role: "user",
+              content: `Voicemail Transcript:\n${transcriptText}`
+            }
+          ]);
+          if (response.content.trim()) {
+            summaryText = response.content.trim();
+          }
+        } catch (llmErr) {
+          console.error("[Voicemail Processor] Failed to generate summary via LLM:", llmErr);
+        }
+      }
 
       // Update Voicemail Message with results
       await db

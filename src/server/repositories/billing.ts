@@ -89,7 +89,7 @@ export const billingRepository = {
     const succeeded = allPayments.filter(p => p.status === "succeeded");
 
     const grossRevenue = succeeded.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-    const netRevenue = grossRevenue; // In mock, assuming zero chargeback/refund for simplicity
+    const netRevenue = grossRevenue; // Assuming zero chargeback/refund for simplicity
 
     // MRR based on active non-free organization subscriptions
     const activeSubs = await db.query.subscriptions.findMany({

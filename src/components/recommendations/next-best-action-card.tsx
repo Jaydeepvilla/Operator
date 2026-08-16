@@ -26,7 +26,7 @@ export function NextBestActionCard({ action }: Props) {
           <div>
             <h3 className="text-heading-md font-semibold text-[hsl(var(--state-success-text))]">You're All Caught Up!</h3>
             <p className="text-body-sm text-[hsl(var(--state-success-text))]/70 mt-space-1">
-              Your AI Receptionist is fully configured and optimized. We have no further recommendations at this time.
+              Operator is fully configured and optimized. We have no further recommendations at this time.
             </p>
           </div>
         </CardContent>

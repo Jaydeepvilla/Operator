@@ -403,7 +403,7 @@ export function VoiceCockpitClient({
  >
  <div className="flex items-center gap-space-1.5">
  <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">
- {line.speaker ==="caller"?"Customer":"AI Receptionist"}
+ {line.speaker ==="caller"?"Customer":"Operator AI"}
  </span>
  <span className="text-caption font-mono text-muted-foreground/45">{line.time}</span>
  </div>

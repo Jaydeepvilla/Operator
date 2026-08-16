@@ -184,7 +184,7 @@ export function ServicesManager({ initialServices, categories }: ServicesManager
  <div>
  <p className="text-caption font-semibold text-foreground">Services Directory</p>
  <p className="text-caption text-muted-foreground/65 mt-space-0.5 leading-relaxed">
- Configure services available for AI Receptionist calendar scheduling.
+ Configure services available for Operator appointment scheduling.
  </p>
  </div>
  </div>
@@ -196,7 +196,7 @@ export function ServicesManager({ initialServices, categories }: ServicesManager
  {services.length === 0 ? (
  <EmptyState
  title="No services configured"
- description="Your receptionist needs to know what services you sell to schedule bookings."
+ description="Operator needs to know what services you offer to schedule appointments."
  icon={Clock}
  actionText="Configure Service"
  onAction={() => handleOpenDialog()}

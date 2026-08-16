@@ -12,16 +12,19 @@ import {
   inboxParticipants,
   leadProfiles,
   messageTemplates,
-  channelSettings
+  channelSettings,
+  staffMembers
 } from "../db/schema";
 import { eq, and, desc, asc } from "drizzle-orm";
 import { membershipRepository } from "../repositories/membership";
 import { omnichannelRepository } from "../repositories/omnichannel";
 import { omnichannelRouter } from "../services/omnichannel/router";
+import { orchestratorService } from "../services/orchestrator";
 
 async function getVerifiedOrgId() {
-  const { userId } = await auth();
+  const { userId, orgId } = await auth();
   if (!userId) throw new Error("Unauthorized");
+  if (orgId) return orgId;
   const memberships = await membershipRepository.getByUser(userId);
   if (memberships.length === 0) throw new Error("No organization found");
   return memberships[0].organizationId;
@@ -91,16 +94,69 @@ export async function sendStaffReplyAction(options: {
       isAiGenerated: false
     });
 
-    // Clear unread count, set last message and mark updated
+    // Clear unread count, set last message, and pause AI autopilot for active human intervention
     await db
       .update(inboxThreads)
-      .set({ unreadCount: 0, updatedAt: new Date() })
+      .set({ 
+        unreadCount: 0, 
+        aiAutonomy: "paused", 
+        updatedAt: new Date() 
+      })
       .where(eq(inboxThreads.id, options.threadId));
 
     revalidatePath("/inbox");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to deliver manual staff reply" };
+  }
+}
+
+/**
+ * Toggles AI autopilot autonomy on a specific conversation thread ('active' vs 'paused')
+ */
+export async function toggleThreadAiAutonomyAction(threadId: string, status: "active" | "paused") {
+  try {
+    const orgId = await getVerifiedOrgId();
+
+    const [updated] = await db
+      .update(inboxThreads)
+      .set({ aiAutonomy: status, updatedAt: new Date() })
+      .where(and(eq(inboxThreads.id, threadId), eq(inboxThreads.organizationId, orgId)))
+      .returning();
+
+    revalidatePath("/inbox");
+    return { success: true, thread: updated };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Failed to update AI autonomy status" };
+  }
+}
+
+/**
+ * Generates an AI draft reply and contextual intelligence without sending it
+ */
+export async function generateDraftAiReplyAction(options: {
+  conversationId: string;
+  userMessage?: string;
+}) {
+  try {
+    const orgId = await getVerifiedOrgId();
+
+    const result = await orchestratorService.processMessage({
+      organizationId: orgId,
+      conversationId: options.conversationId,
+      userMessage: options.userMessage || "How can I help you?",
+      metadata: { isDraftAssistant: true },
+    });
+
+    return {
+      success: true,
+      draftReply: result.assistantMessage,
+      intent: result.intent,
+      citations: result.citations || [],
+      isEscalated: result.isEscalated,
+    };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Failed to generate AI draft reply" };
   }
 }
 
@@ -382,5 +438,17 @@ export async function getOmnichannelAnalyticsAction() {
     };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to compute channel analytics" };
+  }
+}
+
+export async function getStaffMembersAction() {
+  try {
+    const orgId = await getVerifiedOrgId();
+    const staff = await db.query.staffMembers.findMany({
+      where: eq(staffMembers.organizationId, orgId),
+    });
+    return { success: true, staff: staff.map(s => ({ id: s.id, name: s.name })) };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Failed to fetch staff members" };
   }
 }

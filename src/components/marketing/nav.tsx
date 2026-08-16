@@ -16,6 +16,7 @@ const NAV_LINKS = [
  { label:"Pricing", href:"/pricing"},
  { label:"Integrations", href:"/integrations"},
  { label:"Docs", href:"/docs"},
+ { label:"Changelog", href:"/changelog"},
 ];
 
 export function MarketingNav() {

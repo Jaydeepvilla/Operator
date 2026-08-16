@@ -123,33 +123,29 @@ export const voiceCampaign = {
       const now = new Date();
       const next24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-      // In production, we'd query:
-      // const upcomingAppointments = await db.query.appointments.findMany({
-      //   where: and(
-      //     eq(appointments.organizationId, organizationId),
-      //     eq(appointments.status, 'confirmed'),
-      //     gte(appointments.startTime, now),
-      //     lte(appointments.startTime, next24Hours)
-      //   )
-      // });
-
-      // For testing, let's mock or check if there is any lead list that we can dial
-      const mockCampaignList = [
-        { name: "John Doe", phone: "+15550199001" },
-        { name: "Alice Smith", phone: "+15550199002" }
-      ];
+      const upcomingAppointments = await db.query.appointments.findMany({
+        where: and(
+          eq(appointments.organizationId, organizationId),
+          eq(appointments.status, 'confirmed'),
+          gte(appointments.startTime, now),
+          lte(appointments.startTime, next24Hours)
+        )
+      });
 
       const results = [];
-      for (const contact of mockCampaignList) {
+      for (const appointment of upcomingAppointments) {
+        if (!appointment.customerPhone) {
+          continue;
+        }
         // Stream URL points to our websocket endpoint
         const streamUrl = `wss://${process.env.NEXT_PUBLIC_APP_URL || "receptionist.nexx.ai"}/api/webhooks/voice/stream`;
         const res = await this.triggerOutboundCall({
           organizationId,
           phoneNumberId: phoneLine.id,
-          to: contact.phone,
+          to: appointment.customerPhone,
           streamUrl
         });
-        results.push({ phone: contact.phone, ...res });
+        results.push({ phone: appointment.customerPhone, name: appointment.customerName, ...res });
       }
 
       return {

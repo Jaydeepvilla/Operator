@@ -5,12 +5,15 @@ export const maxDuration = 60; // Max execution time
 
 export async function GET(req: Request) {
   try {
-    // Basic security for cron (ensure it's authorized if needed)
+    // Enforce strict cron authentication
     const authHeader = req.headers.get("authorization");
-    if (
-      process.env.CRON_SECRET &&
-      authHeader !== `Bearer ${process.env.CRON_SECRET}`
-    ) {
+    const cronSecret = process.env.CRON_SECRET;
+    if (!cronSecret) {
+      console.error("[Cron Route] CRON_SECRET is not configured");
+      return new NextResponse("Cron authorization not configured on server", { status: 500 });
+    }
+
+    if (authHeader !== `Bearer ${cronSecret}`) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 

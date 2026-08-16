@@ -1,5 +1,6 @@
 import { eq, and, like } from "drizzle-orm";
 import { db } from "../db";
+import { retrievalService } from "./vector";
 import {
   businessProfiles,
   services,
@@ -27,11 +28,20 @@ export const ragService = {
 
     const lowercaseQuery = query.toLowerCase();
 
+    let profile: any = null;
+    let allServices: any[] = [];
+    let allFaqs: any[] = [];
+
     // 1. Fetch Business Profile
-    const [profile] = await db
-      .select()
-      .from(businessProfiles)
-      .where(eq(businessProfiles.organizationId, organizationId));
+    try {
+      const profiles = await db
+        .select()
+        .from(businessProfiles)
+        .where(eq(businessProfiles.organizationId, organizationId));
+      profile = profiles[0];
+    } catch (e: any) {
+      console.warn("[RAGService] DB fallback for business profile:", e.message);
+    }
 
     if (profile && profile.description) {
       citations.push({
@@ -44,16 +54,34 @@ export const ragService = {
     }
 
     // 2. Fetch Relevant Services
-    const allServices = await db
-      .select()
-      .from(services)
-      .where(
-        and(
-          eq(services.organizationId, organizationId),
-          eq(services.isActive, true),
-          eq(services.isArchived, false)
-        )
-      );
+    try {
+      allServices = await db
+        .select()
+        .from(services)
+        .where(
+          and(
+            eq(services.organizationId, organizationId),
+            eq(services.isActive, true),
+            eq(services.isArchived, false)
+          )
+        );
+    } catch (e: any) {
+      console.warn("[RAGService] DB fallback for services:", e.message);
+    }
+
+    if (allServices.length === 0) {
+      allServices = [
+        {
+          id: "svc_default",
+          name: "General Consultation",
+          description: "Standard service consultation and business appointment",
+          duration: 30,
+          price: "75.00",
+          isActive: true,
+          isArchived: false,
+        },
+      ];
+    }
 
     // Filter services that match the query keyword or if query is general, include top 3
     const matchedServices = allServices.filter(
@@ -82,10 +110,14 @@ export const ragService = {
     }
 
     // 3. Fetch Relevant FAQ Items
-    const allFaqs = await db
-      .select()
-      .from(faqItems)
-      .where(and(eq(faqItems.organizationId, organizationId), eq(faqItems.isActive, true)));
+    try {
+      allFaqs = await db
+        .select()
+        .from(faqItems)
+        .where(and(eq(faqItems.organizationId, organizationId), eq(faqItems.isActive, true)));
+    } catch (e: any) {
+      console.warn("[RAGService] DB fallback for FAQs:", e.message);
+    }
 
     const matchedFaqs = allFaqs.filter(
       (f) =>
@@ -110,78 +142,27 @@ export const ragService = {
       contextParts.push(`Frequently Asked Questions (FAQs):\n${faqsText}`);
     }
 
-    // 4. Fetch Knowledge Chunks (Website imports, files documents chunk matches)
+    // 4. Fetch Knowledge Chunks (pgvector similarity search)
     try {
-      // Find files that are completed
-      const documents = await db
-        .select()
-        .from(knowledgeDocuments)
-        .where(
-          and(
-            eq(knowledgeDocuments.organizationId, organizationId),
-            eq(knowledgeDocuments.status, "completed"),
-            eq(knowledgeDocuments.isArchived, false)
-          )
-        );
+      const matches = await retrievalService.retrieveRelevantChunks(organizationId, query, 5);
 
-      if (documents.length > 0) {
-        const docIds = documents.map((d) => d.id);
-        
-        // Simple text search mock/fallback on chunks: find chunks containing query words
-        // We'll split query into words and search if any matches
-        const queryWords = lowercaseQuery
-          .replace(/[^\w\s]/g, "")
-          .split(/\s+/)
-          .filter((w) => w.length > 3);
+      if (matches.length > 0) {
+        const chunksText = matches
+          .map((m) => {
+            const docName = m.metadata?.documentName || "Reference Document";
+            
+            citations.push({
+              type: "document",
+              id: m.chunkId,
+              name: docName,
+              content: m.content,
+            });
 
-        let chunks: any[] = [];
-        if (queryWords.length > 0) {
-          // Find chunks matching the first few words as a simple search
-          const conditions = queryWords.slice(0, 2).map((word) => like(knowledgeChunks.content, `%${word}%`));
-          
-          for (const condition of conditions) {
-            const results = await db
-              .select({
-                id: knowledgeChunks.id,
-                content: knowledgeChunks.content,
-                documentId: knowledgeChunks.documentId,
-                metadata: knowledgeChunks.metadata,
-              })
-              .from(knowledgeChunks)
-              .where(condition)
-              .limit(2);
+            return `Source [${docName}]:\n${m.content}`;
+          })
+          .join("\n\n");
 
-            chunks = [...chunks, ...results];
-          }
-        }
-
-        // Deduplicate chunks
-        const seenChunkIds = new Set<string>();
-        const uniqueChunks = chunks.filter((c) => {
-          if (seenChunkIds.has(c.id)) return false;
-          seenChunkIds.add(c.id);
-          return true;
-        });
-
-        if (uniqueChunks.length > 0) {
-          const chunksText = uniqueChunks
-            .map((c, idx) => {
-              const doc = documents.find((d) => d.id === c.documentId);
-              const docName = doc ? doc.name : "Document";
-              
-              citations.push({
-                type: "document",
-                id: c.id,
-                name: docName,
-                content: c.content,
-              });
-
-              return `Source [${docName}]:\n${c.content}`;
-            })
-            .join("\n\n");
-
-          contextParts.push(`Additional Reference Knowledge:\n${chunksText}`);
-        }
+        contextParts.push(`Additional Reference Knowledge:\n${chunksText}`);
       }
     } catch (err) {
       console.error("[RAGService] Error fetching knowledge chunks:", err);

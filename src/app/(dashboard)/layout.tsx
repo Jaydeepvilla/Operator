@@ -24,18 +24,30 @@ export default async function DashboardLayout({
   }
 
   const { userId } = await auth();
-  const [subscription, membership, notifications] = await Promise.all([
-    db.query.subscriptions.findFirst({ where: eq(subscriptions.organizationId, org.id) }),
-    userId
-      ? db.query.memberships.findFirst({
-          where: and(
-            eq(memberships.organizationId, org.id),
-            eq(memberships.userId, userId)
-          ),
-        })
-      : Promise.resolve(null),
-    NotificationEngine.getSmartNotifications(org.id),
-  ]);
+  let subscription: any = null;
+  let membership: any = null;
+  let notifications: any = [];
+
+  try {
+    const results = await Promise.allSettled([
+      db.query.subscriptions.findFirst({ where: eq(subscriptions.organizationId, org.id) }),
+      userId
+        ? db.query.memberships.findFirst({
+            where: and(
+              eq(memberships.organizationId, org.id),
+              eq(memberships.userId, userId)
+            ),
+          })
+        : Promise.resolve(null),
+      NotificationEngine.getSmartNotifications(org.id),
+    ]);
+
+    if (results[0].status === "fulfilled") subscription = results[0].value;
+    if (results[1].status === "fulfilled") membership = results[1].value;
+    if (results[2].status === "fulfilled") notifications = results[2].value || [];
+  } catch (dbErr) {
+    console.warn("Dashboard layout query fallback:", dbErr);
+  }
 
   const isAgency =
     subscription?.planId === "agency" ||
@@ -66,7 +78,9 @@ export default async function DashboardLayout({
         }
         headerActions={
           <DashboardHeaderActions 
-            roleLabel={roleLabel} 
+            roleLabel={roleLabel}
+            orgName={org.name}
+            orgIndustry={org.industry ?? null}
             initialNotifications={notifications} 
           />
         }

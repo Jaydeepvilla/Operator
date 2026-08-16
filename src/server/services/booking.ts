@@ -5,9 +5,11 @@ import { rulesRepository } from "../repositories/rules";
 import { staffRepository } from "../repositories/staff";
 import { providerRegistry } from "./calendar-provider";
 import { availabilityService } from "./availability";
+import { ruleEngine } from "./automations/rule-engine";
+import { notificationService } from "./notification";
 import { db } from "../db";
-import { services, appointmentEvents, organizations } from "../db/schema";
-import { eq, and } from "drizzle-orm";
+import { services, appointmentEvents, organizations, appointments, appointmentWaitlist } from "../db/schema";
+import { eq, and, lt, gt, notInArray, sql, asc, desc } from "drizzle-orm";
 
 export interface CreateBookingInput {
   organizationId: string;
@@ -75,18 +77,45 @@ export const bookingService = {
       throw new Error(`Requested time slot ${slotTimeStr} is no longer available for booking.`);
     }
 
-    // 3. Insert Appointment in DB
-    const appointment = await appointmentsRepository.create({
-      organizationId,
-      leadProfileId: input.leadProfileId,
-      serviceId,
-      staffMemberId,
-      status: "confirmed",
-      startTime,
-      endTime,
-      customerName: input.customerName,
-      customerEmail: input.customerEmail,
-      customerPhone: input.customerPhone,
+    // 3. Concurrency Protection & Transactional Lock
+    // Execute inside a database transaction with a staff schedule advisory lock & conflict verification
+    const appointment = await db.transaction(async (tx) => {
+      // Transactional advisory lock keyed on the staff member and booking slot timestamp
+      const lockKey = `${staffMemberId}_${startTime.toISOString()}`;
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`);
+
+      // Verify no concurrent transaction just committed an overlapping booking
+      const conflicting = await tx
+        .select({ id: appointments.id })
+        .from(appointments)
+        .where(
+          and(
+            eq(appointments.organizationId, organizationId),
+            eq(appointments.staffMemberId, staffMemberId),
+            notInArray(appointments.status, ["cancelled", "rescheduled"]),
+            lt(appointments.startTime, endTime),
+            gt(appointments.endTime, startTime)
+          )
+        )
+        .limit(1);
+
+      if (conflicting.length > 0) {
+        throw new Error(`Concurrency Conflict: This slot has just been booked by another customer. Please choose another time.`);
+      }
+
+      // Insert Appointment atomically in DB
+      return await appointmentsRepository.create({
+        organizationId,
+        leadProfileId: input.leadProfileId,
+        serviceId,
+        staffMemberId,
+        status: "confirmed",
+        startTime,
+        endTime,
+        customerName: input.customerName,
+        customerEmail: input.customerEmail,
+        customerPhone: input.customerPhone,
+      }, tx);
     });
 
     // 4. Sync event to connected third-party calendar
@@ -139,6 +168,19 @@ export const bookingService = {
         });
       }
     }
+
+    // 6. Trigger custom Trigger-Action automations
+    ruleEngine.emitEvent(organizationId, "appointment_created", {
+      appointmentId: appointment.id,
+      customerName: input.customerName,
+      customerEmail: input.customerEmail,
+      customerPhone: input.customerPhone,
+      serviceId,
+      serviceName: service.name,
+      staffMemberId,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+    }).catch((err) => console.error("Error executing ruleEngine on appointment_created:", err));
 
     return appointment;
   },
@@ -205,17 +247,43 @@ export const bookingService = {
       throw new Error(`Requested reschedule slot ${slotTimeStr} is no longer available.`);
     }
 
-    // Apply reschedule updates
-    const updated = await appointmentsRepository.update(
-      appointmentId,
-      {
-        startTime: newStartTime,
-        endTime: newEndTime,
-        status: "rescheduled",
-      },
-      requestedBy,
-      reason
-    );
+    // Apply reschedule updates with concurrency lock
+    const updated = await db.transaction(async (tx) => {
+      if (appointment.staffMemberId) {
+        const lockKey = `${appointment.staffMemberId}_${newStartTime.toISOString()}`;
+        await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`);
+
+        const conflicting = await tx
+          .select({ id: appointments.id })
+          .from(appointments)
+          .where(
+            and(
+              eq(appointments.organizationId, appointment.organizationId),
+              eq(appointments.staffMemberId, appointment.staffMemberId),
+              notInArray(appointments.status, ["cancelled", "rescheduled"]),
+              lt(appointments.startTime, newEndTime),
+              gt(appointments.endTime, newStartTime)
+            )
+          )
+          .limit(1);
+
+        if (conflicting.length > 0 && conflicting[0].id !== appointmentId) {
+          throw new Error(`Concurrency Conflict: Target slot is already booked. Please choose another time.`);
+        }
+      }
+
+      return await appointmentsRepository.update(
+        appointmentId,
+        {
+          startTime: newStartTime,
+          endTime: newEndTime,
+          status: "rescheduled",
+        },
+        requestedBy,
+        reason,
+        tx
+      );
+    });
 
     // Log reschedule request details
     await appointmentsRepository.requestReschedule({
@@ -288,6 +356,19 @@ export const bookingService = {
       }
     }
 
+    // Trigger custom Trigger-Action automations
+    ruleEngine.emitEvent(appointment.organizationId, "appointment_rescheduled", {
+      appointmentId,
+      customerName: appointment.customerName,
+      customerEmail: appointment.customerEmail,
+      customerPhone: appointment.customerPhone,
+      serviceId: appointment.serviceId,
+      newStartTime: newStartTime.toISOString(),
+      newEndTime: newEndTime.toISOString(),
+      reason,
+      requestedBy,
+    }).catch((err) => console.error("Error executing ruleEngine on appointment_rescheduled:", err));
+
     return updated;
   },
 
@@ -353,6 +434,107 @@ export const bookingService = {
     // Clear reminders queue
     await remindersRepository.deleteByAppointment(appointmentId);
 
+    // Trigger custom Trigger-Action automations
+    ruleEngine.emitEvent(appointment.organizationId, "appointment_cancelled", {
+      appointmentId,
+      customerName: appointment.customerName,
+      customerEmail: appointment.customerEmail,
+      customerPhone: appointment.customerPhone,
+      serviceId: appointment.serviceId,
+      reason,
+      cancelledBy,
+    }).catch((err) => console.error("Error executing ruleEngine on appointment_cancelled:", err));
+
+    // 7. Check waitlist and automatically promote/notify waiting candidate
+    if (appointment.staffMemberId) {
+      try {
+        const [waitlistCandidate] = await db
+          .select()
+          .from(appointmentWaitlist)
+          .where(
+            and(
+              eq(appointmentWaitlist.organizationId, appointment.organizationId),
+              eq(appointmentWaitlist.staffMemberId, appointment.staffMemberId),
+              eq(appointmentWaitlist.status, "waiting")
+            )
+          )
+          .orderBy(asc(appointmentWaitlist.createdAt))
+          .limit(1);
+
+        if (waitlistCandidate) {
+          await db
+            .update(appointmentWaitlist)
+            .set({ status: "offered", offeredAt: new Date(), updatedAt: new Date() })
+            .where(eq(appointmentWaitlist.id, waitlistCandidate.id));
+
+          const slotTimeStr = new Date(appointment.startTime).toLocaleString();
+          const serviceName = service?.name || "Consultation";
+          const promoMsg = `Good news ${waitlistCandidate.customerName}! An appointment slot for ${serviceName} on ${slotTimeStr} has opened up. Please contact us or book online to claim this spot.`;
+
+          if (waitlistCandidate.customerPhone) {
+            await notificationService.sendSMS(waitlistCandidate.customerPhone, promoMsg);
+          } else if (waitlistCandidate.customerEmail) {
+            await notificationService.sendEmail(
+              waitlistCandidate.customerEmail,
+              `Waitlist Opening: ${serviceName} slot available!`,
+              `<p>${promoMsg}</p>`
+            );
+          }
+        }
+      } catch (waitlistErr) {
+        console.error("[BookingService] Failed to process waitlist promotion on cancellation:", waitlistErr);
+      }
+    }
+
     return updated;
   },
+
+  /**
+   * Adds a prospective customer to the appointment waitlist for a specific staff member and preferred date.
+   */
+  async joinWaitlist(input: {
+    organizationId: string;
+    staffMemberId: string;
+    serviceId: string;
+    customerName: string;
+    customerEmail?: string | null;
+    customerPhone?: string | null;
+    preferredDate: Date;
+    leadProfileId?: string | null;
+  }) {
+    const [entry] = await db
+      .insert(appointmentWaitlist)
+      .values({
+        organizationId: input.organizationId,
+        staffMemberId: input.staffMemberId,
+        serviceId: input.serviceId,
+        customerName: input.customerName,
+        customerEmail: input.customerEmail || null,
+        customerPhone: input.customerPhone || null,
+        preferredDate: input.preferredDate,
+        leadProfileId: input.leadProfileId || null,
+        status: "waiting",
+      })
+      .returning();
+
+    return entry;
+  },
+
+  /**
+   * Retrieves the active waitlist queue for an organization.
+   */
+  async getWaitlist(organizationId: string, status?: string) {
+    const query = db
+      .select()
+      .from(appointmentWaitlist)
+      .where(
+        status
+          ? and(eq(appointmentWaitlist.organizationId, organizationId), eq(appointmentWaitlist.status, status))
+          : eq(appointmentWaitlist.organizationId, organizationId)
+      )
+      .orderBy(desc(appointmentWaitlist.createdAt));
+
+    return await query;
+  },
 };
+

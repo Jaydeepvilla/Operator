@@ -120,7 +120,7 @@ export const NotificationRulesEngine = {
       }
 
       // C. Broken Integrations (e.g. settings integrations status)
-      // Check if stripe status is failed/disconnected (mock rules based on settings if present)
+      // Check if stripe status is failed/disconnected based on settings if present
       const isStripeBroken = state.settings?.stripeConfigured === false || state.settings?.stripeStatus === "error";
       if (isStripeBroken) {
         notifications.push({

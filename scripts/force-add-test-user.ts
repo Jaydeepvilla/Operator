@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { db } from "../src/server/db";
-import { users } from "../src/server/db/schema";
+import { users, memberships } from "../src/server/db/schema";
 import { faker } from "@faker-js/faker";
 import { hashPassword } from "../src/lib/auth/password";
 
@@ -20,7 +20,15 @@ async function main() {
     set: { passwordHash }
   });
 
-  console.log(`✅ Seeded default user: ${demoUserId}`);
+  const orgId = "11111111-1111-1111-1111-111111111111";
+  await db.insert(memberships).values({
+    id: faker.string.uuid(),
+    organizationId: orgId,
+    userId: demoUserId,
+    role: "owner",
+  }).onConflictDoNothing();
+
+  console.log(`✅ Seeded default user: ${demoUserId} with membership for ${orgId}`);
   process.exit(0);
 }
 

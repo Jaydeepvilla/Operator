@@ -2,20 +2,20 @@
   "cookies": [
     {
       "name": "refresh_token",
-      "value": "eccbfb1b5ab075ce20130e682079baa4e37787847efa52326ca44624e3f8a4e0",
+      "value": "b9ddff2a2b408f92682b18aa5b10ddc28aca3d310607e55b78629cd16f9ac239",
       "domain": "localhost",
       "path": "/api/auth/refresh",
-      "expires": 1787044490.022227,
+      "expires": 1787087642.153864,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Strict"
     },
     {
       "name": "session_token",
-      "value": "47be46abe57d271cd1ce2311ff675e09948e3567d5f7398bdcd7216730a09114",
+      "value": "e7a3eff4d247a2ca5ed5445289a8078040ed62cfc6c38a01af32090fc9be7089",
       "domain": "localhost",
       "path": "/",
-      "expires": 1787044490.020826,
+      "expires": 1787087642.152138,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"

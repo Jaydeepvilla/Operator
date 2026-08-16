@@ -31,13 +31,16 @@ import { logoutAllDevices } from "@/lib/auth/session";
 import { hashPassword } from "@/lib/auth/password";
 import { analyzePasswordStrength } from "@/lib/auth/security-checks";
 import { auditService } from "../services/audit";
+import { financialMetricsService } from "../services/billing/financial-metrics";
+import { notificationService } from "../services/notification";
 
 /**
  * Helper to fetch verified organization ID for the authenticated user
  */
 async function getVerifiedOrgId() {
-  const { userId } = await auth();
+  const { userId, orgId } = await auth();
   if (!userId) throw new Error("Unauthorized");
+  if (orgId) return orgId;
   const userMemberships = await membershipRepository.getByUser(userId);
   if (userMemberships.length === 0) throw new Error("No organization found");
   return userMemberships[0].organizationId;
@@ -47,8 +50,10 @@ async function getVerifiedOrgId() {
  * Helper to assert that the logged-in user is an Administrator or Owner.
  */
 async function assertAdmin() {
-  const { userId } = await auth();
+  const { userId, orgId } = await auth();
   if (!userId) throw new Error("Unauthorized");
+
+  const orgToVerify = orgId || (await getVerifiedOrgId());
 
   const [member] = await db
     .select()
@@ -56,6 +61,7 @@ async function assertAdmin() {
     .where(
       and(
         eq(memberships.userId, userId),
+        eq(memberships.organizationId, orgToVerify),
         or(eq(memberships.role, "admin"), eq(memberships.role, "owner"))
       )
     )
@@ -324,9 +330,12 @@ export async function getAnalyticsAction() {
       }
     });
 
+    const financialMetrics = await financialMetricsService.calculateRealtimeMetrics(orgId);
+
     return {
       success: true,
       data: {
+        financials: financialMetrics,
         conversations: {
           total: totalConversations,
           active: activeConversations,
@@ -761,3 +770,203 @@ export async function forceLogoutUserAction(targetUserId: string) {
     return { success: false, error: error.message || "Failed to force logout user" };
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SECTION 6: Merchant Organization Team Member Invitations & Management
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Invites a new team member to the organization, creating a user account if necessary
+ * and dispatching an invitation email.
+ */
+export async function inviteOrgMemberAction(data: {
+  email: string;
+  name?: string;
+  role: "admin" | "manager" | "staff";
+}) {
+  try {
+    const { userId: adminUserId, organizationId } = await assertAdmin();
+    const cleanEmail = data.email.trim().toLowerCase();
+
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      return { success: false, error: "A valid email address is required." };
+    }
+
+    const [org] = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, organizationId))
+      .limit(1);
+
+    // 1. Find or create user
+    let [targetUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, cleanEmail))
+      .limit(1);
+
+    if (!targetUser) {
+      const generatedId = `usr_${Math.random().toString(36).substring(2, 10)}`;
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          id: generatedId,
+          email: cleanEmail,
+          name: data.name?.trim() || cleanEmail.split("@")[0],
+          status: "invited",
+          isVerified: false,
+        })
+        .returning();
+      targetUser = newUser;
+    }
+
+    // 2. Check if user already belongs to this organization
+    const [existingMembership] = await db
+      .select()
+      .from(memberships)
+      .where(
+        and(
+          eq(memberships.userId, targetUser.id),
+          eq(memberships.organizationId, organizationId)
+        )
+      )
+      .limit(1);
+
+    if (existingMembership) {
+      return { success: false, error: "User is already a member of this organization." };
+    }
+
+    // 3. Create Membership record
+    const [createdMembership] = await db
+      .insert(memberships)
+      .values({
+        organizationId,
+        userId: targetUser.id,
+        role: data.role || "staff",
+      })
+      .returning();
+
+    // 4. Dispatch Invitation Email
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const inviteUrl = `${appUrl}/login?email=${encodeURIComponent(cleanEmail)}`;
+    const emailHtml = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2>You're invited to join ${org?.name || "the team"}</h2>
+        <p>Hello ${targetUser.name || "there"},</p>
+        <p>You have been invited to join <strong>${org?.name || "Workspace"}</strong> as a <strong>${data.role}</strong> on Operator AI.</p>
+        <p style="margin: 24px 0;">
+          <a href="${inviteUrl}" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+            Accept Invitation & Log In
+          </a>
+        </p>
+        <p style="color: #666; font-size: 13px;">If the button does not work, copy and paste this URL into your browser: <br>${inviteUrl}</p>
+      </div>
+    `;
+
+    notificationService.sendEmail(
+      cleanEmail,
+      `Invitation to join ${org?.name || "Workspace"} on Operator AI`,
+      emailHtml
+    ).catch((err) => console.error("[Admin Invite] Failed to send email:", err));
+
+    // 5. Audit Log
+    await auditService.log({
+      userId: adminUserId,
+      action: "invite_team_member",
+      resource: "memberships",
+      resourceId: createdMembership.id,
+      metadata: { targetUserId: targetUser.id, targetEmail: cleanEmail, role: data.role },
+    });
+
+    revalidatePath("/settings");
+    revalidatePath("/admin");
+    return { success: true, membership: createdMembership };
+  } catch (error: any) {
+    console.error("inviteOrgMemberAction error:", error);
+    return { success: false, error: error.message || "Failed to send team invitation" };
+  }
+}
+
+/**
+ * Updates a team member's role inside the organization.
+ */
+export async function updateOrgMemberRoleAction(data: {
+  targetUserId: string;
+  role: "admin" | "manager" | "staff";
+}) {
+  try {
+    const { userId: adminUserId, organizationId } = await assertAdmin();
+
+    if (adminUserId === data.targetUserId && data.role !== "admin") {
+      return { success: false, error: "You cannot downgrade your own administrator role." };
+    }
+
+    const [updated] = await db
+      .update(memberships)
+      .set({ role: data.role, updatedAt: new Date() })
+      .where(
+        and(
+          eq(memberships.userId, data.targetUserId),
+          eq(memberships.organizationId, organizationId)
+        )
+      )
+      .returning();
+
+    if (!updated) {
+      return { success: false, error: "Member not found in organization." };
+    }
+
+    await auditService.log({
+      userId: adminUserId,
+      action: "update_member_role",
+      resource: "memberships",
+      resourceId: updated.id,
+      metadata: { targetUserId: data.targetUserId, newRole: data.role },
+    });
+
+    revalidatePath("/settings");
+    revalidatePath("/admin");
+    return { success: true, membership: updated };
+  } catch (error: any) {
+    console.error("updateOrgMemberRoleAction error:", error);
+    return { success: false, error: error.message || "Failed to update member role" };
+  }
+}
+
+/**
+ * Removes a member from the organization.
+ */
+export async function removeOrgMemberAction(targetUserId: string) {
+  try {
+    const { userId: adminUserId, organizationId } = await assertAdmin();
+
+    if (adminUserId === targetUserId) {
+      return { success: false, error: "You cannot remove yourself from the organization." };
+    }
+
+    await db
+      .delete(memberships)
+      .where(
+        and(
+          eq(memberships.userId, targetUserId),
+          eq(memberships.organizationId, organizationId)
+        )
+      );
+
+    await auditService.log({
+      userId: adminUserId,
+      action: "remove_team_member",
+      resource: "memberships",
+      resourceId: targetUserId,
+      metadata: { targetUserId },
+    });
+
+    revalidatePath("/settings");
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error: any) {
+    console.error("removeOrgMemberAction error:", error);
+    return { success: false, error: error.message || "Failed to remove member" };
+  }
+}
+

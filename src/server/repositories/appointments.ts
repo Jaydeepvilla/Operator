@@ -84,28 +84,29 @@ export const appointmentsRepository = {
       .orderBy(appointments.startTime);
   },
 
-  async create(appointment: NewAppointment) {
-    const [newApt] = await db.insert(appointments).values(appointment).returning();
+  async create(appointment: NewAppointment, executor: any = db) {
+    const [newApt] = await executor.insert(appointments).values(appointment).returning();
     
     // Log history and event
-    await this.logEvent(appointment.organizationId, newApt.id, "created", { appointment: newApt });
+    await this.logEvent(appointment.organizationId, newApt.id, "created", { appointment: newApt }, executor);
     await this.addStatusHistory(
       appointment.organizationId,
       newApt.id,
       null,
       newApt.status,
       "system",
-      "Initial booking creation"
+      "Initial booking creation",
+      executor
     );
 
     return newApt;
   },
 
-  async update(id: string, updates: Partial<NewAppointment>, changedBy: string = "system", reason?: string) {
+  async update(id: string, updates: Partial<NewAppointment>, changedBy: string = "system", reason?: string, executor: any = db) {
     const existing = await this.findById(id);
     if (!existing) throw new Error("Appointment not found");
 
-    const [updated] = await db
+    const [updated] = await executor
       .update(appointments)
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(appointments.id, id))
@@ -119,21 +120,22 @@ export const appointmentsRepository = {
         existing.appointment.status,
         updates.status,
         changedBy,
-        reason || "Status updated"
+        reason || "Status updated",
+        executor
       );
       await this.logEvent(updated.organizationId, id, "status_changed", {
         oldStatus: existing.appointment.status,
         newStatus: updates.status,
         reason,
-      });
+      }, executor);
     }
 
     return updated;
   },
 
   // Events Log
-  async logEvent(organizationId: string, appointmentId: string, eventType: string, payload: Record<string, any>) {
-    const [event] = await db
+  async logEvent(organizationId: string, appointmentId: string, eventType: string, payload: Record<string, any>, executor: any = db) {
+    const [event] = await executor
       .insert(appointmentEvents)
       .values({
         organizationId,
@@ -152,9 +154,10 @@ export const appointmentsRepository = {
     oldStatus: string | null,
     newStatus: string,
     changedBy: string,
-    reason?: string
+    reason?: string,
+    executor: any = db
   ) {
-    const [history] = await db
+    const [history] = await executor
       .insert(appointmentStatusHistory)
       .values({
         organizationId,

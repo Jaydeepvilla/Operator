@@ -21,6 +21,7 @@ export const ScrollArea = React.forwardRef<HTMLDivElement, ScrollAreaProps>(
 
     useEffect(() => {
       if (!containerRef.current) return;
+      let resizeObserver: ResizeObserver | null = null;
 
       const initPs = async () => {
         const { default: Ps } = await import("perfect-scrollbar");
@@ -32,6 +33,15 @@ export const ScrollArea = React.forwardRef<HTMLDivElement, ScrollAreaProps>(
           suppressScrollY: !vertical,
           wheelPropagation: wheelPropagation,
         });
+
+        if (typeof window !== "undefined" && "ResizeObserver" in window) {
+          resizeObserver = new ResizeObserver(() => {
+            if (psRef.current) {
+              psRef.current.update();
+            }
+          });
+          resizeObserver.observe(containerRef.current);
+        }
 
         // Register custom scroll listeners if requested
         if (onScroll && containerRef.current) {
@@ -46,6 +56,9 @@ export const ScrollArea = React.forwardRef<HTMLDivElement, ScrollAreaProps>(
         if (psRef.current) {
           psRef.current.destroy();
           psRef.current = null;
+        }
+        if (resizeObserver) {
+          resizeObserver.disconnect();
         }
         if (containerRef.current && onScroll) {
           containerRef.current.removeEventListener("ps-scroll-y", onScroll);

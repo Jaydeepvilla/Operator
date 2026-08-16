@@ -189,7 +189,7 @@ export function BusinessProfileForm({ organization, profile }: BusinessProfileFo
  <div>
  <h4 className="text-caption font-semibold text-foreground">Business Profile Info</h4>
  <p className="text-caption text-muted-foreground/65 mt-space-0.5">
- Core brand details used by the AI Receptionist to understand your business context.
+ Core brand details used by Operator to understand your business context.
  </p>
  </div>
  </div>

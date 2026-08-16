@@ -10,9 +10,8 @@ import {
 import { eq, and, asc } from "drizzle-orm";
 import { orchestratorService } from "../orchestrator";
 import { VoiceProviderRegistry } from "./types";
+import { llmRegistry } from "../llm";
 
-// Auto imports for self-registration of registry hooks
-import "./telephony";
 import "./deepgram";
 import "./elevenlabs";
 import "./vapi";
@@ -205,11 +204,39 @@ export const voiceOrchestrator = {
         .map((t) => `${t.speaker.toUpperCase()}: ${t.content}`)
         .join("\n");
 
-      // Generate mock summary and outcome logs
-      // In production, this runs a post-call LLM summarizer prompt
-      const summaryText = transcriptStr.trim() 
-        ? `The caller discussed pricing structures and requested services overview.` 
-        : `Empty call session. Call hung up immediately.`;
+      let summaryText = "Empty call session. Call hung up immediately.";
+      let actionItems: string[] = [];
+      let outcome = "abandoned";
+      let bookingStatus: "none" | "booked" | "requested" = "none";
+      let escalationStatus: "none" | "escalated" = "none";
+
+      if (transcriptStr.trim()) {
+        try {
+          const llm = llmRegistry.getProvider();
+          const systemPrompt = `You are a post-call analysis assistant. Analyze the transcript of an AI Receptionist call and extract a JSON summary matching the following structure:
+{
+  "summary": "Brief 1-2 sentence summary of what was discussed",
+  "actionItems": ["Action item 1", "Action item 2"],
+  "outcome": "booking_success" | "lead_qualified" | "escalated" | "general_info" | "abandoned",
+  "bookingStatus": "none" | "booked" | "requested",
+  "escalationStatus": "none" | "escalated"
+}`;
+          const response = await llm.generateCompletion([
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `Transcript:\n${transcriptStr}` }
+          ], { jsonMode: true });
+
+          const parsed = JSON.parse(response.content.trim());
+          summaryText = parsed.summary || summaryText;
+          actionItems = parsed.actionItems || [];
+          outcome = parsed.outcome || "general_info";
+          bookingStatus = parsed.bookingStatus || "none";
+          escalationStatus = parsed.escalationStatus || "none";
+        } catch (err) {
+          console.error("[Voice Orchestrator] Failed to parse post-call LLM analysis:", err);
+          summaryText = `Failed to generate automated summary. Transcript length: ${transcriptStr.length} chars.`;
+        }
+      }
 
       await db
         .insert(callSummaries)
@@ -217,10 +244,10 @@ export const voiceOrchestrator = {
           organizationId,
           sessionId,
           summary: summaryText,
-          actionItems: ["Review appointment preferences"],
-          outcome: transcripts.length > 5 ? "general-info" : "abandoned",
-          bookingStatus: "none",
-          escalationStatus: "none"
+          actionItems: actionItems,
+          outcome: outcome as any,
+          bookingStatus: bookingStatus as any,
+          escalationStatus: escalationStatus as any
         });
 
     } catch (e) {

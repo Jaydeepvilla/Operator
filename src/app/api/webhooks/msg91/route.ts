@@ -10,6 +10,13 @@ import "@/server/services/omnichannel/msg91";
 
 export async function POST(req: NextRequest) {
   try {
+    const signature = req.headers.get("x-msg91-signature") || "";
+    const webhookToken = process.env.MSG91_WEBHOOK_TOKEN || "";
+    if (webhookToken && signature !== webhookToken) {
+      console.warn(`[MSG91 Webhook] Unauthorized signature token: ${signature}`);
+      return NextResponse.json({ error: "Unauthorized signature" }, { status: 401 });
+    }
+
     const body = await req.json();
     
     // Match connection

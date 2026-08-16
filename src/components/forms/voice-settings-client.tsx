@@ -243,7 +243,7 @@ export function VoiceSettingsClient({
  <SelectValue placeholder="Select Business Hours Mode" />
  </SelectTrigger>
  <SelectContent>
- <SelectItem value="ai-only">Always AI Receptionist</SelectItem>
+ <SelectItem value="ai-only">Always Operator AI</SelectItem>
  <SelectItem value="forward">Forward Out-of-Hours to Fallback Number</SelectItem>
  <SelectItem value="hybrid">Evaluate Custom Routing Rules First</SelectItem>
  </SelectContent>
@@ -253,7 +253,7 @@ export function VoiceSettingsClient({
  <div className="flex items-center justify-between pt-space-2 border-t border-[hsl(var(--foreground)/0.04)]">
  <div className="space-y-space-0.5">
  <Label className="text-caption font-semibold text-foreground">Voicemail Inbox Active</Label>
- <p className="text-caption text-muted-foreground/80">Capture messages if receptionist is busy</p>
+ <p className="text-caption text-muted-foreground/80">Capture messages if lines are busy</p>
  </div>
  <Button type="button" role="switch" aria-checked={settings.voicemailActive} onClick={() => setSettings({ ...settings, voicemailActive: !settings.voicemailActive })}
               className={cn(
@@ -355,35 +355,35 @@ export function VoiceSettingsClient({
  </Select>
  </div>
 
- <div className="space-y-space-1.5">
- <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Routing Action</Label>
- <Select
-                        value={newRuleAction}
-                        onValueChange={(val: any) => setNewRuleAction(val)}>
-                        
- <SelectTrigger className="h-9.5 text-caption bg-background border-[hsl(var(--foreground)/0.08)]">
- <SelectValue placeholder="Select Action" />
- </SelectTrigger>
- <SelectContent>
- <SelectItem value="ai-receptionist">AI Receptionist Stream</SelectItem>
- <SelectItem value="staff-dial">Forward Staff Number</SelectItem>
- <SelectItem value="voicemail">Voicemail Box</SelectItem>
- <SelectItem value="queue">Call Hold Queue</SelectItem>
- </SelectContent>
- </Select>
- </div>
- </div>
+  <div className="space-y-space-1.5">
+  <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Routing Action</Label>
+  <Select
+                         value={newRuleAction}
+                         onValueChange={(val: any) => setNewRuleAction(val)}>
+                         
+  <SelectTrigger className="h-9.5 text-caption bg-background border-[hsl(var(--foreground)/0.08)]">
+  <SelectValue placeholder="Select Action" />
+  </SelectTrigger>
+  <SelectContent>
+  <SelectItem value="ai-receptionist">Operator AI Answering</SelectItem>
+  <SelectItem value="staff-dial">Forward Staff Number</SelectItem>
+  <SelectItem value="voicemail">Voicemail Box</SelectItem>
+  <SelectItem value="queue">Call Hold Queue</SelectItem>
+  </SelectContent>
+  </Select>
+  </div>
+  </div>
 
- <div className="grid grid-cols-2 gap-space-3">
- <div className="space-y-space-1.5">
- <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Target Number (Optional)</Label>
- <Input
-                        placeholder="e.g. +15550192000"
-                        value={newRuleTarget}
-                        onChange={(e) => setNewRuleTarget(e.target.value)}
-                        className="h-9.5 text-caption bg-background border-[hsl(var(--foreground)/0.08)] focus-visible:ring-primary/20" />
-                      
- </div>
+  <div className="grid grid-cols-2 gap-space-3">
+  <div className="space-y-space-1.5">
+  <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Target Number (Optional)</Label>
+  <Input
+                         placeholder="e.g. +15550192000"
+                         value={newRuleTarget}
+                         onChange={(e) => setNewRuleTarget(e.target.value)}
+                         className="h-9.5 text-caption bg-background border-[hsl(var(--foreground)/0.08)] focus-visible:ring-primary/20" />
+                       
+  </div>
 
  <div className="space-y-space-1.5">
  <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Rule Priority</Label>

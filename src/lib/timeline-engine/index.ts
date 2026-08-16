@@ -62,12 +62,12 @@ export const TimelineEngine = {
     });
 
     // 6. Channels
-    // Mocking channels for now
+    const isChannelsDone = (state.channels && state.channels.length > 0) || !!state.settings?.phoneNumber || !!state.settings?.vapiConfigured || !!state.settings?.metaConfigured;
     steps.push({
       category: "channels",
       title: "Channels",
       description: "Connect phone numbers or web chat.",
-      status: "upcoming",
+      status: isChannelsDone ? "completed" : (isHoursDone ? "current" : "upcoming"),
       estimatedMinutes: 5,
     });
 

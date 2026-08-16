@@ -9,8 +9,7 @@ export class DeepgramSttProvider implements SpeechToTextProvider {
   ): Promise<{ text: string; isFinal: boolean; confidence: number }> {
     const apiKey = process.env.DEEPGRAM_API_KEY;
     if (!apiKey) {
-      console.warn("[Deepgram STT] DEEPGRAM_API_KEY is not configured. Returning empty response.");
-      return { text: "", isFinal: false, confidence: 0.0 };
+      throw new Error("DEEPGRAM_API_KEY is not configured on the server.");
     }
 
     try {

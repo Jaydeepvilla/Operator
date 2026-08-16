@@ -16,7 +16,7 @@ export function AiSetupCoach({ recommendation }: { recommendation: Recommendatio
           </div>
           <div>
             <h3 className="text-body-md font-semibold text-foreground">You're all set!</h3>
-            <p className="text-body-sm text-muted-foreground">Your AI Receptionist is fully configured and ready to handle calls.</p>
+            <p className="text-body-sm text-muted-foreground">Operator is fully configured and ready to handle customer inquiries.</p>
           </div>
         </CardContent>
       </Card>

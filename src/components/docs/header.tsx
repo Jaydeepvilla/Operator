@@ -30,11 +30,6 @@ export function DocsHeader() {
               Documentation
             </span>
           </Link>
-          <nav className="hidden md:flex items-center gap-space-6">
-            <Link href="/changelog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Changelog
-            </Link>
-          </nav>
         </div>
         
         <div className="flex items-center gap-space-4">

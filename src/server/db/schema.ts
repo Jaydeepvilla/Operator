@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, pgEnum, uuid, integer, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, pgEnum, uuid, integer, jsonb, vector, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const roleEnum = pgEnum("role", ["owner", "admin", "manager", "staff"]);
@@ -81,6 +81,8 @@ export const organizations = pgTable("organizations", {
   phone: text("phone"),
   address: text("address"),
   timezone: text("timezone").notNull(),
+  verificationStatus: text("verification_status").default("unverified").notNull(), // 'unverified', 'verifying', 'verified', 'needs_review'
+  verificationMetadata: jsonb("verification_metadata").default({}).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -395,6 +397,7 @@ export const knowledgeChunks = pgTable("knowledge_chunks", {
   content: text("content").notNull(),
   chunkIndex: integer("chunk_index").notNull(),
   tokenCount: integer("token_count").notNull(),
+  embedding: vector("embedding", { dimensions: 1536 }),
   metadata: jsonb("metadata").default({}).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -981,7 +984,10 @@ export const appointments = pgTable("appointments", {
   pricePaid: text("price_paid"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("appointments_org_staff_time_idx").on(table.organizationId, table.staffMemberId, table.startTime),
+  index("appointments_status_idx").on(table.status),
+]);
 
 export const appointmentEvents = pgTable("appointment_events", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -1587,8 +1593,10 @@ export const inboxThreads = pgTable("inbox_threads", {
   lastMessageId: uuid("last_message_id"),
   unreadCount: integer("unread_count").default(0).notNull(),
   status: text("status").default("open").notNull(), // 'open', 'closed', 'snoozed'
+  aiAutonomy: text("ai_autonomy").default("active").notNull(), // 'active', 'paused'
   assignedStaffId: text("assigned_staff_id")
     .references(() => users.id, { onDelete: "set null" }), // assign to staff member
+  metadata: jsonb("metadata").default({}).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -3226,6 +3234,102 @@ export const securitySettingsRelations = relations(securitySettings, ({ one }) =
   }),
 }));
 
+// --- AUTOMATION RULES & WORKFLOW EXECUTION SCHEMAS ---
 
+export const automationRules = pgTable("automation_rules", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id")
+    .references(() => organizations.id, { onDelete: "cascade" })
+    .notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  triggerType: text("trigger_type").notNull(), // 'lead_created', 'appointment_created', 'appointment_rescheduled', 'appointment_cancelled', 'appointment_no_show', 'call_completed', 'tag_added', 'custom'
+  triggerConfig: jsonb("trigger_config").default({}).notNull(),
+  conditions: jsonb("conditions").default([]).notNull(), // array of { field: string, operator: 'eq'|'neq'|'gt'|'lt'|'gte'|'lte'|'contains'|'in', value: any }
+  actions: jsonb("actions").default([]).notNull(), // array of { type: 'send_sms'|'send_email'|'send_whatsapp'|'update_lead_status'|'apply_tag'|'create_notification'|'assign_staff'|'webhook_post', config: Record<string, any> }
+  isActive: boolean("is_active").default(true).notNull(),
+  executionCount: integer("execution_count").default(0).notNull(),
+  lastExecutedAt: timestamp("last_executed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
 
+export const automationRuleExecutions = pgTable("automation_rule_executions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id")
+    .references(() => organizations.id, { onDelete: "cascade" })
+    .notNull(),
+  ruleId: uuid("rule_id")
+    .references(() => automationRules.id, { onDelete: "cascade" })
+    .notNull(),
+  triggerEvent: text("trigger_event").notNull(),
+  eventPayload: jsonb("event_payload").default({}).notNull(),
+  status: text("status").default("success").notNull(), // 'success', 'failed', 'skipped'
+  actionsExecuted: jsonb("actions_executed").default([]).notNull(),
+  errorMessage: text("error_message"),
+  executedAt: timestamp("executed_at").defaultNow().notNull(),
+});
+
+export const automationRulesRelations = relations(automationRules, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [automationRules.organizationId],
+    references: [organizations.id],
+  }),
+  executions: many(automationRuleExecutions),
+}));
+
+export const automationRuleExecutionsRelations = relations(automationRuleExecutions, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [automationRuleExecutions.organizationId],
+    references: [organizations.id],
+  }),
+  rule: one(automationRules, {
+    fields: [automationRuleExecutions.ruleId],
+    references: [automationRules.id],
+  }),
+}));
+
+// --- APPOINTMENT WAITLIST SCHEMA ---
+
+export const appointmentWaitlist = pgTable("appointment_waitlist", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id")
+    .references(() => organizations.id, { onDelete: "cascade" })
+    .notNull(),
+  staffMemberId: uuid("staff_member_id")
+    .references(() => staffMembers.id, { onDelete: "cascade" })
+    .notNull(),
+  serviceId: uuid("service_id")
+    .references(() => services.id, { onDelete: "cascade" })
+    .notNull(),
+  leadProfileId: uuid("lead_profile_id")
+    .references(() => leadProfiles.id, { onDelete: "set null" }),
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email"),
+  customerPhone: text("customer_phone"),
+  preferredDate: timestamp("preferred_date").notNull(),
+  status: text("status").default("waiting").notNull(), // 'waiting', 'offered', 'booked', 'expired', 'cancelled'
+  offeredAt: timestamp("offered_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const appointmentWaitlistRelations = relations(appointmentWaitlist, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [appointmentWaitlist.organizationId],
+    references: [organizations.id],
+  }),
+  staffMember: one(staffMembers, {
+    fields: [appointmentWaitlist.staffMemberId],
+    references: [staffMembers.id],
+  }),
+  service: one(services, {
+    fields: [appointmentWaitlist.serviceId],
+    references: [services.id],
+  }),
+  lead: one(leadProfiles, {
+    fields: [appointmentWaitlist.leadProfileId],
+    references: [leadProfiles.id],
+  }),
+}));
 

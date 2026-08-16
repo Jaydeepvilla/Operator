@@ -33,7 +33,7 @@ export default async function FaqsPage() {
   }));
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden space-y-space-4 animate-fade-in">
+    <div className="flex flex-col flex-1 min-h-0 w-full overflow-hidden space-y-space-4 animate-fade-in">
       {/* Page Header */}
       <div className="shrink-0">
         <PageTitle

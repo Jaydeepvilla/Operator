@@ -7,7 +7,7 @@ test.describe("Nexx Services Page Verification", () => {
     { name: "Features", path: "/features" },
     { name: "Dashboard", path: "/dashboard" },
     { name: "Settings", path: "/settings" },
-    { name: "Agency", path: "/agency" },
+    { name: "Agency", path: "/agency/dashboard" },
     { name: "Appointments", path: "/appointments" },
   ];
 
@@ -20,7 +20,7 @@ test.describe("Nexx Services Page Verification", () => {
       const status = response!.status();
       expect(status).toBeLessThan(400);
       
-      const screenshotPath = `C:/Users/Jaydeep Chandegara/.gemini/antigravity-ide/brain/99cf74a0-e6a5-4619-963c-d7169f01c24b/${page.name.toLowerCase()}_page.png`;
+      const screenshotPath = `C:/Users/Jaydeep Chandegara/.gemini/antigravity-ide/brain/cce60dbd-efa2-4e0f-a797-c11bc395c3ec/${page.name.toLowerCase()}_page.png`;
       await browserPage.screenshot({ path: screenshotPath, fullPage: true });
     });
   }

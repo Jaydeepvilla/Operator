@@ -359,7 +359,7 @@ export function VoiceHistoryClient({ initialSessions }: {initialSessions: any[];
  </div>
  <div className="space-y-space-1 min-w-0 flex-1">
  <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/55">
- {t.speaker === "caller" ? "Customer" : "AI Receptionist"}
+ {t.speaker === "caller" ? "Customer" : "Operator AI"}
  </span>
  <p className={cn(
  "px-space-3 py-space-2 text-caption border leading-relaxed radius-lg",

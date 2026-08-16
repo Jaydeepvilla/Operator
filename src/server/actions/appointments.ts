@@ -12,8 +12,9 @@ import { leadsRepository } from "../repositories/leads";
 import { summariesRepository } from "../repositories/summaries";
 
 async function getVerifiedOrgId() {
-  const { userId } = await auth();
+  const { userId, orgId } = await auth();
   if (!userId) throw new Error("Unauthorized");
+  if (orgId) return orgId;
   const memberships = await membershipRepository.getByUser(userId);
   if (memberships.length === 0) throw new Error("No organization found");
   return memberships[0].organizationId;
@@ -242,3 +243,56 @@ export async function updateAppointmentStatusAction(data: {
     return { success: false, error: error?.message || "Failed to update status" };
   }
 }
+
+/**
+ * Returns all active or filtered waitlist entries for the current organization.
+ */
+export async function getAppointmentWaitlistAction(status?: string) {
+  try {
+    const orgId = await getVerifiedOrgId();
+    const waitlist = await bookingService.getWaitlist(orgId, status);
+    return { success: true, waitlist };
+  } catch (error: any) {
+    console.error("getAppointmentWaitlistAction error:", error);
+    return { success: false, error: error?.message || "Failed to load waitlist", waitlist: [] };
+  }
+}
+
+/**
+ * Adds a prospect to the appointment waitlist.
+ */
+export async function joinAppointmentWaitlistAction(data: {
+  staffMemberId: string;
+  serviceId: string;
+  customerName: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  preferredDate: string;
+  leadProfileId?: string;
+}) {
+  try {
+    const orgId = await getVerifiedOrgId();
+
+    if (!data.customerName?.trim() || (!data.customerEmail && !data.customerPhone)) {
+      return { success: false, error: "Customer name and at least one contact method (phone or email) are required." };
+    }
+
+    const entry = await bookingService.joinWaitlist({
+      organizationId: orgId,
+      staffMemberId: data.staffMemberId,
+      serviceId: data.serviceId,
+      customerName: data.customerName.trim(),
+      customerEmail: data.customerEmail?.trim() || null,
+      customerPhone: data.customerPhone?.trim() || null,
+      preferredDate: new Date(data.preferredDate),
+      leadProfileId: data.leadProfileId || null,
+    });
+
+    revalidatePath("/appointments");
+    return { success: true, entry };
+  } catch (error: any) {
+    console.error("joinAppointmentWaitlistAction error:", error);
+    return { success: false, error: error?.message || "Failed to join waitlist" };
+  }
+}
+

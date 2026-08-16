@@ -4,6 +4,7 @@ import { channelConnections, channelMessages } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { ProviderRegistry } from "@/server/services/omnichannel/types";
 import { omnichannelRouter } from "@/server/services/omnichannel/router";
+import crypto from "crypto";
 
 // Auto import/trigger registry files to compile decorators
 import "@/server/services/omnichannel/whatsapp";
@@ -41,7 +42,35 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const rawBody = await req.text();
+    const appSecret = process.env.META_APP_SECRET;
+    if (!appSecret) {
+      console.error("[Meta Webhook] META_APP_SECRET is not configured");
+      return new NextResponse("Webhook secret configuration error", { status: 500 });
+    }
+
+    const signature = req.headers.get("x-hub-signature-256");
+    if (!signature) {
+      return new NextResponse("Missing x-hub-signature-256 header", { status: 401 });
+    }
+
+    const parts = signature.split("=");
+    if (parts.length !== 2 || parts[0] !== "sha256") {
+      return new NextResponse("Invalid signature format", { status: 401 });
+    }
+
+    const signatureHash = parts[1];
+    const expectedHash = crypto
+      .createHmac("sha256", appSecret)
+      .update(rawBody)
+      .digest("hex");
+
+    if (signatureHash !== expectedHash) {
+      console.warn("[Meta Webhook] Signature verification failed");
+      return new NextResponse("Invalid webhook signature", { status: 401 });
+    }
+
+    const body = JSON.parse(rawBody);
     // Resolve channel context from Meta payload identifiers
     const entry = body?.entry?.[0];
     const changes = entry?.changes?.[0];

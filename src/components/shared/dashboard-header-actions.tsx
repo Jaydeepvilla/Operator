@@ -7,13 +7,21 @@ import { useAuth } from "@/lib/auth/client";
 import { Bell, Sun, Moon } from "lucide-react";
 import { Button } from "./button";
 import { NotificationsDropdown } from "./notifications-dropdown";
+import { OrgSwitcher } from "./org-switcher";
 
 interface DashboardHeaderActionsProps {
   roleLabel: string;
+  orgName?: string;
+  orgIndustry?: string | null;
   initialNotifications?: any[];
 }
 
-export function DashboardHeaderActions({ roleLabel, initialNotifications = [] }: DashboardHeaderActionsProps) {
+export function DashboardHeaderActions({ 
+  roleLabel, 
+  orgName, 
+  orgIndustry, 
+  initialNotifications = [] 
+}: DashboardHeaderActionsProps) {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   const { user, isLoading } = useAuth();
@@ -29,7 +37,16 @@ export function DashboardHeaderActions({ roleLabel, initialNotifications = [] }:
   const userName = user?.name || "User";
 
   return (
-    <div className="flex items-center gap-space-3">
+    <div className="flex items-center gap-space-2.5">
+      {/* Multi-Tenant Org Switcher */}
+      <OrgSwitcher 
+        currentOrgName={orgName}
+        currentOrgIndustry={orgIndustry}
+        roleLabel={roleLabel}
+      />
+
+      <div className="h-4 w-px bg-[hsl(var(--foreground)/0.08)] hidden sm:block" />
+
       {/* Theme Toggle */}
       <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-transparent radius-md" onClick={toggleTheme} aria-label="Toggle theme">
         {mounted && resolvedTheme === "dark" ? (

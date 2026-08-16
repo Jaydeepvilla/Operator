@@ -43,16 +43,16 @@ const AI_LINKS = [
   { href: "/faqs", icon: "HelpCircle" as const, label: "FAQs" },
   { href: "/automations", icon: "Zap" as const, label: "Automations" },
   { href: "/flows", icon: "ClipboardList" as const, label: "Intake Questions" },
-  { href: "/templates", icon: "Settings" as const, label: "Templates" },
+  { href: "/templates", icon: "LayoutTemplate" as const, label: "Templates" },
 ];
 
 const SETTINGS_LINKS = [
   { href: "/profile", icon: "Building" as const, label: "Business Profile" },
-  { href: "/settings/account", icon: "Users" as const, label: "Account Settings" },
-  { href: "/admin/users", icon: "Users" as const, label: "User Directory" },
+  { href: "/settings/account", icon: "UserCog" as const, label: "Account Settings" },
+  { href: "/admin/users", icon: "Contact" as const, label: "User Directory" },
   { href: "/services", icon: "Briefcase" as const, label: "Services" },
-  { href: "/staff", icon: "Users" as const, label: "Staff" },
-  { href: "/settings", icon: "Settings" as const, label: "Hours & Booking" },
+  { href: "/staff", icon: "UserCheck" as const, label: "Staff" },
+  { href: "/settings", icon: "Clock" as const, label: "Hours & Booking" },
   { href: "/team", icon: "Users" as const, label: "Team" },
   { href: "/billing", icon: "CreditCard" as const, label: "Billing" },
 ];
@@ -69,17 +69,17 @@ const BREADCRUMB_MAP: Record<string, { group: string; label: string }> = {
   "/leads": { group: "Customers", label: "Leads" },
   "/appointments": { group: "Customers", label: "Appointments" },
   "/escalations": { group: "Customers", label: "Escalations" },
-  "/channels": { group: "AI Receptionist", label: "Channels" },
-  "/widget": { group: "AI Receptionist", label: "Website Widget" },
-  "/voice": { group: "AI Receptionist", label: "Phone Lines" },
-  "/voice/dashboard": { group: "AI Receptionist", label: "Voice" },
-  "/voice/settings": { group: "AI Receptionist", label: "Voice Settings" },
-  "/voice/history": { group: "AI Receptionist", label: "Call Logs" },
-  "/kb": { group: "AI Receptionist", label: "Knowledge" },
-  "/faqs": { group: "AI Receptionist", label: "FAQs" },
-  "/automations": { group: "AI Receptionist", label: "Automations" },
-  "/flows": { group: "AI Receptionist", label: "Intake Questions" },
-  "/templates": { group: "AI Receptionist", label: "Templates" },
+  "/channels": { group: "Operator AI", label: "Channels" },
+  "/widget": { group: "Operator AI", label: "Website Widget" },
+  "/voice": { group: "Operator AI", label: "Phone Lines" },
+  "/voice/dashboard": { group: "Operator AI", label: "Voice" },
+  "/voice/settings": { group: "Operator AI", label: "Voice Settings" },
+  "/voice/history": { group: "Operator AI", label: "Call Logs" },
+  "/kb": { group: "Operator AI", label: "Knowledge" },
+  "/faqs": { group: "Operator AI", label: "FAQs" },
+  "/automations": { group: "Operator AI", label: "Automations" },
+  "/flows": { group: "Operator AI", label: "Intake Questions" },
+  "/templates": { group: "Operator AI", label: "Templates" },
   "/profile": { group: "Settings", label: "Business Profile" },
   "/settings/account": { group: "Settings", label: "Account Settings" },
   "/admin/users": { group: "Settings", label: "User Directory" },
@@ -188,7 +188,7 @@ export function DashboardShell({
                 {orgName}
               </span>
               <span className="text-caption text-muted-foreground truncate capitalize">
-                {orgIndustry?.toLowerCase() ?? "AI Receptionist"}
+                {orgIndustry?.toLowerCase() ?? "Operator"}
               </span>
             </div>
           )}
@@ -214,7 +214,7 @@ export function DashboardShell({
           >
             <SidebarNavGroup title="Home" links={HOME_LINKS} />
             <SidebarNavGroup title="Customers" links={CUSTOMERS_LINKS} />
-            <SidebarNavGroup title="AI Receptionist" links={AI_LINKS} />
+            <SidebarNavGroup title="Operator AI" links={AI_LINKS} />
             <SidebarNavGroup title="Settings" links={SETTINGS_LINKS} />
 
             {isAgency && (
@@ -312,7 +312,7 @@ export function DashboardShell({
             initial="initial"
             animate="animate"
             exit="exit"
-            className="flex-1 min-h-0 overflow-y-auto p-space-6 md:p-space-8 sidebar-scroll"
+            className="flex-1 min-h-0 overflow-y-auto p-space-6 md:p-space-8 sidebar-scroll flex flex-col"
           >
             {children}
           </m.main>

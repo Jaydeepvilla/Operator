@@ -4,12 +4,12 @@ import { auth } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { billingRepository } from "../repositories/billing";
 import { billingService } from "../services/billing/billing";
+import { financialMetricsService } from "../services/billing/financial-metrics";
 import { db } from "../db";
-import { eq } from "drizzle-orm";
-import { subscriptions, billingAccounts, paymentMethods, payments, invoices } from "../db/schema";
+import { eq, desc } from "drizzle-orm";
+import { subscriptions, billingAccounts, paymentMethods, payments, invoices, invoiceItems } from "../db/schema";
 import { ProviderRegistry } from "../services/billing/providers/registry";
 import "../services/billing/providers/stripe"; // Load provider registration
-import "../services/billing/providers/razorpay";
 
 async function getVerifiedUser() {
   const { userId } = await auth();
@@ -94,7 +94,7 @@ export async function upgradeSubscriptionAction(planId: string) {
       });
     }
 
-    // Trigger mock Stripe subscription creation
+    // Trigger Stripe subscription creation
     const stripe = ProviderRegistry.getSubscriptionProvider("stripe");
     const stripeCustomer = ProviderRegistry.getBillingProvider("stripe");
     
@@ -320,3 +320,45 @@ export async function updateProviderSettingsAction(data: {
   }
 }
 
+/**
+ * Returns real-time aggregated financial indicators (MRR, ARR, LTV, ARPU, Churn)
+ */
+export async function getRealtimeFinancialMetricsAction() {
+  try {
+    const orgId = await getVerifiedOrgContext();
+    const metrics = await financialMetricsService.calculateRealtimeMetrics(orgId);
+    return { success: true, data: metrics };
+  } catch (error: any) {
+    console.error("getRealtimeFinancialMetricsAction error:", error);
+    return { success: false, error: error?.message || "Failed to compute financial metrics" };
+  }
+}
+
+/**
+ * Returns all generated invoice records and line items for the organization.
+ */
+export async function getOrganizationInvoicesAction() {
+  try {
+    const orgId = await getVerifiedOrgContext();
+    
+    // Find billing account
+    const acc = await db.query.billingAccounts.findFirst({
+      where: eq(billingAccounts.organizationId, orgId),
+    });
+
+    if (!acc) {
+      return { success: true, invoices: [] };
+    }
+
+    const orgInvoices = await db
+      .select()
+      .from(invoices)
+      .where(eq(invoices.billingAccountId, acc.id))
+      .orderBy(desc(invoices.createdAt));
+
+    return { success: true, invoices: orgInvoices };
+  } catch (error: any) {
+    console.error("getOrganizationInvoicesAction error:", error);
+    return { success: false, error: error?.message || "Failed to load invoices", invoices: [] };
+  }
+}

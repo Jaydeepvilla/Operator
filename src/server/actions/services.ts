@@ -8,6 +8,7 @@ import { syncService } from "../services/sync";
 import { db } from "../db";
 import { services } from "../db/schema";
 import { eq, and } from "drizzle-orm";
+import { verificationEngine } from "../services/verification/engine";
 
 async function getVerifiedOrgId() {
   const { userId } = await auth();
@@ -96,6 +97,8 @@ export async function createServiceAction(data: {
       service.isActive
     );
 
+    await verificationEngine.invalidateScenarios(orgId, ["pricing_hours"]);
+
     revalidatePath("/services");
     revalidatePath("/dashboard");
     return { success: true };
@@ -158,6 +161,8 @@ export async function updateServiceAction(
       );
     }
 
+    await verificationEngine.invalidateScenarios(orgId, ["pricing_hours"]);
+
     revalidatePath("/services");
     return { success: true };
   } catch (error: any) {
@@ -184,6 +189,8 @@ export async function archiveServiceAction(id: string) {
         true
       );
     }
+
+    await verificationEngine.invalidateScenarios(orgId, ["pricing_hours"]);
     revalidatePath("/services");
     revalidatePath("/dashboard");
     return { success: true };

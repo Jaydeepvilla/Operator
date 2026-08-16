@@ -1,4 +1,5 @@
 import { widgetRepository } from "../repositories/widget";
+import dns from "dns";
 
 export const widgetService = {
   /**
@@ -74,7 +75,6 @@ export const widgetService = {
 
   /**
    * Triggers a DNS or metadata check to verify domain ownership.
-   * Mocked for simulation.
    */
   async verifyDomainOwnership(organizationId: string, domainId: string) {
     const domains = await widgetRepository.listDomains(organizationId);
@@ -84,17 +84,35 @@ export const widgetService = {
       throw new Error("Domain record not found");
     }
 
-    // Simulate verification check latency
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    const cleanDomain = domainRecord.domain
+      .replace(/^https?:\/\//, "")
+      .replace(/\/$/, "")
+      .split(":")[0];
 
-    // For testing/sandbox, we auto-verify domains unless they match an invalid pattern
-    const isMockSuccess = !domainRecord.domain.includes("invalid-dns-record");
-    
-    if (isMockSuccess) {
-      await widgetRepository.updateDomainVerification(domainId, true);
-      return { success: true, message: "Domain verified successfully" };
-    } else {
-      return { success: false, message: "TXT verification token not found in DNS configuration. Retrying in background..." };
+    try {
+      const txtRecords = await dns.promises.resolveTxt(cleanDomain);
+      const flatRecords = txtRecords.flat();
+      const token = domainRecord.verificationToken;
+
+      const isVerified = flatRecords.some(
+        (record) => record === token || record === `nexx-verification=${token}`
+      );
+
+      if (isVerified) {
+        await widgetRepository.updateDomainVerification(domainId, true);
+        return { success: true, message: "Domain verified successfully" };
+      } else {
+        return { 
+          success: false, 
+          message: `TXT verification record not found. Expected record: "nexx-verification=${token}"` 
+        };
+      }
+    } catch (error: any) {
+      console.error(`[Widget Service] DNS lookup failed for ${cleanDomain}:`, error);
+      return { 
+        success: false, 
+        message: `DNS query failed: ${error.message}. Please configure the TXT record first.` 
+      };
     }
   }
 };

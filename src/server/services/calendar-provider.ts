@@ -357,8 +357,7 @@ export class CalendlyProvider implements CalendarProvider {
     externalCalendarId: string | null,
     event: ExternalEventInput
   ): Promise<{ externalId: string }> {
-    // In Calendly, bookings are typically initiated by users on their booking page rather than via outbound API
-    return { externalId: `calendly_event_${Math.random().toString(36).substr(2, 9)}` };
+    throw new Error("Outbound event creation is not supported by Calendly. Use Google Calendar or Outlook for direct scheduling, or integrate Calendly via incoming webhooks.");
   }
 
   async updateEvent(
@@ -368,7 +367,9 @@ export class CalendlyProvider implements CalendarProvider {
     externalCalendarId: string | null,
     externalId: string,
     event: ExternalEventInput
-  ): Promise<void> {}
+  ): Promise<void> {
+    throw new Error("Outbound event update is not supported by Calendly.");
+  }
 
   async deleteEvent(
     accessToken: string,
@@ -376,7 +377,9 @@ export class CalendlyProvider implements CalendarProvider {
     expiresAt: Date | null,
     externalCalendarId: string | null,
     externalId: string
-  ): Promise<void> {}
+  ): Promise<void> {
+    throw new Error("Outbound event cancellation is not supported by Calendly.");
+  }
 }
 
 export const providerRegistry = {

@@ -45,7 +45,7 @@ export function TrialBanner({ trialEndsAt, planId }: TrialBannerProps) {
             <strong>{daysRemaining} day{daysRemaining !== 1 ? "s" : ""}</strong> remaining in your free trial.
           </>
         )}
-        {" "}Upgrade to keep your AI Receptionist active.
+        {" "}Upgrade to keep Operator active.
       </span>
       <Button
         size="xs"

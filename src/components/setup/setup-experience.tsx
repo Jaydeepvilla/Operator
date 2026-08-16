@@ -21,7 +21,7 @@ export function SetupExperience({ state }: { state: SetupState }) {
   return (
     <>
       <div className="flex items-center justify-between">
-        <h2 className="text-title-md font-semibold text-foreground tracking-tight">AI Receptionist Setup</h2>
+        <h2 className="text-title-md font-semibold text-foreground tracking-tight">Operator Setup</h2>
         <Link href="/setup" passHref>
           <Button variant="outline" className="gap-space-2 text-primary border-primary/20 hover:bg-primary/5">
             Open Setup Wizard <ArrowRight className="h-4 w-4" />

@@ -16,10 +16,10 @@ export class VapiTelephonyProvider implements TelephonyProvider {
     const phoneNumberId = connectionConfig.vapiPhoneNumberId || process.env.VAPI_PHONE_NUMBER_ID;
 
     if (!apiKey) {
-      console.warn("[Vapi Telephony] VAPI_API_KEY is not configured. Simulating Vapi outbound call.");
+      console.error("[Vapi Telephony] VAPI_API_KEY is not configured.");
       return {
-        success: true,
-        externalCallId: "vapi_mock_call_" + Math.random().toString(36).substring(2, 16),
+        success: false,
+        error: "Vapi API Key is missing. Outbound call cannot be placed.",
       };
     }
 
@@ -63,7 +63,7 @@ export class VapiTelephonyProvider implements TelephonyProvider {
     options: CallTransferOptions
   ): Promise<{ success: boolean; error?: string }> {
     const apiKey = process.env.VAPI_API_KEY;
-    if (!apiKey) return { success: true };
+    if (!apiKey) return { success: false, error: "Vapi API key missing." };
 
     try {
       // Vapi supports call transfer by sending a control action or transferring to a destination
@@ -98,7 +98,7 @@ export class VapiTelephonyProvider implements TelephonyProvider {
 
   async hangUpCall(externalCallId: string): Promise<boolean> {
     const apiKey = process.env.VAPI_API_KEY;
-    if (!apiKey) return true;
+    if (!apiKey) return false;
 
     try {
       const response = await fetch(`https://api.vapi.ai/call/${externalCallId}/end`, {

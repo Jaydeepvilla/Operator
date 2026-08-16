@@ -14,32 +14,51 @@ export const promptService = {
     const { organizationId, ragContext, nextQuestionText, isEscalated } = input;
 
     // 1. Fetch Organization metadata
-    const [org] = await db
-      .select()
-      .from(organizations)
-      .where(eq(organizations.id, organizationId));
+    let org: any = null;
+    let profile: any = null;
+    let settings: any = null;
+    let customPrompt: any = null;
 
-    if (!org) {
-      return "You are a professional AI Receptionist. Maintain a helpful and polite tone.";
+    try {
+      const orgs = await db
+        .select()
+        .from(organizations)
+        .where(eq(organizations.id, organizationId));
+      org = orgs[0];
+
+      if (org) {
+        const profiles = await db
+          .select()
+          .from(businessProfiles)
+          .where(eq(businessProfiles.organizationId, organizationId));
+        profile = profiles[0];
+
+        const settingsList = await db
+          .select()
+          .from(businessSettings)
+          .where(eq(businessSettings.organizationId, organizationId));
+        settings = settingsList[0];
+
+        const customPrompts = await db
+          .select()
+          .from(voicePrompts)
+          .where(and(eq(voicePrompts.organizationId, organizationId), eq(voicePrompts.isActive, true)));
+        customPrompt = customPrompts[0];
+      }
+    } catch (e: any) {
+      console.warn("[PromptService] DB fallback for metadata:", e.message);
     }
 
-    // 2. Fetch Business Profile
-    const [profile] = await db
-      .select()
-      .from(businessProfiles)
-      .where(eq(businessProfiles.organizationId, organizationId));
-
-    // 3. Fetch Business Settings
-    const [settings] = await db
-      .select()
-      .from(businessSettings)
-      .where(eq(businessSettings.organizationId, organizationId));
-
-    // 4. Fetch Custom Voice Prompt
-    const [customPrompt] = await db
-      .select()
-      .from(voicePrompts)
-      .where(and(eq(voicePrompts.organizationId, organizationId), eq(voicePrompts.isActive, true)));
+    if (!org) {
+      org = {
+        name: "My Business",
+        industry: "General Business",
+        timezone: "UTC",
+        website: null,
+        phone: null,
+        address: null,
+      };
+    }
 
     const businessHoursStr = settings?.businessHours
       ? JSON.stringify(settings.businessHours, null, 2)
@@ -52,7 +71,7 @@ export const promptService = {
     // Assemble dynamic system prompt parts
     const promptParts: string[] = [];
 
-    promptParts.push(`You are the official AI Receptionist for "${org.name}".
+    promptParts.push(`You are Operator, the official AI assistant for "${org.name}".
 Industry: ${org.industry}
 Timezone: ${org.timezone}
 Website: ${org.website ?? "Not provided"}

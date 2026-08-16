@@ -13,8 +13,8 @@ async function sendSmtpEmail(to: string, subject: string, html: string): Promise
   const from = process.env.SMTP_FROM || `"Operator AI" <${user}>`;
 
   if (!user || !pass) {
-    console.warn("[NotificationService] SMTP credentials missing. Simulating email dispatch.");
-    return true; // simulate success
+    console.error("[NotificationService] SMTP credentials missing. Failing email dispatch.");
+    return false;
   }
 
   try {
@@ -52,8 +52,8 @@ async function sendMsg91SMS(to: string, message: string): Promise<boolean> {
   const flowId = process.env.MSG91_FLOW_ID;
 
   if (!authKey) {
-    console.warn("[NotificationService] MSG91 SMS credentials missing. Simulating SMS dispatch.");
-    return true; // simulate success
+    console.error("[NotificationService] MSG91 SMS credentials missing. Failing SMS dispatch.");
+    return false;
   }
 
   // Clean the phone number (MSG91 expects country code without + prefix, e.g. '919999999999')
@@ -134,6 +134,27 @@ async function dispatchSMS(to: string, message: string): Promise<boolean> {
 export const notificationService = {
   async sendEmail(to: string, subject: string, html: string): Promise<boolean> {
     return sendSmtpEmail(to, subject, html);
+  },
+  async sendSMS(to: string, message: string): Promise<boolean> {
+    return dispatchSMS(to, message);
+  },
+  async queueEmail(organizationId: string, to: string, subject: string, html: string, scheduledFor?: Date): Promise<string> {
+    const { notificationQueueService } = await import("./jobs/notification-queue");
+    return notificationQueueService.enqueue({
+      organizationId,
+      type: "send_email",
+      payload: { to, subject, body: html },
+      scheduledFor,
+    });
+  },
+  async queueSMS(organizationId: string, to: string, message: string, scheduledFor?: Date): Promise<string> {
+    const { notificationQueueService } = await import("./jobs/notification-queue");
+    return notificationQueueService.enqueue({
+      organizationId,
+      type: "send_sms",
+      payload: { to, body: message },
+      scheduledFor,
+    });
   },
   async sendReminder(reminderId: string): Promise<boolean> {
     try {

@@ -668,7 +668,7 @@ export default async function HomePage() {
  A: Free cancellation up to 24 hours prior.
  </div>
  </div>
- <Button className="w-full bg-primary py-space-2 text-center text-caption text-white font-normal hover:opacity-90 transition-all select-none cursor-pointer">
+ <Button className="w-full bg-foreground py-space-2 text-center text-caption text-background font-normal hover:opacity-90 transition-all select-none cursor-pointer">
  Train Receptionist ✦
  </Button>
  </div>

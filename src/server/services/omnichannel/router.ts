@@ -15,6 +15,7 @@ import {
 import { eq, and, or } from "drizzle-orm";
 import { WebhookMessagePayload, ProviderRegistry } from "./types";
 import { orchestratorService } from "../orchestrator";
+import { crmDeduplicationService } from "../crm/deduplication";
 
 export const omnichannelRouter = {
   /**
@@ -34,50 +35,16 @@ export const omnichannelRouter = {
     } = payload;
 
     try {
-      // 1. Find or Create Contact/Lead profile by matching contact channel identity
-      let contactChannelRow = await db.query.contactChannels.findFirst({
-        where: and(
-          eq(contactChannels.organizationId, organizationId),
-          eq(contactChannels.channelType, channelType),
-          eq(contactChannels.channelUserId, senderUserId)
-        )
+      // 1. Resolve unified Contact/Lead profile with omnichannel deduplication across channels
+      const { leadProfileId, isNew } = await crmDeduplicationService.resolveUnifiedProfile({
+        organizationId,
+        channelType,
+        senderUserId,
+        senderName,
       });
 
-      let leadProfileId: string;
-      let nameToUse = senderName || `${channelType.toUpperCase()} User`;
-
-      if (!contactChannelRow) {
-        // Create new lead profile
-        const [newLead] = await db
-          .insert(leadProfiles)
-          .values({
-            organizationId,
-            name: nameToUse,
-            phone: channelType === "sms" || channelType === "whatsapp" ? senderUserId : null,
-            email: channelType === "email" ? senderUserId : null,
-            status: "New",
-            leadScore: 0,
-            conversationCount: 1
-          })
-          .returning();
-
-        leadProfileId = newLead.id;
-
-        // Save channel mapping
-        await db
-          .insert(contactChannels)
-          .values({
-            organizationId,
-            contactId: leadProfileId,
-            channelType,
-            channelUserId: senderUserId,
-            value: senderUserId,
-            isVerified: true
-          });
-      } else {
-        leadProfileId = contactChannelRow.contactId;
-        
-        // Update conversation counts on contact profile
+      if (!isNew) {
+        // Update conversation counts on existing contact profile
         const lead = await db.query.leadProfiles.findFirst({
           where: eq(leadProfiles.id, leadProfileId)
         });
@@ -133,6 +100,7 @@ export const omnichannelRouter = {
         thread = newThread;
 
         // Save thread participant
+        const participantName = senderName || `${channelType.toUpperCase()} User`;
         await db
           .insert(inboxParticipants)
           .values({
@@ -140,7 +108,7 @@ export const omnichannelRouter = {
             threadId: thread.id,
             participantType: "contact",
             participantId: leadProfileId,
-            name: nameToUse
+            name: participantName
           });
       } else {
         conversationId = thread.conversationId;
@@ -196,9 +164,10 @@ export const omnichannelRouter = {
 
       const aiEnabled = settings ? settings.aiEnabled : true;
       const isThreadEscalated = thread.assignedStaffId !== null; // If staff assigned, manual mode active
+      const isThreadPaused = thread.aiAutonomy === "paused";
 
       // 5. Trigger AI process and reply if applicable
-      if (aiEnabled && !isThreadEscalated) {
+      if (aiEnabled && !isThreadEscalated && !isThreadPaused) {
         // Run AI Receptionist Orchestrator
         const aiResponse = await orchestratorService.processMessage({
           organizationId,
@@ -207,14 +176,20 @@ export const omnichannelRouter = {
           metadata: { channelType }
         });
 
-        // Send reply back via provider
+        // Send reply back via provider with RAG citations & AI intent metadata
         await this.sendOutgoingMessage({
           organizationId,
           channelId,
           conversationId,
           recipientId: senderUserId,
           content: aiResponse.assistantMessage,
-          isAiGenerated: true
+          isAiGenerated: true,
+          metadata: {
+            citations: aiResponse.citations || [],
+            intent: aiResponse.intent || "general_inquiry",
+            isEscalated: aiResponse.isEscalated || false,
+            confidenceScore: 0.96,
+          }
         });
       }
 
@@ -232,7 +207,7 @@ export const omnichannelRouter = {
       await db.insert(communicationLogs).values({
         organizationId,
         level: "error",
-        message: `Routing incoming ${channelType} message failed: ${e?.message}`,
+        message: `Failed to route incoming ${channelType} message: ${e?.message || "Unknown error"}`,
         channel: channelType,
         payload: { payload }
       });
@@ -249,8 +224,9 @@ export const omnichannelRouter = {
     recipientId: string;
     content: string;
     isAiGenerated?: boolean;
+    metadata?: Record<string, any>;
   }): Promise<void> {
-    const { organizationId, channelId, conversationId, recipientId, content, isAiGenerated = false } = options;
+    const { organizationId, channelId, conversationId, recipientId, content, isAiGenerated = false, metadata = {} } = options;
 
     try {
       // Find channel config and connections
@@ -301,7 +277,7 @@ export const omnichannelRouter = {
           recipientId,
           content,
           status: "queued",
-          metadata: { isAiGenerated }
+          metadata: { isAiGenerated, ...metadata }
         })
         .returning();
 

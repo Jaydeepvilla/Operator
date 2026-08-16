@@ -1,3 +1,6 @@
+import fs from "fs/promises";
+import path from "path";
+
 export interface FileUploadResult {
   filePath: string;
   fileSize: number;
@@ -10,49 +13,46 @@ export interface StorageProvider {
   deleteFile(filePath: string): Promise<void>;
 }
 
-// Configurable target: local (mock), vercel_blob, s3, r2
-export type StorageTarget = "mock" | "vercel_blob" | "s3" | "r2";
-
-export class StorageService implements StorageProvider {
-  private target: StorageTarget;
-
-  constructor(target: StorageTarget = "mock") {
-    this.target = target;
-  }
-
+export class LocalStorageService implements StorageProvider {
   async uploadFile(
     file: { name: string; size: number; type: string; buffer: Buffer },
     organizationId: string
   ): Promise<FileUploadResult> {
     const fileExtension = file.name.split(".").pop() || "txt";
     const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExtension}`;
-    const filePath = `uploads/${organizationId}/${uniqueName}`;
+    
+    // Storing files under public/uploads so they are served statically by Next.js
+    const relativeDir = path.join("uploads", organizationId);
+    const publicDir = path.join(process.cwd(), "public", relativeDir);
+    const absoluteFilePath = path.join(publicDir, uniqueName);
+    const relativeFilePath = path.join(relativeDir, uniqueName).replace(/\\/g, "/");
 
-    switch (this.target) {
-      case "vercel_blob":
-        // Placeholder for vercel blob client upload
-        break;
-      case "s3":
-        // Placeholder for AWS S3 upload
-        break;
-      case "r2":
-        // Placeholder for Cloudflare R2 upload
-        break;
-      case "mock":
-      default:
-        break;
-    }
+    // Ensure the output directory exists
+    await fs.mkdir(publicDir, { recursive: true });
+
+    // Write file to disk
+    await fs.writeFile(absoluteFilePath, file.buffer);
+
+    // Resolve base URL from host env or fallback to local path
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+    const url = `${appUrl}/${relativeFilePath}`;
 
     return {
-      filePath,
+      filePath: relativeFilePath,
       fileSize: file.size,
       fileType: fileExtension.toLowerCase(),
-      url: `https://storage.nexx.ai/${filePath}`,
+      url,
     };
   }
 
   async deleteFile(filePath: string): Promise<void> {
+    try {
+      const absoluteFilePath = path.join(process.cwd(), "public", filePath);
+      await fs.unlink(absoluteFilePath);
+    } catch (e) {
+      console.error("[StorageService] Failed to delete file:", e);
+    }
   }
 }
 
-export const storageService = new StorageService("mock");
+export const storageService = new LocalStorageService();

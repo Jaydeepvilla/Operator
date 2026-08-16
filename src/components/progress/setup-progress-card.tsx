@@ -28,7 +28,7 @@ export function SetupProgressCard({
               Setup Progress
             </CardTitle>
             <CardDescription className="text-zinc-400 mt-space-1">
-              Your journey to a fully autonomous AI Receptionist
+              Your journey to full Operator readiness
             </CardDescription>
           </div>
           <div className="flex items-center gap-space-3 text-right">

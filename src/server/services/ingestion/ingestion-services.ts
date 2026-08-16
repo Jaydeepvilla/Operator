@@ -231,11 +231,7 @@ export const KnowledgeAnalysisService = {
     
     try {
       const llm = llmRegistry.getProvider();
-      
-      // If we are falling back to the Mock provider, just return the heuristic reports to prevent mock clutter
-      if (llm.constructor.name === "MockLLMProvider") {
-        return { ...fallback, duplicateWarning: duplicate };
-      }
+
 
       const categoriesListText = categories.map(c => `ID: "${c.id}", Name: "${c.name}"`).join("\n");
 

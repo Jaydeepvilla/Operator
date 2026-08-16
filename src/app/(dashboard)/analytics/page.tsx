@@ -18,6 +18,10 @@ import {
  Calendar,
  ChevronUp,
  Percent,
+ DollarSign,
+ CreditCard,
+ ArrowUpRight,
+ Wallet,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/shared/card";
 import { Button } from "@/components/shared/button";
@@ -110,7 +114,18 @@ export default function AnalyticsPage() {
  );
  }
 
- const { conversations, funnel, leads, escalations, feedback, intents } = data;
+ const { conversations, funnel, leads, escalations, feedback, intents, financials } = data;
+ const fin = financials || {
+   mrr: 0,
+   arr: 0,
+   arpu: 0,
+   ltv: 0,
+   churnRate: 0,
+   grossRevenue: 0,
+   netRevenue: 0,
+   revenueGrowthPercent: 0,
+   activeSubscriptionsCount: 0,
+ };
 
  const conversationStatuses = [
  { label: "Active", count: conversations.active, color: "bg-emerald-500" },
@@ -124,7 +139,7 @@ export default function AnalyticsPage() {
  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-3 shrink-0">
  <PageTitle
  title="Analytics Dashboard"
- description="Lead pipelines, conversation funnels, and customer satisfaction metrics."
+ description="Real-time financial metrics, lead pipelines, and AI performance indicators."
  className="mb-space-0"
  />
  
@@ -151,8 +166,82 @@ export default function AnalyticsPage() {
  </div>
  </div>
 
- {/* KPI Row */}
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-space-4 shrink-0">
+ {/* Real-time Financial Indicators Row */}
+ <div className="space-y-space-2">
+ <div className="flex items-center justify-between">
+ <div className="flex items-center gap-2">
+ <DollarSign className="h-4 w-4 text-emerald-500" />
+ <h3 className="text-caption font-bold text-foreground uppercase tracking-wider">
+ Financial & Revenue Metrics
+ </h3>
+ </div>
+ <span className="text-[11px] font-medium text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded">
+ Live Stream
+ </span>
+ </div>
+
+ <div className="grid grid-cols-2 lg:grid-cols-5 gap-space-3 shrink-0">
+ <StatCard 
+ label="MRR"
+ value={`$${fin.mrr?.toLocaleString() || 0}`}
+ icon={DollarSign} 
+ trend={fin.revenueGrowthPercent !== 0 ? { value: `${fin.revenueGrowthPercent > 0 ? "+" : ""}${fin.revenueGrowthPercent}%`, positive: fin.revenueGrowthPercent >= 0 } : undefined}
+ subtitle="Monthly Recurring"
+ iconClassName="bg-emerald-500/10 text-emerald-500 ring-1 ring-emerald-500/15"
+ chartData={[{ v: fin.mrr * 0.8 }, { v: fin.mrr * 0.9 }, { v: fin.mrr }]}
+ chartCategories={["v"]}
+ chartColors={["#10b981"]}
+ />
+ <StatCard 
+ label="ARR"
+ value={`$${fin.arr?.toLocaleString() || 0}`}
+ icon={CreditCard} 
+ subtitle="Annual Run Rate"
+ iconClassName="bg-indigo-500/10 text-indigo-500 ring-1 ring-indigo-500/15"
+ chartData={[{ v: fin.arr * 0.8 }, { v: fin.arr * 0.9 }, { v: fin.arr }]}
+ chartCategories={["v"]}
+ chartColors={["#6366f1"]}
+ />
+ <StatCard 
+ label="ARPU"
+ value={`$${fin.arpu || 0}`}
+ icon={Wallet} 
+ subtitle="Avg Revenue / User"
+ iconClassName="bg-blue-500/10 text-blue-500 ring-1 ring-blue-500/15"
+ chartData={[{ v: fin.arpu * 0.9 }, { v: fin.arpu }]}
+ chartCategories={["v"]}
+ chartColors={["#3b82f6"]}
+ />
+ <StatCard 
+ label="LTV"
+ value={`$${fin.ltv?.toLocaleString() || 0}`}
+ icon={ArrowUpRight} 
+ subtitle="Customer Lifetime Value"
+ iconClassName="bg-amber-500/10 text-amber-500 ring-1 ring-amber-500/15"
+ chartData={[{ v: fin.ltv * 0.85 }, { v: fin.ltv }]}
+ chartCategories={["v"]}
+ chartColors={["#f59e0b"]}
+ />
+ <StatCard 
+ label="Churn Rate"
+ value={`${fin.churnRate || 0}%`}
+ icon={Percent} 
+ subtitle="Subscription churn"
+ iconClassName={cn(
+ "ring-1",
+ fin.churnRate > 5 
+ ? "bg-rose-500/10 text-rose-500 ring-rose-500/15" 
+ : "bg-emerald-500/10 text-emerald-500 ring-emerald-500/15"
+ )}
+ chartData={[{ v: fin.churnRate + 1 }, { v: fin.churnRate }]}
+ chartCategories={["v"]}
+ chartColors={["#f43f5e"]}
+ />
+ </div>
+ </div>
+
+ {/* Operational KPI Row */}
+ <div className="grid grid-cols-2 lg:grid-cols-4 gap-space-4 shrink-0 pt-space-2">
  <StatCard 
  label="Sessions"
  value={conversations.total} 

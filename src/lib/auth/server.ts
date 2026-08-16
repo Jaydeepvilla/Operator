@@ -3,7 +3,7 @@ import { cache } from "react";
 import { getSession } from "./session";
 import { db } from "@/server/db";
 import { users, memberships } from "@/server/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export interface AuthResult {
   userId: string | null;
@@ -27,16 +27,43 @@ export const auth = cache(async (): Promise<AuthResult> => {
       return { userId: null, orgId: null };
     }
 
-    // Find the first membership to resolve the orgId
-    const [membership] = await db
-      .select()
-      .from(memberships)
-      .where(eq(memberships.userId, session.userId))
-      .limit(1);
+    // Check active_org_id cookie for multi-tenant switching
+    const activeOrgCookie = cookieStore.get("active_org_id")?.value;
+
+    let selectedOrgId: string | null = null;
+
+    if (activeOrgCookie) {
+      // Validate that the user actually belongs to this organization
+      const [matchingMembership] = await db
+        .select()
+        .from(memberships)
+        .where(
+          and(
+            eq(memberships.userId, session.userId),
+            eq(memberships.organizationId, activeOrgCookie)
+          )
+        )
+        .limit(1);
+
+      if (matchingMembership) {
+        selectedOrgId = matchingMembership.organizationId;
+      }
+    }
+
+    // Fallback to primary membership if active_org_id is unset or invalid
+    if (!selectedOrgId) {
+      const [primaryMembership] = await db
+        .select()
+        .from(memberships)
+        .where(eq(memberships.userId, session.userId))
+        .limit(1);
+
+      selectedOrgId = primaryMembership?.organizationId || null;
+    }
 
     return {
       userId: session.userId,
-      orgId: membership?.organizationId || null,
+      orgId: selectedOrgId,
     };
   } catch (error: any) {
     if (

@@ -11,16 +11,19 @@ export class ElevenLabsTtsProvider implements TextToSpeechProvider {
   ): Promise<{ audioBuffer: Buffer; mimeType: string }> {
     const apiKey = process.env.ELEVENLABS_API_KEY;
     if (!apiKey) {
-      console.warn("[ElevenLabs TTS] ELEVENLABS_API_KEY is not configured. Returning mock audio buffer.");
-      return {
-        audioBuffer: Buffer.from("mock-mpeg-audio-bytes"),
-        mimeType: "audio/mpeg",
-      };
+      throw new Error("ELEVENLABS_API_KEY is not configured on the server.");
     }
 
     try {
-      // Mapping voice names to common ElevenLabs voice IDs
-      const voiceId = voiceName === "Rachel" ? "21m00Tcm4TlvDq8ikWAM" : "21m00Tcm4TlvDq8ikWAM"; 
+      // Mapping voice names to standard ElevenLabs voice IDs
+      const voiceMap: Record<string, string> = {
+        "Rachel": "21m00Tcm4TlvDq8ikWAM",
+        "Adam": "pNInz6obpgqjVWtJ45IP",
+        "Josh": "TxGEqn7nU37j8fWofm27",
+        "Antoni": "ErXwobaYiN019PkySvjV"
+      };
+
+      const voiceId = (voiceName && voiceMap[voiceName]) || "21m00Tcm4TlvDq8ikWAM";
 
       const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
         method: "POST",

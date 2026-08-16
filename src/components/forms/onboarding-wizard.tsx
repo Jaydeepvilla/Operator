@@ -26,6 +26,9 @@ import {
   Home,
   Dumbbell,
   Stethoscope,
+  Plus,
+  Trash2,
+  X,
 } from "lucide-react";
 import { cn } from "@/components/shared/utils";
 import { Button } from "@/components/shared/button";
@@ -41,6 +44,7 @@ import {
 import { INDUSTRIES, TIMEZONES } from "@/lib/constants";
 import { createOrganizationAction } from "@/server/actions/onboarding";
 import { LogoIcon } from "@/components/shared/logo";
+import { ConfidenceBridge } from "@/components/confidence-bridge/confidence-bridge";
 
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -85,7 +89,7 @@ const GENERATION_LOGS = [
   "Generating AI greeting voice…",
   "Configuring conversation flows…",
   "Building knowledge base…",
-  "AI Receptionist ready ✔",
+  "Operator is ready ✔",
 ];
 
 // ─── Default generated data for demo ─────────────────────────────────────────
@@ -109,7 +113,7 @@ function buildGeneratedData(url: string, detectedIndustry: string): GeneratedDat
       { name: "Initial Assessment", duration: 60, accepted: true },
     ],
     hours: "Mon–Fri  9:00 AM – 5:00 PM",
-    greeting: `Hi, thank you for calling ${businessName}. I'm your AI receptionist and I can help you book appointments, check availability, or answer general questions. How can I help you today?`,
+    greeting: `Hi, thank you for contacting ${businessName}. I'm Operator, your automated assistant, and I can help you book appointments, check availability, or answer questions. How can I help you today?`,
   };
 }
 
@@ -212,11 +216,11 @@ function ScreenUrl({
           <span className="text-[11px] font-semibold text-primary tracking-wide">Live AI Setup</span>
         </div>
         <h1 className="text-heading-lg font-bold text-foreground tracking-tight leading-heading">
-          Your AI Receptionist<br />
+          Operator<br />
           <span className="text-primary">starts here.</span>
         </h1>
         <p className="text-body-sm text-muted-foreground leading-body max-w-[360px]">
-          Enter your website and we'll configure your entire AI receptionist automatically — greeting, services, hours, and FAQs.
+          Enter your website and we'll configure Operator automatically — greeting, services, hours, and knowledge base.
         </p>
       </div>
 
@@ -224,7 +228,9 @@ function ScreenUrl({
       <div className="space-y-space-4">
         {!noWebsite ? (
           <div className="space-y-space-2">
-            <Label htmlFor="ob-url">Your website URL</Label>
+            <Label htmlFor="ob-url">
+              Your website URL <span className="text-red-500 font-bold ml-0.5">*</span>
+            </Label>
             <div className="relative">
               <Globe
                 className="absolute left-space-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
@@ -253,7 +259,9 @@ function ScreenUrl({
           </div>
         ) : (
           <div className="space-y-space-2">
-            <Label htmlFor="ob-nowebsite">What does your business do?</Label>
+            <Label htmlFor="ob-nowebsite">
+              What does your business do? <span className="text-red-500 font-bold ml-0.5">*</span>
+            </Label>
             <Input
               id="ob-nowebsite"
               value={url}
@@ -289,7 +297,7 @@ function ScreenUrl({
       </div>
 
       <Button size="lg" shape="pill" className="w-full" onClick={handleContinue}>
-        Build My AI Receptionist
+        Set Up Operator
         <ArrowRight className="h-4 w-4" />
       </Button>
     </div>
@@ -337,10 +345,10 @@ function ScreenGenerating({
             <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping [animation-duration:2s]" />
             <LogoIcon className="h-4.5 w-4.5 text-primary relative" />
           </div>
-          <h2 className="text-title-lg font-bold text-foreground">Building your AI Receptionist…</h2>
+          <h2 className="text-title-lg font-bold text-foreground">Setting up Operator…</h2>
         </div>
         <p className="text-body-sm text-muted-foreground">
-          Analysing <span className="font-medium text-foreground">{displayUrl}</span> and configuring everything automatically.
+          Analyzing <span className="font-medium text-foreground">{displayUrl}</span> and configuring everything automatically.
         </p>
       </div>
 
@@ -511,6 +519,9 @@ function ScreenVerify({
   const [services, setServices] = React.useState(data.services);
   const [activeTab, setActiveTab] = React.useState<"info" | "services" | "greeting">("info");
   const [isLaunching, setIsLaunching] = React.useState(false);
+  const [isAddingService, setIsAddingService] = React.useState(false);
+  const [newServiceName, setNewServiceName] = React.useState("");
+  const [newServiceDuration, setNewServiceDuration] = React.useState("30");
 
   const meta = INDUSTRY_META[form.industry] || INDUSTRY_META["Other"];
   const Icon = meta.icon;
@@ -582,7 +593,9 @@ function ScreenVerify({
         <div className="space-y-space-4 animate-fade-up" style={{ animationFillMode: "both" }}>
           <div className="grid grid-cols-2 gap-space-3">
             <div className="space-y-space-1.5">
-              <Label htmlFor="vfy-name">Business Name</Label>
+              <Label htmlFor="vfy-name">
+                Business Name <span className="text-red-500 font-bold ml-0.5">*</span>
+              </Label>
               <div className="relative">
                 <Building2 className="absolute left-space-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
@@ -594,7 +607,9 @@ function ScreenVerify({
               </div>
             </div>
             <div className="space-y-space-1.5">
-              <Label htmlFor="vfy-industry">Industry</Label>
+              <Label htmlFor="vfy-industry">
+                Industry <span className="text-red-500 font-bold ml-0.5">*</span>
+              </Label>
               <Select
                 value={form.industry}
                 onValueChange={(v) => setForm((f) => ({ ...f, industry: v }))}
@@ -612,7 +627,9 @@ function ScreenVerify({
           </div>
 
           <div className="space-y-space-1.5">
-            <Label htmlFor="vfy-email">Email</Label>
+            <Label htmlFor="vfy-email">
+              Email <span className="text-red-500 font-bold ml-0.5">*</span>
+            </Label>
             <div className="relative">
               <Mail className="absolute left-space-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
@@ -641,7 +658,9 @@ function ScreenVerify({
               </div>
             </div>
             <div className="space-y-space-1.5">
-              <Label htmlFor="vfy-tz">Timezone</Label>
+              <Label htmlFor="vfy-tz">
+                Timezone <span className="text-red-500 font-bold ml-0.5">*</span>
+              </Label>
               <Select
                 value={form.timezone}
                 onValueChange={(v) => setForm((f) => ({ ...f, timezone: v }))}
@@ -691,7 +710,7 @@ function ScreenVerify({
               <div
                 key={idx}
                 className={cn(
-                  "flex items-center gap-space-3 px-space-4 py-space-3 rounded-xl border transition-all duration-200",
+                  "flex items-center gap-space-3 px-space-4 py-space-3 rounded-xl border transition-all duration-200 group",
                   svc.accepted
                     ? "border-primary/20 bg-primary/5"
                     : "border-border bg-muted/20 opacity-50"
@@ -715,17 +734,112 @@ function ScreenVerify({
                   <p className="text-body-sm font-medium text-foreground">{svc.name}</p>
                   <p className="text-caption text-muted-foreground">{svc.duration} min</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setServices((prev) => prev.filter((_, i) => i !== idx))}
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                  title="Remove service"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
                 <Zap className="h-3.5 w-3.5 text-primary/40 shrink-0" />
               </div>
             ))}
           </div>
-          <button
-            type="button"
-            className="flex items-center gap-space-2 text-body-sm text-primary hover:opacity-70 transition-opacity"
-          >
-            <span className="flex h-5 w-5 items-center justify-center rounded-full border border-primary/40 text-[12px] font-semibold">+</span>
-            Add a service
-          </button>
+
+          {isAddingService ? (
+            <div className="p-space-4 rounded-xl border border-primary/30 bg-primary/5 space-y-space-3 animate-fade-up">
+              <div className="flex items-center justify-between">
+                <span className="text-[12px] font-bold text-foreground">Add New Service</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddingService(false);
+                    setNewServiceName("");
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-2">
+                <div className="sm:col-span-2">
+                  <Input
+                    placeholder="Service name (e.g. Teeth Whitening)"
+                    value={newServiceName}
+                    onChange={(e) => setNewServiceName(e.target.value)}
+                    autoFocus
+                    className="text-body-sm bg-background"
+                  />
+                </div>
+                <div>
+                  <Select
+                    value={newServiceDuration}
+                    onValueChange={(v) => setNewServiceDuration(v)}
+                  >
+                    <SelectTrigger className="bg-background text-body-sm">
+                      <SelectValue placeholder="Duration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="15">15 min</SelectItem>
+                      <SelectItem value="30">30 min</SelectItem>
+                      <SelectItem value="45">45 min</SelectItem>
+                      <SelectItem value="60">60 min</SelectItem>
+                      <SelectItem value="90">90 min</SelectItem>
+                      <SelectItem value="120">120 min</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-space-2 pt-space-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setIsAddingService(false);
+                    setNewServiceName("");
+                  }}
+                  className="text-body-sm"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={!newServiceName.trim()}
+                  onClick={() => {
+                    if (!newServiceName.trim()) return;
+                    setServices((prev) => [
+                      ...prev,
+                      {
+                        name: newServiceName.trim(),
+                        duration: Number(newServiceDuration) || 30,
+                        accepted: true,
+                      },
+                    ]);
+                    setNewServiceName("");
+                    setIsAddingService(false);
+                  }}
+                  className="gap-space-1.5 font-bold"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Service</span>
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsAddingService(true)}
+              className="flex items-center gap-space-2 text-body-sm text-primary hover:opacity-80 transition-opacity font-medium py-space-1"
+            >
+              <span className="flex h-5 w-5 items-center justify-center rounded-full border border-primary/40 text-[12px] font-semibold">+</span>
+              <span>Add a service</span>
+            </button>
+          )}
         </div>
       )}
 
@@ -737,13 +851,15 @@ function ScreenVerify({
               <Bot className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <p className="text-caption text-muted-foreground mb-space-1">AI Receptionist says:</p>
+              <p className="text-caption text-muted-foreground mb-space-1">Operator says:</p>
               <p className="text-body-sm text-foreground leading-body italic">"{form.greeting}"</p>
             </div>
           </div>
 
           <div className="space-y-space-1.5">
-            <Label htmlFor="vfy-greeting">Edit greeting</Label>
+            <Label htmlFor="vfy-greeting">
+              Edit greeting <span className="text-red-500 font-bold ml-0.5">*</span>
+            </Label>
             <textarea
               id="vfy-greeting"
               value={form.greeting}
@@ -782,7 +898,7 @@ function ScreenVerify({
           {!isLaunching && (
             <>
               <Rocket className="h-4 w-4" />
-              Launch AI Receptionist
+              Launch Operator
             </>
           )}
         </Button>
@@ -800,7 +916,7 @@ const LAUNCH_STEPS = [
   "Creating your workspace…",
   "Seeding industry templates…",
   "Configuring AI knowledge base…",
-  "Activating your AI Receptionist…",
+  "Activating Operator…",
 ];
 
 function ScreenLaunching() {
@@ -830,7 +946,7 @@ function ScreenLaunching() {
       </div>
 
       <div className="space-y-space-2">
-        <h2 className="text-title-lg font-bold text-foreground">Launching your receptionist…</h2>
+        <h2 className="text-title-lg font-bold text-foreground">Launching Operator…</h2>
         <p className="text-body-sm text-muted-foreground max-w-[280px]">{LAUNCH_STEPS[step]}</p>
       </div>
 
@@ -868,92 +984,17 @@ function ScreenLaunching() {
   );
 }
 
-// ─── Screen E: Go Live ────────────────────────────────────────────────────────
+// ─── Screen E: Verify AI (Confidence Bridge) ──────────────────────────────────
 
-function ScreenGoLive({ businessName }: { businessName: string }) {
+function ScreenGoLive({ businessName, orgId }: { businessName: string; orgId: string }) {
   const router = useRouter();
-  const [copied, setCopied] = React.useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText("<!-- Operator widget coming soon -->");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   return (
-    <div className="space-y-space-8 animate-fade-up" style={{ animationFillMode: "both" }}>
-      {/* Success badge */}
-      <div className="flex flex-col items-center text-center space-y-space-4 pt-space-2">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20">
-          <Check className="h-8 w-8 text-emerald-500" strokeWidth={2} />
-        </div>
-        <div className="space-y-space-1.5">
-          <h2 className="text-heading-sm font-bold text-foreground">
-            {businessName}'s AI is live.
-          </h2>
-          <p className="text-body-sm text-muted-foreground max-w-[320px] leading-body">
-            Your AI receptionist is configured and ready to handle calls, bookings, and customer questions.
-          </p>
-        </div>
-      </div>
-
-      {/* Achievement cards */}
-      <div className="space-y-space-2">
-        {[
-          { icon: Check, label: "AI knowledge base created", sub: "Services, FAQs and hours loaded" },
-          { icon: Check, label: "Conversation flows active", sub: "Booking and qualification ready" },
-          { icon: Check, label: "14-day trial started",     sub: "Full access, no credit card needed" },
-        ].map((item) => (
-          <div
-            key={item.label}
-            className="flex items-center gap-space-3 px-space-4 py-space-3 rounded-xl border border-emerald-500/15 bg-emerald-500/5"
-          >
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/15 shrink-0">
-              <Check className="h-3.5 w-3.5 text-emerald-500" strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="text-body-sm font-medium text-foreground">{item.label}</p>
-              <p className="text-caption text-muted-foreground">{item.sub}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Next steps */}
-      <div className="space-y-space-3">
-        <p className="text-caption text-muted-foreground uppercase tracking-wider font-medium">Next steps</p>
-        <div className="space-y-space-2">
-          {[
-            { label: "Connect a phone number", href: "/channels", desc: "Let customers call your AI" },
-            { label: "Review your knowledge base", href: "/kb",       desc: "Add FAQs and documents" },
-            { label: "Try the live chat widget",   href: "/widget",   desc: "Embed it on your website" },
-          ].map((ns) => (
-            <button
-              key={ns.label}
-              type="button"
-              onClick={() => router.push(ns.href)}
-              className="w-full flex items-center gap-space-3 px-space-4 py-space-3 rounded-xl border border-border hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 text-left group"
-            >
-              <div className="flex-1 min-w-0">
-                <p className="text-body-sm font-medium text-foreground">{ns.label}</p>
-                <p className="text-caption text-muted-foreground">{ns.desc}</p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <Button
-        size="lg"
-        shape="pill"
-        className="w-full"
-        onClick={() => router.push("/dashboard")}
-      >
-        <Rocket className="h-4 w-4" />
-        Go to Dashboard
-      </Button>
-    </div>
+    <ConfidenceBridge
+      businessName={businessName}
+      orgId={orgId}
+      onFinish={() => router.push("/dashboard")}
+    />
   );
 }
 
@@ -965,6 +1006,7 @@ export function OnboardingWizard() {
   const [url, setUrl] = React.useState("");
   const [generated, setGenerated] = React.useState<GeneratedData | null>(null);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
+  const [createdOrgId, setCreatedOrgId] = React.useState<string | null>(null);
 
   const handleUrlNext = (inputUrl: string) => {
     setUrl(inputUrl);
@@ -998,7 +1040,8 @@ export function OnboardingWizard() {
 
     try {
       const result = await createOrganizationAction(payload as any);
-      if (result.success) {
+      if (result.success && result.organization) {
+        setCreatedOrgId(result.organization.id);
         setTimeout(() => {
           setStep("golive");
         }, 3200);
@@ -1034,7 +1077,7 @@ export function OnboardingWizard() {
       )}
       {step === "launching" && <ScreenLaunching />}
       {step === "golive" && generated && (
-        <ScreenGoLive businessName={generated.businessName} />
+        <ScreenGoLive businessName={generated.businessName} orgId={createdOrgId || "your-org-id"} />
       )}
     </div>
   );

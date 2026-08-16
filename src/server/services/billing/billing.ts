@@ -81,12 +81,23 @@ export const billingService = {
 
     const planId = sub?.planId || "free";
     
-    // Resolve limit value
-    let limitValue = 100; // default free limit
-    if (planId === "starter") limitValue = 500;
-    if (planId === "pro") limitValue = 2000;
-    if (planId === "business") limitValue = 10000;
-    if (planId === "enterprise") limitValue = 999999;
+    // Resolve limit value dynamically from DB entitlements
+    const entitlement = await db.query.featureEntitlements.findFirst({
+      where: and(
+        eq(featureEntitlements.planId, planId),
+        eq(featureEntitlements.featureName, metricName)
+      ),
+    });
+
+    let limitValue = entitlement?.maxLimit ?? 100;
+
+    if (entitlement?.maxLimit === null || entitlement?.maxLimit === undefined) {
+      if (planId === "starter") limitValue = 500;
+      else if (planId === "pro") limitValue = 2000;
+      else if (planId === "business") limitValue = 10000;
+      else if (planId === "enterprise") limitValue = 999999;
+      else limitValue = 100; // free default fallback
+    }
 
     const resetDate = sub?.currentPeriodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 

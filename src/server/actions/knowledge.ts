@@ -18,8 +18,9 @@ import { faqItems, services, knowledgeDocuments, knowledgeCategories, knowledgeC
 import { eq, and, ilike, or, like, inArray } from "drizzle-orm";
 
 async function getVerifiedOrgId() {
-  const { userId } = await auth();
+  const { userId, orgId } = await auth();
   if (!userId) throw new Error("Unauthorized");
+  if (orgId) return orgId;
   const memberships = await membershipRepository.getByUser(userId);
   if (memberships.length === 0) throw new Error("No organization found");
   return memberships[0].organizationId;
@@ -291,7 +292,7 @@ export async function uploadKnowledgeDocumentAction(data: {
       startedAt: new Date(),
     });
 
-    // 4. Run simulated chunking
+    // 4. Run document text chunking
     const startTime = Date.now();
     await jobsRepository.update(job.id, { status: "processing", logs: "Starting extraction..." });
     await jobsRepository.update(job.id, { status: "chunking", logs: "Segmenting document text into chunks..." });
@@ -324,6 +325,69 @@ export async function uploadKnowledgeDocumentAction(data: {
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to process upload" };
+  }
+}
+
+export async function updateKnowledgeDocumentContentAction(data: {
+  documentId: string;
+  name?: string;
+  content: string;
+  categoryId?: string | null;
+}) {
+  try {
+    const orgId = await getVerifiedOrgId();
+    await assertDocumentOwnership(orgId, data.documentId);
+
+    const doc = await documentsRepository.getById(data.documentId);
+    if (!doc) throw new Error("Document not found");
+
+    if (data.content.length > 500_000) {
+      throw new Error("Document content exceeds the maximum size of 500,000 characters");
+    }
+
+    const currentMetadata = (doc.metadata || {}) as Record<string, any>;
+    const newVersion = ((currentMetadata.version as number) || 1) + 1;
+
+    // 1. Update Document Record with new revision & metadata
+    await documentsRepository.update(data.documentId, {
+      name: data.name ? data.name.trim() : doc.name,
+      fileSize: Buffer.byteLength(data.content, "utf8"),
+      categoryId: data.categoryId !== undefined ? data.categoryId : doc.categoryId,
+      status: "chunking",
+      metadata: {
+        ...currentMetadata,
+        version: newVersion,
+        lastEditedAt: new Date().toISOString(),
+      },
+    });
+
+    // 2. Incremental re-chunking: clear existing chunks for this document
+    await db
+      .delete(knowledgeChunks)
+      .where(and(eq(knowledgeChunks.organizationId, orgId), eq(knowledgeChunks.documentId, data.documentId)));
+
+    // 3. Generate new chunks and persist
+    const chunks = chunkingService.splitText(data.content);
+    const chunkPayload = chunks.map((chunk) => ({
+      organizationId: orgId,
+      documentId: data.documentId,
+      content: chunk.content,
+      chunkIndex: chunk.chunkIndex,
+      tokenCount: chunk.tokenCount,
+    }));
+
+    if (chunkPayload.length > 0) {
+      await chunksRepository.createMany(chunkPayload);
+    }
+
+    // 4. Mark completed
+    await documentsRepository.update(data.documentId, { status: "completed" });
+
+    revalidatePath("/kb");
+    return { success: true, version: newVersion, chunksCount: chunks.length };
+  } catch (error: any) {
+    console.error("updateKnowledgeDocumentContentAction error:", error);
+    return { success: false, error: error?.message || "Failed to update document content" };
   }
 }
 

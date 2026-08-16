@@ -33,6 +33,11 @@ import {
   Palette,
   Globe,
   Brain,
+  LayoutTemplate,
+  UserCog,
+  Contact,
+  UserCheck,
+  Clock,
 } from "lucide-react";
 
 const IconMap = {
@@ -61,6 +66,11 @@ const IconMap = {
   Palette,
   Globe,
   Brain,
+  LayoutTemplate,
+  UserCog,
+  Contact,
+  UserCheck,
+  Clock,
 };
 
 interface SidebarLinkProps {

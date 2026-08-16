@@ -6,6 +6,7 @@ import {
   WebhookStatusPayload,
   ProviderRegistry
 } from "./types";
+import nodemailer from "nodemailer";
 
 export class EmailProvider implements MessagingProvider, WebhookProvider {
   id = "email-smtp";
@@ -21,16 +22,47 @@ export class EmailProvider implements MessagingProvider, WebhookProvider {
     attachments?: any[]
   ): Promise<SendMessageResult> {
     try {
-      const smtpHost = connectionConfig.host || "smtp.gmail.com";
-      const smtpUser = connectionConfig.user || "mock@gmail.com";
-      // Perform a mock SMTP call / Microsoft Graph API request
-      const mockEmailId = "mail-" + Math.random().toString(36).substring(2, 16) + "@nexx.ai";
+      const host = connectionConfig.host;
+      const port = parseInt(connectionConfig.port || "465");
+      const user = connectionConfig.user;
+      const pass = connectionConfig.pass;
+      const from = connectionConfig.from || `"Operator AI" <${user}>`;
+
+      if (!host || !user || !pass) {
+        throw new Error("Missing required SMTP host, user, or pass in channel connection config.");
+      }
+
+      const transporter = nodemailer.createTransport({
+        host,
+        port,
+        secure: port === 465,
+        auth: {
+          user,
+          pass,
+        },
+      });
+
+      const mailOptions = {
+        from,
+        to: recipientId,
+        subject: connectionConfig.subject || "Message from Operator AI Receptionist",
+        text: content,
+        html: content.replace(/\n/g, "<br>"),
+        attachments: attachments?.map((a) => ({
+          filename: a.name || "attachment",
+          path: a.url || a.path,
+        })),
+      };
+
+      const info = await transporter.sendMail(mailOptions);
+      const messageId = info.messageId;
 
       return {
         success: true,
-        externalId: mockEmailId
+        externalId: messageId
       };
     } catch (e: any) {
+      console.error("[Email Provider] SMTP send failed:", e);
       return {
         success: false,
         errorCode: "EMAIL_SEND_FAILED",
@@ -59,8 +91,11 @@ export class EmailProvider implements MessagingProvider, WebhookProvider {
     const statuses: WebhookStatusPayload[] = [];
 
     try {
-      const orgId = headers["x-organization-id"] || "mock-org-id";
-      const channelId = headers["x-channel-id"] || "mock-channel-id";
+      const orgId = headers["x-organization-id"];
+      const channelId = headers["x-channel-id"];
+      if (!orgId || !channelId) {
+        throw new Error("Missing required x-organization-id or x-channel-id in webhook headers");
+      }
 
       // SMTP parsed relays post webhook details:
       // - body.from, body.to, body.text, body.html, body.headers (In-Reply-To, References)

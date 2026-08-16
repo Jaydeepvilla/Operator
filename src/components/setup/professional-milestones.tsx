@@ -14,11 +14,11 @@ export function ProfessionalMilestones() {
         </div>
         
         <h2 className="text-heading-lg font-bold text-foreground mb-space-3">
-          Your AI Receptionist is Fully Trained
+          Operator is Fully Ready
         </h2>
         
         <p className="text-body-lg text-muted-foreground max-w-xl mx-auto mb-space-8">
-          You've completed all recommended setup phases. Your receptionist is now armed with your business logic, FAQs, and scheduling rules.
+          You've completed all recommended setup phases. Operator is equipped with your business knowledge, services, and scheduling rules.
         </p>
         
         <div className="grid sm:grid-cols-2 gap-space-4 w-full max-w-2xl mb-space-8 text-left">

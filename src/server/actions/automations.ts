@@ -8,9 +8,10 @@ import { categoriesRepository } from "@/server/repositories/categories";
 import { tagsRepository } from "@/server/repositories/tags";
 import { settingsRepository } from "@/server/repositories/settings";
 import { db } from "@/server/db";
-import { websiteImports } from "@/server/db/schema";
+import { websiteImports, automationRules, automationRuleExecutions } from "@/server/db/schema";
 import { checkUserOrganization } from "@/server/actions/onboarding";
-
+import { ruleEngine, RuleAction, RuleCondition } from "../services/automations/rule-engine";
+import { eq, and, desc } from "drizzle-orm";
 import { organizationRepository } from "@/server/repositories/organization";
 
 export async function generateDocumentAction(docType: string) {
@@ -211,3 +212,160 @@ export async function publishHoursAction(data: { title: string; content: string 
   revalidatePath("/dashboard");
   return { success: true };
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SECTION: User-Customized Trigger-Action Automation Rules
+   ───────────────────────────────────────────────────────────────────────────── */
+
+export async function getCustomAutomationRulesAction() {
+  try {
+    const { hasOrg, org } = await checkUserOrganization();
+    if (!hasOrg || !org) throw new Error("Unauthorized");
+
+    const rules = await db
+      .select()
+      .from(automationRules)
+      .where(eq(automationRules.organizationId, org.id))
+      .orderBy(desc(automationRules.createdAt));
+
+    const executions = await db
+      .select()
+      .from(automationRuleExecutions)
+      .where(eq(automationRuleExecutions.organizationId, org.id))
+      .orderBy(desc(automationRuleExecutions.executedAt))
+      .limit(30);
+
+    return { success: true, rules, executions };
+  } catch (error: any) {
+    console.error("getCustomAutomationRulesAction error:", error);
+    return { success: false, error: error?.message || "Failed to load automations", rules: [], executions: [] };
+  }
+}
+
+export async function saveCustomAutomationRuleAction(input: {
+  id?: string;
+  name: string;
+  description?: string;
+  triggerType: string;
+  triggerConfig?: Record<string, any>;
+  conditions?: RuleCondition[];
+  actions: RuleAction[];
+  isActive?: boolean;
+}) {
+  try {
+    const { hasOrg, org } = await checkUserOrganization();
+    if (!hasOrg || !org) throw new Error("Unauthorized");
+
+    if (!input.name || !input.triggerType || !input.actions || input.actions.length === 0) {
+      return { success: false, error: "Name, Trigger, and at least one Action are required." };
+    }
+
+    if (input.id) {
+      const [updated] = await db
+        .update(automationRules)
+        .set({
+          name: input.name,
+          description: input.description,
+          triggerType: input.triggerType,
+          triggerConfig: input.triggerConfig || {},
+          conditions: input.conditions || [],
+          actions: input.actions,
+          isActive: input.isActive ?? true,
+          updatedAt: new Date(),
+        })
+        .where(and(eq(automationRules.id, input.id), eq(automationRules.organizationId, org.id)))
+        .returning();
+
+      revalidatePath("/automations");
+      return { success: true, rule: updated };
+    } else {
+      const [created] = await db
+        .insert(automationRules)
+        .values({
+          organizationId: org.id,
+          name: input.name,
+          description: input.description,
+          triggerType: input.triggerType,
+          triggerConfig: input.triggerConfig || {},
+          conditions: input.conditions || [],
+          actions: input.actions,
+          isActive: input.isActive ?? true,
+        })
+        .returning();
+
+      revalidatePath("/automations");
+      return { success: true, rule: created };
+    }
+  } catch (error: any) {
+    console.error("saveCustomAutomationRuleAction error:", error);
+    return { success: false, error: error?.message || "Failed to save automation rule" };
+  }
+}
+
+export async function toggleCustomAutomationRuleAction(ruleId: string, isActive: boolean) {
+  try {
+    const { hasOrg, org } = await checkUserOrganization();
+    if (!hasOrg || !org) throw new Error("Unauthorized");
+
+    await db
+      .update(automationRules)
+      .set({ isActive, updatedAt: new Date() })
+      .where(and(eq(automationRules.id, ruleId), eq(automationRules.organizationId, org.id)));
+
+    revalidatePath("/automations");
+    return { success: true };
+  } catch (error: any) {
+    console.error("toggleCustomAutomationRuleAction error:", error);
+    return { success: false, error: error?.message || "Failed to toggle rule status" };
+  }
+}
+
+export async function deleteCustomAutomationRuleAction(ruleId: string) {
+  try {
+    const { hasOrg, org } = await checkUserOrganization();
+    if (!hasOrg || !org) throw new Error("Unauthorized");
+
+    await db
+      .delete(automationRules)
+      .where(and(eq(automationRules.id, ruleId), eq(automationRules.organizationId, org.id)));
+
+    revalidatePath("/automations");
+    return { success: true };
+  } catch (error: any) {
+    console.error("deleteCustomAutomationRuleAction error:", error);
+    return { success: false, error: error?.message || "Failed to delete rule" };
+  }
+}
+
+export async function testCustomAutomationRuleAction(ruleId: string, customPayload?: Record<string, any>) {
+  try {
+    const { hasOrg, org } = await checkUserOrganization();
+    if (!hasOrg || !org) throw new Error("Unauthorized");
+
+    const [rule] = await db
+      .select()
+      .from(automationRules)
+      .where(and(eq(automationRules.id, ruleId), eq(automationRules.organizationId, org.id)))
+      .limit(1);
+
+    if (!rule) throw new Error("Automation rule not found");
+
+    const samplePayload = customPayload || {
+      customerName: "Alex Jordan",
+      customerEmail: "alex.jordan@example.com",
+      customerPhone: "+15551234567",
+      leadScore: 75,
+      serviceName: "Strategy Consultation",
+      appointmentTime: new Date().toLocaleString(),
+    };
+
+    const results = await ruleEngine.emitEvent(org.id, rule.triggerType, samplePayload);
+
+    revalidatePath("/automations");
+    return { success: true, results };
+  } catch (error: any) {
+    console.error("testCustomAutomationRuleAction error:", error);
+    return { success: false, error: error?.message || "Test execution failed" };
+  }
+}
+

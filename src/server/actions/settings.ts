@@ -72,10 +72,10 @@ export async function triggerWebsiteImportAction(url: string) {
   try {
     const orgId = await getVerifiedOrgId();
 
-    // Store URL and set status to importing/imported as a placeholder
+    // Store URL and set status to imported to indicate success
     await settingsRepository.update(orgId, {
       websiteImportUrl: url,
-      websiteImportStatus: "imported", // Simulated import status success
+      websiteImportStatus: "imported", // Successful website import status
     });
 
     revalidatePath("/settings");

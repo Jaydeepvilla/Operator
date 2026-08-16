@@ -5,6 +5,7 @@ import {
   users,
   profiles,
   memberships,
+  organizations,
   emailVerifications,
   passwordResetTokens,
   loginHistory,
@@ -18,8 +19,9 @@ import {
 import { eq, and, gte, desc, or } from "drizzle-orm";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { createSession, deleteSession, logoutAllDevices } from "@/lib/auth/session";
-import { currentUser } from "@/lib/auth/server";
+import { currentUser, auth } from "@/lib/auth/server";
 import { cookies, headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { checkLoginRateLimit, recordLoginAttempt } from "@/lib/auth/rate-limit";
 import { isReservedEmail, isDisposableEmail, analyzePasswordStrength } from "@/lib/auth/security-checks";
 import crypto from "crypto";
@@ -544,3 +546,108 @@ export async function syncLocalUser() {
     avatar: user.avatar || null,
   };
 }
+
+/**
+ * Multi-Tenant Org Switcher: Returns all organizations the current user belongs to.
+ */
+export async function getUserOrganizationsAction() {
+  try {
+    const { userId, orgId } = await auth();
+    if (!userId) {
+      return { success: false, error: "Unauthorized", organizations: [] };
+    }
+
+    const userMemberships = await db
+      .select({
+        membershipId: memberships.id,
+        role: memberships.role,
+        createdAt: memberships.createdAt,
+        organization: {
+          id: organizations.id,
+          name: organizations.name,
+          slug: organizations.slug,
+          industry: organizations.industry,
+          logo: organizations.logo,
+        },
+      })
+      .from(memberships)
+      .innerJoin(organizations, eq(memberships.organizationId, organizations.id))
+      .where(eq(memberships.userId, userId))
+      .orderBy(desc(memberships.createdAt));
+
+    const orgList = userMemberships.map((m) => ({
+      id: m.organization.id,
+      name: m.organization.name,
+      slug: m.organization.slug,
+      industry: m.organization.industry,
+      logoUrl: m.organization.logo,
+      role: m.role,
+      isCurrent: m.organization.id === orgId,
+    }));
+
+    return {
+      success: true,
+      currentOrgId: orgId,
+      organizations: orgList,
+    };
+  } catch (error: any) {
+    console.error("getUserOrganizationsAction error:", error);
+    return { success: false, error: error?.message || "Failed to list organizations", organizations: [] };
+  }
+}
+
+/**
+ * Multi-Tenant Org Switcher: Sets the active organization context cookie and invalidates caches.
+ */
+export async function switchOrganizationAction(targetOrganizationId: string) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Verify membership in target organization
+    const [targetMembership] = await db
+      .select()
+      .from(memberships)
+      .where(
+        and(
+          eq(memberships.userId, userId),
+          eq(memberships.organizationId, targetOrganizationId)
+        )
+      )
+      .limit(1);
+
+    if (!targetMembership) {
+      return { success: false, error: "Access denied: You are not a member of this organization." };
+    }
+
+    // Set active_org_id cookie
+    const cookieStore = await cookies();
+    cookieStore.set("active_org_id", targetOrganizationId, {
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
+
+    await auditService.log({
+      userId,
+      organizationId: targetOrganizationId,
+      action: "organization_switched",
+      resource: "organizations",
+      resourceId: targetOrganizationId,
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/(dashboard)", "layout");
+    revalidatePath("/", "layout");
+
+    return { success: true, organizationId: targetOrganizationId };
+  } catch (error: any) {
+    console.error("switchOrganizationAction error:", error);
+    return { success: false, error: error?.message || "Failed to switch organization" };
+  }
+}
+

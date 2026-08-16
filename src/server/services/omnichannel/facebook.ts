@@ -21,17 +21,43 @@ export class FacebookProvider implements MessagingProvider, WebhookProvider {
     attachments?: any[]
   ): Promise<SendMessageResult> {
     try {
-      const pageAccessToken = connectionConfig.pageAccessToken || "mock-token";
-      const pageId = connectionConfig.pageId || "mock-page-id";
-      // Perform mock Meta Graph API Messenger call
-      // Endpoint: https://graph.facebook.com/v18.0/me/messages?access_token=${pageAccessToken}
-      const mockMetaId = "fb-msg-" + Math.random().toString(36).substring(2, 12);
+      const pageAccessToken = connectionConfig.pageAccessToken;
+      if (!pageAccessToken) {
+        throw new Error("Missing required pageAccessToken in Facebook channel configuration.");
+      }
+
+      const response = await fetch(`https://graph.facebook.com/v18.0/me/messages?access_token=${pageAccessToken}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          recipient: {
+            id: recipientId
+          },
+          message: {
+            text: content
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Meta Graph API returned HTTP ${response.status}: ${errText}`);
+      }
+
+      const resData = await response.json();
+      const messageId = resData.message_id;
+      if (!messageId) {
+        throw new Error("No message ID returned from Meta API");
+      }
 
       return {
         success: true,
-        externalId: mockMetaId
+        externalId: messageId
       };
     } catch (e: any) {
+      console.error("[Facebook Provider] Send failed:", e);
       return {
         success: false,
         errorCode: "FACEBOOK_SEND_FAILED",
@@ -60,8 +86,11 @@ export class FacebookProvider implements MessagingProvider, WebhookProvider {
     const statuses: WebhookStatusPayload[] = [];
 
     try {
-      const orgId = headers["x-organization-id"] || "mock-org-id";
-      const channelId = headers["x-channel-id"] || "mock-channel-id";
+      const orgId = headers["x-organization-id"];
+      const channelId = headers["x-channel-id"];
+      if (!orgId || !channelId) {
+        throw new Error("Missing required x-organization-id or x-channel-id in webhook headers");
+      }
 
       const entry = body?.entry?.[0];
       const messaging = entry?.messaging?.[0];

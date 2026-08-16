@@ -241,7 +241,7 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  </Select>
  </div>
 
- <Button onClick={() => handleOpenDialog()} className="h-8.5 text-caption font-semibold text-white cursor-pointer gap-space-1.5 rounded-lg px-space-4">
+ <Button onClick={() => handleOpenDialog()} className="h-8.5 text-caption font-semibold cursor-pointer gap-space-1.5 rounded-lg px-space-4">
  <Plus className="h-3.5 w-3.5" /> Add FAQ
  </Button>
  </div>
@@ -275,7 +275,7 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  <div className="flex-1 min-h-0 flex flex-col justify-center items-center border border-[hsl(var(--foreground)/0.06)] radius-xl bg-card">
  <EmptyState
  title="No FAQ items configured"
- description="Your receptionist needs FAQ sheets to answer general client inquiries correctly."
+ description="Operator needs FAQ items to answer customer questions accurately."
  icon={HelpCircle}
  actionText="Add FAQ"
  onAction={() => handleOpenDialog()}
@@ -283,7 +283,7 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  </div>
  ) : (
  <div className="bg-card border border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft- flex-1 min-h-0 flex flex-col">
- <ScrollArea className="flex-1" horizontal={false}>
+ <ScrollArea className="flex-1" horizontal={false} vertical={filteredFaqs.length > 4}>
  <NativeTable className="w-full text-left border-collapse">
  <thead>
  <tr className="border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)] text-caption uppercase font-semibold tracking-wider text-muted-foreground/60">
@@ -376,7 +376,7 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  {editingFaq ? "Edit FAQ Item" : "Add FAQ Item"}
  </DialogTitle>
  <DialogDescription className="text-caption text-muted-foreground/55 mt-space-0.5">
- Train your receptionist with standard answers to caller questions.
+ Provide standard answers for Operator to use when answering questions.
  </DialogDescription>
  </div>
  </div>
@@ -424,7 +424,7 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  <NativeTextarea
  id="faq_answer"
  rows={4}
- placeholder="Write the clear, concise answer your receptionist should say..."
+ placeholder="Write the clear, accurate answer Operator should provide..."
  className="w-full radius-md border border-[hsl(var(--foreground)/0.08)] bg-background p-space-3 pl-space-9 text-caption placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground resize-none leading-relaxed min-h-24"
  {...register("answer")}
  />
@@ -439,7 +439,7 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  <Check className="h-3.5 w-3.5 text-emerald-500/70" />
  <div>
  <p className="text-caption font-semibold text-foreground">Active Status</p>
- <p className="text-caption text-muted-foreground/55 mt-space-0.5">Available for AI Receptionist reference</p>
+ <p className="text-caption text-muted-foreground/55 mt-space-0.5">Available for Operator AI reference</p>
  </div>
  </div>
  <NativeButton
@@ -464,7 +464,7 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  <Button type="button" variant="outline" onClick={() => setIsOpen(false)} disabled={isSubmitting} className="h-9 text-caption font-semibold px-space-4 cursor-pointer rounded-lg">
  Cancel
  </Button>
- <Button type="submit" disabled={isSubmitting} className="h-9 text-caption font-semibold px-space-5 text-white cursor-pointer rounded-lg">
+ <Button type="submit" disabled={isSubmitting} className="h-9 text-caption font-semibold px-space-5 cursor-pointer rounded-lg">
  {isSubmitting ? (
  <>
  <Loader2 className="mr-space-1.5 h-3.5 w-3.5 animate-spin" /> Saving...

@@ -21,17 +21,48 @@ export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
     attachments?: any[]
   ): Promise<SendMessageResult> {
     try {
-      const accessToken = connectionConfig.accessToken || "mock-access-token";
-      const phoneId = connectionConfig.phoneId || "mock-phone-id";
-      // Perform a mock Meta API request
-      // In production, this would make an HTTPS call to https://graph.facebook.com/v18.0/${phoneId}/messages
-      const mockMetaId = "wa-msg-" + Math.random().toString(36).substring(2, 12);
-      
+      const accessToken = connectionConfig.accessToken;
+      const phoneId = connectionConfig.phoneId;
+
+      if (!accessToken || !phoneId) {
+        throw new Error("Missing required WhatsApp access token or phone ID in channel configuration.");
+      }
+
+      const response = await fetch(`https://graph.facebook.com/v18.0/${phoneId}/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: recipientId,
+          type: "text",
+          text: {
+            preview_url: false,
+            body: content
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Meta Graph API returned HTTP ${response.status}: ${errText}`);
+      }
+
+      const resData = await response.json();
+      const messageId = resData.messages?.[0]?.id;
+      if (!messageId) {
+        throw new Error("No message ID returned from Meta API");
+      }
+
       return {
         success: true,
-        externalId: mockMetaId
+        externalId: messageId
       };
     } catch (e: any) {
+      console.error("[WhatsApp Provider] Send failed:", e);
       return {
         success: false,
         errorCode: "WHATSAPP_SEND_FAILED",
@@ -49,14 +80,62 @@ export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
     variables: Record<string, string>
   ): Promise<SendMessageResult> {
     try {
-      const phoneId = connectionConfig.phoneId || "mock-phone-id";
-      const mockMetaId = "wa-tpl-" + Math.random().toString(36).substring(2, 12);
+      const accessToken = connectionConfig.accessToken;
+      const phoneId = connectionConfig.phoneId;
+
+      if (!accessToken || !phoneId) {
+        throw new Error("Missing required WhatsApp access token or phone ID in channel configuration.");
+      }
+
+      const parameterList = Object.entries(variables).map(([key, value]) => ({
+        type: "text",
+        text: value
+      }));
+
+      const bodyPayload = {
+        messaging_product: "whatsapp",
+        to: recipientId,
+        type: "template",
+        template: {
+          name: templateName,
+          language: {
+            code: "en_US"
+          },
+          components: parameterList.length > 0 ? [
+            {
+              type: "body",
+              parameters: parameterList
+            }
+          ] : []
+        }
+      };
+
+      const response = await fetch(`https://graph.facebook.com/v18.0/${phoneId}/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(bodyPayload)
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Meta Graph API template send returned HTTP ${response.status}: ${errText}`);
+      }
+
+      const resData = await response.json();
+      const messageId = resData.messages?.[0]?.id;
+      if (!messageId) {
+        throw new Error("No message ID returned from Meta API");
+      }
 
       return {
         success: true,
-        externalId: mockMetaId
+        externalId: messageId
       };
     } catch (e: any) {
+      console.error("[WhatsApp Provider] Template send failed:", e);
       return {
         success: false,
         errorCode: "WHATSAPP_TEMPLATE_FAILED",
@@ -85,8 +164,11 @@ export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
         return { messages, statuses };
       }
 
-      const orgId = headers["x-organization-id"] || "mock-org-id";
-      const channelId = headers["x-channel-id"] || "mock-channel-id";
+      const orgId = headers["x-organization-id"];
+      const channelId = headers["x-channel-id"];
+      if (!orgId || !channelId) {
+        throw new Error("Missing required x-organization-id or x-channel-id in webhook headers");
+      }
 
       // Parse status updates (sent, delivered, read, failed)
       if (val.statuses && val.statuses.length > 0) {
@@ -168,8 +250,13 @@ export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
     const hubToken = queryParams["hub.verify_token"];
     const hubChallenge = queryParams["hub.challenge"];
 
-    // In a live system, this would match a verification token saved in settings.
-    if (hubMode === "subscribe" && hubToken) {
+    const verifyToken = process.env.META_WHATSAPP_VERIFY_TOKEN;
+    if (!verifyToken) {
+      console.error("[WhatsApp Provider] META_WHATSAPP_VERIFY_TOKEN is not configured");
+      return null;
+    }
+
+    if (hubMode === "subscribe" && hubToken === verifyToken) {
       return hubChallenge || "";
     }
     return null;

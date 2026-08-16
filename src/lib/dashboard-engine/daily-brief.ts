@@ -25,14 +25,26 @@ export async function getDailyBrief(organizationId: string): Promise<DailyBriefD
   const todayStart = startOfToday();
   const now = new Date();
 
-  const [allConversations, allAppointments, allEscalations] = await Promise.all([
-    conversationsRepository.list(organizationId),
-    appointmentsRepository.list(organizationId, {
-      startDate: todayStart,
-      endDate: now,
-    }),
-    escalationsRepository.list(organizationId),
-  ]);
+  let allConversations: any[] = [];
+  let allAppointments: any[] = [];
+  let allEscalations: any[] = [];
+
+  try {
+    const results = await Promise.allSettled([
+      conversationsRepository.list(organizationId),
+      appointmentsRepository.list(organizationId, {
+        startDate: todayStart,
+        endDate: now,
+      }),
+      escalationsRepository.list(organizationId),
+    ]);
+
+    if (results[0].status === "fulfilled") allConversations = results[0].value || [];
+    if (results[1].status === "fulfilled") allAppointments = results[1].value || [];
+    if (results[2].status === "fulfilled") allEscalations = results[2].value || [];
+  } catch (err) {
+    console.warn("Daily brief DB fallback:", err);
+  }
 
   // Filter conversations to today
   const todayConversations = allConversations.filter(

@@ -4,6 +4,7 @@ import { phoneNumbers } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { voiceRouting } from "@/server/services/voice/routing";
 import { voiceOrchestrator } from "@/server/services/voice/orchestrator";
+import { verifyTwilioSignature } from "@/server/utils/twilio-signature";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,6 +13,31 @@ export async function POST(req: NextRequest) {
     formData.forEach((value, key) => {
       body[key] = value.toString();
     });
+
+    // Verify Twilio Webhook Signature
+    const twilioSignature = req.headers.get("x-twilio-signature") || "";
+    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN || "";
+    if (twilioAuthToken) {
+      const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "receptionist.nexx.ai";
+      const proto = req.headers.get("x-forwarded-proto") || "https";
+      const fullUrl = `${proto}://${host}${new URL(req.url).pathname}${new URL(req.url).search}`;
+      
+      const isValid = verifyTwilioSignature({
+        authToken: twilioAuthToken,
+        signature: twilioSignature,
+        url: fullUrl,
+        params: body,
+      });
+
+      if (!isValid) {
+        console.warn(`[Voice Webhook Inbound] Invalid Twilio signature: ${twilioSignature}`);
+        return new NextResponse(
+          `<Response><Say>Unauthorized request signature.</Say><Hangup/></Response>`,
+          { status: 401, headers: { "Content-Type": "text/xml" } }
+        );
+      }
+    }
+
     const callerNumber = body.From || "unknown";
     const recipientNumber = body.To || "";
     const callSid = body.CallSid || "unknown-sid";
