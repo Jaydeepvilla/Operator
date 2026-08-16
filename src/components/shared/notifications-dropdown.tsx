@@ -171,23 +171,56 @@ export function NotificationsDropdown({ initialNotifications }: NotificationsDro
                       </div>
 
                       {/* Content */}
-                      <div className="flex-1 min-w-0 pr-6">
-                        <div className="flex items-baseline justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
                           <span
                             className={cn(
-                              "text-body-xs font-semibold truncate flex items-center gap-1.5",
+                              "text-body-xs font-semibold truncate flex items-center gap-1.5 min-w-0",
                               !notif.isRead ? "text-foreground font-bold" : "text-muted-foreground"
                             )}
                           >
                             {!notif.isRead && (
                               <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 animate-pulse-soft" />
                             )}
-                            {notif.title}
+                            <span className="truncate">{notif.title}</span>
                           </span>
-                          <span className="text-[9px] text-muted-foreground/60 shrink-0">
-                            {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true })}
-                          </span>
+
+                          {/* Right Header Area: Timestamp on idle, Action Controls on hover */}
+                          <div className="flex items-center gap-1 shrink-0">
+                            <span className="text-[10px] text-muted-foreground/60 group-hover:hidden transition-opacity">
+                              {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true })}
+                            </span>
+
+                            {/* Hover Actions (Mark as Read / Dismiss) */}
+                            <div className="hidden group-hover:flex items-center gap-0.5 transition-opacity">
+                              {!notif.isRead && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    markAsRead(notif.id);
+                                  }}
+                                  className="p-1 rounded-md text-muted-foreground/70 hover:text-foreground hover:bg-[hsl(var(--foreground)/0.05)] transition-all cursor-pointer"
+                                  title="Mark as read"
+                                >
+                                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  dismiss(notif.id);
+                                }}
+                                className="p-1 rounded-md text-muted-foreground/70 hover:text-[hsl(var(--state-error-text))] hover:bg-[hsl(var(--state-error-bg))] transition-all cursor-pointer"
+                                title="Dismiss"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
                         </div>
+
                         <p className="text-[11px] text-muted-foreground/80 mt-1 leading-relaxed">
                           {notif.description}
                         </p>
@@ -203,32 +236,6 @@ export function NotificationsDropdown({ initialNotifications }: NotificationsDro
                             </Link>
                           </div>
                         )}
-                      </div>
-
-                      {/* Controls (Mark as read / Dismiss) */}
-                      <div className="absolute right-2.5 top-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {!notif.isRead && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              markAsRead(notif.id);
-                            }}
-                            className="p-1 rounded-md text-muted-foreground/70 hover:text-foreground hover:bg-[hsl(var(--foreground)/0.05)] transition-all cursor-pointer"
-                            title="Mark as read"
-                          >
-                            <Check className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            dismiss(notif.id);
-                          }}
-                          className="p-1 rounded-md text-muted-foreground/70 hover:text-[hsl(var(--state-error-text))] hover:bg-[hsl(var(--state-error-bg))] transition-all cursor-pointer"
-                          title="Dismiss"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
                       </div>
                     </div>
                   );
