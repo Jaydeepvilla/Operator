@@ -87,81 +87,80 @@ const QUICK_ACTIONS = [
 export function QuickActionsWidget() {
   return (
     <m.div whileHover={hoverScale} className="h-full flex flex-col">
-<Card className="w-full h-full flex flex-col overflow-hidden border border-[hsl(var(--foreground)/0.07)]">
-      {/* Header bar */}
-      <div className="flex items-center justify-between px-space-5 py-space-3.5 border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)]">
-        <div className="flex items-center gap-space-2">
-          <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center">
-            <Zap className="h-3.5 w-3.5 text-primary" />
+      <Card className="w-full h-full flex flex-col overflow-hidden border border-border/80">
+        {/* Header bar */}
+        <div className="flex items-center justify-between px-space-5 py-space-3.5 border-b border-border/60 bg-muted/20">
+          <div className="flex items-center gap-space-2">
+            <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center">
+              <Zap className="h-3.5 w-3.5 text-primary" />
+            </div>
+            <span className="text-caption font-bold text-foreground tracking-wide">
+              Quick Actions
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+              Shortcuts
+            </span>
           </div>
-          <span className="text-caption font-semibold text-foreground tracking-wide">
-            Quick Actions
-          </span>
-          <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/8 text-primary border border-primary/15">
-            Shortcuts
+          <span className="text-caption text-muted-foreground font-medium hidden sm:block">
+            Jump anywhere instantly
           </span>
         </div>
-        <span className="text-[11px] text-muted-foreground/60 font-medium hidden sm:block">
-          Jump anywhere instantly
-        </span>
-      </div>
 
-      {/* Action Grid — 3 cols on md, 6 cols on xl */}
-      <div className="px-space-4 pb-space-4 pt-space-5">
-        <div className="grid grid-cols-3 gap-space-3">
-          {QUICK_ACTIONS.map((act) => {
-            const IconComp = act.icon;
-            return (
-              <div key={act.label} className="relative">
-                {/* Pricing-style badge ABOVE card */}
-                {act.badge && (
-                  <div className="absolute -top-3.5 inset-x-0 flex justify-center z-20">
-                    <span
-                      className={`
-                        inline-flex items-center gap-1
-                        text-[9px] font-extrabold uppercase tracking-widest
-                        px-3 py-1 rounded-full
-                        bg-gradient-to-r from-primary to-violet-500
-                        text-white shadow-md shadow-primary/40
-                        ring-2 ring-[hsl(var(--foreground)/0.08)]
-                      `}
-                    >
-                      <Zap className="w-2.5 h-2.5 fill-white/80 stroke-none" />
-                      {act.badge}
-                    </span>
-                  </div>
-                )}
-                <Link
-                  href={act.href}
-                  className={`group relative flex flex-col items-start gap-space-3 p-space-4 rounded-xl border ${act.badge ? 'border-primary/25' : 'border-[hsl(var(--foreground)/0.06)]'} bg-gradient-to-br ${act.gradient} hover:border-[hsl(var(--foreground)/0.14)] hover:shadow-lg ${act.accent} transition-all duration-200 overflow-hidden cursor-pointer h-full`}
-                >
-                  {/* Subtle shimmer on hover */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-white/4 to-transparent pointer-events-none rounded-xl" />
-
-                  {/* Icon row */}
-                  <div className="flex items-start justify-between w-full">
-                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${act.iconBg} transition-transform duration-200 group-hover:scale-105`}>
-                      <IconComp className="h-4.5 w-4.5" />
+        {/* Action Grid */}
+        <div className="px-space-4 pb-space-4 pt-space-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-space-3">
+            {QUICK_ACTIONS.map((act) => {
+              const IconComp = act.icon;
+              return (
+                <div key={act.label} className="relative">
+                  {act.badge && (
+                    <div className="absolute -top-3.5 inset-x-0 flex justify-center z-20">
+                      <span
+                        className={`
+                          inline-flex items-center gap-1
+                          text-[9px] font-extrabold uppercase tracking-widest
+                          px-3 py-1 rounded-full
+                          bg-gradient-to-r from-primary to-violet-500
+                          text-white shadow-md shadow-primary/40
+                          ring-2 ring-[hsl(var(--foreground)/0.08)]
+                        `}
+                      >
+                        <Zap className="w-2.5 h-2.5 fill-white/80 stroke-none" />
+                        {act.badge}
+                      </span>
                     </div>
-                    <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-muted-foreground/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200 ml-auto" />
-                  </div>
+                  )}
+                  <Link
+                    href={act.href}
+                    className={`group relative flex flex-col items-start gap-space-2.5 p-space-4 rounded-xl border ${act.badge ? 'border-primary/25' : 'border-border/80'} bg-card hover:border-primary/50 hover:bg-primary/[0.02] hover:shadow-md ${act.accent} transition-all duration-200 overflow-hidden cursor-pointer h-full`}
+                  >
+                    {/* Subtle shimmer on hover */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none rounded-xl" />
 
-                  {/* Text */}
-                  <div className="min-w-0 w-full">
-                    <span className="text-body-sm font-semibold text-foreground block leading-tight group-hover:text-primary transition-colors duration-150">
-                      {act.label}
-                    </span>
-                    <span className="text-[11px] text-muted-foreground/65 mt-space-0.5 block leading-snug">
-                      {act.description}
-                    </span>
-                  </div>
-                </Link>
-              </div>
-            );
-          })}
+                    {/* Icon row */}
+                    <div className="flex items-start justify-between w-full">
+                      <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${act.iconBg} transition-transform duration-200 group-hover:scale-105`}>
+                        <IconComp className="h-4.5 w-4.5" />
+                      </div>
+                      <ArrowUpRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200 ml-auto" />
+                    </div>
+
+                    {/* Text */}
+                    <div className="min-w-0 w-full">
+                      <span className="text-body-sm font-bold text-foreground block leading-snug group-hover:text-primary transition-colors duration-150">
+                        {act.label}
+                      </span>
+                      <p className="text-caption font-normal text-muted-foreground mt-space-0.5 block leading-relaxed line-clamp-2">
+                        {act.description}
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    </Card>
-</m.div>
+      </Card>
+    </m.div>
   );
 }
