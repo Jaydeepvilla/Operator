@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
     const googleUser = await userinfoResponse.json();
     const email = googleUser.email?.toLowerCase().trim();
     const name = googleUser.name || googleUser.given_name || "Google User";
-    const firstName = googleUser.given_name || name.split(" ")[0] || "";
+    const firstName = googleUser.given_name || name.split(" ")[0] || "User";
     const lastName = googleUser.family_name || name.split(" ").slice(1).join(" ") || "";
     const avatar = googleUser.picture || null;
 
@@ -125,6 +125,7 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     let userId: string;
+    let targetRedirect = "/onboarding";
 
     if (existingUser) {
       userId = existingUser.id;
@@ -136,7 +137,24 @@ export async function GET(request: NextRequest) {
           updatedAt: new Date(),
         })
         .where(eq(users.id, userId));
+
+      // Check if existing user has completed onboarding with a verified organization
+      const userMemberships = await db
+        .select({
+          orgId: memberships.organizationId,
+          verificationStatus: organizations.verificationStatus,
+        })
+        .from(memberships)
+        .leftJoin(organizations, eq(memberships.organizationId, organizations.id))
+        .where(eq(memberships.userId, userId));
+
+      const hasVerifiedOrg = userMemberships.some(
+        (m) => m.verificationStatus === "verified"
+      );
+
+      targetRedirect = hasVerifiedOrg ? "/dashboard" : "/onboarding";
     } else {
+      // First-time user creation
       userId = "usr_" + crypto.randomUUID().replace(/-/g, "");
       await db.transaction(async (tx) => {
         await tx.insert(users).values({
@@ -158,28 +176,10 @@ export async function GET(request: NextRequest) {
         await tx.insert(userSettings).values({ userId });
         await tx.insert(notificationSettings).values({ userId });
         await tx.insert(securitySettings).values({ userId });
-
-        // Create default organization
-        const orgSlug = (firstName || "my-workspace").toLowerCase().replace(/[^a-z0-9]/g, "") + "-" + Math.floor(1000 + Math.random() * 9000);
-        const [org] = await tx
-          .insert(organizations)
-          .values({
-            name: `${firstName}'s Workspace`,
-            slug: orgSlug,
-            industry: "general",
-            timezone: "UTC",
-            verificationStatus: "unverified",
-          })
-          .returning({ id: organizations.id });
-
-        if (org) {
-          await tx.insert(memberships).values({
-            userId,
-            organizationId: org.id,
-            role: "owner",
-          });
-        }
       });
+
+      // New users always go through Onboarding first
+      targetRedirect = "/onboarding";
     }
 
     // 4. Create Session
@@ -189,14 +189,14 @@ export async function GET(request: NextRequest) {
 
     await auditService.log({
       userId,
-      action: "oauth_login",
+      action: existingUser ? "oauth_login" : "oauth_registration",
       resource: "users",
       resourceId: userId,
       ipAddress,
       userAgent,
     });
 
-    const response = NextResponse.redirect(new URL("/dashboard", request.url));
+    const response = NextResponse.redirect(new URL(targetRedirect, request.url));
     response.cookies.delete("google_oauth_state");
     return response;
   } catch (err: any) {
