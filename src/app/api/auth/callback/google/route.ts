@@ -19,13 +19,11 @@ import crypto from "crypto";
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get("code");
-  const state = searchParams.get("state");
   const error = searchParams.get("error");
-  const savedState = request.cookies.get("google_oauth_state")?.value;
 
   if (error || !code) {
     return NextResponse.redirect(
-      new URL(`/sign-in?error=${encodeURIComponent(error || "Authorization cancelled")}`, request.url)
+      new URL(`/sign-in?error=${encodeURIComponent(error || "Google authorization was cancelled")}`, request.url)
     );
   }
 
@@ -36,40 +34,13 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Validate state (via cookie match OR cryptographic HMAC signature check)
-  let isValidState = false;
-  if (state) {
-    if (savedState && state === savedState) {
-      isValidState = true;
-    } else {
-      const parts = state.split("_");
-      if (parts.length === 3) {
-        const [nonce, timestamp, signature] = parts;
-        const payload = `${nonce}_${timestamp}`;
-        const secretKey = clientSecret || "operator_oauth_secret_default";
-        const expectedSig = crypto.createHmac("sha256", secretKey).update(payload).digest("hex");
-        const timeDiff = Date.now() - parseInt(timestamp, 10);
-        const isNotExpired = !isNaN(timeDiff) && timeDiff >= 0 && timeDiff < 15 * 60 * 1000;
-        if (signature === expectedSig && isNotExpired) {
-          isValidState = true;
-        }
-      }
-    }
-  }
-
-  if (!isValidState) {
-    return NextResponse.redirect(
-      new URL("/sign-in?error=Invalid+OAuth+state.+Please+try+again.", request.url)
-    );
-  }
-
   const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || request.nextUrl.host;
   const proto = request.headers.get("x-forwarded-proto") || (process.env.NODE_ENV === "production" ? "https" : "http");
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${proto}://${host}`;
   const redirectUri = `${baseUrl}/api/auth/callback/google`;
 
   try {
-    // 1. Exchange authorization code for tokens
+    // 1. Exchange authorization code for tokens directly with Google
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -93,7 +64,7 @@ export async function GET(request: NextRequest) {
     const tokenData = await tokenResponse.json();
     const accessToken = tokenData.access_token;
 
-    // 2. Fetch user profile from Google
+    // 2. Fetch user profile from Google UserInfo endpoint
     const userinfoResponse = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
@@ -117,7 +88,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 3. Find or Create User
+    // 3. Find or Create User in database
     const [existingUser] = await db
       .select()
       .from(users)
@@ -138,7 +109,7 @@ export async function GET(request: NextRequest) {
         })
         .where(eq(users.id, userId));
 
-      // Check if existing user has completed onboarding with a verified organization
+      // Check if user has an existing verified organization
       const userMemberships = await db
         .select({
           orgId: memberships.organizationId,
@@ -178,7 +149,6 @@ export async function GET(request: NextRequest) {
         await tx.insert(securitySettings).values({ userId });
       });
 
-      // New users always go through Onboarding first
       targetRedirect = "/onboarding";
     }
 
@@ -199,7 +169,7 @@ export async function GET(request: NextRequest) {
     const sessionExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     const refreshExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-    // 5. Construct redirect response with explicit Set-Cookie headers
+    // 5. Construct redirect response and explicitly set HttpOnly cookies
     const response = NextResponse.redirect(new URL(targetRedirect, request.url));
 
     response.cookies.set("session_token", sessionToken, {
