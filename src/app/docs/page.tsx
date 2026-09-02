@@ -126,14 +126,30 @@ function DocsContent() {
           <CodeBlock code={currentDoc.code} language="javascript" filename="example.js" />
         )}
 
-        <div className="mt-space-16 flex items-center justify-between pt-space-8 border-t border-[hsl(var(--foreground)/0.08)]">
-          <Button variant="outline" className="border-[hsl(var(--foreground)/0.08)] text-muted-foreground hover:text-foreground">
-            <ChevronRight className="h-4 w-4 rotate-180" /> Previous
-          </Button>
-          <Button variant="outline" shape="pill" className="border-[hsl(var(--foreground)/0.08)] text-muted-foreground hover:text-foreground">
-            Next <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+        {(() => {
+          const allItems = SIDEBAR.flatMap((s) => s.items);
+          const currentIndex = allItems.findIndex((item) => item.id === id);
+          const prevItem = currentIndex > 0 ? allItems[currentIndex - 1] : null;
+          const nextItem = currentIndex >= 0 && currentIndex < allItems.length - 1 ? allItems[currentIndex + 1] : null;
+          return (
+            <div className="mt-space-16 flex items-center justify-between pt-space-8 border-t border-[hsl(var(--foreground)/0.08)] gap-space-4">
+              {prevItem ? (
+                <Link href={`/docs?id=${prevItem.id}`}>
+                  <Button variant="outline" className="border-[hsl(var(--foreground)/0.08)] text-muted-foreground hover:text-foreground flex items-center gap-space-2">
+                    <ChevronRight className="h-4 w-4 rotate-180" /> {prevItem.label}
+                  </Button>
+                </Link>
+              ) : <div />}
+              {nextItem ? (
+                <Link href={`/docs?id=${nextItem.id}`}>
+                  <Button variant="outline" className="border-[hsl(var(--foreground)/0.08)] text-muted-foreground hover:text-foreground flex items-center gap-space-2">
+                    {nextItem.label} <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              ) : <div />}
+            </div>
+          );
+        })()}
       </div>
 
       <div className="hidden xl:block">

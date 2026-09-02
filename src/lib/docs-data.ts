@@ -1,114 +1,541 @@
-import { Settings, MessageSquare, Inbox, Brain, Calendar } from "lucide-react";
+import { Settings, MessageSquare, Inbox, Brain, Calendar, Phone, CreditCard, Code2 } from "lucide-react";
 
 export const SIDEBAR = [
   {
-    "section": "Getting Started",
-    "icon": Settings,
-    "items": [
-      { "id": "account-setup", "label": "Account Setup" },
-      { "id": "business-profile", "label": "Business Profile" }
+    section: "Getting Started",
+    icon: Settings,
+    items: [
+      { id: "quickstart", label: "Quickstart Guide" },
+      { id: "account-setup", label: "Account Setup" },
+      { id: "business-profile", label: "Business Profile" }
     ]
   },
   {
-    "section": "Channels",
-    "icon": MessageSquare,
-    "items": [
-      { "id": "connect-whatsapp", "label": "Meta WhatsApp" },
-      { "id": "connect-sms", "label": "Twilio SMS" },
-      { "id": "connect-email", "label": "Email" },
-      { "id": "connect-instagram", "label": "Instagram" }
+    section: "Voice & Channels",
+    icon: Phone,
+    items: [
+      { id: "voice-ai", label: "Voice AI & Telephony" },
+      { id: "connect-whatsapp", label: "Meta WhatsApp" },
+      { id: "connect-sms", label: "Twilio SMS" },
+      { id: "connect-email", label: "Email Setup" },
+      { id: "connect-instagram", label: "Instagram Direct" }
     ]
   },
   {
-    "section": "Inbox",
-    "icon": Inbox,
-    "items": [
-      { "id": "view-messages", "label": "Viewing Messages" },
-      { "id": "manage-leads", "label": "Managing Leads" }
+    section: "Inbox & CRM",
+    icon: Inbox,
+    items: [
+      { id: "view-messages", label: "Viewing Messages" },
+      { id: "manage-leads", label: "Managing Leads" }
     ]
   },
   {
-    "section": "Knowledge Base",
-    "icon": Brain,
-    "items": [
-      { "id": "add-documents", "label": "Uploading Documents" }
+    section: "Knowledge Base",
+    icon: Brain,
+    items: [
+      { id: "add-documents", label: "Uploading Documents" }
     ]
   },
   {
-    "section": "Appointments",
-    "icon": Calendar,
-    "items": [
-      { "id": "view-appointments", "label": "Viewing Appointments" },
-      { "id": "services-menu", "label": "Services Menu" }
+    section: "Appointments & Services",
+    icon: Calendar,
+    items: [
+      { id: "view-appointments", label: "Viewing Appointments" },
+      { id: "services-menu", label: "Services Menu" }
+    ]
+  },
+  {
+    section: "Payments & Invoicing",
+    icon: CreditCard,
+    items: [
+      { id: "razorpay-payments", label: "Razorpay Payments" }
+    ]
+  },
+  {
+    section: "Developer & API",
+    icon: Code2,
+    items: [
+      { id: "api-webhooks", label: "API & Webhooks" }
     ]
   }
 ];
 
-export const DOC_CONTENT: Record<string, { title: string; description: string; content: string; code?: string; toc?: { id: string; title: string; level: number }[] }> = {
+export const DOC_CONTENT: Record<
+  string,
+  {
+    title: string;
+    description: string;
+    content: string;
+    code?: string;
+    toc?: { id: string; title: string; level: number }[];
+  }
+> = {
+  quickstart: {
+    title: "Quickstart Guide",
+    description: "Deploy your AI receptionist in under 5 minutes across voice, WhatsApp, and web chat.",
+    toc: [
+      { id: "overview", title: "Overview", level: 2 },
+      { id: "three-step-setup", title: "3-Step Setup", level: 2 },
+      { id: "step-1-profile", title: "Step 1: Configure Business Profile", level: 3 },
+      { id: "step-2-knowledge", title: "Step 2: Upload Knowledge Base", level: 3 },
+      { id: "step-3-channels", title: "Step 3: Connect Live Channels", level: 3 },
+      { id: "testing-your-agent", title: "Testing Your Agent", level: 2 },
+      { id: "next-steps", title: "Next Steps", level: 2 }
+    ],
+    content: `## Overview
+
+Welcome to Operator AI. This guide walks you through setting up an autonomous AI receptionist that can answer phone calls, qualify inbound leads, schedule calendar bookings, and collect upfront Razorpay deposits.
+
+<Callout type="info" title="Zero Coding Required">
+All core features can be configured directly from the graphical dashboard. Developer SDKs and webhooks are optional.
+</Callout>
+
+## 3-Step Setup
+
+### Step 1: Configure Business Profile
+Head to **Profile** in your left navigation to configure your company identity, address, operating hours, and standard timezone. This informs the AI when your staff is available.
+
+### Step 2: Upload Knowledge Base
+Go to **Knowledge** and upload your service FAQs, policy guidelines, price sheets (PDF, CSV, DOCX), or paste custom text notes. Operator AI parses this content in seconds to provide accurate domain answers.
+
+### Step 3: Connect Live Channels
+Navigate to **Channels** to activate your communication pipelines:
+- **Voice AI:** Connect your Twilio SIP or Vonage trunk to answer inbound telephone calls.
+- **WhatsApp:** Link your official Meta WhatsApp Business API.
+- **Web Widget:** Embed the single-line script on your website.
+
+## Testing Your Agent
+
+Once your channels are linked, open the **Live Demo Simulator** at \`/demo\` or dial your assigned virtual test number. 
+
+| Feature | Expected Response Time | Capabilities |
+| :--- | :--- | :--- |
+| Voice Inbound | < 120ms audio latency | Real-time speech-to-text, context reasoning, voice synthesis |
+| WhatsApp Chat | < 1.2s response | Dynamic slot buttons, media attachments, instant quote cards |
+| Razorpay Payments | Instant Link generation | UPI QR codes, debit/credit cards, automatic SMS dispatch |
+
+## Next Steps
+
+Explore the detailed guides below to customize conversation tones, connect Google/Outlook calendars, and configure automatic Razorpay order triggers.`
+  },
   "account-setup": {
-    "title": "Account Setup",
-    "description": "Configure your basic account details and preferences.",
-    "toc": [],
-    "content": "# Overview\n\nAccount setup is where you configure Operator AI with your company details. This ensures Operator AI gives your customers correct information about your business from day one.\n\n# Before You Begin\n\nHave your business name, contact email, phone number, and physical address ready.\n\n# Step-by-Step Instructions\n\n## Step 1: Start Setup\n\nClick **Get Started** on the home page.\n\nYou should now see the welcome screen.\n\n## Step 2: Select Industry\n\nClick the card that best matches your business type.\n\nClick **Continue**.\n\n## Step 3: Enter Business Details\n\nFill in:\n- Business Name\n- Contact Email\n- Contact Phone\n- Physical Address\n\nSelect your timezone from the dropdown.\n\nClick **Launch Workspace**.\n\n# What Happens Next\n\nYour business profile is now ready.\n\nOperator AI will use this information when answering customer questions about where you are located or how to contact you.\n\n# Tips\n\n- Use the phone number you want customers to actually call.\n- Double-check your timezone so appointments are scheduled correctly.\n\n# Common Problems\n\n**Problem:** The system says my email is invalid.\n\n**Reason:** You might have added a space at the end of the email address.\n\n**Solution:** Check for spaces and make sure you included the \"@\" symbol.\n\n# Frequently Asked Questions\n\n**Can I change this later?**\nYes. You can update all of these details anytime from the Business Profile page in your dashboard."
+    title: "Account Setup",
+    description: "Configure your basic account details, authentication credentials, and workspace preferences.",
+    toc: [
+      { id: "overview", title: "Overview", level: 2 },
+      { id: "initial-configuration", title: "Initial Configuration", level: 2 },
+      { id: "workspace-settings", title: "Workspace Settings", level: 2 },
+      { id: "security-two-factor", title: "Security & Two-Factor Auth", level: 2 }
+    ],
+    content: `## Overview
+
+Account setup is where you configure Operator AI with your company details and secure your administrative login.
+
+## Initial Configuration
+
+- **Step 1:** Select your primary industry (Healthcare, Legal, Salon & Spa, Automotive, Real Estate, or Professional Services).
+- **Step 2:** Enter your business contact email and phone number.
+- **Step 3:** Choose your primary business timezone to guarantee accurate calendar scheduling.
+
+## Workspace Settings
+
+You can invite team members and set access levels from the **Team & Staff** tab:
+- **Owner / Admin:** Full configuration access, billing management, and integration controls.
+- **Staff / Agent:** View conversation inboxes, triage bookings, and append private internal customer notes.
+
+## Security & Two-Factor Auth
+
+Enable Two-Factor Authentication (2FA) via Authenticator App (TOTP) from the **Security** tab to enforce strict access controls on all customer transcripts and payment records.`
   },
   "business-profile": {
-    "title": "Business Profile",
-    "description": "Update your company name, location, and contact information.",
-    "toc": [],
-    "content": "# Overview\n\nYour business profile contains the core details that Operator AI uses to answer common questions like \"Where are you located?\" or \"What is your phone number?\".\n\n# Before You Begin\n\nHave your correct address, contact email, phone number, and social media links ready.\n\n# Step-by-Step Instructions\n\n## Step 1: Open Business Profile\n\nClick **Profile** from the left menu.\n\nYou should now see the Business Profile settings.\n\n## Step 2: Update Core Information\n\nFill in:\n- Business Name\n- Business Bio / Description\n- Support/Contact Email\n- Contact Phone Number\n- Website Link\n- Physical Location Address\n- Timezone\n\n## Step 3: Add Review Links\n\nScroll down to the **Google Maps & Review Settings** section.\n\nEnter your Google Maps link and your Google Review Submission link.\n\n## Step 4: Add Social Media\n\nScroll down to the **Social Profile Coordinates** section.\n\nPaste the links to your Facebook, Twitter, Instagram, or LinkedIn pages.\n\n## Step 5: Save Changes\n\nClick **Save Business Profile**.\n\n# What Happens Next\n\nYour profile is immediately updated across the system.\n\nOperator AI will instantly start using this new information to answer customer questions accurately, and can provide your review links or social media handles when asked."
+    title: "Business Profile",
+    description: "Manage your company bio, operating hours, physical locations, and public contact coordinates.",
+    toc: [
+      { id: "overview", title: "Overview", level: 2 },
+      { id: "core-attributes", title: "Core Attributes", level: 2 },
+      { id: "operating-hours", title: "Operating Hours & Availability", level: 2 },
+      { id: "social-coordinates", title: "Social & Review Links", level: 2 }
+    ],
+    content: `## Overview
+
+Your business profile contains the baseline factual data that Operator AI references whenever callers ask questions like *"Where are you located?"*, *"What are your opening hours on Saturday?"*, or *"Can you send me your Google Maps link?"*.
+
+## Core Attributes
+
+- **Business Name & Bio:** Clear summary of your business mission and specialties.
+- **Support Email & Inbound Phone:** Dedicated channels for escalations.
+- **Physical Address:** Street, City, State, and Postal Code used for localized driving directions.
+
+## Operating Hours & Availability
+
+Set your weekly schedule per day (e.g., Monday–Friday 09:00 AM – 06:00 PM). Operator AI automatically detects after-hours inquiries and adjusts its dialogue to schedule bookings for the next available open slot.
+
+## Social & Review Links
+
+Paste your Google Maps Review Link, Instagram handle, and Facebook Page. When customers complete a successful appointment, the AI can automatically dispatch a thank-you text containing your review link.`
+  },
+  "voice-ai": {
+    title: "Voice AI & Telephony",
+    description: "Configure conversational speech synthesis, SIP streaming, and telephone call answering.",
+    toc: [
+      { id: "telephony-overview", title: "Telephony Overview", level: 2 },
+      { id: "connecting-sip-trunk", title: "Connecting a SIP Trunk", level: 2 },
+      { id: "voice-selection", title: "Voice Models & Latency Tuning", level: 2 },
+      { id: "interruption-handling", title: "Interruption & Barge-in Controls", level: 2 }
+    ],
+    code: `// Sample SIP Inbound Webhook Configuration
+POST /api/webhooks/voice/inbound
+Host: app.operator.ai
+Content-Type: application/json
+
+{
+  "CallSid": "CA1234567890abcdef",
+  "From": "+14155552671",
+  "To": "+18005550199",
+  "Direction": "inbound",
+  "ForwardedFrom": "+18005550100"
+}`,
+    content: `## Telephony Overview
+
+Operator AI features an ultra-low latency voice engine (< 120ms processing latency) capable of understanding natural speech, handling interruptions gracefully, and resolving bookings natively over the telephone.
+
+<Callout type="tip" title="Crystal Clear Audio">
+Operator AI utilizes neural acoustic echo cancellation and bi-directional websocket audio streams to ensure high-fidelity voice transmission.
+</Callout>
+
+## Connecting a SIP Trunk
+
+1. Navigate to **Voice > Settings** in the dashboard.
+2. Select your provider (**Twilio SIP**, **Vonage**, or **Custom PBX**).
+3. Paste your SIP URI and Authentication Credentials.
+4. Set the Inbound Webhook URL to \`https://app.operator.ai/api/webhooks/voice/inbound\`.
+
+## Voice Models & Latency Tuning
+
+Choose from studio-grade neural voices tailored for conversational warmth and clarity:
+- **Maya:** Natural, warm, and professional (recommended for Dental & Medical).
+- **Alexander:** Confident, articulate, and calm (recommended for Legal & Financial).
+- **Chloe:** Energetic and friendly (recommended for Salons, Spas & Fitness).
+
+## Interruption & Barge-in Controls
+
+Operator AI supports full duplex barge-in. When a human speaker begins talking while the AI is responding, the AI automatically silences audio playback and switches to active listening immediately.`
   },
   "connect-whatsapp": {
-    "title": "Meta WhatsApp Business",
-    "description": "Allow Operator AI to talk to customers on WhatsApp.",
-    "toc": [],
-    "content": "# Overview\n\nConnecting WhatsApp allows Operator AI to answer questions and book appointments directly through the world's most popular messaging app.\n\n# Step-by-Step Instructions\n\n## Step 1: Go to Channels\n\nClick **Channels** in the left menu.\n\n## Step 2: Connect WhatsApp\n\nLocate the **Meta WhatsApp Business** card and click **Connect API**.\n\n## Step 3: Enter Your Details\n\nFill in the required information for your WhatsApp Business account:\n- Integration Label (e.g., \"Main WhatsApp Line\")\n- Phone Number ID\n- WhatsApp Business Account ID\n- Meta System User Access Token\n\n## Step 4: Save\n\nClick **Save Pipeline**.\n\n# Customize Your AI\n\nOnce connected, click **Settings** on the WhatsApp card to adjust how Operator AI behaves:\n\n- **Enable AI Autopilot:** Turn this on to let Operator AI reply automatically. Turn it off if you want to reply manually from the Inbox.\n- **Conversation Tone:** Choose how Operator AI sounds (Professional, Friendly, Empathetic, or Casual).\n- **Only Business Hours:** Turn this on if you only want Operator AI to reply during your open hours."
+    title: "Meta WhatsApp Business",
+    description: "Connect the official Meta Cloud API to automate inbound customer messages, interactive buttons, and media.",
+    toc: [
+      { id: "overview", title: "Overview", level: 2 },
+      { id: "credentials-setup", title: "Credentials Setup", level: 2 },
+      { id: "ai-autopilot-modes", title: "AI Autopilot Modes", level: 2 }
+    ],
+    content: `## Overview
+
+Connect your official WhatsApp Business number to engage customers on WhatsApp with automated qualification, interactive time-slot pickers, and payment links.
+
+## Credentials Setup
+
+1. Go to **Channels > Meta WhatsApp Business**.
+2. Click **Connect API**.
+3. Input your **Phone Number ID**, **WhatsApp Business Account ID (WABA)**, and **Permanent System User Access Token**.
+4. Configure your Webhook URL in the Meta Developer Console with the verification token provided.
+
+## AI Autopilot Modes
+
+- **Full Autopilot:** Operator AI replies immediately to all inquiries, qualifies leads, and schedules appointments.
+- **Assisted Mode:** Operator AI drafts replies in the Inbox for team approval before sending.
+- **After-Hours Only:** Operator AI activates only outside regular operating hours.`
   },
   "connect-sms": {
-    "title": "Twilio SMS",
-    "description": "Allow Operator AI to reply to text messages.",
-    "toc": [],
-    "content": "# Overview\n\nBy connecting your phone number, Operator AI can reply to text messages sent by your customers.\n\n# Step-by-Step Instructions\n\n## Step 1: Go to Channels\n\nClick **Channels** in the left menu.\n\n## Step 2: Connect SMS\n\nLocate the **Twilio SMS Core** card and click **Connect Twilio**.\n\n## Step 3: Enter Your Details\n\nFill in your Twilio account information:\n- Integration Label (e.g., \"Support Text Line\")\n- Twilio Account SID\n- Twilio Auth Token\n- Twilio Phone Number\n\n## Step 4: Save\n\nClick **Save Pipeline**.\n\n# Customize Your AI\n\nOnce connected, click **Settings** on the SMS card to adjust how Operator AI behaves:\n\n- **Enable AI Autopilot:** Turn this on to let Operator AI reply automatically. Turn it off if you want to reply manually from the Inbox.\n- **Conversation Tone:** Choose how Operator AI sounds (Professional, Friendly, Empathetic, or Casual).\n- **Response Delay:** Add a short delay (in seconds) before Operator AI replies so it feels more natural.\n- **Only Business Hours:** Turn this on if you only want Operator AI to reply during your open hours."
+    title: "Twilio SMS",
+    description: "Send automated text reminders, deposit payment links, and two-way SMS conversations.",
+    toc: [
+      { id: "overview", title: "Overview", level: 2 },
+      { id: "step-by-step", title: "Step-by-Step Connection", level: 2 },
+      { id: "features", title: "SMS Capabilities", level: 2 }
+    ],
+    content: `## Overview
+
+Twilio SMS integration allows Operator AI to dispatch instant booking confirmations, transactional receipts, appointment reminders, and answer inbound SMS text inquiries.
+
+## Step-by-Step Connection
+
+1. Open **Channels** and click **Connect Twilio** on the Twilio SMS card.
+2. Enter your **Account SID**, **Auth Token**, and registered **Twilio Phone Number**.
+3. Save the pipeline to verify carrier routing.
+
+## SMS Capabilities
+
+- **Appointment Reminders:** Dispatches SMS alerts 24 hours and 2 hours prior to scheduled bookings.
+- **Payment Link Dispatches:** Sends instant Razorpay UPI links to confirm reservation deposits.
+- **Two-Way Text Chat:** Converts standard SMS dialogues into structured CRM appointments.`
   },
   "connect-email": {
-    "title": "Email Setup",
-    "description": "Allow Operator AI to handle incoming emails.",
-    "toc": [],
-    "content": "# Overview\n\nConnect your business email address so Operator AI can automatically read, process, and reply to customer emails.\n\n# Step-by-Step Instructions\n\n## Step 1: Go to Channels\n\nClick **Channels** in the left menu.\n\n## Step 2: Connect Email\n\nLocate the **SMTP / Gmail / M365 Email** card and click **Connect Host**.\n\n## Step 3: Enter Your Details\n\nFill in your email server information:\n- Integration Label (e.g., \"Support Email\")\n- SMTP Host Server (e.g., smtp.gmail.com)\n- SMTP Port (usually 587)\n- Username / Account Email\n- Password (or App Password)\n\n## Step 4: Save\n\nClick **Save Pipeline**.\n\n# Customize Your AI\n\nOnce connected, click **Settings** on the Email card to choose Operator AI's tone of voice and decide if it should reply to every email automatically."
+    title: "Email Setup",
+    description: "Process inbound customer emails and draft intelligent context-aware replies.",
+    toc: [
+      { id: "overview", title: "Overview", level: 2 },
+      { id: "smtp-configuration", title: "SMTP & IMAP Setup", level: 2 }
+    ],
+    content: `## Overview
+
+Connect your support email (Google Workspace, Microsoft 365, or Custom SMTP) so Operator AI can parse long-form inquiries, quote service pricing, and schedule meetings.
+
+## SMTP & IMAP Setup
+
+1. Navigate to **Channels > Email Integration**.
+2. Provide your incoming IMAP and outgoing SMTP host details.
+3. Define your AI signature footer and escalation rules.`
   },
   "connect-instagram": {
-    "title": "Instagram Direct",
-    "description": "Allow Operator AI to answer Instagram direct messages.",
-    "toc": [],
-    "content": "# Overview\n\nConnect your Instagram account so Operator AI can answer questions from your followers and help them book appointments directly in their DMs.\n\n# Step-by-Step Instructions\n\n## Step 1: Go to Channels\n\nClick **Channels** in the left menu.\n\n## Step 2: Connect Instagram\n\nLocate the **Instagram DM Channel** card and click **Connect Page**.\n\n## Step 3: Enter Your Details\n\nFill in your account information:\n- Integration Label (e.g., \"Main Instagram\")\n- Facebook Page ID\n- Instagram Business Account ID\n- Facebook Page Access Token\n\n## Step 4: Save\n\nClick **Save Pipeline**.\n\n# Customize Your AI\n\nOnce connected, click **Settings** on the Instagram card to adjust Operator AI's tone of voice and choose if it should reply automatically."
+    title: "Instagram Direct",
+    description: "Convert Instagram DM conversations into qualified leads and confirmed bookings.",
+    toc: [
+      { id: "overview", title: "Overview", level: 2 },
+      { id: "meta-page-linking", title: "Linking Instagram Account", level: 2 }
+    ],
+    content: `## Overview
+
+Link your Instagram Professional Account via Meta Business Suite to allow Operator AI to answer follower inquiries, share booking links, and capture contact information from direct messages.
+
+## Linking Instagram Account
+
+1. Open **Channels > Instagram Direct**.
+2. Connect using your Meta Page admin token.
+3. Test by sending a direct message from any external Instagram profile.`
   },
   "view-messages": {
-    "title": "Viewing Messages",
-    "description": "Read and reply to customer conversations.",
-    "toc": [],
-    "content": "# Overview\n\nThe Inbox is where you can see every conversation happening across all your connected channels (WhatsApp, SMS, Email, Instagram). You can read what Operator AI is saying, or step in to reply yourself.\n\n# Step-by-Step Instructions\n\n## Step 1: Open the Inbox\n\nClick **Inbox** from the left menu.\n\n## Step 2: Find a Conversation\n\nOn the left side of the screen, you will see a list of all recent conversations. You can:\n- Click on any conversation to read it.\n- Use the search bar to find a specific customer by name.\n- Use the filter button to only see messages from a specific channel (like only WhatsApp messages).\n\n## Step 3: Reply to a Customer\n\nWhen looking at a conversation, you will see the chat history in the middle of the screen.\n\nTo send a message yourself:\n1. Type your message in the box at the bottom.\n2. Press Enter or click **Send**.\n\n## Step 4: Add Internal Notes\n\nIf you want to leave a note for yourself or your team that the customer cannot see:\n1. Click the **Internal Note** button above the typing box.\n2. Type your note.\n3. Click **Log Note**."
+    title: "Viewing Messages & Inbox",
+    description: "Manage unified conversations across all channels in real time.",
+    toc: [
+      { id: "inbox-overview", title: "Inbox Overview", level: 2 },
+      { id: "channel-filters", title: "Channel Filtering & Search", level: 2 },
+      { id: "human-takeover", title: "Human Takeover & Internal Notes", level: 2 }
+    ],
+    content: `## Inbox Overview
+
+The Unified Inbox aggregates live chats, voice call transcripts, SMS threads, and WhatsApp messages into a single responsive interface.
+
+## Channel Filtering & Search
+
+- Filter by channel (**WhatsApp**, **Voice**, **SMS**, **Instagram**, **Email**).
+- Search conversations by lead name, phone number, or intent category.
+
+## Human Takeover & Internal Notes
+
+- **Pause AI:** Toggle the Autopilot switch off to type direct human responses.
+- **Private Team Notes:** Click **Internal Note** to leave remarks visible only to your staff.`
   },
   "manage-leads": {
-    "title": "Managing Leads",
-    "description": "Update customer details and track their status.",
-    "toc": [],
-    "content": "# Overview\n\nAs Operator AI talks to customers, it collects their information. You can view and update this information directly from the Inbox to keep track of your leads.\n\n# Step-by-Step Instructions\n\n## Step 1: Open a Conversation\n\nClick **Inbox** from the left menu and select a conversation from the list.\n\n## Step 2: View the Customer Profile\n\nLook at the right side of the screen to see the **Contact Profile**. This shows the customer's:\n- Lead Score\n- Estimated Value\n- Name, Email, and Phone Number\n\n## Step 3: Update Customer Details\n\nIf a customer gets a new phone number, or you want to add a note about them:\n1. Click into the box you want to change (like the Phone Number box).\n2. Type the new information.\n3. Click **Save Profile** at the bottom.\n\n## Step 4: Change Lead Status\n\nYou can keep track of where a customer is in your sales process by updating their status. \n\n1. Find the **Lead Status** dropdown in the Contact Profile.\n2. Choose a new status (like \"Qualified\", \"Booked\", or \"Closed\").\n3. Click **Save Profile**.\n\n## Step 5: Assign to Staff\n\nIf a specific team member needs to handle a conversation, look at the top middle of the screen. Click the dropdown that says \"Staff Assignment\" and select a team member's name to assign the conversation to them."
+    title: "Managing Leads & CRM",
+    description: "Track lead scoring, qualification criteria, custom fields, and pipeline status.",
+    toc: [
+      { id: "lead-scoring", title: "Lead Scoring Matrix", level: 2 },
+      { id: "custom-fields", title: "Custom Contact Attributes", level: 2 },
+      { id: "exporting-crm", title: "CRM Sync & Export", level: 2 }
+    ],
+    content: `## Lead Scoring Matrix
+
+Operator AI automatically assesses every conversation and assigns a Lead Score from 0 to 100 based on:
+- Budget availability
+- Urgency / timeline
+- Problem-solution fit
+- Decision-maker qualification
+
+## Custom Contact Attributes
+
+Store patient IDs, vehicle models, dispute types, or hair lengths directly in the contact profile card.
+
+## CRM Sync & Export
+
+Export leads to CSV or synchronize automatically with HubSpot, Salesforce, Dentrix, or custom webhooks.`
   },
   "add-documents": {
-    "title": "Uploading Documents",
-    "description": "Teach Operator AI about your business.",
-    "toc": [],
-    "content": "# Overview\n\nThe Knowledge Base is where you teach Operator AI about your business. By uploading documents, Operator AI learns your policies, pricing, and services so it can answer customer questions accurately.\n\n# Step-by-Step Instructions\n\n## Step 1: Go to Knowledge Base\n\nClick **Knowledge** in the left menu.\n\n## Step 2: Upload a File\n\nFind the area that says **Upload New Document**. \n\nYou can click the box to select a file from your computer, or you can drag and drop a file directly into the box.\n\nWe support the following file types:\n- PDF documents\n- Word documents (.docx)\n- Text files (.txt)\n- Spreadsheets (.csv)\n\n## Step 3: Wait for Processing\n\nOnce you select a file, the system will process it. You will see it appear in the list of your active documents. \n\nOperator AI can now read this document and use the information inside it to answer questions!\n\n# Tips for Good Documents\n\n- **Keep it Simple:** The clearer your document is written, the better Operator AI will understand it.\n- **Use Q&A Format:** If you have a list of Frequently Asked Questions, save it as a PDF or Text file and upload it. Operator AI loves reading FAQs.\n- **Keep it Updated:** If your pricing changes, remember to delete the old pricing document and upload the new one. This prevents Operator AI from getting confused."
+    title: "Uploading Documents & Knowledge Base",
+    description: "Train Operator AI on your business policies, price lists, FAQs, and service menus.",
+    toc: [
+      { id: "overview", title: "Overview", level: 2 },
+      { id: "supported-file-types", title: "Supported File Types", level: 2 },
+      { id: "best-practices", title: "Document Best Practices", level: 2 }
+    ],
+    content: `## Overview
+
+The Knowledge Base is the brain of your AI receptionist. By uploading company documents, Operator AI learns your specific cancellation policies, pricing packages, insurance coverage, and team biographies.
+
+## Supported File Types
+
+- **PDF (.pdf):** Policy manuals, service catalogues, warranty guidelines.
+- **Word (.docx):** Staff bios, intake questionnaires.
+- **Spreadsheets (.csv):** Structured price lists and part numbers.
+- **Plain Text (.txt / .md):** FAQs and quick answer snippets.
+
+## Best Practices
+
+- Use clear question-and-answer pairs for complex pricing policies.
+- Keep documents updated whenever seasonal rates or staff rosters change.`
   },
   "view-appointments": {
-    "title": "Viewing Appointments",
-    "description": "See your upcoming bookings and manage your calendar.",
-    "toc": [],
-    "content": "# Overview\n\nThe Appointments page shows you every booking made by Operator AI or your staff. You can see who is coming in, when they are scheduled, and make changes if needed.\n\n# Step-by-Step Instructions\n\n## Step 1: Open Appointments\n\nClick **Appointments** in the left menu.\n\n## Step 2: Find a Booking\n\nIn the middle of the screen, you will see a list of all your bookings. You can:\n- Click on any booking in the list to see more details on the right side of the screen.\n- Use the search bar at the top to find a specific customer by name or phone number.\n- Use the dropdown menus at the top to only see bookings for a specific staff member, or bookings with a specific status (like only \"Confirmed\" bookings).\n\n## Step 3: Take Action on a Booking\n\nWhen you select a booking, look at the **Triage Actions** on the right side of the screen. You can click these buttons to:\n- **Confirm** the booking.\n- Mark it as **Completed** after the customer visits.\n- Mark it as a **No Show** if the customer did not arrive.\n- **Reschedule** the booking for a different day or time.\n- **Cancel** the booking entirely.\n\n## Step 4: Add Booking Notes\n\nIf you need to leave a note for your team about a specific booking:\n1. Select the booking.\n2. Look at the bottom right corner under **Staff Booking Notes**.\n3. Type your note in the box.\n4. Click **Add**."
+    title: "Viewing Appointments & Calendar",
+    description: "Monitor scheduled appointments, sync Google/Outlook calendars, and handle reschedules.",
+    toc: [
+      { id: "calendar-sync", title: "Calendar Synchronization", level: 2 },
+      { id: "managing-bookings", title: "Managing Bookings", level: 2 },
+      { id: "cancellations-no-shows", title: "Cancellations & No-Shows", level: 2 }
+    ],
+    content: `## Calendar Synchronization
+
+Operator AI connects in real-time with **Google Calendar** and **Microsoft Outlook Calendar** to check availability down to the minute, avoiding double-bookings.
+
+## Managing Bookings
+
+- **Confirm / Reschedule:** Change booking dates with automated notifications sent to the customer.
+- **Buffer Times:** Automatically enforce 15-minute padding between appointments.
+
+## Cancellations & No-Shows
+
+Mark appointments as *Completed*, *Cancelled*, or *No-Show* to update the customer's CRM profile reliability rating.`
   },
   "services-menu": {
-    "title": "Services Menu",
-    "description": "Manage the services your customers can book.",
-    "toc": [],
-    "content": "# Overview\n\nThe Services menu is where you define exactly what your business offers. Operator AI reads this list to tell customers what they can book, how much it costs, and how long it takes.\n\n# Step-by-Step Instructions\n\n## Step 1: Open Services\n\nClick **Services** in the left menu.\n\n## Step 2: Add a Category\n\nIf you want to organize your services, you should create a category first.\n1. Click **Add Category** in the top right corner.\n2. Type a name (like \"Haircuts\" or \"Consultations\").\n3. Click **Create**.\n\n## Step 3: Add a Service\n\n1. Click **Add Service** in the top right corner.\n2. Fill in the details for the service:\n   - **Name:** What is the service called?\n   - **Description:** A brief explanation of what the service includes.\n   - **Price:** How much does it cost? (You can enter 0 if it is free).\n   - **Duration:** How many minutes does this service take?\n   - **Category:** Select the category it belongs to.\n3. Click **Create Service**.\n\n## Step 4: Edit or Delete a Service\n\nIf you need to change a price or remove a service:\n1. Find the service in your list.\n2. Click the **Edit** (pencil) button to change the details, or click the **Delete** (trash can) button to remove it completely.\n\n# What Happens Next\n\nAs soon as you add or update a service, Operator AI instantly learns the new details and can start offering it to customers who want to book an appointment."
+    title: "Services Menu & Pricing",
+    description: "Define service catalog, durations, deposit requirements, and staff assignments.",
+    toc: [
+      { id: "overview", title: "Overview", level: 2 },
+      { id: "creating-services", title: "Creating Services", level: 2 },
+      { id: "deposit-settings", title: "Deposit Settings", level: 2 }
+    ],
+    content: `## Overview
+
+Configure the full list of bookable services that Operator AI can offer to callers and chat visitors.
+
+## Creating Services
+
+For each service, define:
+- **Service Name & Category** (e.g., Dental Cleaning, Initial Legal Consultation)
+- **Duration** (e.g., 30 mins, 60 mins)
+- **Price & Deposit** (e.g., $150 total, $50 required upfront hold)
+- **Assigned Staff / Practitioner**
+
+## Deposit Settings
+
+Require deposit authorization via Razorpay before a calendar slot is finalized to reduce no-shows to near zero.`
+  },
+  "razorpay-payments": {
+    title: "Razorpay Payments & Invoicing",
+    description: "Accept UPI, credit/debit cards, Net Banking, and automatic payment links.",
+    toc: [
+      { id: "razorpay-overview", title: "Overview", level: 2 },
+      { id: "api-keys-setup", title: "API Keys Configuration", level: 2 },
+      { id: "automated-payment-links", title: "Automated Payment Links", level: 2 },
+      { id: "webhook-verification", title: "Webhook Verification", level: 2 }
+    ],
+    code: `// Sample Razorpay Payment Order Verification Payload
+POST /api/webhooks/billing/razorpay
+Host: app.operator.ai
+Content-Type: application/json
+
+{
+  "event": "payment_link.paid",
+  "payload": {
+    "payment_link": {
+      "id": "plink_K8m92bXyZ10",
+      "amount": 250000,
+      "currency": "INR",
+      "status": "paid",
+      "order_id": "order_K8m91aBcd"
+    },
+    "payment": {
+      "id": "pay_9k2m31a9",
+      "method": "upi",
+      "vpa": "customer@okhdfcbank"
+    }
+  }
+}`,
+    content: `## Overview
+
+Operator AI natively integrates with **Razorpay** to process secure payments, collect booking token deposits, and send dynamic payment links across WhatsApp, SMS, and Voice interactions.
+
+<Callout type="success" title="Supported Payment Methods">
+Supports UPI (Google Pay, PhonePe, Paytm, BHIM), Credit/Debit Cards (Visa, Mastercard, RuPay), NetBanking (50+ banks), and EMI.
+</Callout>
+
+## API Keys Configuration
+
+1. Log in to your **Razorpay Dashboard**.
+2. Navigate to **Settings > API Keys** and generate a **Key ID** and **Key Secret**.
+3. In Operator AI, go to **Settings > Billing & Payments**.
+4. Paste your **Razorpay Key ID** and **Key Secret**.
+5. Click **Verify & Connect Gateway**.
+
+## Automated Payment Links
+
+When a customer books a premium service or consultation that requires an advance deposit:
+1. Operator AI creates a Razorpay Order ID.
+2. The AI generates a customized, time-limited Razorpay Payment Link.
+3. The link is dispatched instantly over WhatsApp or SMS.
+4. Once paid, the appointment is automatically locked in the calendar.
+
+## Webhook Verification
+
+Configure Razorpay Webhooks pointing to \`https://app.operator.ai/api/webhooks/billing/razorpay\` with the secret token to enable instant sub-second payment settlement confirmations.`
+  },
+  "api-webhooks": {
+    title: "Developer APIs & Webhooks",
+    description: "Programmatically trigger AI calls, dispatch messages, and subscribe to real-time events.",
+    toc: [
+      { id: "api-overview", title: "API Overview", level: 2 },
+      { id: "authentication", title: "Authentication", level: 2 },
+      { id: "dispatch-call-endpoint", title: "Trigger Outbound AI Call", level: 2 },
+      { id: "webhook-events", title: "Webhook Events", level: 2 }
+    ],
+    code: `// Initialize Operator SDK in Node.js / TypeScript
+import { Operator } from "@operator/sdk";
+
+const operator = new Operator({
+  apiKey: process.env.OPERATOR_API_KEY
+});
+
+// Trigger an Outbound Qualification Call
+const call = await operator.calls.create({
+  phoneNumber: "+15550199",
+  voiceId: "maya_neural",
+  prompt: "Follow up regarding requested dental consultation",
+  context: {
+    customerName: "Sarah Jenkins",
+    service: "Teeth Whitening"
+  }
+});
+
+console.log(\`Call initiated. Session ID: \${call.sessionId}\`);`,
+    content: `## API Overview
+
+Operator AI provides RESTful APIs and real-time Webhook subscriptions for seamless integration with custom internal dashboards, mobile apps, and ERP systems.
+
+## Authentication
+
+All API requests require a Bearer token passed in the \`Authorization\` header:
+
+\`\`\`bash
+curl -X GET https://app.operator.ai/api/v1/conversations \\
+  -H "Authorization: Bearer op_live_your_api_key"
+\`\`\`
+
+## Trigger Outbound AI Call
+
+You can programmatically initiate outbound calls to warm web leads within seconds of form submissions:
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| \`phoneNumber\` | string | Yes | E.164 formatted telephone number |
+| \`voiceId\` | string | Yes | Voice personality ID (e.g., \`maya_neural\`) |
+| \`prompt\` | string | Yes | Initial conversation objective and guidelines |
+| \`context\` | object | No | Custom JSON payload with CRM lead metadata |
+
+## Webhook Events
+
+Subscribe to real-time webhook events:
+- \`appointment.created\`: Fired when a new booking is confirmed.
+- \`lead.qualified\`: Fired when an incoming lead meets qualification score criteria.
+- \`payment.completed\`: Fired upon successful Razorpay deposit verification.
+- \`call.recording.ready\`: Fired when voice call MP3 audio and transcripts are processed.`
   }
 };
