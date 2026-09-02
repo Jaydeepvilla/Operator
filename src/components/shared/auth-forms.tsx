@@ -222,6 +222,7 @@ export function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialEmail = searchParams.get("email") || "";
+  const urlError = searchParams.get("error");
   const toast = useToast();
 
   const handleGoogleClick = () => {
@@ -238,8 +239,14 @@ export function SignInForm() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
-  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(urlError);
   const [userNotFound, setUserNotFound] = React.useState(false);
+
+  React.useEffect(() => {
+    if (urlError) {
+      setErrorMsg(urlError);
+    }
+  }, [urlError]);
 
   // Email validation state
   const [emailTouched, setEmailTouched] = React.useState(false);
@@ -443,6 +450,7 @@ export function SignUpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialEmail = searchParams.get("email") || "";
+  const urlError = searchParams.get("error");
   const toast = useToast();
 
   const handleGoogleClick = () => {
@@ -464,7 +472,13 @@ export function SignUpForm() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [passwordFocused, setPasswordFocused] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(urlError);
+
+  React.useEffect(() => {
+    if (urlError) {
+      setErrorMsg(urlError);
+    }
+  }, [urlError]);
 
   // Live email validation
   const [emailChecking, setEmailChecking] = React.useState(false);
