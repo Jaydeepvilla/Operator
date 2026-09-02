@@ -34,7 +34,8 @@ const PUBLIC_PATHS = [
   "/api/auth/logout",
 ];
 
-const AUTH_PAGES = ["/sign-in", "/sign-up"];
+// Pages that authenticated users should be redirected away from
+const AUTH_PAGES = ["/sign-in", "/sign-up", "/forgot-password", "/reset-password"];
 
 function isPublicRoute(pathname: string): boolean {
   // Always pass through: static assets, auth APIs, webhooks, widget, Next.js internals
@@ -57,17 +58,25 @@ function isPublicRoute(pathname: string): boolean {
 }
 
 function isAuthPage(pathname: string): boolean {
-  return AUTH_PAGES.some((route) => pathname === route || pathname.startsWith(route + "/"));
+  return AUTH_PAGES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
 }
 
-export default function proxy(request: NextRequest) {
+/**
+ * Edge-level route protection (Next.js 16 proxy convention).
+ *
+ * Named export required — Next.js 16 renamed middleware → proxy and
+ * expects `export function proxy` (or `export default`).
+ */
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionToken = request.cookies.get("session_token")?.value;
   const hasSession = !!sessionToken;
 
-  // Bypass public routes
+  // ── Public routes ────────────────────────────────────────────────────
   if (isPublicRoute(pathname)) {
-    // If authenticated user visits sign-in/sign-up, redirect to dashboard
+    // Authenticated users visiting auth pages → redirect to dashboard
     // (dashboard layout will further redirect to /onboarding if needed)
     if (hasSession && isAuthPage(pathname)) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
@@ -75,7 +84,7 @@ export default function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protect private routes
+  // ── Protected routes ─────────────────────────────────────────────────
   if (!sessionToken) {
     const signInUrl = new URL("/sign-in", request.url);
     // Remember the page they tried to access
@@ -94,8 +103,8 @@ export const config = {
      * Match all request paths except for the ones starting with:
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
      */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
   ],
 };

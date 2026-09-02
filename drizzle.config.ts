@@ -8,7 +8,7 @@ export default defineConfig({
   out: "./src/server/db/migrations",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/nexx_receptionist",
+    url: process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/nexx_receptionist",
   },
   verbose: true,
   strict: true,
