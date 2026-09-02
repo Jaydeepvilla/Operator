@@ -278,8 +278,10 @@ export function SignInForm() {
       const result = await loginAction({ email, password, rememberMe });
       if (result.success) {
         setIsSuccess(true);
+        const destination = result.destination || "/dashboard";
+        const isFirstTime = !result.isCompleted;
         setTimeout(() => {
-          window.location.href = "/login-success?redirect=/onboarding";
+          window.location.href = `/login-success?redirect=${encodeURIComponent(destination)}&firstTime=${isFirstTime}&mode=signin`;
         }, 300);
       } else {
         setErrorMsg(result.error || "Invalid email or password.");

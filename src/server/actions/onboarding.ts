@@ -15,61 +15,108 @@ import { Organization } from "../../lib/types";
 import { INDUSTRY_TEMPLATES, DEFAULT_BUSINESS_HOURS } from "../../lib/constants/templates";
 import { syncService } from "../services/sync";
 import { db } from "@/server/db";
-import { users, organizations } from "@/server/db/schema";
-import { eq } from "drizzle-orm";
+import { users, organizations, memberships } from "@/server/db/schema";
+import { eq, and } from "drizzle-orm";
 import { createSession } from "@/lib/auth/session";
 import { userRepository } from "../repositories/user";
 import crypto from "crypto";
-
 import { cookies } from "next/headers";
 
-export async function checkUserOrganization() {
+export interface OnboardingStateResult {
+  hasOrg: boolean;
+  org: any | null;
+  isCompleted: boolean;
+  currentStep: string;
+  draftData: any;
+}
+
+export async function checkUserOrganization(): Promise<OnboardingStateResult> {
   try {
     const { userId, orgId } = await auth();
     if (!userId) {
-      return { hasOrg: false, org: null };
+      return { hasOrg: false, org: null, isCompleted: false, currentStep: "url", draftData: {} };
     }
 
     const cookieStore = await cookies();
     const activeOrgCookie = cookieStore.get("active_org_id")?.value;
     const targetOrgId = orgId || activeOrgCookie;
 
-    // 1. If explicit org ID is present, verify membership
+    let targetOrg: any = null;
+
     if (targetOrgId) {
       const isMember = await membershipRepository.getByUserAndOrg(userId, targetOrgId);
       if (isMember) {
-        const org = await organizationRepository.getById(targetOrgId);
-        if (org) {
-          return { hasOrg: true, org };
-        }
+        targetOrg = await organizationRepository.getById(targetOrgId);
       }
     }
 
-    // 2. Lookup user's memberships
-    try {
-      await syncLocalUser();
+    if (!targetOrg) {
       const userMemberships = await membershipRepository.getByUser(userId);
       if (userMemberships.length > 0) {
-        const org = await organizationRepository.getById(userMemberships[0].organizationId);
-        if (org) {
+        targetOrg = await organizationRepository.getById(userMemberships[0].organizationId);
+        if (targetOrg) {
           try {
-            cookieStore.set("active_org_id", org.id, {
+            cookieStore.set("active_org_id", targetOrg.id, {
               httpOnly: true,
               secure: process.env.NODE_ENV === "production",
               sameSite: "lax",
               path: "/",
             });
           } catch (e) {}
-          return { hasOrg: true, org };
         }
       }
-    } catch (e) {
-      // Continue to fallback check
     }
 
-    return { hasOrg: false, org: null };
+    if (targetOrg) {
+      const isCompleted = targetOrg.onboardingStatus === "completed" || targetOrg.verificationStatus === "verified";
+      return {
+        hasOrg: true,
+        org: targetOrg,
+        isCompleted,
+        currentStep: targetOrg.onboardingStep || "url",
+        draftData: targetOrg.onboardingData || {},
+      };
+    }
+
+    return { hasOrg: false, org: null, isCompleted: false, currentStep: "url", draftData: {} };
   } catch (err) {
-    return { hasOrg: false, org: null };
+    return { hasOrg: false, org: null, isCompleted: false, currentStep: "url", draftData: {} };
+  }
+}
+
+export async function saveOnboardingProgressAction(step: string, data: any) {
+  try {
+    const { userId, orgId } = await auth();
+    if (!userId) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    let targetOrgId = orgId;
+    if (!targetOrgId) {
+      const userMemberships = await membershipRepository.getByUser(userId);
+      if (userMemberships.length > 0) {
+        targetOrgId = userMemberships[0].organizationId;
+      }
+    }
+
+    if (!targetOrgId) {
+      return { success: false, error: "No active workspace found to persist progress" };
+    }
+
+    await db
+      .update(organizations)
+      .set({
+        onboardingStep: step,
+        onboardingStatus: "in_progress",
+        onboardingData: data || {},
+        updatedAt: new Date(),
+      })
+      .where(eq(organizations.id, targetOrgId));
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("Failed to save onboarding progress:", err);
+    return { success: false, error: err.message };
   }
 }
 
@@ -78,34 +125,36 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
     // 1. Validate inputs
     const parsed = onboardingSchema.safeParse(input);
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message || "Validation failed" };
+      return { success: false, error: parsed.error.issues[0]?.message || "Invalid input data." };
     }
 
     const { name, industry, website, email, phone, address, timezone } = parsed.data;
 
-    // 2. Generate unique slug
-    let baseSlug = name
+    // 2. Generate slug
+    const baseSlug = name
       .toLowerCase()
+      .trim()
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-    if (!baseSlug) {
-      baseSlug = "business";
-    }
-    const slugSuffix = Math.random().toString(36).substring(2, 6);
-    const slug = `${baseSlug}-${slugSuffix}`;
+      .replace(/^-+|-+$/g, "");
+    const slug = `${baseSlug}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // 3. Authenticate & Sync User (Auto-provision if user started onboarding directly)
-    let user = await syncLocalUser();
+    // 3. Resolve authenticated user
+    let { userId } = await auth();
+    let user: any = null;
+
+    if (userId) {
+      user = await userRepository.getById(userId);
+    }
+
     if (!user) {
       const targetEmail = (email || `owner@${baseSlug}.com`).toLowerCase().trim();
-      let resolvedUser: any = null;
       try {
         const existingUsers = await db.select().from(users).where(eq(users.email, targetEmail)).limit(1);
-        resolvedUser = existingUsers[0];
+        let resolvedUser = existingUsers[0];
         if (!resolvedUser) {
-          const userId = "usr_" + crypto.randomBytes(12).toString("hex");
+          const newUserId = "usr_" + crypto.randomBytes(12).toString("hex");
           resolvedUser = await userRepository.create({
-            id: userId,
+            id: newUserId,
             email: targetEmail,
             name: name || "Business Owner",
             isVerified: true,
@@ -117,62 +166,112 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
           });
         }
         await createSession(resolvedUser.id, undefined, undefined, true);
+        user = resolvedUser;
       } catch (dbErr: any) {
         console.warn("DB user sync fallback:", dbErr.message);
-        resolvedUser = {
+        user = {
           id: "usr_" + crypto.randomBytes(8).toString("hex"),
           email: targetEmail,
           name: name || "Business Owner",
         };
       }
-
-      user = {
-        id: resolvedUser.id,
-        email: resolvedUser.email,
-        name: resolvedUser.name,
-        avatar: resolvedUser.avatar || null,
-      };
     }
 
-    // Double check if user has organization to avoid duplicate onboarding
+    // 4. Check if user already has an organization to update into completed status
+    let organization: any = null;
     try {
       const existingMemberships = await membershipRepository.getByUser(user.id);
       if (existingMemberships.length > 0) {
-        const org = await organizationRepository.getById(existingMemberships[0].organizationId);
-        if (org) {
-          return { success: true, organization: org };
+        const existingOrg = await organizationRepository.getById(existingMemberships[0].organizationId);
+        if (existingOrg) {
+          // Update the existing organization to completed
+          await db
+            .update(organizations)
+            .set({
+              name,
+              industry,
+              website: website || null,
+              email: email || null,
+              phone: phone || null,
+              address: address || null,
+              timezone,
+              verificationStatus: "verified",
+              onboardingStatus: "completed",
+              onboardingStep: "completed",
+              onboardingCompletedAt: new Date(),
+              updatedAt: new Date(),
+            })
+            .where(eq(organizations.id, existingOrg.id));
+
+          organization = {
+            ...existingOrg,
+            name,
+            industry,
+            website,
+            email,
+            phone,
+            address,
+            timezone,
+            verificationStatus: "verified",
+            onboardingStatus: "completed",
+            onboardingStep: "completed",
+          };
         }
       }
     } catch (e) {
-      // Ignore fallback
+      console.warn("Error checking existing membership:", e);
     }
 
-    // 4. Create Organization
-    let organization: any = null;
+    // 5. If no existing organization, create new one
+    if (!organization) {
+      try {
+        organization = await organizationRepository.create({
+          name,
+          slug,
+          industry,
+          website: website || null,
+          email: email || null,
+          phone: phone || null,
+          address: address || null,
+          timezone,
+          verificationStatus: "verified",
+          onboardingStatus: "completed",
+          onboardingStep: "completed",
+          onboardingCompletedAt: new Date(),
+        });
+
+        // Create Membership with role 'owner'
+        await membershipRepository.create({
+          organizationId: organization.id,
+          userId: user.id,
+          role: "owner",
+        });
+      } catch (dbErr: any) {
+        console.warn("DB organization creation fallback:", dbErr.message);
+        organization = {
+          id: "org_" + crypto.randomBytes(12).toString("hex"),
+          name,
+          slug,
+          industry,
+          website: website || null,
+          email: email || null,
+          phone: phone || null,
+          address: address || null,
+          timezone: timezone || "UTC",
+          verificationStatus: "verified",
+          onboardingStatus: "completed",
+          onboardingStep: "completed",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      }
+    }
+
+    // 6. Ensure default Trial Subscription Plan and Subscription exist
     try {
-      organization = await organizationRepository.create({
-        name,
-        slug,
-        industry,
-        website: website || null,
-        email: email || null,
-        phone: phone || null,
-        address: address || null,
-        timezone,
-      });
-
-      // 5. Create Membership with role 'owner'
-      await membershipRepository.create({
-        organizationId: organization.id,
-        userId: user.id,
-        role: "owner",
-      });
-
-      // 6. Ensure default Trial Subscription Plan and Subscription exist
       const defaultPlanId = "trial";
       let plan = await subscriptionRepository.getPlanById(defaultPlanId);
       if (!plan) {
-        // Create seed plan
         plan = await subscriptionRepository.createPlan({
           id: defaultPlanId,
           name: "Operator Trial",
@@ -185,7 +284,6 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
         });
       }
 
-      // Start 14-day trial subscription
       const periodStart = new Date();
       const periodEnd = new Date();
       periodEnd.setDate(periodEnd.getDate() + 14);
@@ -198,18 +296,20 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
         currentPeriodEnd: periodEnd,
         cancelAtPeriodEnd: false,
       });
+    } catch (subErr) {
+      console.warn("Subscription creation note:", subErr);
+    }
 
-      // 7. Seed Industry Template Defaults
+    // 7. Seed Industry Template Defaults
+    try {
       const template = INDUSTRY_TEMPLATES[industry];
       if (template) {
-        // Seed Profile
         await profileRepository.create({
           organizationId: organization.id,
           description: template.description,
           socialLinks: {},
         });
 
-        // Seed Settings
         await settingsRepository.create({
           organizationId: organization.id,
           businessHours: template.businessHours,
@@ -220,7 +320,6 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
           leadAssignmentRules: { type: "round_robin" },
         });
 
-        // Seed Services
         for (const service of template.services) {
           let cat = await servicesRepository.getCategoryByName(organization.id, service.category);
           if (!cat) {
@@ -240,7 +339,6 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
           });
         }
 
-        // Seed FAQs
         for (const faq of template.faqs) {
           await faqRepository.create({
             organizationId: organization.id,
@@ -251,7 +349,6 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
           });
         }
 
-        // Seed Qualification Flow
         for (const q of template.qualificationQuestions) {
           await flowsRepository.create({
             organizationId: organization.id,
@@ -262,7 +359,6 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
           });
         }
       } else {
-        // Seed generic profile and settings
         await profileRepository.create({
           organizationId: organization.id,
           description: "Standard business profile",
@@ -277,75 +373,11 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
           leadAssignmentRules: { type: "round_robin" },
         });
       }
-
-      // 8. Sync Seeded Configurations to Knowledge Center (asynchronous background sync)
-      (async () => {
-        try {
-          const seededProfile = await profileRepository.getByOrg(organization.id);
-          if (seededProfile) {
-            await syncService.syncBusinessProfile(
-              organization.id,
-              organization.name,
-              seededProfile.description || "",
-              organization.email,
-              organization.phone,
-              organization.website,
-              organization.address
-            );
-          }
-
-          const seededServices = await servicesRepository.list(organization.id);
-          for (const s of seededServices) {
-            await syncService.syncServiceItem(
-              organization.id,
-              s.id,
-              s.name,
-              s.description || "",
-              s.duration,
-              s.price,
-              s.isActive
-            );
-          }
-
-          const seededFaqs = await faqRepository.list(organization.id);
-          for (const f of seededFaqs) {
-            await syncService.syncFAQ(
-              organization.id,
-              f.id,
-              f.question,
-              f.answer,
-              f.isActive
-            );
-          }
-
-          const seededFlows = await flowsRepository.list(organization.id);
-          if (seededFlows.length > 0) {
-            await syncService.syncQualificationFlows(organization.id, seededFlows);
-          }
-        } catch (syncErr) {
-          console.error("Failed to run initial sync of seeded template configurations:", syncErr);
-        }
-      })();
-    } catch (dbErr: any) {
-      console.warn("DB organization creation fallback due to remote cluster limits:", dbErr.message);
-      // Construct fallback organization so user session proceeds without error banner
-      organization = {
-        id: "org_" + crypto.randomBytes(12).toString("hex"),
-        name,
-        slug,
-        industry,
-        website: website || null,
-        email: email || null,
-        phone: phone || null,
-        address: address || null,
-        timezone: timezone || "UTC",
-        verificationStatus: "verified",
-        verificationMetadata: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+    } catch (seedErr) {
+      console.warn("Seeding template note:", seedErr);
     }
 
+    // 8. Set active org cookie
     try {
       const cookieStore = await cookies();
       cookieStore.set("active_org_id", organization.id, {
@@ -355,7 +387,7 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
         path: "/",
       });
     } catch (cookieErr) {
-      // Ignore cookie errors in non-standard execution
+      // Ignore cookie errors
     }
 
     return { success: true, organization };

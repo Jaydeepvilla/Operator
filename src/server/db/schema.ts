@@ -70,6 +70,29 @@ export const verificationTokens = pgTable("verification_tokens", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const accounts = pgTable(
+  "accounts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    provider: text("provider").notNull(), // 'google', 'credentials', 'apple'
+    providerAccountId: text("provider_account_id").notNull(),
+    email: text("email"),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    idToken: text("id_token"),
+    expiresAt: timestamp("expires_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_accounts_provider_account").on(table.provider, table.providerAccountId),
+    index("idx_accounts_user_id").on(table.userId),
+  ]
+);
+
 export const organizations = pgTable("organizations", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
@@ -83,6 +106,10 @@ export const organizations = pgTable("organizations", {
   timezone: text("timezone").notNull(),
   verificationStatus: text("verification_status").default("unverified").notNull(), // 'unverified', 'verifying', 'verified', 'needs_review'
   verificationMetadata: jsonb("verification_metadata").default({}).notNull(),
+  onboardingStatus: text("onboarding_status").default("not_started").notNull(), // 'not_started', 'in_progress', 'completed', 'skipped'
+  onboardingStep: text("onboarding_step").default("url").notNull(), // 'url', 'verify', 'launching', 'golive', 'completed'
+  onboardingData: jsonb("onboarding_data").default({}).notNull(),
+  onboardingCompletedAt: timestamp("onboarding_completed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

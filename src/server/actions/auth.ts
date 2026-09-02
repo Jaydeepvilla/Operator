@@ -20,6 +20,7 @@ import { eq, and, gte, desc, or } from "drizzle-orm";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { createSession, deleteSession, logoutAllDevices } from "@/lib/auth/session";
 import { currentUser, auth } from "@/lib/auth/server";
+import { resolveUserDestination } from "@/lib/auth/router";
 import { cookies, headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { checkLoginRateLimit, recordLoginAttempt } from "@/lib/auth/rate-limit";
@@ -155,7 +156,13 @@ export async function loginAction(input: any) {
       userAgent,
     });
 
-    return { success: true };
+    const resolution = await resolveUserDestination(user.id);
+
+    return {
+      success: true,
+      destination: resolution.destination,
+      isCompleted: resolution.hasVerifiedOrg,
+    };
   } catch (error: any) {
     console.error("Login action error:", error);
     return { success: false, error: "An unexpected error occurred. Please try again." };

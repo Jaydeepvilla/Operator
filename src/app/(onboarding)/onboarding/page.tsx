@@ -6,10 +6,10 @@ import { Logo } from "@/components/shared/logo";
 import { ShieldCheck } from "lucide-react";
 
 export default async function OnboardingPage() {
-  const { hasOrg, org } = await checkUserOrganization();
+  const { hasOrg, org, isCompleted, currentStep, draftData } = await checkUserOrganization();
   
-  // Only redirect if organization already exists AND is fully verified
-  if (hasOrg && org?.verificationStatus === "verified") {
+  // Only redirect if organization onboarding is already completed
+  if (isCompleted) {
     redirect("/dashboard");
   }
 
@@ -57,7 +57,11 @@ export default async function OnboardingPage() {
       {/* Main Form & Confidence Bridge Area */}
       <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-12">
         <div className="w-full max-w-[620px] rounded-2xl border border-border/70 bg-card/90 p-6 sm:p-10 shadow-2xl backdrop-blur-xl transition-all duration-300">
-          <OnboardingWizard initialOrg={hasOrg && org ? { id: org.id, name: org.name } : undefined} />
+          <OnboardingWizard
+            initialOrg={hasOrg && org ? { id: org.id, name: org.name } : undefined}
+            initialStep={currentStep}
+            initialDraftData={draftData}
+          />
         </div>
       </main>
 

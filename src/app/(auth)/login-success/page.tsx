@@ -52,10 +52,10 @@ function LoginSuccessContent() {
   return (
     <div className="space-y-space-8 animate-fade-up">
       <AuthHeader
-        heading={isSignup ? "Account Created! 🎉" : "Login Successful! 🎉"}
+        heading={isSignup ? "Account Created! 🎉" : isFirstTime ? "Welcome to Operator! 🎉" : "Welcome Back! 👋"}
         subheading={
-          isSignup
-            ? "Your Operator account is created and ready for onboarding."
+          isFirstTime
+            ? "Your account is created and ready for workspace setup."
             : "Your session has been verified and activated."
         }
       />
@@ -77,7 +77,7 @@ function LoginSuccessContent() {
         <div className="glass-panel radius-xl p-space-6 space-y-space-4 text-center border border-border/60 bg-bg-layer-1/80 backdrop-blur-md">
           <div className="flex items-center justify-center gap-2 text-primary font-semibold text-sm">
             <Sparkles className="h-4 w-4 animate-pulse" />
-            <span>Operator AI Workspace Setup</span>
+            <span>{isFirstTime ? "Operator AI Workspace Setup" : "Operator AI Active Workspace"}</span>
           </div>
 
           <p className="text-body-sm text-foreground/75 leading-relaxed">
@@ -87,7 +87,7 @@ function LoginSuccessContent() {
               </>
             ) : (
               <>
-                Navigating to your Operator Workspace...
+                Welcome back! Navigating directly to your Operator Workspace and live dashboard...
               </>
             )}
           </p>
@@ -114,7 +114,7 @@ function LoginSuccessContent() {
           size="lg"
           className="w-full gap-2 shadow-md shadow-primary/10"
         >
-          <span>Continue to Onboarding Now</span>
+          <span>{isFirstTime ? "Continue to Onboarding Now" : "Continue to Dashboard Now"}</span>
           <ArrowRight className="h-4 w-4" />
         </Button>
       </div>

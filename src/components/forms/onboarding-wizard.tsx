@@ -1016,12 +1016,32 @@ function ScreenGoLive({ businessName, orgId }: { businessName: string; orgId: st
 
 // ─── Root Wizard ──────────────────────────────────────────────────────────────
 
-export function OnboardingWizard({ initialOrg }: { initialOrg?: { id: string; name: string } }) {
+import { saveOnboardingProgressAction } from "@/server/actions/onboarding";
+
+export function OnboardingWizard({
+  initialOrg,
+  initialStep,
+  initialDraftData,
+}: {
+  initialOrg?: { id: string; name: string };
+  initialStep?: string;
+  initialDraftData?: any;
+}) {
   const router = useRouter();
-  const [step, setStep] = React.useState<Step>(initialOrg ? "golive" : "url");
-  const [url, setUrl] = React.useState("");
+
+  // Determine initial step safely
+  const resolvedInitialStep: Step = (() => {
+    if (initialStep === "verify" && initialDraftData?.businessName) return "verify";
+    if (initialStep === "golive" && initialOrg) return "golive";
+    return "url";
+  })();
+
+  const [step, setStep] = React.useState<Step>(resolvedInitialStep);
+  const [url, setUrl] = React.useState(initialDraftData?.website || "");
   const [generated, setGenerated] = React.useState<GeneratedData | null>(
-    initialOrg
+    initialDraftData?.businessName
+      ? (initialDraftData as GeneratedData)
+      : initialOrg
       ? {
           businessName: initialOrg.name,
           industry: "Other",
@@ -1045,11 +1065,13 @@ export function OnboardingWizard({ initialOrg }: { initialOrg?: { id: string; na
   const handleUrlNext = (inputUrl: string) => {
     setUrl(inputUrl);
     setStep("generating");
+    saveOnboardingProgressAction("generating", { website: inputUrl });
   };
 
   const handleGenerationComplete = (data: GeneratedData) => {
     setGenerated(data);
     setStep("verify");
+    saveOnboardingProgressAction("verify", data);
   };
 
   const handleLaunch = async (data: GeneratedData) => {
