@@ -37,11 +37,21 @@ export function getGoogleOAuthConfig() {
     return cachedConfig;
   }
 
-  // 1. Direct process.env check
-  let clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-  let clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  // 1. Direct process.env check with common aliases
+  let clientId =
+    process.env.GOOGLE_CLIENT_ID ||
+    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+    process.env.AUTH_GOOGLE_ID ||
+    process.env.GOOGLE_ID;
 
-  // 2. If missing, dynamically reload from .env.local and .env
+  let clientSecret =
+    process.env.GOOGLE_CLIENT_SECRET ||
+    process.env.GOOGLE_SECRET ||
+    process.env.AUTH_GOOGLE_SECRET ||
+    process.env.GOOGLE_AUTH_SECRET ||
+    process.env.GOOGLE_CLIENT_SECRET_KEY;
+
+  // 2. If missing, dynamically reload from local environment files
   if (!clientId || !clientSecret) {
     const cwd = process.cwd();
     loadEnvFile(path.join(cwd, ".env.local"));
@@ -49,17 +59,29 @@ export function getGoogleOAuthConfig() {
     loadEnvFile(path.join(cwd, ".env.production"));
     loadEnvFile(path.join(cwd, ".env.development"));
 
-    clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    clientId =
+      clientId ||
+      process.env.GOOGLE_CLIENT_ID ||
+      process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+      process.env.AUTH_GOOGLE_ID ||
+      process.env.GOOGLE_ID;
+
+    clientSecret =
+      clientSecret ||
+      process.env.GOOGLE_CLIENT_SECRET ||
+      process.env.GOOGLE_SECRET ||
+      process.env.AUTH_GOOGLE_SECRET ||
+      process.env.GOOGLE_AUTH_SECRET ||
+      process.env.GOOGLE_CLIENT_SECRET_KEY;
   }
 
   if (clientId && clientSecret) {
-    cachedConfig = { clientId, clientSecret };
+    cachedConfig = { clientId: clientId.trim(), clientSecret: clientSecret.trim() };
     return cachedConfig;
   }
 
   return {
-    clientId: clientId || "",
-    clientSecret: clientSecret || "",
+    clientId: (clientId || "").trim(),
+    clientSecret: (clientSecret || "").trim(),
   };
 }
