@@ -1,4 +1,4 @@
-export type HealthStatus = "Excellent" | "Good" | "Needs Attention" | "Critical";
+export type HealthStatus = "Excellent" | "Good" | "Needs Attention" | "Critical" | "Calibrating";
 export type ReadyStatus = "Ready" | "Partially Ready" | "Not Ready";
 export type PriorityLevel = "Low" | "Medium" | "High" | "Critical";
 

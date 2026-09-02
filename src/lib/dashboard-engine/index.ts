@@ -3,7 +3,7 @@ import { getNextBestAction } from "@/lib/recommendation-engine/engine";
 import { calculateOverallHealth, OverallHealthResult } from "@/lib/health-engine/overall";
 import { calculateGlobalAIReadiness, GlobalAIReadiness } from "@/lib/ai-readiness-engine";
 import { NotificationEngine } from "@/lib/notification-engine";
-import { getDailyBrief, DailyBriefData } from "./daily-brief";
+import { getDailyBrief, DailyBriefData, TimeRange } from "./daily-brief";
 import { runGapAnalysis, GlobalGapAnalysis } from "@/lib/gap-analysis-engine";
 import { SETUP_TASKS } from "@/lib/setup-engine/tasks";
 import { activityRepository } from "@/server/repositories/activity";
@@ -58,10 +58,11 @@ export class DashboardEngine {
    */
   static async getOutcomeDashboard(
     orgId: string,
-    setupState: SetupState
+    setupState: SetupState,
+    range: TimeRange = "today"
   ): Promise<OutcomeDashboardSnapshot> {
-    // 1. Daily Brief — today's operational metrics from DB
-    const dailyBrief = await getDailyBrief(orgId);
+    // 1. Daily Brief — operational metrics from DB for requested range
+    const dailyBrief = await getDailyBrief(orgId, range);
 
     // 2. Health Score — deterministic from quality engines
     const health = calculateOverallHealth(setupState);

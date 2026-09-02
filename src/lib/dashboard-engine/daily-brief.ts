@@ -1,9 +1,11 @@
 import { conversationsRepository } from "@/server/repositories/conversations";
 import { appointmentsRepository } from "@/server/repositories/appointments";
 import { escalationsRepository } from "@/server/repositories/escalations";
-import { activityRepository } from "@/server/repositories/activity";
+
+export type TimeRange = "today" | "7d" | "30d" | "all";
 
 export interface DailyBriefData {
+  range: TimeRange;
   conversationsHandled: number;
   appointmentsBooked: number;
   appointmentsCancelled: number;
@@ -13,16 +15,32 @@ export interface DailyBriefData {
   estimatedTimeSavedMinutes: number;
   revenueGenerated: number;
   aiSuccessRate: number;
+  conversionRate: number;
+  hasConversations: boolean;
+  hasAppointments: boolean;
   date: string;
 }
 
-function startOfToday(): Date {
+function getRangeStartDate(range: TimeRange = "today"): Date {
   const now = new Date();
+  if (range === "7d") {
+    return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  }
+  if (range === "30d") {
+    return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  }
+  if (range === "all") {
+    return new Date(0);
+  }
+  // Default: start of today in local time
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
-export async function getDailyBrief(organizationId: string): Promise<DailyBriefData> {
-  const todayStart = startOfToday();
+export async function getDailyBrief(
+  organizationId: string,
+  range: TimeRange = "today"
+): Promise<DailyBriefData> {
+  const startDate = getRangeStartDate(range);
   const now = new Date();
 
   let allConversations: any[] = [];
@@ -33,7 +51,7 @@ export async function getDailyBrief(organizationId: string): Promise<DailyBriefD
     const results = await Promise.allSettled([
       conversationsRepository.list(organizationId),
       appointmentsRepository.list(organizationId, {
-        startDate: todayStart,
+        startDate,
         endDate: now,
       }),
       escalationsRepository.list(organizationId),
@@ -46,36 +64,36 @@ export async function getDailyBrief(organizationId: string): Promise<DailyBriefD
     console.warn("Daily brief DB fallback:", err);
   }
 
-  // Filter conversations to today
-  const todayConversations = allConversations.filter(
-    (c) => new Date(c.createdAt) >= todayStart
+  // Filter conversations to range
+  const filteredConversations = allConversations.filter(
+    (c) => new Date(c.createdAt) >= startDate
   );
 
-  // Filter escalations to today
-  const todayEscalations = allEscalations.filter(
-    (e) => new Date(e.createdAt) >= todayStart
+  // Filter escalations to range
+  const filteredEscalations = allEscalations.filter(
+    (e) => new Date(e.createdAt) >= startDate
   );
 
-  const conversationsHandled = todayConversations.length;
-  const escalations = todayEscalations.length;
+  const conversationsHandled = filteredConversations.length;
+  const escalations = filteredEscalations.length;
 
   // Appointments metrics from joined results
-  const todayAppointments = allAppointments;
-  const appointmentsBooked = todayAppointments.filter(
-    (a) => a.appointment.status === "confirmed" || a.appointment.status === "completed"
+  const rangeAppointments = allAppointments;
+  const appointmentsBooked = rangeAppointments.filter(
+    (a) => a.appointment?.status === "confirmed" || a.appointment?.status === "completed"
   ).length;
-  const appointmentsCancelled = todayAppointments.filter(
-    (a) => a.appointment.status === "cancelled"
+  const appointmentsCancelled = rangeAppointments.filter(
+    (a) => a.appointment?.status === "cancelled"
   ).length;
-  const appointmentsNoShow = todayAppointments.filter(
-    (a) => a.appointment.status === "no_show"
+  const appointmentsNoShow = rangeAppointments.filter(
+    (a) => a.appointment?.status === "no_show"
   ).length;
 
-  // Revenue: sum pricePaid from today's confirmed/completed appointments
-  const revenueGenerated = todayAppointments.reduce((sum, a) => {
+  // Revenue: sum pricePaid from confirmed/completed appointments
+  const revenueGenerated = rangeAppointments.reduce((sum, a) => {
     if (
-      (a.appointment.status === "confirmed" || a.appointment.status === "completed") &&
-      a.appointment.pricePaid
+      (a.appointment?.status === "confirmed" || a.appointment?.status === "completed") &&
+      a.appointment?.pricePaid
     ) {
       return sum + parseFloat(a.appointment.pricePaid);
     }
@@ -87,15 +105,24 @@ export async function getDailyBrief(organizationId: string): Promise<DailyBriefD
   const estimatedTimeSavedMinutes = Math.round(aiHandled * 3.2);
 
   // AI success rate: conversations resolved without escalation
-  const aiSuccessRate =
-    conversationsHandled > 0
-      ? Math.round(((conversationsHandled - escalations) / conversationsHandled) * 100)
-      : 100;
+  // Honest evaluation: if 0 conversations, success rate is 0 with hasConversations: false
+  const hasConversations = conversationsHandled > 0;
+  const aiSuccessRate = hasConversations
+    ? Math.round(((conversationsHandled - escalations) / conversationsHandled) * 100)
+    : 0;
+
+  // Booking conversion rate: bookings / total attempts
+  const totalAttempts = appointmentsBooked + appointmentsCancelled + appointmentsNoShow;
+  const hasAppointments = totalAttempts > 0;
+  const conversionRate = hasAppointments
+    ? Math.round((appointmentsBooked / totalAttempts) * 100)
+    : 0;
 
   // Missed opportunities: escalations + cancelled + no-shows
   const missedOpportunities = escalations + appointmentsCancelled + appointmentsNoShow;
 
   return {
+    range,
     conversationsHandled,
     appointmentsBooked,
     appointmentsCancelled,
@@ -105,6 +132,9 @@ export async function getDailyBrief(organizationId: string): Promise<DailyBriefD
     estimatedTimeSavedMinutes,
     revenueGenerated,
     aiSuccessRate,
+    conversionRate,
+    hasConversations,
+    hasAppointments,
     date: new Date().toISOString(),
   };
 }

@@ -10,8 +10,13 @@ export const calculateBusinessInfoGaps: GapCalculator = (state: BusinessState) =
   const org = state.organization;
   const profile = state.profile;
 
+  const hasName = Boolean(org?.name || profile?.businessName || profile?.name);
+  const hasDescription = Boolean(profile?.description || org?.description || org?.industry);
+  const hasPhone = Boolean(org?.phone || profile?.phone);
+  const hasWebsite = Boolean(org?.website || profile?.website);
+
   // Basic Details
-  if (!org?.name) {
+  if (!hasName) {
     missingItems.push("Business Name");
     score -= 10;
     recommendations.push({
@@ -28,7 +33,7 @@ export const calculateBusinessInfoGaps: GapCalculator = (state: BusinessState) =
     });
   }
 
-  if (!profile?.description) {
+  if (!hasDescription) {
     missingItems.push("Business Description");
     score -= 10;
     recommendations.push({
@@ -46,7 +51,7 @@ export const calculateBusinessInfoGaps: GapCalculator = (state: BusinessState) =
   }
 
   // Contact Info
-  if (!org?.phone) {
+  if (!hasPhone) {
     missingItems.push("Phone Number");
     score -= 5;
     recommendations.push({
@@ -63,7 +68,7 @@ export const calculateBusinessInfoGaps: GapCalculator = (state: BusinessState) =
     });
   }
 
-  if (!org?.website) {
+  if (!hasWebsite) {
     missingItems.push("Website URL");
     score -= 5;
     recommendations.push({

@@ -7,7 +7,7 @@ export const calculateServiceGaps: GapCalculator = (state: BusinessState) => {
   const recommendations: RecommendationAction[] = [];
   let score = 100;
   
-  const services = state.services || [];
+  const services = state.services || (state as any).servicesList || [];
   
   if (services.length === 0) {
     missingItems.push("No Services Configured");
@@ -32,7 +32,7 @@ export const calculateServiceGaps: GapCalculator = (state: BusinessState) => {
   let missingPrice = 0;
   let missingDuration = 0;
 
-  services.forEach(svc => {
+  services.forEach((svc: any) => {
     if (!svc.description) missingDesc++;
     // If price is missing or '0.00' and it's not meant to be free
     if (!svc.price || svc.price === "0" || svc.price === "0.00") missingPrice++;

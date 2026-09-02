@@ -42,7 +42,7 @@ import {
  SelectValue,
 } from "@/components/shared/select";
 import { INDUSTRIES, TIMEZONES } from "@/lib/constants";
-import { createOrganizationAction } from "@/server/actions/onboarding";
+import { createOrganizationAction, scrapeAndAnalyzeWebsiteAction } from "@/server/actions/onboarding";
 import { LogoIcon } from "@/components/shared/logo";
 import { ConfidenceBridge } from "@/components/confidence-bridge/confidence-bridge";
 
@@ -332,22 +332,69 @@ function ScreenGenerating({
  const [completedLogs, setCompletedLogs] = React.useState<number>(0);
 
  React.useEffect(() => {
- let idx = 0;
- const tick = () => {
- if (idx < GENERATION_LOGS.length) {
- setCompletedLogs((v) => v + 1);
- idx++;
- setTimeout(tick, 320 + Math.random() * 260);
- } else {
- setTimeout(() => {
- const industry = "Medical Clinic";
- const generated = buildGeneratedData(url === "no-website" ? "mybusiness.com" : url, industry);
- onComplete(generated);
- }, 600);
+ let cancelled = false;
+
+ async function executeRealScrape() {
+ setCompletedLogs(1); // Fetching website metadata
+
+ let scrapedData: any = null;
+ if (url && url !== "no-website") {
+ try {
+ setCompletedLogs(2); // Detecting industry vertical
+ const res = await scrapeAndAnalyzeWebsiteAction(url);
+ if (!cancelled && res.success && res.scraped) {
+ scrapedData = res.scraped;
  }
+ } catch (err) {
+ console.warn("Real scraper warning:", err);
+ }
+ }
+
+ if (cancelled) return;
+
+ setCompletedLogs(4); // Extracting business hours & services
+ await new Promise((r) => setTimeout(r, 400));
+
+ setCompletedLogs(7); // Synthesizing FAQ & greetings
+ await new Promise((r) => setTimeout(r, 400));
+
+ setCompletedLogs(GENERATION_LOGS.length); // Operator is ready
+
+ setTimeout(() => {
+ if (cancelled) return;
+ if (scrapedData) {
+ onComplete({
+ businessName: scrapedData.businessName || "My Business",
+ industry: scrapedData.industry || "Other",
+ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+ email: scrapedData.email || "",
+ phone: scrapedData.phone || "",
+ address: scrapedData.address || "",
+ website: scrapedData.website || (url === "no-website" ? "" : url),
+ services:
+ scrapedData.services && scrapedData.services.length > 0
+ ? scrapedData.services
+ : [
+ { name: "General Consultation", duration: 30, accepted: true },
+ { name: "Follow-up Appointment", duration: 15, accepted: true },
+ ],
+ hours: "Mon–Fri 9:00 AM – 5:00 PM",
+ greeting: `Hi, thank you for contacting ${scrapedData.businessName || "us"}. I'm Operator, your automated assistant. How can I help you today?`,
+ });
+ } else {
+ const fallback = buildGeneratedData(
+ url === "no-website" ? "mybusiness.com" : url,
+ "Other"
+ );
+ onComplete(fallback);
+ }
+ }, 500);
+ }
+
+ executeRealScrape();
+ return () => {
+ cancelled = true;
  };
- const t = setTimeout(tick, 200);
- return () => clearTimeout(t);
  }, [url, onComplete]);
 
  const displayUrl = url === "no-website" ? "your business" : url.replace(/^https?:\/\//, "");
@@ -1092,6 +1139,7 @@ export function OnboardingWizard({
  )
  ? data.timezone
  : "UTC",
+ services: data.services,
  };
 
  try {

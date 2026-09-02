@@ -19,6 +19,7 @@ import { eq, and, desc, asc } from "drizzle-orm";
 import { omnichannelRepository } from "../repositories/omnichannel";
 import { omnichannelRouter } from "../services/omnichannel/router";
 import { orchestratorService } from "../services/orchestrator";
+import { activityRepository } from "../repositories/activity";
 
 // --- Inbox Thread Actions ---
 
@@ -369,6 +370,54 @@ export async function updateContactAction(options: {
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to update contact profile" };
+  }
+}
+
+export async function createContactAction(data: {
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  status?: string;
+  notes?: string | null;
+  tags?: string[];
+}) {
+  try {
+    const { organizationId } = await requireOrganizationAccess();
+    if (!data.name || !data.name.trim()) {
+      return { success: false, error: "Customer name is required" };
+    }
+
+    const normalizedPhone = data.phone ? data.phone.replace(/[^\d+]/g, "") : null;
+    const normalizedEmail = data.email ? data.email.trim().toLowerCase() : null;
+
+    const [newContact] = await db
+      .insert(leadProfiles)
+      .values({
+        organizationId,
+        name: data.name.trim(),
+        email: data.email?.trim() || null,
+        phone: data.phone?.trim() || null,
+        normalizedPhone,
+        normalizedEmail,
+        status: data.status || "New",
+        notes: data.notes || null,
+        tags: data.tags || [],
+      })
+      .returning();
+
+    await activityRepository.log({
+      organizationId,
+      category: "contact_created",
+      task: `Added new customer profile: ${data.name.trim()}`,
+      impact: "New lead record stored in customer directory",
+    });
+
+    revalidatePath("/contacts");
+    revalidatePath("/leads");
+    revalidatePath("/dashboard");
+    return { success: true, contact: newContact };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Failed to create customer" };
   }
 }
 

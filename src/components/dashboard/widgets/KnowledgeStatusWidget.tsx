@@ -22,10 +22,14 @@ export function KnowledgeStatusWidget({
   const { overall, coverage, missingDocuments, suggestions, aiConfidence } =
     knowledgeScore;
 
-  // Why low explanation
+  const isEmpty = overall === 0 && coverage === 0;
+
+  // Why low explanation with correct grammar
   const whyLow =
     overall < 70
-      ? `${missingDocuments} missing topic${missingDocuments !== 1 ? "s" : ""} reduce AI accuracy`
+      ? missingDocuments > 0
+        ? `${missingDocuments} missing topic${missingDocuments !== 1 ? "s" : ""} reduce${missingDocuments === 1 ? "s" : ""} AI accuracy`
+        : "Knowledge base ready for content"
       : overall < 90
         ? "A few weak areas reduce confidence"
         : undefined;
@@ -36,16 +40,30 @@ export function KnowledgeStatusWidget({
       href="/kb"
       icon={Brain}
       score={overall}
-      statusLabel={whyLow ?? `${overall}% coverage`}
+      empty={isEmpty}
+      displayValue={isEmpty ? "0%" : `${overall}%`}
+      statusLabel={isEmpty ? "Ready for Knowledge" : (whyLow ?? `${overall}% coverage`)}
       alertCount={missingDocuments}
       alertText="missing topic"
       alertIcon={BookOpen}
       alertType={missingDocuments > 3 ? "error" : missingDocuments > 0 ? "warning" : "success"}
-      metaText={`AI confidence: ${aiConfidence}%`}
+      metaText={isEmpty ? "Import website or FAQs to train AI" : `AI confidence: ${aiConfidence}%`}
     >
       <div className="space-y-space-2">
-        <MetricBar label="Coverage" value={coverage} showDot />
-        <MetricBar label="AI Confidence" value={aiConfidence} showDot />
+        <MetricBar
+          label="Coverage"
+          value={coverage}
+          empty={isEmpty}
+          displayValue={isEmpty ? "0%" : undefined}
+          showDot
+        />
+        <MetricBar
+          label="AI Confidence"
+          value={aiConfidence}
+          empty={isEmpty}
+          displayValue={isEmpty ? "Calibrating" : undefined}
+          showDot
+        />
       </div>
     </KPICard>
   );

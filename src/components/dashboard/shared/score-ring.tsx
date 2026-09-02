@@ -14,20 +14,28 @@ interface ScoreRingProps {
   strokeWidth?: number;
   /** Optional label under the score */
   label?: string;
+  /** Custom text to display inside the ring (e.g. "--" or "Ready") */
+  displayValue?: string;
+  /** Whether this is an empty/unstarted state */
+  empty?: boolean;
   /** Override ring color — defaults to semantic thresholds */
   color?: string;
 }
 
-function resolveColor(score: number): string {
+function resolveColor(score: number, empty?: boolean): string {
+  if (empty) return "hsl(var(--muted-foreground) / 0.4)";
   if (score >= 90) return "var(--success-500)";
   if (score >= 70) return "var(--warning-500)";
-  return "var(--error-500)";
+  if (score > 0) return "var(--error-500)";
+  return "hsl(var(--muted-foreground) / 0.4)";
 }
 
-function resolveTextClass(score: number): string {
+function resolveTextClass(score: number, empty?: boolean): string {
+  if (empty) return "text-muted-foreground";
   if (score >= 90) return "text-success-500";
   if (score >= 70) return "text-warning-500";
-  return "text-error-500";
+  if (score > 0) return "text-error-500";
+  return "text-muted-foreground";
 }
 
 export function ScoreRing({
@@ -35,12 +43,14 @@ export function ScoreRing({
   size = 80,
   strokeWidth = 4,
   label,
+  displayValue,
+  empty,
   color,
 }: ScoreRingProps) {
   const r = (size - strokeWidth * 2) / 2;
   const circ = 2 * Math.PI * r;
-  const offset = circ * (1 - Math.min(score, 100) / 100);
-  const ringColor = color ?? resolveColor(score);
+  const offset = empty ? circ : circ * (1 - Math.min(score, 100) / 100);
+  const ringColor = color ?? resolveColor(score, empty);
 
   return (
     <div className="relative shrink-0 flex items-center justify-center" style={{ width: size, height: size }}>
@@ -80,9 +90,9 @@ export function ScoreRing({
         <span
           className="tabular-nums leading-none text-body-sm font-semibold"
           style={{ color: ringColor }}
-          aria-label={`Score: ${score}%`}
+          aria-label={`Score: ${displayValue ?? `${score}%`}`}
         >
-          {score}%
+          {displayValue ?? `${score}%`}
         </span>
         {label && (
           <span className="text-caption text-neutral-500 mt-space-0.5">

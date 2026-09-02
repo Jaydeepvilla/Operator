@@ -17,7 +17,9 @@ export interface SetupTask {
 }
 
 export interface SetupState {
+  organization?: any;
   profile?: any;
+  services?: any[];
   servicesList?: any[];
   faqs?: any[];
   flows?: any[];
@@ -26,6 +28,7 @@ export interface SetupState {
   channels?: any[];
   leads?: any[];
   appointments?: any[];
+  documents?: any[];
 }
 
 export interface RecommendationResult {

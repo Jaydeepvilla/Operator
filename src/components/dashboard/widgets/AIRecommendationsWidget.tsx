@@ -113,7 +113,7 @@ export function AIRecommendationsWidget({ recommendations }: AIRecommendationsWi
  </p>
  <div className="flex items-center gap-space-2 pt-space-0.5">
  <span className="text-[10px] text-muted-foreground/50 flex items-center gap-1">
- <Clock className="w-3 h-3" />~{rec.estimatedTimeMinutes}m
+ <Clock className="w-3 h-3" />{rec.estimatedTimeMinutes} min
  </span>
  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border ${impactColor}`}>
  {rec.impact} Impact

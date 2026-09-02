@@ -11,6 +11,7 @@ import { leadsRepository } from "../repositories/leads";
 import { summariesRepository } from "../repositories/summaries";
 import { organizationRepository } from "../repositories/organization";
 import { parseNaturalDateTime } from "@/lib/date";
+import { activityRepository } from "../repositories/activity";
 
 export async function getAppointmentsAction(filters?: {
   staffMemberId?: string;
@@ -285,5 +286,62 @@ export async function joinAppointmentWaitlistAction(data: {
     return { success: false, error: error?.message || "Failed to join waitlist" };
   }
 }
+
+export async function quickCreateAppointmentAction(data: {
+  customerName: string;
+  customerEmail?: string | null;
+  customerPhone?: string | null;
+  serviceId?: string | null;
+  serviceName?: string | null;
+  staffMemberId?: string | null;
+  startTime: string; // ISO string or datetime-local
+  durationMinutes?: number;
+  price?: string | null;
+  notes?: string | null;
+}) {
+  try {
+    const { organizationId } = await requireOrganizationAccess();
+
+    if (!data.customerName || !data.customerName.trim()) {
+      return { success: false, error: "Customer name is required" };
+    }
+
+    const start = new Date(data.startTime);
+    if (isNaN(start.getTime())) {
+      return { success: false, error: "Please select a valid appointment start time" };
+    }
+
+    const duration = data.durationMinutes || 30;
+    const end = new Date(start.getTime() + duration * 60 * 1000);
+
+    const appointment = await appointmentsRepository.create({
+      organizationId,
+      customerName: data.customerName.trim(),
+      customerEmail: data.customerEmail?.trim() || null,
+      customerPhone: data.customerPhone?.trim() || null,
+      serviceId: data.serviceId || null,
+      staffMemberId: data.staffMemberId || null,
+      startTime: start,
+      endTime: end,
+      status: "confirmed",
+      pricePaid: data.price ? String(data.price) : "0.00",
+    });
+
+    await activityRepository.log({
+      organizationId,
+      category: "booking",
+      task: `Manual appointment booked for ${data.customerName.trim()}`,
+      impact: data.price ? `+$${data.price} scheduled revenue` : "Confirmed booking on calendar",
+    });
+
+    revalidatePath("/appointments");
+    revalidatePath("/dashboard");
+    return { success: true, appointment };
+  } catch (error: any) {
+    console.error("quickCreateAppointmentAction error:", error);
+    return { success: false, error: error?.message || "Failed to book appointment" };
+  }
+}
+
 
 

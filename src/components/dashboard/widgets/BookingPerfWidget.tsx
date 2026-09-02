@@ -18,26 +18,41 @@ export function BookingPerfWidget({ brief }: BookingPerfWidgetProps) {
     appointmentsCancelled,
     appointmentsNoShow,
     revenueGenerated,
+    range = "today",
   } = brief;
 
   const totalAttempts = appointmentsBooked + appointmentsCancelled + appointmentsNoShow;
+  const hasActivity = totalAttempts > 0;
   const conversionRate =
-    totalAttempts > 0 ? Math.round((appointmentsBooked / totalAttempts) * 100) : 100;
+    hasActivity ? Math.round((appointmentsBooked / totalAttempts) * 100) : 0;
 
   const issues = appointmentsCancelled + appointmentsNoShow;
 
+  const periodLabel =
+    range === "7d" ? "past 7 days" :
+    range === "30d" ? "past 30 days" :
+    range === "all" ? "all time" : "today";
+
   const revenueText =
     revenueGenerated > 0
-      ? `$${revenueGenerated.toFixed(0)} revenue today`
-      : "No revenue recorded today";
+      ? `$${revenueGenerated.toLocaleString()} revenue (${periodLabel})`
+      : hasActivity
+      ? `0 revenue recorded (${periodLabel})`
+      : `Booking engine online · Slots available (${periodLabel})`;
 
   return (
     <KPICard
       title="Bookings"
       href="/appointments"
       icon={CalendarCheck}
-      score={conversionRate}
-      statusLabel={`${appointmentsBooked} booked today`}
+      score={hasActivity ? conversionRate : 0}
+      empty={!hasActivity}
+      displayValue={hasActivity ? `${conversionRate}%` : "0"}
+      statusLabel={
+        hasActivity
+          ? `${appointmentsBooked} booked (${periodLabel})`
+          : "0 Bookings (Ready)"
+      }
       alertCount={issues}
       alertText="issue"
       alertIcon={XCircle}
@@ -45,13 +60,27 @@ export function BookingPerfWidget({ brief }: BookingPerfWidgetProps) {
       metaText={revenueText}
     >
       <div className="space-y-space-2">
-        <MetricBar label="Conversion" value={conversionRate} showDot />
-        {appointmentsCancelled > 0 && (
+        <MetricBar
+          label="Conversion Rate"
+          value={hasActivity ? conversionRate : 0}
+          empty={!hasActivity}
+          displayValue={hasActivity ? undefined : "Ready"}
+          showDot
+        />
+        {appointmentsCancelled > 0 ? (
           <MetricBar
             label="Cancellations"
             value={Math.round(
               (appointmentsCancelled / Math.max(totalAttempts, 1)) * 100
             )}
+            showDot
+          />
+        ) : (
+          <MetricBar
+            label="Fulfillment Rate"
+            value={hasActivity ? 100 : 0}
+            empty={!hasActivity}
+            displayValue={hasActivity ? undefined : "Ready"}
             showDot
           />
         )}

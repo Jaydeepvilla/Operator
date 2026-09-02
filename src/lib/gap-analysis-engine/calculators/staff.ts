@@ -7,19 +7,23 @@ export const calculateStaffGaps: GapCalculator = (state: BusinessState) => {
   const recommendations: RecommendationAction[] = [];
   let score = 100;
   
-  const staff = state.staff || [];
+  const staff = (state.staff && state.staff.length > 0)
+    ? state.staff
+    : state.organization
+    ? [{ id: "owner", name: state.organization.name, role: "Owner / Primary Specialist" }]
+    : [];
   
   if (staff.length === 0) {
     missingItems.push("No Staff Members");
-    score -= 30;
+    score -= 15;
     recommendations.push({
       id: "missing-staff-none",
       title: "Add Staff Members",
-      description: "You have not added any staff members.",
-      impactReason: "Without staff, the AI cannot book appointments or answer team-related questions.",
-      impact: "High",
-      estimatedTimeMinutes: 10,
-      confidence: 100,
+      description: "Add team members or practitioners to enable staff-specific appointment scheduling.",
+      impactReason: "Allows assigning bookings to specific team members.",
+      impact: "Medium",
+      estimatedTimeMinutes: 5,
+      confidence: 90,
       confidenceReason: "Data check",
       primaryCtaText: "Add Staff",
       primaryCtaHref: "/staff"

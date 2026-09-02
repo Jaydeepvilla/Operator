@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/lib/auth/server";
+import { revalidatePath } from "next/cache";
 import { organizationRepository } from "../repositories/organization";
 import { membershipRepository } from "../repositories/membership";
 import { subscriptionRepository } from "../repositories/subscription";
@@ -21,6 +22,8 @@ import { createSession } from "@/lib/auth/session";
 import { userRepository } from "../repositories/user";
 import crypto from "crypto";
 import { cookies } from "next/headers";
+import { validateSafeUrl, safeFetch } from "../services/crawler/ssrf";
+import { ContentExtractor } from "../services/crawler/extractor";
 
 export interface OnboardingStateResult {
   hasOrg: boolean;
@@ -300,81 +303,59 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
       console.warn("Subscription creation note:", subErr);
     }
 
-    // 7. Seed Industry Template Defaults
+    // 7. Initialize Settings and Custom/Scraped Services cleanly
     try {
       const template = INDUSTRY_TEMPLATES[industry];
-      if (template) {
-        await profileRepository.create({
-          organizationId: organization.id,
-          description: template.description,
-          socialLinks: {},
-        });
+      const desc = template?.description || `${name} - Professional Front Desk & Automated Receptionist`;
 
-        await settingsRepository.create({
-          organizationId: organization.id,
-          businessHours: template.businessHours,
-          holidays: [],
-          languages: ["en"],
-          bookingPreferences: { slotIntervalMinutes: 30, bufferMinutes: 10, autoApprove: false },
-          notificationPreferences: { channels: ["email"] },
-          leadAssignmentRules: { type: "round_robin" },
-        });
+      await profileRepository.create({
+        organizationId: organization.id,
+        description: desc,
+        socialLinks: {},
+      });
 
-        for (const service of template.services) {
-          let cat = await servicesRepository.getCategoryByName(organization.id, service.category);
-          if (!cat) {
-            cat = await servicesRepository.createCategory({
-              organizationId: organization.id,
-              name: service.category,
-            });
-          }
+      const inputServices: Array<{ name: string; duration: number; accepted?: boolean }> =
+        (input as any)?.services || [];
+      const validServices = inputServices.filter((s) => s.accepted !== false && s.name?.trim());
+      const hasCustomServices = validServices.length > 0;
+
+      await settingsRepository.create({
+        organizationId: organization.id,
+        businessHours: template?.businessHours || DEFAULT_BUSINESS_HOURS,
+        holidays: [],
+        languages: ["en"],
+        bookingPreferences: {
+          slotIntervalMinutes: 30,
+          bufferMinutes: 10,
+          autoApprove: false,
+          hoursConfigured: false, // User hasn't reviewed/confirmed business hours yet
+          servicesConfigured: hasCustomServices,
+          confirmedTasks: hasCustomServices ? ["services"] : [],
+        },
+        notificationPreferences: { channels: ["email"] },
+        leadAssignmentRules: { type: "round_robin" },
+      });
+
+      // Insert services if user verified them during onboarding
+      if (hasCustomServices) {
+        let cat = await servicesRepository.createCategory({
+          organizationId: organization.id,
+          name: "Main Services",
+        });
+        for (const s of validServices) {
           await servicesRepository.create({
             organizationId: organization.id,
             categoryId: cat.id,
-            name: service.name,
-            description: service.description,
-            duration: service.duration,
-            price: service.price,
+            name: s.name,
+            description: `Appointment for ${s.name}`,
+            duration: s.duration || 30,
+            price: "0",
             isActive: true,
           });
         }
-
-        for (const faq of template.faqs) {
-          await faqRepository.create({
-            organizationId: organization.id,
-            question: faq.question,
-            answer: faq.answer,
-            category: faq.category,
-            isActive: true,
-          });
-        }
-
-        for (const q of template.qualificationQuestions) {
-          await flowsRepository.create({
-            organizationId: organization.id,
-            question: q.question,
-            answerType: q.answerType,
-            options: q.options || [],
-            isRequired: q.isRequired,
-          });
-        }
-      } else {
-        await profileRepository.create({
-          organizationId: organization.id,
-          description: "Standard business profile",
-        });
-        await settingsRepository.create({
-          organizationId: organization.id,
-          businessHours: DEFAULT_BUSINESS_HOURS,
-          holidays: [],
-          languages: ["en"],
-          bookingPreferences: { slotIntervalMinutes: 30, bufferMinutes: 10, autoApprove: false },
-          notificationPreferences: { channels: ["email"] },
-          leadAssignmentRules: { type: "round_robin" },
-        });
       }
     } catch (seedErr) {
-      console.warn("Seeding template note:", seedErr);
+      console.warn("Settings initialization note:", seedErr);
     }
 
     // 8. Set active org cookie
@@ -396,3 +377,182 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
     return { success: false, error: error?.message || "An unexpected error occurred." };
   }
 }
+
+export async function scrapeAndAnalyzeWebsiteAction(rawUrl: string) {
+  try {
+    if (!rawUrl || rawUrl === "no-website") {
+      return {
+        success: false,
+        error: "No website provided",
+      };
+    }
+
+    const trimmed = rawUrl.trim();
+    const fullUrl = trimmed.startsWith("http://") || trimmed.startsWith("https://")
+      ? trimmed
+      : `https://${trimmed}`;
+
+    // 1. Validate URL
+    const validation = await validateSafeUrl(fullUrl);
+    if (!validation.valid || !validation.parsedUrl) {
+      return {
+        success: false,
+        error: validation.error || "Invalid URL format or restricted host",
+      };
+    }
+
+    // 2. Fetch real website content
+    const fetchRes = await safeFetch(fullUrl, { timeoutMs: 12000 });
+    if (!fetchRes.ok || !fetchRes.html) {
+      return {
+        success: false,
+        error: `Could not reach website (HTTP ${fetchRes.status || "timeout"})`,
+      };
+    }
+
+    // 3. Extract structured page data
+    const extracted = ContentExtractor.extract(fetchRes.html, fullUrl);
+
+    // 4. Extract Contact info (Email & Phone)
+    const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
+    const phoneRegex = /(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})/g;
+
+    const allText = `${extracted.title} ${extracted.description || ""} ${extracted.content}`;
+    const foundEmails = Array.from(new Set(allText.match(emailRegex) || []));
+    const foundPhones = Array.from(new Set(allText.match(phoneRegex) || []));
+
+    const validEmail = foundEmails.find(e => !e.endsWith(".png") && !e.endsWith(".jpg") && !e.includes("example.com")) || "";
+    const validPhone = foundPhones[0] || "";
+
+    // 5. Derive Business Name
+    let businessName = extracted.title.split(/[-|–•]/)[0].trim();
+    if (!businessName || businessName.length > 50 || businessName.toLowerCase() === "home") {
+      const hostname = validation.parsedUrl.hostname.replace(/^www\./, "");
+      const base = hostname.split(".")[0];
+      businessName = base.charAt(0).toUpperCase() + base.slice(1);
+    }
+
+    // 6. Detect Industry Vertical accurately from real keywords
+    const lowerText = allText.toLowerCase();
+    let detectedIndustry = "Other";
+    if (lowerText.includes("dentist") || lowerText.includes("dental") || lowerText.includes("teeth") || lowerText.includes("orthodont")) {
+      detectedIndustry = "Dental Clinic";
+    } else if (lowerText.includes("doctor") || lowerText.includes("clinic") || lowerText.includes("patient") || lowerText.includes("medical") || lowerText.includes("health") || lowerText.includes("hospital")) {
+      detectedIndustry = "Medical Clinic";
+    } else if (lowerText.includes("salon") || lowerText.includes("haircut") || lowerText.includes("stylist") || lowerText.includes("barber") || lowerText.includes("nails")) {
+      detectedIndustry = "Salon";
+    } else if (lowerText.includes("spa") || lowerText.includes("massage") || lowerText.includes("facial") || lowerText.includes("wellness")) {
+      detectedIndustry = "Spa";
+    } else if (lowerText.includes("lawyer") || lowerText.includes("attorney") || lowerText.includes("law firm") || lowerText.includes("litigation") || lowerText.includes("legal")) {
+      detectedIndustry = "Law Firm";
+    } else if (lowerText.includes("consult") || lowerText.includes("advisory") || lowerText.includes("strategy") || lowerText.includes("management")) {
+      detectedIndustry = "Consultant";
+    } else if (lowerText.includes("realt") || lowerText.includes("real estate") || lowerText.includes("property") || lowerText.includes("homes for sale")) {
+      detectedIndustry = "Real Estate";
+    } else if (lowerText.includes("gym") || lowerText.includes("fitness") || lowerText.includes("workout") || lowerText.includes("trainer") || lowerText.includes("crossfit")) {
+      detectedIndustry = "Gym";
+    }
+
+    // 7. Extract Real Services from Headings or Lists
+    const extractedServices: { name: string; duration: number; accepted: boolean }[] = [];
+    const lines = extracted.content.split("\n");
+    for (const line of lines) {
+      const cleanLine = line.trim();
+      if (cleanLine.startsWith("##") || cleanLine.startsWith("###") || cleanLine.startsWith("-") || cleanLine.startsWith("*")) {
+        const item = cleanLine.replace(/^#+\s*/, "").replace(/^[-*]\s*/, "").trim();
+        if (
+          item.length >= 3 &&
+          item.length <= 45 &&
+          !item.toLowerCase().includes("privacy") &&
+          !item.toLowerCase().includes("terms") &&
+          !item.toLowerCase().includes("cookie") &&
+          !item.toLowerCase().includes("contact") &&
+          !item.toLowerCase().includes("about") &&
+          !item.toLowerCase().includes("navigation")
+        ) {
+          if (!extractedServices.some(s => s.name.toLowerCase() === item.toLowerCase())) {
+            extractedServices.push({ name: item, duration: 30, accepted: true });
+          }
+        }
+      }
+      if (extractedServices.length >= 5) break;
+    }
+
+    // Fallback sensible defaults if site is text-sparse
+    if (extractedServices.length === 0) {
+      if (detectedIndustry === "Dental Clinic") {
+        extractedServices.push({ name: "Dental Cleaning & Checkup", duration: 45, accepted: true });
+        extractedServices.push({ name: "Tooth Pain Consultation", duration: 30, accepted: true });
+      } else if (detectedIndustry === "Law Firm") {
+        extractedServices.push({ name: "Initial Legal Consultation", duration: 30, accepted: true });
+        extractedServices.push({ name: "Case Review", duration: 60, accepted: true });
+      } else if (detectedIndustry === "Salon" || detectedIndustry === "Spa") {
+        extractedServices.push({ name: "Standard Appointment", duration: 45, accepted: true });
+        extractedServices.push({ name: "Consultation & Styling", duration: 60, accepted: true });
+      } else {
+        extractedServices.push({ name: "Initial Consultation", duration: 30, accepted: true });
+        extractedServices.push({ name: "General Inquiry Meeting", duration: 30, accepted: true });
+      }
+    }
+
+    return {
+      success: true,
+      scraped: {
+        businessName,
+        industry: detectedIndustry,
+        website: fullUrl,
+        email: validEmail,
+        phone: validPhone,
+        address: "",
+        services: extractedServices,
+        summary: extracted.description || extracted.content.slice(0, 300),
+        wordCount: extracted.wordCount,
+        title: extracted.title,
+      },
+    };
+  } catch (error: any) {
+    console.error("[Scraper Action Error]:", error);
+    return {
+      success: false,
+      error: error?.message || "Failed to scrape website",
+    };
+  }
+}
+
+export async function toggleSetupTaskAction(taskId: string, completed: boolean) {
+  try {
+    const { org } = await checkUserOrganization();
+    if (!org) {
+      return { success: false, error: "Unauthorized or no active organization" };
+    }
+
+    const settings = await settingsRepository.getByOrg(org.id);
+    if (!settings) {
+      return { success: false, error: "Settings not found" };
+    }
+
+    const currentBp = (settings.bookingPreferences as Record<string, any>) || {};
+    const confirmed: string[] = Array.isArray(currentBp.confirmedTasks) ? [...currentBp.confirmedTasks] : [];
+
+    let updatedConfirmed = [...confirmed];
+    if (completed && !updatedConfirmed.includes(taskId)) {
+      updatedConfirmed.push(taskId);
+    } else if (!completed && updatedConfirmed.includes(taskId)) {
+      updatedConfirmed = updatedConfirmed.filter((t) => t !== taskId);
+    }
+
+    await settingsRepository.update(org.id, {
+      bookingPreferences: {
+        ...currentBp,
+        confirmedTasks: updatedConfirmed,
+        [`${taskId}Configured`]: completed,
+      },
+    });
+
+    revalidatePath("/dashboard");
+    return { success: true, confirmedTasks: updatedConfirmed };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Failed to update setup task" };
+  }
+}
+

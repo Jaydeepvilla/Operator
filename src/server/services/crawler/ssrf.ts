@@ -119,7 +119,7 @@ export async function safeFetch(
 ): Promise<{ ok: boolean; status: number; html: string; finalUrl: string; contentType: string }> {
   const timeoutMs = options.timeoutMs ?? 10000;
   const maxSizeBytes = options.maxSizeBytes ?? 5 * 1024 * 1024; // 5 MB
-  const userAgent = options.userAgent ?? "Operator-Knowledge-Crawler/1.0 (+https://operator.app/bot)";
+  const userAgent = options.userAgent ?? "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
   const maxRedirects = options.maxRedirects ?? 5;
 
   let currentUrl = targetUrl;

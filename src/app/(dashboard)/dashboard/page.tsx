@@ -4,20 +4,20 @@ import { servicesRepository } from "@/server/repositories/services";
 import { faqRepository } from "@/server/repositories/faq";
 import { flowsRepository } from "@/server/repositories/flows";
 import { settingsRepository } from "@/server/repositories/settings";
+import { staffRepository } from "@/server/repositories/staff";
+import { documentsRepository } from "@/server/repositories/documents";
 
 import { SetupState } from "@/lib/setup-engine/types";
 import { DashboardEngine } from "@/lib/dashboard-engine";
-import { DashboardWidgets } from "@/components/dashboard/widget-registry";
-import { ScrollReveal } from "@/components/motion";
-import { DashboardVerificationBar } from "@/components/confidence-bridge/dashboard-verification-bar";
 import { VerificationStatus } from "@/server/services/verification/types";
+import { DashboardLiveClient } from "@/components/dashboard/dashboard-live-client";
 
 export default async function DashboardPage() {
   const { org } = await checkUserOrganization();
   const activeOrg = org || {
     id: "00000000-0000-0000-0000-000000000000",
     name: "My Business",
-    industry: "Other",
+    industry: "Professional Services",
     verificationStatus: "verified",
   };
 
@@ -26,6 +26,8 @@ export default async function DashboardPage() {
   let faqs: any[] = [];
   let flows: any[] = [];
   let settings: any = null;
+  let staffList: any[] = [];
+  let documentsList: any[] = [];
 
   try {
     const results = await Promise.allSettled([
@@ -34,6 +36,8 @@ export default async function DashboardPage() {
       faqRepository.list(activeOrg.id),
       flowsRepository.list(activeOrg.id),
       settingsRepository.getByOrg(activeOrg.id),
+      staffRepository.list(activeOrg.id),
+      documentsRepository.list(activeOrg.id),
     ]);
 
     if (results[0].status === "fulfilled") profile = results[0].value;
@@ -41,17 +45,32 @@ export default async function DashboardPage() {
     if (results[2].status === "fulfilled") faqs = results[2].value || [];
     if (results[3].status === "fulfilled") flows = results[3].value || [];
     if (results[4].status === "fulfilled") settings = results[4].value;
+    if (results[5].status === "fulfilled") staffList = results[5].value || [];
+    if (results[6].status === "fulfilled") documentsList = results[6].value || [];
   } catch (err) {
     console.warn("Dashboard repository query fallback:", err);
   }
 
+  const effectiveProfile = profile || {
+    businessName: activeOrg.name,
+    name: activeOrg.name,
+    description: (activeOrg as any).description || `${activeOrg.industry || "Professional"} services`,
+    phone: (activeOrg as any).phone || null,
+    email: (activeOrg as any).email || null,
+    website: (activeOrg as any).website || null,
+    address: (activeOrg as any).address || null,
+  };
+
   const setupState: SetupState = {
-    profile,
+    organization: activeOrg,
+    profile: effectiveProfile,
+    services: servicesList,
     servicesList,
     faqs,
     flows,
     settings,
-    staff: [],
+    staff: staffList.length > 0 ? staffList : [{ id: "owner", name: activeOrg.name, role: "Owner" }],
+    documents: documentsList,
   };
 
   // Get the outcome-oriented snapshot
@@ -89,48 +108,12 @@ export default async function DashboardPage() {
   const verificationStatus = (activeOrg.verificationStatus as VerificationStatus) || "verified";
 
   return (
-    <div className="w-full pb-space-16">
-      <div className="space-y-space-5 w-full">
-        {/* Verification Status Banner (Rendered when unverified or needs review) */}
-        <DashboardVerificationBar
-          businessName={businessName}
-          verificationStatus={verificationStatus}
-          orgId={activeOrg.id}
-        />
-
-        {/* 1. Hero Widget: AI Daily Brief */}
-        <ScrollReveal>
-          <DashboardWidgets.DailyBrief brief={snapshot.dailyBrief} businessName={businessName} />
-        </ScrollReveal>
-
-        {/* 2. Setup Journey (Left 50%) & Quick Actions (Right 50%) */}
-        <ScrollReveal className="grid grid-cols-1 lg:grid-cols-2 gap-space-5">
-          <DashboardWidgets.SetupProgress progress={snapshot.setupProgress} />
-          <DashboardWidgets.QuickActions />
-        </ScrollReveal>
-
-        {/* 3. Headline Outcomes Row: Conversations, Bookings, Knowledge */}
-        <ScrollReveal className="grid grid-cols-1 md:grid-cols-3 gap-space-5">
-          <DashboardWidgets.ConversationPerf brief={snapshot.dailyBrief} />
-          <DashboardWidgets.BookingPerf brief={snapshot.dailyBrief} />
-          <DashboardWidgets.KnowledgeStatus knowledgeScore={snapshot.knowledgeScore} />
-        </ScrollReveal>
-
-        {/* 4. Outcomes & Gaps Row: AI Recommendations, Missing Requirements, Business Health */}
-        <ScrollReveal className="grid grid-cols-1 lg:grid-cols-3 gap-space-5">
-          <DashboardWidgets.AIRecommendations recommendations={snapshot.topRecommendations} />
-          <DashboardWidgets.MissedOpps gapAnalysis={snapshot.gapAnalysis} />
-          <DashboardWidgets.BusinessHealth health={snapshot.health} />
-        </ScrollReveal>
-
-        {/* 5. Operations Row: Recent Activity (Full width) */}
-        {snapshot.recentActivity && snapshot.recentActivity.length > 0 && (
-          <ScrollReveal className="w-full">
-            <DashboardWidgets.RecentActivity activity={snapshot.recentActivity} />
-          </ScrollReveal>
-        )}
-      </div>
-    </div>
+    <DashboardLiveClient
+      initialSnapshot={snapshot}
+      businessName={businessName}
+      verificationStatus={verificationStatus}
+      orgId={activeOrg.id}
+    />
   );
 }
 

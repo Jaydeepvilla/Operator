@@ -84,10 +84,14 @@ export function BusinessHealthWidget({ health }: BusinessHealthWidgetProps) {
             <div className="flex items-center gap-space-2">
               <div className={cn(
                 "h-7 w-7 rounded-lg flex items-center justify-center shrink-0",
+                overallStatus === "Calibrating" ? "bg-primary/10" :
                 overallScore >= 90 ? "bg-emerald-500/10" :
                 overallScore >= 70 ? "bg-amber-500/10" : "bg-rose-500/10"
               )}>
-                <Activity className={cn("w-3.5 h-3.5", ScoreRing.textClass(overallScore))} />
+                <Activity className={cn(
+                  "w-3.5 h-3.5",
+                  overallStatus === "Calibrating" ? "text-primary" : ScoreRing.textClass(overallScore)
+                )} />
               </div>
               <p className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">
                 Business Health
@@ -104,10 +108,17 @@ export function BusinessHealthWidget({ health }: BusinessHealthWidgetProps) {
           {/* Score + Status */}
           <div className="flex items-center gap-space-4">
             <div className="shrink-0">
-              <ScoreRing score={overallScore} size={72} />
+              <ScoreRing
+                score={overallScore}
+                size={72}
+                color={overallStatus === "Calibrating" ? "var(--primary-500)" : undefined}
+              />
             </div>
             <div className="flex-1 min-w-0 space-y-space-1.5">
-              <span className={cn("text-body-sm font-bold block leading-snug", ScoreRing.textClass(overallScore))}>
+              <span className={cn(
+                "text-body-sm font-bold block leading-snug",
+                overallStatus === "Calibrating" ? "text-primary" : ScoreRing.textClass(overallScore)
+              )}>
                 {overallStatus}
               </span>
               <p className="text-[10px] text-muted-foreground/50 leading-relaxed">{formulaText}</p>

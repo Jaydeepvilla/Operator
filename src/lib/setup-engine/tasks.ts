@@ -12,7 +12,12 @@ export const SETUP_TASKS: SetupTask[] = [
     impact: "High",
     difficulty: "Easy",
     dependencies: [],
-    isCompleted: (state: SetupState) => !!state.profile?.description && !!state.profile?.name,
+    isCompleted: (state: SetupState) => {
+      const p = state.profile;
+      const bp = (state.settings as any)?.bookingPreferences;
+      if (bp?.confirmedTasks?.includes("profile")) return true;
+      return !!p?.description && !!p?.name && p?.name !== "My Business" && p?.description !== "Standard business profile";
+    },
     href: "/profile",
   },
   {
@@ -25,7 +30,10 @@ export const SETUP_TASKS: SetupTask[] = [
     impact: "Medium",
     difficulty: "Easy",
     dependencies: [],
-    isCompleted: (state: SetupState) => !!state.settings?.businessHours,
+    isCompleted: (state: SetupState) => {
+      const bp = (state.settings as any)?.bookingPreferences;
+      return !!bp?.hoursConfigured || !!bp?.confirmedTasks?.includes("hours");
+    },
     href: "/settings",
   },
   // Phase: Knowledge Base
@@ -39,7 +47,20 @@ export const SETUP_TASKS: SetupTask[] = [
     impact: "High",
     difficulty: "Medium",
     dependencies: ["profile"],
-    isCompleted: (state: SetupState) => !!state.faqs && state.faqs.length > 0,
+    isCompleted: (state: SetupState) => {
+      const bp = (state.settings as any)?.bookingPreferences;
+      if (bp?.confirmedTasks?.includes("faqs")) return true;
+      if (!state.faqs || state.faqs.length === 0) return false;
+      // Must have real custom FAQs, not auto-seeded clinic templates
+      return state.faqs.some(
+        (f: any) =>
+          !f.isTemplate &&
+          !f.question?.toLowerCase().includes("insurance do you take") &&
+          !f.question?.toLowerCase().includes("parking available") &&
+          !f.question?.toLowerCase().includes("cancellation policy") &&
+          !f.question?.toLowerCase().includes("sample")
+      );
+    },
     href: "/faqs",
   },
   {
@@ -52,7 +73,13 @@ export const SETUP_TASKS: SetupTask[] = [
     impact: "High",
     difficulty: "Easy",
     dependencies: ["profile"],
-    isCompleted: (state: SetupState) => !!state.settings?.websiteImportUrl,
+    isCompleted: (state: SetupState) => {
+      const bp = (state.settings as any)?.bookingPreferences;
+      return (
+        !!bp?.confirmedTasks?.includes("kb") ||
+        (!!state.settings?.websiteImportUrl && state.settings?.websiteImportStatus === "completed")
+      );
+    },
     href: "/kb",
   },
   // Phase: Appointments
@@ -66,7 +93,19 @@ export const SETUP_TASKS: SetupTask[] = [
     impact: "High",
     difficulty: "Medium",
     dependencies: [],
-    isCompleted: (state: SetupState) => !!state.servicesList && state.servicesList.length > 0,
+    isCompleted: (state: SetupState) => {
+      const bp = (state.settings as any)?.bookingPreferences;
+      if (bp?.servicesConfigured || bp?.confirmedTasks?.includes("services")) return true;
+      if (!state.servicesList || state.servicesList.length === 0) return false;
+      // Must not be just unedited generic placeholders
+      return state.servicesList.some(
+        (s: any) =>
+          !s.isTemplate &&
+          s.name !== "General Consultation" &&
+          s.name !== "Follow-up Appointment" &&
+          s.name !== "Initial Assessment"
+      );
+    },
     href: "/services",
   },
   {
@@ -79,7 +118,19 @@ export const SETUP_TASKS: SetupTask[] = [
     impact: "Medium",
     difficulty: "Advanced",
     dependencies: ["services"],
-    isCompleted: (state: SetupState) => !!state.flows && state.flows.length > 0,
+    isCompleted: (state: SetupState) => {
+      const bp = (state.settings as any)?.bookingPreferences;
+      if (bp?.confirmedTasks?.includes("flows")) return true;
+      if (!state.flows || state.flows.length === 0) return false;
+      // Filter out auto-seeded generic symptoms template
+      return state.flows.some(
+        (f: any) =>
+          !f.isTemplate &&
+          !f.question?.toLowerCase().includes("symptoms are you experiencing") &&
+          !f.question?.toLowerCase().includes("first visit to our clinic") &&
+          !f.question?.toLowerCase().includes("urgency of your visit")
+      );
+    },
     href: "/flows",
   },
   // Phase: AI Customization
@@ -93,7 +144,10 @@ export const SETUP_TASKS: SetupTask[] = [
     impact: "Medium",
     difficulty: "Easy",
     dependencies: ["profile"],
-    isCompleted: (state: SetupState) => !!state.settings?.general?.language, // Approximation for now
+    isCompleted: (state: SetupState) => {
+      const bp = (state.settings as any)?.bookingPreferences;
+      return !!bp?.confirmedTasks?.includes("ai_tone") || !!(state.settings as any)?.aiVoiceToneConfigured;
+    },
     href: "/settings/ai",
   },
   // Phase: Channels
@@ -107,7 +161,13 @@ export const SETUP_TASKS: SetupTask[] = [
     impact: "High",
     difficulty: "Medium",
     dependencies: ["profile", "faqs", "services"],
-    isCompleted: (state: SetupState) => !!state.channels && state.channels.filter((c: any) => c.status === "active").length > 0,
+    isCompleted: (state: SetupState) => {
+      const bp = (state.settings as any)?.bookingPreferences;
+      return (
+        !!bp?.confirmedTasks?.includes("phone") ||
+        (!!state.channels && state.channels.filter((c: any) => c.status === "active").length > 0)
+      );
+    },
     href: "/channels",
   },
   // Phase: Launch
@@ -121,7 +181,14 @@ export const SETUP_TASKS: SetupTask[] = [
     impact: "High",
     difficulty: "Easy",
     dependencies: ["phone"],
-    isCompleted: (state: SetupState) => (state.leads && state.leads.length > 0) || (state.appointments && state.appointments.length > 0) || !!state.profile?.phone,
+    isCompleted: (state: SetupState) => {
+      const bp = (state.settings as any)?.bookingPreferences;
+      return (
+        !!bp?.confirmedTasks?.includes("test_call") ||
+        (!!state.appointments && state.appointments.length > 0) ||
+        (!!state.leads && state.leads.length > 0)
+      );
+    },
     href: "/inbox",
-  }
+  },
 ];

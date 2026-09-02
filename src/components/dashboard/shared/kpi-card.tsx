@@ -19,6 +19,8 @@ interface KPICardProps {
   children?: ReactNode;
   className?: string;
   color?: string;
+  displayValue?: string;
+  empty?: boolean;
 }
 
 export function KPICard({
@@ -36,9 +38,11 @@ export function KPICard({
   children,
   className,
   color,
+  displayValue,
+  empty,
 }: KPICardProps) {
-  const resolvedStatusLabel = statusLabel ?? ScoreRing.label(score);
-  const resolvedStatusTextClass = statusTextClass ?? ScoreRing.textClass(score);
+  const resolvedStatusLabel = statusLabel ?? (empty ? "Active & Ready" : ScoreRing.label(score));
+  const resolvedStatusTextClass = statusTextClass ?? (empty ? "text-foreground" : ScoreRing.textClass(score));
 
   const alertBg =
     alertType === "error"   ? "bg-[hsl(var(--state-error-bg))] border-[hsl(var(--state-error-border))] text-[hsl(var(--state-error-text))]" :
@@ -61,11 +65,12 @@ export function KPICard({
           <div className="flex items-center gap-space-2">
             <div className={cn(
               "h-7 w-7 rounded-lg flex items-center justify-center shrink-0",
+              empty ? "bg-primary/10" :
               score >= 90 ? "bg-emerald-500/10" :
               score >= 70 ? "bg-amber-500/10" :
               "bg-rose-500/10"
             )}>
-              <Icon className={cn("w-3.5 h-3.5", resolvedStatusTextClass)} />
+              <Icon className={cn("w-3.5 h-3.5", empty ? "text-primary" : resolvedStatusTextClass)} />
             </div>
             <p className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">
               {title}
@@ -77,7 +82,13 @@ export function KPICard({
         {/* Score Ring + Primary Stats */}
         <div className="flex items-center gap-space-4">
           <div className="shrink-0">
-            <ScoreRing score={score} size={72} color={color} />
+            <ScoreRing
+              score={score}
+              size={72}
+              color={color}
+              displayValue={displayValue}
+              empty={empty}
+            />
           </div>
           <div className="flex-1 min-w-0 space-y-space-1.5">
             <span className={cn("text-body-sm font-bold block leading-snug", resolvedStatusTextClass)}>

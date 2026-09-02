@@ -37,23 +37,20 @@ export function calculateOverallHealth(state: BusinessState): OverallHealthResul
     billing.score * 0.10
   );
 
-  let overallStatus: HealthStatus;
-  if (overallScore >= 90) overallStatus = "Excellent";
-  else if (overallScore >= 70) overallStatus = "Good";
-  else if (overallScore >= 50) overallStatus = "Needs Attention";
-  else overallStatus = "Critical";
-
   // Calculate Setup Journey Completion dynamically from SETUP_TASKS
   const setupState: SetupState = {
+    organization: state.organization,
     profile: state.profile,
     settings: state.settings,
     faqs: state.faqs,
+    services: state.services,
     servicesList: state.services,
     flows: state.flows,
     staff: state.staff,
     channels: state.channels,
     leads: state.leads,
     appointments: state.appointments,
+    documents: state.documents,
   };
 
   let completedTasks = 0;
@@ -64,6 +61,13 @@ export function calculateOverallHealth(state: BusinessState): OverallHealthResul
   });
 
   const completionPercentage = Math.round((completedTasks / SETUP_TASKS.length) * 100);
+
+  let overallStatus: HealthStatus;
+  if (overallScore >= 90) overallStatus = "Excellent";
+  else if (overallScore >= 70) overallStatus = "Good";
+  else if (overallScore >= 50) overallStatus = "Needs Attention";
+  else if (completedTasks < 8) overallStatus = "Calibrating";
+  else overallStatus = "Critical";
 
   return {
     overallScore,
