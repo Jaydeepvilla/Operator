@@ -12,7 +12,6 @@ import { cn } from "@/components/shared/utils";
 import googleIcon from "@/assets/google.svg";
 import microsoftIcon from "@/assets/microsoft.svg";
 import calendlyIcon from "@/assets/calendly.svg";
-import stripeIcon from "@/assets/stripe.svg";
 import openaiIcon from "@/assets/openai.svg";
 import razorpayIcon from "@/assets/razorpay.svg";
 import slackIcon from "@/assets/slack-logo.svg";
@@ -63,14 +62,15 @@ interface Integration {
 // Custom Premium SVG Logos for Integrations
 // Custom Premium SVG Logos for Integrations
 const LOGOS = {
- operator: (className = "h-8 w-auto object-contain text-primary") => (
- <svg viewBox="0 0 24 24" fill="none" className={className}>
- <path
- d="M 3 13 L 3 8 A 5 5 0 0 1 8 3 L 16 3 A 5 5 0 0 1 21 8 L 21 16 A 5 5 0 0 1 16 21 L 9 21 A 2 2 0 0 1 9 17 L 15 17 A 2 2 0 0 0 17 15 L 17 9 A 2 2 0 0 0 15 7 L 9 7 A 2 2 0 0 0 7 9 L 7 13 A 2 2 0 0 1 3 13 Z"
- fill="currentColor"
- />
- <rect x="3" y="17" width="4" height="4" rx="1.2" fill="currentColor" />
- </svg>
+ operator: (className = "h-8 w-auto object-contain") => (
+  <Image
+    src="/logo.png"
+    alt="Operator AI"
+    width={32}
+    height={32}
+    unoptimized
+    className={className}
+  />
  ),
  googleCalendar: (
  <img src={googleIcon.src || googleIcon} alt="Google Calendar" className="h-8 w-auto object-contain max-w-full" />
@@ -80,9 +80,6 @@ const LOGOS = {
  ),
  whatsapp: (
  <img src={whatsappIcon.src || whatsappIcon} alt="WhatsApp" className="h-8 w-auto object-contain max-w-full" />
- ),
- stripe: (
- <img src={stripeIcon.src || stripeIcon} alt="Stripe" className="h-8 w-auto object-contain max-w-full" />
  ),
  zoom: (
  <img src={zoomIcon.src || zoomIcon} alt="Zoom" className="h-8 w-auto object-contain max-w-full" />
@@ -298,7 +295,7 @@ console.log(\`Lead routed successfully. ID: \${response.id}\`);`,
  "deposit": {
  "amount": 5000,
  "status": "paid",
- "stripeChargeId": "ch_3k1n29"
+ "razorpayPaymentId": "pay_9k2m31a9"
  }
  }
 }`,
@@ -378,21 +375,21 @@ const WORKFLOW_STEPS = [
  }
  }
  },
- {
- id: "stripe",
- title: "Stripe Payment",
- desc: "Collects deposit hold",
- logo: LOGOS.stripe,
- isBrand: true,
- color: "bg-indigo-500/10 text-indigo-500",
- glowColor: "shadow-indigo-500/20",
- payload: {
- event: "payment.hold_created",
- amount: 5000,
- currency: "usd",
- status: "success"
- }
- },
+  {
+  id: "razorpay",
+  title: "Razorpay Payment",
+  desc: "Collects deposit hold",
+  logo: LOGOS.razorpay,
+  isBrand: true,
+  color: "bg-blue-500/10 text-blue-500",
+  glowColor: "shadow-blue-500/20",
+  payload: {
+  event: "payment.link_created",
+  amount: 2500,
+  currency: "INR",
+  status: "active"
+  }
+  },
  {
  id: "vonage",
  title: "Vonage SMS",
