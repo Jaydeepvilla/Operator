@@ -182,10 +182,10 @@ export async function GET(request: NextRequest) {
       targetRedirect = "/onboarding";
     }
 
-    // 4. Create Session
+    // 4. Create Session in DB
     const userAgent = request.headers.get("user-agent") || undefined;
     const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0] || request.headers.get("x-real-ip") || undefined;
-    await createSession(userId, userAgent, ipAddress, true);
+    const { sessionToken, refreshToken } = await createSession(userId, userAgent, ipAddress, true);
 
     await auditService.log({
       userId,
@@ -196,7 +196,30 @@ export async function GET(request: NextRequest) {
       userAgent,
     });
 
+    const sessionExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const refreshExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    // 5. Construct redirect response with explicit Set-Cookie headers
     const response = NextResponse.redirect(new URL(targetRedirect, request.url));
+
+    response.cookies.set("session_token", sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      expires: sessionExpiresAt,
+    });
+
+    if (refreshToken) {
+      response.cookies.set("refresh_token", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        expires: refreshExpiresAt,
+      });
+    }
+
     response.cookies.delete("google_oauth_state");
     return response;
   } catch (err: any) {
