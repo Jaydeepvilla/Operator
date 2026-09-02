@@ -167,8 +167,12 @@ export async function GET(request: NextRequest) {
     const sessionExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     const refreshExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-    // 5. Construct redirect response and explicitly set HttpOnly cookies
-    const response = NextResponse.redirect(new URL(targetRedirect, request.url));
+    // 5. Construct redirect response to login-success transition screen with explicit Set-Cookie
+    const successUrl = new URL("/login-success", request.url);
+    successUrl.searchParams.set("redirect", targetRedirect);
+    successUrl.searchParams.set("firstTime", String(!existingUser));
+
+    const response = NextResponse.redirect(successUrl);
 
     response.cookies.set("session_token", sessionToken, {
       httpOnly: true,

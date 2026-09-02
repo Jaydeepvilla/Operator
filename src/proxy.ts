@@ -17,6 +17,8 @@ const PUBLIC_PATHS = [
   "/terms",
   "/sign-in",
   "/sign-up",
+  "/login-success",
+  "/auth-success",
   "/forgot-password",
   "/reset-password",
   "/verify-email",

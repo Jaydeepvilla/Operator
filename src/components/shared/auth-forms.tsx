@@ -279,8 +279,8 @@ export function SignInForm() {
       if (result.success) {
         setIsSuccess(true);
         setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 400);
+          window.location.href = "/login-success?redirect=/onboarding";
+        }, 300);
       } else {
         setErrorMsg(result.error || "Invalid email or password.");
         if (result.code === "USER_NOT_FOUND") setUserNotFound(true);
