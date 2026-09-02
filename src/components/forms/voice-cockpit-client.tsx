@@ -148,7 +148,7 @@ export function VoiceCockpitClient({
  {/* Analytics Summary Cards */}
  <div className="grid gap-space-4 sm:grid-cols-2 lg:grid-cols-4 shrink-0">
  {/* Calls Card */}
- <div className="bg-card border border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
+ <div className="bg-card border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
  <div className="space-y-space-0.5">
  <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">Calls Handled</span>
  <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">148</span>
@@ -162,7 +162,7 @@ export function VoiceCockpitClient({
  </div>
 
  {/* Conversion rate */}
- <div className="bg-card border border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
+ <div className="bg-card border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
  <div className="space-y-space-0.5">
  <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">Conversion Rate</span>
  <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">78.4%</span>
@@ -176,7 +176,7 @@ export function VoiceCockpitClient({
  </div>
 
  {/* Avg Duration */}
- <div className="bg-card border border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
+ <div className="bg-card border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
  <div className="space-y-space-0.5">
  <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">Avg Duration</span>
  <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">2m 14s</span>
@@ -190,7 +190,7 @@ export function VoiceCockpitClient({
  </div>
 
  {/* Avg CSAT */}
- <div className="bg-card border border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
+ <div className="bg-card border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
  <div className="space-y-space-0.5">
  <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">Avg CSAT Rating</span>
  <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">4.8 / 5</span>
@@ -206,7 +206,7 @@ export function VoiceCockpitClient({
 
  {/* Voice Analytics Charts */}
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-space-4 shrink-0">
- <div className="bg-card border border-border-default radius-xl overflow-hidden flex flex-col">
+ <div className="bg-card border-border-default radius-xl overflow-hidden flex flex-col">
  <div className="p-space-5 pb-space-2 shrink-0">
  <h3 className="text-body-sm font-semibold">Call Volume & Duration</h3>
  <p className="text-caption text-muted-foreground">Daily call activity and average duration (mins)</p>
@@ -230,7 +230,7 @@ export function VoiceCockpitClient({
  </div>
  </div>
 
- <div className="bg-card border border-border-default radius-xl overflow-hidden flex flex-col">
+ <div className="bg-card border-border-default radius-xl overflow-hidden flex flex-col">
  <div className="p-space-5 pb-space-2 shrink-0">
  <h3 className="text-body-sm font-semibold">Sentiment Trend</h3>
  <p className="text-caption text-muted-foreground">Average customer sentiment over time</p>
@@ -259,7 +259,7 @@ export function VoiceCockpitClient({
  {/* Left Column: Live Activity + Outbound AI Dialer (col-span-4) */}
  <div className="lg:col-span-4 flex flex-col gap-space-4 min-h-0">
  {/* Live Activity Monitoring Card */}
- <div className="flex flex-col bg-card border border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft- shrink-0">
+ <div className="flex flex-col bg-card border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft- shrink-0">
  <div className="p-space-4 border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)] shrink-0 flex items-center justify-between">
  <div className="flex items-center gap-space-2">
  <Activity className="h-4 w-4 text-rose-500 animate-pulse"/>
@@ -273,7 +273,7 @@ export function VoiceCockpitClient({
 
  <div className="p-space-4 space-y-space-3.5 bg-[hsl(var(--foreground)/0.002)]">
  {/* Active call card with wave visualizer */}
- <div className="p-space-3 radius-lg bg-[hsl(var(--primary)/0.04)] border border-[hsl(var(--primary)/0.12)] flex items-center justify-between">
+ <div className="p-space-3 radius-lg bg-[hsl(var(--primary)/0.04)] border-[hsl(var(--primary)/0.12)] flex items-center justify-between">
  <div className="space-y-space-1">
  <div className="flex items-center gap-space-1.5">
  <span className="text-caption font-semibold text-foreground">+1 (555) 309-8123</span>
@@ -299,7 +299,7 @@ export function VoiceCockpitClient({
  <span>Hold Queue list</span>
  <span>0 in queue</span>
  </div>
- <p className="text-caption text-muted-foreground/60 text-center py-space-3 border border-dashed border-[hsl(var(--foreground)/0.08)] radius-lg bg-background/50">
+ <p className="text-caption text-muted-foreground/60 text-center py-space-3 border-[hsl(var(--foreground)/0.08)] radius-lg bg-background/50">
  All active queues are clear. No callers on hold.
  </p>
  </div>
@@ -307,7 +307,7 @@ export function VoiceCockpitClient({
  </div>
 
  {/* Outbound AI Dialer Card */}
- <div className="flex-1 min-h-0 flex flex-col bg-card border border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft-">
+ <div className="flex-1 min-h-0 flex flex-col bg-card border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft-">
  <div className="p-space-4 border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)] shrink-0">
  <div className="flex items-center gap-space-2">
  <Phone className="h-4 w-4 text-primary"/>
@@ -323,7 +323,7 @@ export function VoiceCockpitClient({
  <select
  value={selectedLineId}
  onChange={(e) => setSelectedLineId(e.target.value)}
- className="w-full h-9 radius-md border border-[hsl(var(--foreground)/0.08)] bg-background px-space-3 text-caption focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground"
+ className="w-full h-9 radius-md border-[hsl(var(--foreground)/0.08)] bg-background px-space-3 text-caption focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground"
  >
  {initialNumbers.map(num => (
  <option key={num.id} value={num.id}>{num.name} ({num.phoneNumber})</option>
@@ -347,8 +347,8 @@ export function VoiceCockpitClient({
  <div className={cn(
  "p-space-3 radius-lg flex items-start gap-space-2 text-caption leading-relaxed",
  outboundStatus ==="success"
- ?"bg-emerald-500/10 text-emerald-600 border border-emerald-500/15"
- :"bg-primary/10 text-primary border border-primary/15"
+ ?"bg-emerald-500/10 text-emerald-600 border-emerald-500/15"
+ :"bg-primary/10 text-primary border-primary/15"
  )}>
  {outboundStatus ==="success"
  ? <CheckCircle className="h-4 w-4 shrink-0 mt-space-0.5 text-emerald-500"/> 
@@ -373,7 +373,7 @@ export function VoiceCockpitClient({
 
  {/* Center Column: Live Transcription Viewer (col-span-5) */}
  <div className="lg:col-span-5 flex flex-col min-h-0">
- <div className="flex-1 min-h-0 flex flex-col bg-card border border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft-">
+ <div className="flex-1 min-h-0 flex flex-col bg-card border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft-">
  <div className="p-space-4 border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)] shrink-0 flex flex-wrap items-center justify-between gap-space-3">
  <div>
  <div className="flex items-center gap-space-2">
@@ -434,7 +434,7 @@ export function VoiceCockpitClient({
 
  {/* Right Column: Voicemail Messages Inbox (col-span-3) */}
  <div className="lg:col-span-3 flex flex-col min-h-0">
- <div className="flex-1 min-h-0 flex flex-col bg-card border border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft-">
+ <div className="flex-1 min-h-0 flex flex-col bg-card border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft-">
  <div className="p-space-4 border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)] shrink-0 flex items-center justify-between">
  <div className="flex items-center gap-space-2">
  <Inbox className="h-4 w-4 text-primary"/>
@@ -453,7 +453,7 @@ export function VoiceCockpitClient({
  </div>
  ) : (
  voicemails.map((vm) => (
- <div key={vm.id} className="p-space-3 bg-background border border-[hsl(var(--foreground)/0.06)] radius-lg flex flex-col justify-between transition-all hover:border-[hsl(var(--primary)/0.15)]">
+ <div key={vm.id} className="p-space-3 bg-background border-[hsl(var(--foreground)/0.06)] radius-lg flex flex-col justify-between transition-all hover:border-[hsl(var(--primary)/0.15)]">
  <div className="flex items-start justify-between gap-space-2">
  <div className="space-y-space-0.5 min-w-0">
  <span className="text-caption font-semibold text-foreground block truncate">Inbound Call Voicemail</span>
@@ -478,7 +478,7 @@ export function VoiceCockpitClient({
 
  <div className="mt-space-2.5 space-y-space-2 text-caption">
  {vm.summaryText && (
- <div className="p-space-2 bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--foreground)/0.04)] radius-md space-y-space-0.5 leading-normal">
+ <div className="p-space-2 bg-[hsl(var(--foreground)/0.02)] border-[hsl(var(--foreground)/0.04)] radius-md space-y-space-0.5 leading-normal">
  <span className="text-caption font-semibold text-primary uppercase tracking-wider flex items-center gap-space-1"><Sparkles className="h-2.5 w-2.5"/> AI Summary</span>
  <p className="text-foreground/90 font-medium italic">"{vm.summaryText}"</p>
  </div>

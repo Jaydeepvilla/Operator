@@ -16,6 +16,8 @@
     "db:reset": "tsx scripts/clear-system.ts && tsx scripts/seed/index.ts",
     "db:demo": "tsx scripts/clear-system.ts && tsx scripts/seed/index.ts",
     "db:clear": "tsx scripts/clear-system.ts",
+    "border:audit": "tsx scripts/audit-and-fix-borders.ts",
+    "border:fix": "tsx scripts/audit-and-fix-borders.ts --fix",
     "doctor:design": "tsx scripts/doctor/index.ts --rule design-system",
     "doctor:components": "tsx scripts/doctor/index.ts --rule components",
     "doctor:motion": "tsx scripts/doctor/index.ts --rule motion",

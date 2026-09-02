@@ -90,312 +90,312 @@ const WhatsAppLogo = (props: React.SVGProps<SVGSVGElement>) =>
 type ViewMode = "integration" | "workflow" | "industry";
 
 interface IntegrationData {
-  key: string;
-  name: string;
-  role: string;
-  desc: string;
-  logo: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  color: string;
-  colorBorder: string;
-  colorBg: string;
-  x: number;
-  y: number;
-  // Flow connections mapping
-  outlets: string[]; // Outcomes triggered by this integration
-  pathTrace: string[]; // Sequential flow text representations
-  capabilities: string[];
-  benefits: string;
-  impact: string;
-  useCase: string;
+ key: string;
+ name: string;
+ role: string;
+ desc: string;
+ logo: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+ color: string;
+ colorBorder: string;
+ colorBg: string;
+ x: number;
+ y: number;
+ // Flow connections mapping
+ outlets: string[]; // Outcomes triggered by this integration
+ pathTrace: string[]; // Sequential flow text representations
+ capabilities: string[];
+ benefits: string;
+ impact: string;
+ useCase: string;
 }
 
 interface WorkflowData {
-  key: string;
-  name: string;
-  desc: string;
-  path: string[]; // Array of keys (Integrations & Outcomes) active in order
-  pathLabels: string[]; // Dynamic titles of stages in data flow
-  benefits: string;
-  impact: string;
-  useCases: string[];
+ key: string;
+ name: string;
+ desc: string;
+ path: string[]; // Array of keys (Integrations & Outcomes) active in order
+ pathLabels: string[]; // Dynamic titles of stages in data flow
+ benefits: string;
+ impact: string;
+ useCases: string[];
 }
 
 interface IndustryData {
-  key: string;
-  name: string;
-  desc: string;
-  activeIntegrations: string[];
-  activeOutcomes: string[];
-  outcomeLabels: string[];
-  outcomesDesc: string;
-  businessImpact: string;
-  dialogExample: string;
+ key: string;
+ name: string;
+ desc: string;
+ activeIntegrations: string[];
+ activeOutcomes: string[];
+ outcomeLabels: string[];
+ outcomesDesc: string;
+ businessImpact: string;
+ dialogExample: string;
 }
 
 /* ── Data Configuration ────────────────────────────────────────────────────── */
 
 const INTEGRATIONS: Record<string, IntegrationData> = {
-  Google: {
-    key: "Google",
-    name: "Google Calendar & Meet",
-    role: "Calendar Sync Engine",
-    desc: "Checks calendar availability in real time, reserves appointment slots, schedules video consulting via Google Meet, and secures booking workflows automatically.",
-    logo: GoogleLogo,
-    color: "text-primary-500",
-    colorBorder: "border-primary-500/20 hover:border-primary-500/50",
-    colorBg: "bg-primary-500/5",
-    x: 155,
-    y: 67,
-    outlets: ["Calendar"],
-    pathTrace: ["Google Calendar", "Operator Core", "Calendar Booking", "Google Meet Link Generated"],
-    capabilities: [
-    "Real-time Availability Collison Checks",
-    "Dynamic Multi-staff Booking Sync",
-    "Automatic Google Meet Coordinate Dispatch"],
+ Google: {
+ key: "Google",
+ name: "Google Calendar & Meet",
+ role: "Calendar Sync Engine",
+ desc: "Checks calendar availability in real time, reserves appointment slots, schedules video consulting via Google Meet, and secures booking workflows automatically.",
+ logo: GoogleLogo,
+ color: "text-primary-500",
+ colorBorder: "border-primary-500/20 hover:border-primary-500/50",
+ colorBg: "bg-primary-500/5",
+ x: 155,
+ y: 67,
+ outlets: ["Calendar"],
+ pathTrace: ["Google Calendar", "Operator Core", "Calendar Booking", "Google Meet Link Generated"],
+ capabilities: [
+ "Real-time Availability Collison Checks",
+ "Dynamic Multi-staff Booking Sync",
+ "Automatic Google Meet Coordinate Dispatch"],
 
-    benefits: "Ensures calendar state is updated instantly, eliminating manual bookings and double scheduling entirely.",
-    impact: "Eliminates manual scheduling friction by 100% and secures 24/7 calendar filling.",
-    useCase: "Client books a consultation on Google Calendar during a voice call with Operator AI."
-  },
-  Microsoft: {
-    key: "Microsoft",
-    name: "Microsoft Outlook & Office 365",
-    role: "Calendar Sync Engine",
-    desc: "Synchronizes appointment slots with Outlook calendars, updates Microsoft Office scheduling queues, and matches bookings for enterprise practices.",
-    logo: MicrosoftLogo,
-    color: "text-warning-500",
-    colorBorder: "border-warning-500/20 hover:border-warning-500/50",
-    colorBg: "bg-warning-500/5",
-    x: 120,
-    y: 96,
-    outlets: ["Calendar"],
-    pathTrace: ["Outlook Calendar", "Operator Core", "Slot Lock Engine", "Confirmation Despatched"],
-    capabilities: [
-    "Outlook 365 Round-Robin Scheduling",
-    "Encrypted Calendar Availability Scans",
-    "Corporate Buffer Time Management"],
+ benefits: "Ensures calendar state is updated instantly, eliminating manual bookings and double scheduling entirely.",
+ impact: "Eliminates manual scheduling friction by 100% and secures 24/7 calendar filling.",
+ useCase: "Client books a consultation on Google Calendar during a voice call with Operator AI."
+ },
+ Microsoft: {
+ key: "Microsoft",
+ name: "Microsoft Outlook & Office 365",
+ role: "Calendar Sync Engine",
+ desc: "Synchronizes appointment slots with Outlook calendars, updates Microsoft Office scheduling queues, and matches bookings for enterprise practices.",
+ logo: MicrosoftLogo,
+ color: "text-warning-500",
+ colorBorder: "border-warning-500/20 hover:border-warning-500/50",
+ colorBg: "bg-warning-500/5",
+ x: 120,
+ y: 96,
+ outlets: ["Calendar"],
+ pathTrace: ["Outlook Calendar", "Operator Core", "Slot Lock Engine", "Confirmation Despatched"],
+ capabilities: [
+ "Outlook 365 Round-Robin Scheduling",
+ "Encrypted Calendar Availability Scans",
+ "Corporate Buffer Time Management"],
 
-    benefits: "Coordinates multi-practitioner schedules simultaneously across separate office coordinates.",
-    impact: "Boosts staff calendar efficiency by 34% and synchronizes lead bookings with Microsoft Teams portals.",
-    useCase: "A corporate legal advisor's calendar is locked instantly when a prospect registers an intake case."
-  },
-  OpenAI: {
-    key: "OpenAI",
-    name: "OpenAI GPT-4o Ingestion",
-    role: "LLM Reasoning Core",
-    desc: "Utilizes dedicated contextual Large Language Models to read uploaded FAQ sheets, evaluate client sentiments, and guide natural dialogue flow.",
-    logo: OpenAiLogo,
-    color: "text-success-500",
-    colorBorder: "border-success-500/20 hover:border-success-500/50",
-    colorBg: "bg-success-500/5",
-    x: 197,
-    y: 52,
-    outlets: ["CRM"],
-    pathTrace: ["Context Docs", "OpenAI Reasoning Core", "Intent Evaluation", "Action Dispatcher"],
-    capabilities: [
-    "Instant FAQ Sheet Context Matching",
-    "Structured Dialogue Intent Identification",
-    "Multi-sentence Conversational Safety Guardrails"],
+ benefits: "Coordinates multi-practitioner schedules simultaneously across separate office coordinates.",
+ impact: "Boosts staff calendar efficiency by 34% and synchronizes lead bookings with Microsoft Teams portals.",
+ useCase: "A corporate legal advisor's calendar is locked instantly when a prospect registers an intake case."
+ },
+ OpenAI: {
+ key: "OpenAI",
+ name: "OpenAI GPT-4o Ingestion",
+ role: "LLM Reasoning Core",
+ desc: "Utilizes dedicated contextual Large Language Models to read uploaded FAQ sheets, evaluate client sentiments, and guide natural dialogue flow.",
+ logo: OpenAiLogo,
+ color: "text-success-500",
+ colorBorder: "border-success-500/20 hover:border-success-500/50",
+ colorBg: "bg-success-500/5",
+ x: 197,
+ y: 52,
+ outlets: ["CRM"],
+ pathTrace: ["Context Docs", "OpenAI Reasoning Core", "Intent Evaluation", "Action Dispatcher"],
+ capabilities: [
+ "Instant FAQ Sheet Context Matching",
+ "Structured Dialogue Intent Identification",
+ "Multi-sentence Conversational Safety Guardrails"],
 
-    benefits: "Allows the AI core to understand objections and context without scripted limitations.",
-    impact: "Achieves a 94.5% caller qualification accuracy rate, with expert accuracy.",
-    useCase: "The AI answers complex pricing and insurance copay questions on the fly using stored training sheets."
-  },
-  Twilio: {
-    key: "Twilio",
-    name: "Twilio Voice & SMS Core",
-    role: "Telephony Stream API",
-    desc: "Secures low-latency telephone audio ingestion streams and dispatches SMS alerts, reservation receipts, and follow-up links.",
-    logo: TwilioLogo,
-    color: "text-destructive",
-    colorBorder: "border-error-500/20 hover:border-error-500/50",
-    colorBg: "bg-destructive/5",
-    x: 242,
-    y: 52,
-    outlets: ["Alerts"],
-    pathTrace: ["Inbound VoIP Call", "Twilio SIP Stream", "Operator Audio Engine", "Confirmation SMS dispatched"],
-    capabilities: [
-    "Ultra-low latency SIP stream bridges",
-    "Automated SMS Notification Triggers",
-    "Fallback Telephone Routing Nodes"],
+ benefits: "Allows the AI core to understand objections and context without scripted limitations.",
+ impact: "Achieves a 94.5% caller qualification accuracy rate, with expert accuracy.",
+ useCase: "The AI answers complex pricing and insurance copay questions on the fly using stored training sheets."
+ },
+ Twilio: {
+ key: "Twilio",
+ name: "Twilio Voice & SMS Core",
+ role: "Telephony Stream API",
+ desc: "Secures low-latency telephone audio ingestion streams and dispatches SMS alerts, reservation receipts, and follow-up links.",
+ logo: TwilioLogo,
+ color: "text-destructive",
+ colorBorder: "border-error-500/20 hover:border-error-500/50",
+ colorBg: "bg-destructive/5",
+ x: 242,
+ y: 52,
+ outlets: ["Alerts"],
+ pathTrace: ["Inbound VoIP Call", "Twilio SIP Stream", "Operator Audio Engine", "Confirmation SMS dispatched"],
+ capabilities: [
+ "Ultra-low latency SIP stream bridges",
+ "Automated SMS Notification Triggers",
+ "Fallback Telephone Routing Nodes"],
 
-    benefits: "Guarantees crystal clear bidirectional speech transmission with less than 120ms network delay.",
-    impact: "Captures 100% of missed calls, converting abandoned ring-outs into live appointments.",
-    useCase: "An offline caller dials your number at midnight and immediately schedules a consultation via voice dialogue."
-  },
-  Calendly: {
-    key: "Calendly",
-    name: "Calendly API Integration",
-    role: "Lead Routing Engine",
-    desc: "Interfaces directly with team booking pages, managing round-robin practitioner queues and automated intake buffers.",
-    logo: CalendlyLogo,
-    color: "text-primary",
-    colorBorder: "border-primary/20 hover:border-primary/50",
-    colorBg: "bg-primary/5",
-    x: 285,
-    y: 67,
-    outlets: ["Calendar"],
-    pathTrace: ["Calendly Link", "Operator Core", "Round-Robin routing", "Assigned Booking Lock"],
-    capabilities: [
-    "Client-facing Web Widget Triggers",
-    "Round-robin Staff Slot Allocation",
-    "Custom Cancellation & Rescheduling Links"],
+ benefits: "Guarantees crystal clear bidirectional speech transmission with less than 120ms network delay.",
+ impact: "Captures 100% of missed calls, converting abandoned ring-outs into live appointments.",
+ useCase: "An offline caller dials your number at midnight and immediately schedules a consultation via voice dialogue."
+ },
+ Calendly: {
+ key: "Calendly",
+ name: "Calendly API Integration",
+ role: "Lead Routing Engine",
+ desc: "Interfaces directly with team booking pages, managing round-robin practitioner queues and automated intake buffers.",
+ logo: CalendlyLogo,
+ color: "text-primary",
+ colorBorder: "border-primary/20 hover:border-primary/50",
+ colorBg: "bg-primary/5",
+ x: 285,
+ y: 67,
+ outlets: ["Calendar"],
+ pathTrace: ["Calendly Link", "Operator Core", "Round-Robin routing", "Assigned Booking Lock"],
+ capabilities: [
+ "Client-facing Web Widget Triggers",
+ "Round-robin Staff Slot Allocation",
+ "Custom Cancellation & Rescheduling Links"],
 
-    benefits: "Enables flexible client-controlled rescheduling patterns with zero staff friction.",
-    impact: "Cuts down customer booking friction, increasing appointment conversion rates by 22%.",
-    useCase: "A salon client changes their hair styling appointment slot directly using a self-serve Calendly link."
-  },
-  Razorpay: {
-    key: "Razorpay",
-    name: "Razorpay Payments & Invoicing",
-    role: "Payments Core",
-    desc: "Collects UPI, Credit Cards, Net Banking, and instant payment links directly inside voice calls and WhatsApp chats.",
-    logo: RazorpayLogo,
-    color: "text-blue-500",
-    colorBorder: "border-blue-500/20 hover:border-blue-500/50",
-    colorBg: "bg-blue-500/5",
-    x: 97,
-    y: 224,
-    outlets: ["CRM"],
-    pathTrace: ["Payment Prompt", "Razorpay API Checkout", "UPI / QR Code Scan", "CRM ledger verified"],
-    capabilities: [
-    "Native UPI & QR Code fast checkout",
-    "Instant dynamic payment link dispatch via WhatsApp/SMS",
-    "Webhook payment verification and automatic invoicing"],
+ benefits: "Enables flexible client-controlled rescheduling patterns with zero staff friction.",
+ impact: "Cuts down customer booking friction, increasing appointment conversion rates by 22%.",
+ useCase: "A salon client changes their hair styling appointment slot directly using a self-serve Calendly link."
+ },
+ Razorpay: {
+ key: "Razorpay",
+ name: "Razorpay Payments & Invoicing",
+ role: "Payments Core",
+ desc: "Collects UPI, Credit Cards, Net Banking, and instant payment links directly inside voice calls and WhatsApp chats.",
+ logo: RazorpayLogo,
+ color: "text-blue-500",
+ colorBorder: "border-blue-500/20 hover:border-blue-500/50",
+ colorBg: "bg-blue-500/5",
+ x: 97,
+ y: 224,
+ outlets: ["CRM"],
+ pathTrace: ["Payment Prompt", "Razorpay API Checkout", "UPI / QR Code Scan", "CRM ledger verified"],
+ capabilities: [
+ "Native UPI & QR Code fast checkout",
+ "Instant dynamic payment link dispatch via WhatsApp/SMS",
+ "Webhook payment verification and automatic invoicing"],
 
-    benefits: "Enables instant booking deposit collection and reduces no-shows to near zero with seamless automated payment capture.",
-    impact: "Captures 98%+ on-time booking deposits and automates complete billing reconciliations.",
-    useCase: "A client books an appointment and immediately receives an automated Razorpay UPI link on WhatsApp to secure their slot."
-  },
-  Identity: {
-    key: "Identity",
-    name: "Identity & Access Manager",
-    role: "Identity Manager",
-    desc: "Secures client portals, creates user auth profiles during registration, and manages role-based access variables.",
-    logo: IdentityLogo,
-    color: "text-primary",
-    colorBorder: "border-primary/20 hover:border-primary/50",
-    colorBg: "bg-primary/5",
-    x: 97,
-    y: 135,
-    outlets: ["CRM"],
-    pathTrace: ["User Registration", "JWT Auth node", "Profile created", "Secure CRM profile sync"],
-    capabilities: [
-    "JSON Web Token (JWT) Session Management",
-    "Patient / Client Portal Auth safeguards",
-    "HIPAA / SOC2 Auth compliance hooks"],
+ benefits: "Enables instant booking deposit collection and reduces no-shows to near zero with seamless automated payment capture.",
+ impact: "Captures 98%+ on-time booking deposits and automates complete billing reconciliations.",
+ useCase: "A client books an appointment and immediately receives an automated Razorpay UPI link on WhatsApp to secure their slot."
+ },
+ Identity: {
+ key: "Identity",
+ name: "Identity & Access Manager",
+ role: "Identity Manager",
+ desc: "Secures client portals, creates user auth profiles during registration, and manages role-based access variables.",
+ logo: IdentityLogo,
+ color: "text-primary",
+ colorBorder: "border-primary/20 hover:border-primary/50",
+ colorBg: "bg-primary/5",
+ x: 97,
+ y: 135,
+ outlets: ["CRM"],
+ pathTrace: ["User Registration", "JWT Auth node", "Profile created", "Secure CRM profile sync"],
+ capabilities: [
+ "JSON Web Token (JWT) Session Management",
+ "Patient / Client Portal Auth safeguards",
+ "HIPAA / SOC2 Auth compliance hooks"],
 
-    benefits: "Ensures sensitive business configurations and client details are shielded under verified login layers.",
-    impact: "Guarantees 100% data access control, matching standard SOC2 enterprise criteria.",
-    useCase: "A patient logs in securely to view their scheduled treatments and session notes."
-  },
-  Meta: {
-    key: "Meta",
-    name: "Meta Messenger Core",
-    role: "Omnichannel Gateway",
-    desc: "Connects business pages across Facebook and Instagram directories, routing incoming lead messages into the AI core.",
-    logo: MetaLogo,
-    color: "text-primary-600",
-    colorBorder: "border-primary-600/20 hover:border-primary-600/50",
-    colorBg: "bg-primary-600/5",
-    x: 120,
-    y: 263,
-    outlets: ["Alerts"],
-    pathTrace: ["Instagram Message", "Meta API Hook", "Operator Core Analysis", "Outbound DM dispatch"],
-    capabilities: [
-    "Instagram DM Automation sync",
-    "Facebook Page Inbox integration",
-    "Context-retaining multi-conversation scaling"],
+ benefits: "Ensures sensitive business configurations and client details are shielded under verified login layers.",
+ impact: "Guarantees 100% data access control, matching standard SOC2 enterprise criteria.",
+ useCase: "A patient logs in securely to view their scheduled treatments and session notes."
+ },
+ Meta: {
+ key: "Meta",
+ name: "Meta Messenger Core",
+ role: "Omnichannel Gateway",
+ desc: "Connects business pages across Facebook and Instagram directories, routing incoming lead messages into the AI core.",
+ logo: MetaLogo,
+ color: "text-primary-600",
+ colorBorder: "border-primary-600/20 hover:border-primary-600/50",
+ colorBg: "bg-primary-600/5",
+ x: 120,
+ y: 263,
+ outlets: ["Alerts"],
+ pathTrace: ["Instagram Message", "Meta API Hook", "Operator Core Analysis", "Outbound DM dispatch"],
+ capabilities: [
+ "Instagram DM Automation sync",
+ "Facebook Page Inbox integration",
+ "Context-retaining multi-conversation scaling"],
 
-    benefits: "Turns casual social media browsers into scheduled consultations instantly inside the chat thread.",
-    impact: "Boosts inbound social lead volume by 52% and maintains consistent 24/7 engagement.",
-    useCase: "A client asks a salon page about pricing on Instagram and books a haircut inside the DM inbox."
-  },
-  WhatsApp: {
-    key: "WhatsApp",
-    name: "WhatsApp Business API",
-    role: "Mobile Messaging Core",
-    desc: "Establishes a direct mobile messaging bridge on the world's most popular messaging app for real-time customer care.",
-    logo: WhatsAppLogo,
-    color: "text-success-600",
-    colorBorder: "border-success-600/20 hover:border-success-600/50",
-    colorBg: "bg-success-600/5",
-    x: 155,
-    y: 292,
-    outlets: ["Alerts"],
-    pathTrace: ["WhatsApp Inquiry", "WhatsApp Business Node", "Operator response", "Booking links dispatched"],
-    capabilities: [
-    "Official Meta WhatsApp Cloud API connectivity",
-    "Interactive WhatsApp List & Button dispatch",
-    "Automated follow-up reminders and alerts"],
+ benefits: "Turns casual social media browsers into scheduled consultations instantly inside the chat thread.",
+ impact: "Boosts inbound social lead volume by 52% and maintains consistent 24/7 engagement.",
+ useCase: "A client asks a salon page about pricing on Instagram and books a haircut inside the DM inbox."
+ },
+ WhatsApp: {
+ key: "WhatsApp",
+ name: "WhatsApp Business API",
+ role: "Mobile Messaging Core",
+ desc: "Establishes a direct mobile messaging bridge on the world's most popular messaging app for real-time customer care.",
+ logo: WhatsAppLogo,
+ color: "text-success-600",
+ colorBorder: "border-success-600/20 hover:border-success-600/50",
+ colorBg: "bg-success-600/5",
+ x: 155,
+ y: 292,
+ outlets: ["Alerts"],
+ pathTrace: ["WhatsApp Inquiry", "WhatsApp Business Node", "Operator response", "Booking links dispatched"],
+ capabilities: [
+ "Official Meta WhatsApp Cloud API connectivity",
+ "Interactive WhatsApp List & Button dispatch",
+ "Automated follow-up reminders and alerts"],
 
-    benefits: "Engages clients directly on their lockscreens, achieving 98% notification read rates.",
-    impact: "Cuts down appointment cancellation rates by 4x using direct mobile confirmations.",
-    useCase: "A client queries appointment availability, selects a slot from a WhatsApp button, and confirms."
-  }
+ benefits: "Engages clients directly on their lockscreens, achieving 98% notification read rates.",
+ impact: "Cuts down appointment cancellation rates by 4x using direct mobile confirmations.",
+ useCase: "A client queries appointment availability, selects a slot from a WhatsApp button, and confirms."
+ }
 };
 
 /* ── Outcomes Map ──────────────────────────────────────────────────────────── */
 
 interface OutcomeNode {
-  name: string;
-  role: string;
-  x: number;
-  y: number;
+ name: string;
+ role: string;
+ x: number;
+ y: number;
 }
 
 const OUTCOMES: Record<string, OutcomeNode> = {
-  Calendar: { name: "Calendar Sync", role: "Google & Outlook Integration", x: 380, y: 100 },
-  CRM: { name: "CRM Database", role: "Intake & Profile Records", x: 390, y: 180 },
-  Alerts: { name: "Alerts & SMS", role: "Dispatches & Reminders", x: 380, y: 260 }
+ Calendar: { name: "Calendar Sync", role: "Google & Outlook Integration", x: 380, y: 100 },
+ CRM: { name: "CRM Database", role: "Intake & Profile Records", x: 390, y: 180 },
+ Alerts: { name: "Alerts & SMS", role: "Dispatches & Reminders", x: 380, y: 260 }
 };
 
 /* ── Workflows Configuration ───────────────────────────────────────────────── */
 
 const WORKFLOWS: WorkflowData[] = [
 {
-  key: "lead",
-  name: "Lead Capture & Qualification",
-  desc: "A completely automated sequence that handles incoming social/web leads, evaluates client fit, collects context, and coordinates direct booking calendar locks.",
-  path: ["WhatsApp", "OpenAI", "CRM", "Alerts"],
-  pathLabels: ["Inbound Message", "LLM Reasoning", "CRM Lead Card", "Staff Alert SMS"],
-  benefits: "Qualifies prospects instantly 24/7 without manual vetting cycles.",
-  impact: "Increases lead intake response times from hours to under 2 seconds, boosting conversion by 40%.",
-  useCases: [
-  "Website visitor asks about service pricing",
-  "AI asks qualification screening questions",
-  "Client fits criteria and schedules discovery call",
-  "Lead metadata is uploaded to your practice CRM"]
+ key: "lead",
+ name: "Lead Capture & Qualification",
+ desc: "A completely automated sequence that handles incoming social/web leads, evaluates client fit, collects context, and coordinates direct booking calendar locks.",
+ path: ["WhatsApp", "OpenAI", "CRM", "Alerts"],
+ pathLabels: ["Inbound Message", "LLM Reasoning", "CRM Lead Card", "Staff Alert SMS"],
+ benefits: "Qualifies prospects instantly 24/7 without manual vetting cycles.",
+ impact: "Increases lead intake response times from hours to under 2 seconds, boosting conversion by 40%.",
+ useCases: [
+ "Website visitor asks about service pricing",
+ "AI asks qualification screening questions",
+ "Client fits criteria and schedules discovery call",
+ "Lead metadata is uploaded to your practice CRM"]
 
 },
 {
-  key: "voice",
-  name: "Inbound Voice Answering",
-  desc: "Streams telephone calls, performs real-time speech transcription, references practice context data, guides the booking, and dispatches confirmation texts.",
-  path: ["Twilio", "OpenAI", "Google", "Alerts"],
-  pathLabels: ["Ringing Call", "Voice transcription", "Availability scan", "Confirmation SMS"],
-  benefits: "Captures and books patients over direct telephone calls outside standard working hours.",
-  impact: "Recovers 100% of missed telephone revenue, filling vacant calendar slots instantly.",
-  useCases: [
-  "Patient dials clinic number at 10:00 PM",
-  "Voice AI answers caller with natural tone",
-  "Checks live Google/Outlook calendars for empty slots",
-  "Dispatches calendar invite and SMS coordinate receipt"]
+ key: "voice",
+ name: "Inbound Voice Answering",
+ desc: "Streams telephone calls, performs real-time speech transcription, references practice context data, guides the booking, and dispatches confirmation texts.",
+ path: ["Twilio", "OpenAI", "Google", "Alerts"],
+ pathLabels: ["Ringing Call", "Voice transcription", "Availability scan", "Confirmation SMS"],
+ benefits: "Captures and books patients over direct telephone calls outside standard working hours.",
+ impact: "Recovers 100% of missed telephone revenue, filling vacant calendar slots instantly.",
+ useCases: [
+ "Patient dials clinic number at 10:00 PM",
+ "Voice AI answers caller with natural tone",
+ "Checks live Google/Outlook calendars for empty slots",
+ "Dispatches calendar invite and SMS coordinate receipt"]
 
 },
 {
-  key: "payment",
-  name: "Pre-Paid Consultations",
-  desc: "Integrates secure payment checkout links inside scheduling flows, protecting staff schedules by collecting pre-payments before calendar slots are blocked.",
-  path: ["Razorpay", "Google", "CRM", "Alerts"],
-  pathLabels: ["Booking request", "UPI Checkout scan", "Calendar slot lock", "SMS Invoice receipt"],
-  benefits: "Enforces upfront deposit collection over chat or call before finalizing scheduling permissions.",
-  impact: "Reduces appointment cancellation and no-show margins to under 2%.",
-  useCases: [
-  "Prospect requests case review session",
-  "AI generates and dispatches Razorpay checkout link",
-  "Client completes UPI checkout transfer",
-  "Calendar slot is automatically confirmed and locked"]
+ key: "payment",
+ name: "Pre-Paid Consultations",
+ desc: "Integrates secure payment checkout links inside scheduling flows, protecting staff schedules by collecting pre-payments before calendar slots are blocked.",
+ path: ["Razorpay", "Google", "CRM", "Alerts"],
+ pathLabels: ["Booking request", "UPI Checkout scan", "Calendar slot lock", "SMS Invoice receipt"],
+ benefits: "Enforces upfront deposit collection over chat or call before finalizing scheduling permissions.",
+ impact: "Reduces appointment cancellation and no-show margins to under 2%.",
+ useCases: [
+ "Prospect requests case review session",
+ "AI generates and dispatches Razorpay checkout link",
+ "Client completes UPI checkout transfer",
+ "Calendar slot is automatically confirmed and locked"]
 
 }];
 
@@ -404,185 +404,185 @@ const WORKFLOWS: WorkflowData[] = [
 
 const INDUSTRIES: IndustryData[] = [
 {
-  key: "dental",
-  name: "Dental Clinics",
-  desc: "Optimized for booking routine cleanings, triaging dental emergencies, checking insurance copays, and dispatching patient reminders.",
-  activeIntegrations: ["Google", "Twilio", "Razorpay", "WhatsApp"],
-  activeOutcomes: ["Calendar", "CRM", "Alerts"],
-  outcomeLabels: ["Clinic Google Calendar", "Dental CRM (Dentrix/OpenDental)", "SMS Treatment Reminder"],
-  outcomesDesc: "Coordinates doctor chairs, syncs clinical databases, and dispatches automated post-care SMS.",
-  businessImpact: "Saves 15 hours of front-desk scheduling work weekly and recovers $1,200/week in missed appointments.",
-  dialogExample: "\"I need to schedule a root canal review tomorrow...\"➔ AI verifies doctor availability, checks insurance, collects diagnostic fee via Razorpay, and books."
+ key: "dental",
+ name: "Dental Clinics",
+ desc: "Optimized for booking routine cleanings, triaging dental emergencies, checking insurance copays, and dispatching patient reminders.",
+ activeIntegrations: ["Google", "Twilio", "Razorpay", "WhatsApp"],
+ activeOutcomes: ["Calendar", "CRM", "Alerts"],
+ outcomeLabels: ["Clinic Google Calendar", "Dental CRM (Dentrix/OpenDental)", "SMS Treatment Reminder"],
+ outcomesDesc: "Coordinates doctor chairs, syncs clinical databases, and dispatches automated post-care SMS.",
+ businessImpact: "Saves 15 hours of front-desk scheduling work weekly and recovers $1,200/week in missed appointments.",
+ dialogExample: "\"I need to schedule a root canal review tomorrow...\"➔ AI verifies doctor availability, checks insurance, collects diagnostic fee via Razorpay, and books."
 },
 {
-  key: "medical",
-  name: "Medical Practices",
-  desc: "Engineered for HIPAA-compliant intake operations, patient portal onboarding, clinic schedule sync, and symptom triage checks.",
-  activeIntegrations: ["Microsoft", "Twilio", "Identity", "OpenAI"],
-  activeOutcomes: ["Calendar", "CRM"],
-  outcomeLabels: ["Outlook Shift Board", "EMR Patient Profile Database"],
-  outcomesDesc: "Updates physician shift systems, secures patient records via jwt tokens, and structures intakes.",
-  businessImpact: "Triages Patient intakes immediately, cutting down wait times by 80% and maintaining strict HIPAA compliance.",
-  dialogExample: "\"Hi, I need to register as a new patient...\"➔ AI qualifies symptoms, registers auth profile with Identity, and matches physician schedule."
+ key: "medical",
+ name: "Medical Practices",
+ desc: "Engineered for HIPAA-compliant intake operations, patient portal onboarding, clinic schedule sync, and symptom triage checks.",
+ activeIntegrations: ["Microsoft", "Twilio", "Identity", "OpenAI"],
+ activeOutcomes: ["Calendar", "CRM"],
+ outcomeLabels: ["Outlook Shift Board", "EMR Patient Profile Database"],
+ outcomesDesc: "Updates physician shift systems, secures patient records via jwt tokens, and structures intakes.",
+ businessImpact: "Triages Patient intakes immediately, cutting down wait times by 80% and maintaining strict HIPAA compliance.",
+ dialogExample: "\"Hi, I need to register as a new patient...\"➔ AI qualifies symptoms, registers auth profile with Identity, and matches physician schedule."
 },
 {
-  key: "salon",
-  name: "Salons & Med Spas",
-  desc: "Designed for stylist selection, treatment deposit capture, social media bookings, and post-service reminders.",
-  activeIntegrations: ["Calendly", "Stripe", "Razorpay", "Meta", "WhatsApp"],
-  activeOutcomes: ["Calendar", "Alerts"],
-  outcomeLabels: ["Stylist Calendly Board", "SMS Style reminder details"],
-  outcomesDesc: "Routes bookings across stylist round-robin pools and enforces reservation deposit rules.",
-  businessImpact: "Boosts beauty chair utilization rate from 65% to 94% through Instagram DM conversions.",
-  dialogExample: "\"Can I book a facial tomorrow at 4pm?\"➔ AI generates deposit checkout, collects card payment, and locks slot."
+ key: "salon",
+ name: "Salons & Med Spas",
+ desc: "Designed for stylist selection, treatment deposit capture, social media bookings, and post-service reminders.",
+ activeIntegrations: ["Calendly", "Stripe", "Razorpay", "Meta", "WhatsApp"],
+ activeOutcomes: ["Calendar", "Alerts"],
+ outcomeLabels: ["Stylist Calendly Board", "SMS Style reminder details"],
+ outcomesDesc: "Routes bookings across stylist round-robin pools and enforces reservation deposit rules.",
+ businessImpact: "Boosts beauty chair utilization rate from 65% to 94% through Instagram DM conversions.",
+ dialogExample: "\"Can I book a facial tomorrow at 4pm?\"➔ AI generates deposit checkout, collects card payment, and locks slot."
 },
 {
-  key: "law",
-  name: "Law Firms",
-  desc: "Vetted for lead qualification, screening case details, booking consultations, and updating firm CRM databases.",
-  activeIntegrations: ["Google", "OpenAI", "Identity", "Microsoft"],
-  activeOutcomes: ["CRM"],
-  outcomeLabels: ["Legal CRM (Clio/Hubspot) intake database"],
-  outcomesDesc: "Vets prospective client cases against eligibility guidelines and syncs profiles instantly.",
-  businessImpact: "Screens and filters out unqualified cases automatically, saving lawyers 10+ hours weekly.",
-  dialogExample: "\"I have a contract dispute case...\"➔ AI gathers details, qualifies case based on practice areas, and syncs dossier to Clio."
+ key: "law",
+ name: "Law Firms",
+ desc: "Vetted for lead qualification, screening case details, booking consultations, and updating firm CRM databases.",
+ activeIntegrations: ["Google", "OpenAI", "Identity", "Microsoft"],
+ activeOutcomes: ["CRM"],
+ outcomeLabels: ["Legal CRM (Clio/Hubspot) intake database"],
+ outcomesDesc: "Vets prospective client cases against eligibility guidelines and syncs profiles instantly.",
+ businessImpact: "Screens and filters out unqualified cases automatically, saving lawyers 10+ hours weekly.",
+ dialogExample: "\"I have a contract dispute case...\"➔ AI gathers details, qualifies case based on practice areas, and syncs dossier to Clio."
 },
 {
-  key: "gym",
-  name: "Gyms & Fitness Studios",
-  desc: "Built for scheduling trial sessions, enrolling new memberships, managing billing profiles, and sending class reminders.",
-  activeIntegrations: ["WhatsApp", "Twilio", "Razorpay", "Identity"],
-  activeOutcomes: ["Calendar", "CRM", "Alerts"],
-  outcomeLabels: ["Class Booking Grid", "Mindbody CRM Sync", "WhatsApp QR code pass"],
-  outcomesDesc: "Registers membership accounts, logs monthly direct-debit schedules, and dispatches alerts.",
-  businessImpact: "Increases studio membership signups by 35% through lockscreen SMS follow-up alerts.",
-  dialogExample: "\"Can I book a trial yoga class?\"➔ AI registers profile, processes recurring payment checkout, and text-alerts class pass."
+ key: "gym",
+ name: "Gyms & Fitness Studios",
+ desc: "Built for scheduling trial sessions, enrolling new memberships, managing billing profiles, and sending class reminders.",
+ activeIntegrations: ["WhatsApp", "Twilio", "Razorpay", "Identity"],
+ activeOutcomes: ["Calendar", "CRM", "Alerts"],
+ outcomeLabels: ["Class Booking Grid", "Mindbody CRM Sync", "WhatsApp QR code pass"],
+ outcomesDesc: "Registers membership accounts, logs monthly direct-debit schedules, and dispatches alerts.",
+ businessImpact: "Increases studio membership signups by 35% through lockscreen SMS follow-up alerts.",
+ dialogExample: "\"Can I book a trial yoga class?\"➔ AI registers profile, processes recurring payment checkout, and text-alerts class pass."
 }];
 
 
 /* ── Main Component ────────────────────────────────────────────────────────── */
 
 export function EcosystemViewer() {
-  const [viewMode, setViewMode] = useState<ViewMode>("integration");
-  const [selectedNode, setSelectedNode] = useState<string>("Google");
-  const [activeWorkflow, setActiveWorkflow] = useState<string>("lead");
-  const [activeIndustry, setActiveIndustry] = useState<string>("dental");
+ const [viewMode, setViewMode] = useState<ViewMode>("integration");
+ const [selectedNode, setSelectedNode] = useState<string>("Google");
+ const [activeWorkflow, setActiveWorkflow] = useState<string>("lead");
+ const [activeIndustry, setActiveIndustry] = useState<string>("dental");
 
-  const handleViewModeChange = (mode: ViewMode) => {
-    setViewMode(mode);
-    if (mode === "integration") {
-      setSelectedNode("Google");
-    } else if (mode === "workflow") {
-      setActiveWorkflow("lead");
-    } else if (mode === "industry") {
-      setActiveIndustry("dental");
-    }
-  };
+ const handleViewModeChange = (mode: ViewMode) => {
+ setViewMode(mode);
+ if (mode === "integration") {
+ setSelectedNode("Google");
+ } else if (mode === "workflow") {
+ setActiveWorkflow("lead");
+ } else if (mode === "industry") {
+ setActiveIndustry("dental");
+ }
+ };
 
-  /* ── Line Helper Classes ───────────────────────────────────────────────────── */
+ /* ── Line Helper Classes ───────────────────────────────────────────────────── */
 
-  const isPathActive = (from: string, to: string) => {
-    if (viewMode === "integration") {
-      // Integration Mode: Line from active integration to Center (Hub)
-      if (to === "Hub" && from === selectedNode) return true;
-      // Line from Center (Hub) to matching outcomes
-      if (from === "Hub") {
-        const nodeData = INTEGRATIONS[selectedNode];
-        return nodeData ? nodeData.outlets.includes(to) : false;
-      }
-    } else if (viewMode === "workflow") {
-      // Workflow Mode: Line from integrations inside active workflow path to Center (Hub)
-      const workflow = WORKFLOWS.find((w) => w.key === activeWorkflow);
-      if (!workflow) return false;
+ const isPathActive = (from: string, to: string) => {
+ if (viewMode === "integration") {
+ // Integration Mode: Line from active integration to Center (Hub)
+ if (to === "Hub" && from === selectedNode) return true;
+ // Line from Center (Hub) to matching outcomes
+ if (from === "Hub") {
+ const nodeData = INTEGRATIONS[selectedNode];
+ return nodeData ? nodeData.outlets.includes(to) : false;
+ }
+ } else if (viewMode === "workflow") {
+ // Workflow Mode: Line from integrations inside active workflow path to Center (Hub)
+ const workflow = WORKFLOWS.find((w) => w.key === activeWorkflow);
+ if (!workflow) return false;
 
-      if (to === "Hub") {
-        return workflow.path.includes(from);
-      }
-      if (from === "Hub") {
-        return workflow.path.includes(to);
-      }
-    } else if (viewMode === "industry") {
-      // Industry Mode: Line active for industry integrations
-      const industry = INDUSTRIES.find((i) => i.key === activeIndustry);
-      if (!industry) return false;
+ if (to === "Hub") {
+ return workflow.path.includes(from);
+ }
+ if (from === "Hub") {
+ return workflow.path.includes(to);
+ }
+ } else if (viewMode === "industry") {
+ // Industry Mode: Line active for industry integrations
+ const industry = INDUSTRIES.find((i) => i.key === activeIndustry);
+ if (!industry) return false;
 
-      if (to === "Hub") {
-        return industry.activeIntegrations.includes(from);
-      }
-      if (from === "Hub") {
-        return industry.activeOutcomes.includes(to);
-      }
-    }
-    return false;
-  };
+ if (to === "Hub") {
+ return industry.activeIntegrations.includes(from);
+ }
+ if (from === "Hub") {
+ return industry.activeOutcomes.includes(to);
+ }
+ }
+ return false;
+ };
 
-  const getLineStyles = (from: string, to: string) => {
-    const active = isPathActive(from, to);
-    if (!active) {
-      return {
-        stroke: "hsl(var(--foreground)/0.03)",
-        strokeWidth: 0.5,
-        strokeDasharray: "none",
-        className: ""
-      };
-    }
-    // Highlight colors based on integration color traits
-    let color = "stroke-primary";
-    if (viewMode === "integration" && INTEGRATIONS[selectedNode]) {
-      const traitColor = INTEGRATIONS[selectedNode].color;
-      if (traitColor.includes("blue")) color = "stroke-blue-500";else
-      if (traitColor.includes("orange")) color = "stroke-orange-500";else
-      if (traitColor.includes("emerald")) color = "stroke-emerald-500";else
-      if (traitColor.includes("red")) color = "stroke-red-500";else
-      if (traitColor.includes("indigo")) color = "stroke-indigo-500";else
-      if (traitColor.includes("purple")) color = "stroke-purple-500";else
-      if (traitColor.includes("sky")) color = "stroke-sky-500";else
-      if (traitColor.includes("violet")) color = "stroke-violet-500";
-    }
-    return {
-      stroke: "",
-      strokeWidth: 1.5,
-      strokeDasharray: "4 4",
-      className: `${color} animate-dash`
-    };
-  };
+ const getLineStyles = (from: string, to: string) => {
+ const active = isPathActive(from, to);
+ if (!active) {
+ return {
+ stroke: "hsl(var(--foreground)/0.03)",
+ strokeWidth: 0.5,
+ strokeDasharray: "none",
+ className: ""
+ };
+ }
+ // Highlight colors based on integration color traits
+ let color = "stroke-primary";
+ if (viewMode === "integration" && INTEGRATIONS[selectedNode]) {
+ const traitColor = INTEGRATIONS[selectedNode].color;
+ if (traitColor.includes("blue")) color = "stroke-blue-500";else
+ if (traitColor.includes("orange")) color = "stroke-orange-500";else
+ if (traitColor.includes("emerald")) color = "stroke-emerald-500";else
+ if (traitColor.includes("red")) color = "stroke-red-500";else
+ if (traitColor.includes("indigo")) color = "stroke-indigo-500";else
+ if (traitColor.includes("purple")) color = "stroke-purple-500";else
+ if (traitColor.includes("sky")) color = "stroke-sky-500";else
+ if (traitColor.includes("violet")) color = "stroke-violet-500";
+ }
+ return {
+ stroke: "",
+ strokeWidth: 1.5,
+ strokeDasharray: "4 4",
+ className: `${color} animate-dash`
+ };
+ };
 
-  // Node highlighting constraints
-  const isNodeDimmed = (key: string) => {
-    if (viewMode === "integration") {
-      return selectedNode !== key;
-    }
-    if (viewMode === "workflow") {
-      const workflow = WORKFLOWS.find((w) => w.key === activeWorkflow);
-      return workflow ? !workflow.path.includes(key) : false;
-    }
-    if (viewMode === "industry") {
-      const industry = INDUSTRIES.find((i) => i.key === activeIndustry);
-      return industry ? !industry.activeIntegrations.includes(key) : false;
-    }
-    return false;
-  };
+ // Node highlighting constraints
+ const isNodeDimmed = (key: string) => {
+ if (viewMode === "integration") {
+ return selectedNode !== key;
+ }
+ if (viewMode === "workflow") {
+ const workflow = WORKFLOWS.find((w) => w.key === activeWorkflow);
+ return workflow ? !workflow.path.includes(key) : false;
+ }
+ if (viewMode === "industry") {
+ const industry = INDUSTRIES.find((i) => i.key === activeIndustry);
+ return industry ? !industry.activeIntegrations.includes(key) : false;
+ }
+ return false;
+ };
 
-  const isOutcomeDimmed = (key: string) => {
-    if (viewMode === "integration") {
-      const nodeData = INTEGRATIONS[selectedNode];
-      return nodeData ? !nodeData.outlets.includes(key) : false;
-    }
-    if (viewMode === "workflow") {
-      const workflow = WORKFLOWS.find((w) => w.key === activeWorkflow);
-      return workflow ? !workflow.path.includes(key) : false;
-    }
-    if (viewMode === "industry") {
-      const industry = INDUSTRIES.find((i) => i.key === activeIndustry);
-      return industry ? !industry.activeOutcomes.includes(key) : false;
-    }
-    return false;
-  };
+ const isOutcomeDimmed = (key: string) => {
+ if (viewMode === "integration") {
+ const nodeData = INTEGRATIONS[selectedNode];
+ return nodeData ? !nodeData.outlets.includes(key) : false;
+ }
+ if (viewMode === "workflow") {
+ const workflow = WORKFLOWS.find((w) => w.key === activeWorkflow);
+ return workflow ? !workflow.path.includes(key) : false;
+ }
+ if (viewMode === "industry") {
+ const industry = INDUSTRIES.find((i) => i.key === activeIndustry);
+ return industry ? !industry.activeOutcomes.includes(key) : false;
+ }
+ return false;
+ };
 
-  /* ── Render ────────────────────────────────────────────────────────────────── */
+ /* ── Render ────────────────────────────────────────────────────────────────── */
 
-  return (
-    <div className="mx-auto max-w-6xl w-full select-none space-y-space-8">
+ return (
+ <div className="mx-auto max-w-6xl w-full select-none space-y-space-8">
  <style>{`
  @keyframes dashMove {
  to { stroke-dashoffset: -16; }
@@ -604,27 +604,27 @@ export function EcosystemViewer() {
  <div className="flex justify-center">
  <Badge variant="soft">
  {[
-          { id: "integration", label: "View By Integration", icon: <Network className="h-3.5 w-3.5" /> },
-          { id: "workflow", label: "View By Workflow", icon: <Zap className="h-3.5 w-3.5" /> },
-          { id: "industry", label: "View By Industry", icon: <Layers className="h-3.5 w-3.5" /> }].
-          map((mode) =>
-          <Button key={mode.id} onClick={() => handleViewModeChange(mode.id as ViewMode)}
-          className={`flex items-center gap-space-2 radius-md px-space-4 py-space-2 transition-all duration-base cursor-pointer text-caption ${viewMode === mode.id ?
-          "bg-card text-foreground border border-border/80 scale-102" :
-          "hover:text-foreground hover:bg-neutral-900/40"} font-medium`
-          }>
-            
+ { id: "integration", label: "View By Integration", icon: <Network className="h-3.5 w-3.5" /> },
+ { id: "workflow", label: "View By Workflow", icon: <Zap className="h-3.5 w-3.5" /> },
+ { id: "industry", label: "View By Industry", icon: <Layers className="h-3.5 w-3.5" /> }].
+ map((mode) =>
+ <Button key={mode.id} onClick={() => handleViewModeChange(mode.id as ViewMode)}
+ className={`flex items-center gap-space-2 radius-md px-space-4 py-space-2 transition-all duration-base cursor-pointer text-caption ${viewMode === mode.id ?
+ "bg-card text-foreground border-border/80 scale-102" :
+ "hover:text-foreground hover:bg-neutral-900/40"} font-medium`
+ }>
+ 
  {mode.icon}
  {mode.label}
  </Button>
-          )}
+ )}
  </Badge>
  </div>
 
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-6 items-stretch">
 
  {/* ━━ Left Column: Visual Network Canvas ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
- <div className="lg:col-span-7 relative flex flex-col justify-between border border-border/40 radius-xl bg-card/25 backdrop-blur-md p-space-5 overflow-hidden min-h-full">
+ <div className="lg:col-span-7 relative flex flex-col justify-between border-border/40 radius-xl bg-card/25 backdrop-blur-md p-space-5 overflow-hidden min-h-full">
  {/* Subtle Grid Dotted Background */}
  <div className="absolute inset-space-0 dot-grid opacity-60 pointer-events-none" />
  <div className="absolute inset-space-0 bg-gradient-to-tr from-primary/[0.03] via-transparent to-transparent pointer-events-none" />
@@ -635,40 +635,40 @@ export function EcosystemViewer() {
 
  {/* Workflow Selectors */}
  {viewMode === "workflow" &&
-            <div className="flex gap-space-2">
+ <div className="flex gap-space-2">
  {WORKFLOWS.map((wf) =>
-              <Button key={wf.key} onClick={() => setActiveWorkflow(wf.key)}
-              className={`text-caption px-space-3 py-space-1 radius-md border transition-all cursor-pointer ${activeWorkflow === wf.key ?
-              "bg-primary/10 text-primary border-primary/20" :
-              "bg-neutral-900/40 border-border/40 text-muted-foreground hover:text-foreground"} font-medium`
-              }>
-                
+ <Button key={wf.key} onClick={() => setActiveWorkflow(wf.key)}
+ className={`text-caption px-space-3 py-space-1 radius-md border transition-all cursor-pointer ${activeWorkflow === wf.key ?
+ "bg-primary/10 text-primary border-primary/20" :
+ "bg-neutral-900/40 border-border/40 text-muted-foreground hover:text-foreground"} font-medium`
+ }>
+ 
  {wf.name.split("")[0]} Flow
  </Button>
-              )}
+ )}
  </div>
-            }
+ }
 
  {/* Industry Selectors */}
  {viewMode === "industry" &&
-            <div className="flex gap-space-2 flex-wrap justify-end">
+ <div className="flex gap-space-2 flex-wrap justify-end">
  {INDUSTRIES.map((ind) =>
-              <Button key={ind.key} onClick={() => setActiveIndustry(ind.key)}
-              className={`text-caption px-space-3 py-space-1 radius-md border transition-all cursor-pointer ${activeIndustry === ind.key ?
-              "bg-primary/10 text-primary border-primary/20" :
-              "bg-neutral-900/40 border-border/40 text-muted-foreground hover:text-foreground"} font-medium`
-              }>
-                
+ <Button key={ind.key} onClick={() => setActiveIndustry(ind.key)}
+ className={`text-caption px-space-3 py-space-1 radius-md border transition-all cursor-pointer ${activeIndustry === ind.key ?
+ "bg-primary/10 text-primary border-primary/20" :
+ "bg-neutral-900/40 border-border/40 text-muted-foreground hover:text-foreground"} font-medium`
+ }>
+ 
  {ind.name.split("")[0]}
  </Button>
-              )}
+ )}
  </div>
-            }
+ }
 
  {/* Default Hint */}
  {viewMode === "integration" &&
-            <Badge>Click nodes to investigate</Badge>
-            }
+ <Badge>Click nodes to investigate</Badge>
+ }
  </div>
 
  {/* Canvas Wrapper */}
@@ -679,141 +679,141 @@ export function EcosystemViewer() {
 
  {/* Connections: Integrations to Center Hub (220, 180) */}
  {Object.keys(INTEGRATIONS).map((key) => {
-                const node = INTEGRATIONS[key];
-                const lineProps = getLineStyles(key, "Hub");
-                return (
-                  <path
-                    key={`line-${key}`}
-                    d={`M ${node.x} ${node.y} Q ${(node.x + 220) / 2} ${(node.y + 180) / 2} 220 180`}
-                    fill="none"
-                    stroke={lineProps.stroke || "currentColor"}
-                    strokeWidth={lineProps.strokeWidth}
-                    strokeDasharray={lineProps.strokeDasharray}
-                    className={lineProps.className} />);
+ const node = INTEGRATIONS[key];
+ const lineProps = getLineStyles(key, "Hub");
+ return (
+ <path
+ key={`line-${key}`}
+ d={`M ${node.x} ${node.y} Q ${(node.x + 220) / 2} ${(node.y + 180) / 2} 220 180`}
+ fill="none"
+ stroke={lineProps.stroke || "currentColor"}
+ strokeWidth={lineProps.strokeWidth}
+ strokeDasharray={lineProps.strokeDasharray}
+ className={lineProps.className} />);
 
 
-              })}
+ })}
 
  {/* Connections: Center Hub (220, 180) to Outcome Nodes */}
  {Object.keys(OUTCOMES).map((key) => {
-                const node = OUTCOMES[key];
-                const lineProps = getLineStyles("Hub", key);
-                return (
-                  <path
-                    key={`line-${key}`}
-                    d={`M 220 180 Q ${(220 + node.x) / 2} ${(180 + node.y) / 2} ${node.x} ${node.y}`}
-                    fill="none"
-                    stroke={lineProps.stroke || "currentColor"}
-                    strokeWidth={lineProps.strokeWidth}
-                    strokeDasharray={lineProps.strokeDasharray}
-                    className={lineProps.className} />);
+ const node = OUTCOMES[key];
+ const lineProps = getLineStyles("Hub", key);
+ return (
+ <path
+ key={`line-${key}`}
+ d={`M 220 180 Q ${(220 + node.x) / 2} ${(180 + node.y) / 2} ${node.x} ${node.y}`}
+ fill="none"
+ stroke={lineProps.stroke || "currentColor"}
+ strokeWidth={lineProps.strokeWidth}
+ strokeDasharray={lineProps.strokeDasharray}
+ className={lineProps.className} />);
 
 
-              })}
+ })}
  </svg>
 
  {/* Central Hub Node (Operator Core) */}
  <div
-              className="absolute -translate-x-space-1/2 -translate-y-space-1/2 z-30"
-              style={{
-                left: `${220 / 500 * 100}%`,
-                top: `${180 / 360 * 100}%`
-              }}>
-              
+ className="absolute -translate-x-space-1/2 -translate-y-space-1/2 z-30"
+ style={{
+ left: `${220 / 500 * 100}%`,
+ top: `${180 / 360 * 100}%`
+ }}>
+ 
  <div className="relative flex items-center justify-center">
  {/* Visual ripple pulse rings */}
- <div className="absolute w-24 h-24 radius-md border border-primary/20 bg-primary/[0.02] animate-pulse-ring pointer-events-none" />
- <div className="absolute w-32 h-32 radius-md border border-primary/10 bg-transparent animate-pulse pointer-events-none" />
+ <div className="absolute w-24 h-24 radius-md border-primary/20 bg-primary/[0.02] animate-pulse-ring pointer-events-none" />
+ <div className="absolute w-32 h-32 radius-md border-primary/10 bg-transparent animate-pulse pointer-events-none" />
 
  {/* Rotating accent border */}
- <div className="absolute w-20 h-20 radius-md border border-dashed border-primary/20 animate-spin [animation-duration:16s] pointer-events-none" />
+ <div className="absolute w-20 h-20 radius-md border-primary/20 animate-spin [animation-duration:16s] pointer-events-none" />
 
-  <div className="relative radius-full border border-primary/30 bg-card/90 backdrop-blur-md text-center transition-all duration-base w-20 h-20 flex flex-col justify-center items-center shadow-xl p-2 select-none overflow-hidden">
-  <div className="absolute inset-space-0 radius-full bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.15),transparent_70%)] pointer-events-none" />
-  <Image
-    src="/logo.png"
-    alt="Operator AI Core"
-    width={64}
-    height={64}
-    unoptimized
-    className="w-full h-full object-contain relative z-10 drop-shadow-md"
-  />
-  </div>
+ <div className="relative radius-full border-primary/30 bg-card/90 backdrop-blur-md text-center transition-all duration-base w-20 h-20 flex flex-col justify-center items-center shadow-xl p-2 select-none overflow-hidden">
+ <div className="absolute inset-space-0 radius-full bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.15),transparent_70%)] pointer-events-none" />
+ <Image
+ src="/logo.png"
+ alt="Operator AI Core"
+ width={64}
+ height={64}
+ unoptimized
+ className="w-full h-full object-contain relative z-10 drop-shadow-md"
+ />
+ </div>
  </div>
  </div>
 
  {/* Left/Top Integration Nodes */}
  {Object.keys(INTEGRATIONS).map((key) => {
-              const node = INTEGRATIONS[key];
-              const LogoComp = node.logo;
-              const isDimmed = isNodeDimmed(key);
-              const isActive = viewMode === "integration" && selectedNode === key ||
-              viewMode === "workflow" && WORKFLOWS.find((w) => w.key === activeWorkflow)?.path.includes(key) ||
-              viewMode === "industry" && INDUSTRIES.find((i) => i.key === activeIndustry)?.activeIntegrations.includes(key);
+ const node = INTEGRATIONS[key];
+ const LogoComp = node.logo;
+ const isDimmed = isNodeDimmed(key);
+ const isActive = viewMode === "integration" && selectedNode === key ||
+ viewMode === "workflow" && WORKFLOWS.find((w) => w.key === activeWorkflow)?.path.includes(key) ||
+ viewMode === "industry" && INDUSTRIES.find((i) => i.key === activeIndustry)?.activeIntegrations.includes(key);
 
-              let activeBorderClass = "border-primary bg-primary/10 scale-110 ring-2 ring-primary/10 ";
-              if (isActive) {
-                if (node.color.includes("warning")) {
-                  activeBorderClass = "border-warning-500 bg-warning-500/10 scale-110 ring-2 ring-warning-500/15 ";
-                } else if (node.color.includes("success")) {
-                  activeBorderClass = "border-success-500 bg-success-500/10 scale-110 ring-2 ring-success-500/15 ";
-                } else if (node.color.includes("destructive") || node.color.includes("error")) {
-                  activeBorderClass = "border-error-500 bg-error-500/10 scale-110 ring-2 ring-error-500/15 ";
-                }
-              }
+ let activeBorderClass = "border-primary bg-primary/10 scale-110 ring-2 ring-primary/10 ";
+ if (isActive) {
+ if (node.color.includes("warning")) {
+ activeBorderClass = "border-warning-500 bg-warning-500/10 scale-110 ring-2 ring-warning-500/15 ";
+ } else if (node.color.includes("success")) {
+ activeBorderClass = "border-success-500 bg-success-500/10 scale-110 ring-2 ring-success-500/15 ";
+ } else if (node.color.includes("destructive") || node.color.includes("error")) {
+ activeBorderClass = "border-error-500 bg-error-500/10 scale-110 ring-2 ring-error-500/15 ";
+ }
+ }
 
-              return (
-                <div
-                  key={key}
-                  className="absolute z-40 transition-all duration-base cursor-pointer -translate-x-space-1/2 -translate-y-space-1/2"
-                  style={{
-                    left: `${node.x / 500 * 100}%`,
-                    top: `${node.y / 360 * 100}%`
-                  }}
-                  onClick={() => {
-                    if (viewMode === "integration") setSelectedNode(key);
-                  }} tabIndex={0} onKeyDown={() => {}}>
-                  
+ return (
  <div
-                    className={`radius-md border p-space-2 bg-neutral-900/90 transition-all duration-base flex items-center justify-center w-10 h-10 ${isActive ?
-                    activeBorderClass :
-                    isDimmed ?
-                    "border-border/30 opacity-30 scale-95" :
-                    "border-border/80 hover:border-foreground/30 hover:scale-105"}`
-                    }
-                    title={node.name}>
-                    
+ key={key}
+ className="absolute z-40 transition-all duration-base cursor-pointer -translate-x-space-1/2 -translate-y-space-1/2"
+ style={{
+ left: `${node.x / 500 * 100}%`,
+ top: `${node.y / 360 * 100}%`
+ }}
+ onClick={() => {
+ if (viewMode === "integration") setSelectedNode(key);
+ }} tabIndex={0} onKeyDown={() => {}}>
+ 
+ <div
+ className={`radius-md border p-space-2 bg-neutral-900/90 transition-all duration-base flex items-center justify-center w-10 h-10 ${isActive ?
+ activeBorderClass :
+ isDimmed ?
+ "border-border/30 opacity-30 scale-95" :
+ "border-border/80 hover:border-foreground/30 hover:scale-105"}`
+ }
+ title={node.name}>
+ 
  <LogoComp className={`w-5 h-5 transition-colors ${isDimmed ? "opacity-30" : "opacity-100"}`} />
  </div>
  </div>);
 
-            })}
+ })}
 
  {/* Right Outcome Nodes */}
  {Object.keys(OUTCOMES).map((key) => {
-              const node = OUTCOMES[key];
-              const isDimmed = isOutcomeDimmed(key);
-              const isActive = viewMode === "integration" && INTEGRATIONS[selectedNode]?.outlets.includes(key) ||
-              viewMode === "workflow" && WORKFLOWS.find((w) => w.key === activeWorkflow)?.path.includes(key) ||
-              viewMode === "industry" && INDUSTRIES.find((i) => i.key === activeIndustry)?.activeOutcomes.includes(key);
+ const node = OUTCOMES[key];
+ const isDimmed = isOutcomeDimmed(key);
+ const isActive = viewMode === "integration" && INTEGRATIONS[selectedNode]?.outlets.includes(key) ||
+ viewMode === "workflow" && WORKFLOWS.find((w) => w.key === activeWorkflow)?.path.includes(key) ||
+ viewMode === "industry" && INDUSTRIES.find((i) => i.key === activeIndustry)?.activeOutcomes.includes(key);
 
-              return (
-                <div
-                  key={key}
-                  className="absolute z-40 transition-all duration-base pointer-events-none -translate-x-space-1/2 -translate-y-space-1/2"
-                  style={{
-                    left: `${node.x / 500 * 100}%`,
-                    top: `${node.y / 360 * 100}%`
-                  }}>
-                  
+ return (
  <div
-                    className={`radius-lg border px-space-3 py-space-2 bg-neutral-900/90 backdrop-blur-md transition-all duration-base text-center flex flex-col justify-center items-center max-w-32 ${isActive ?
-                    "border-success-500/40 bg-success-500/[0.08] ring-1 ring-success-500/20 scale-105 " :
-                    isDimmed ?
-                    "border-border/30 opacity-30 scale-95" :
-                    "border-border/80 hover:border-foreground/20"}`
-                    }>
-                    
+ key={key}
+ className="absolute z-40 transition-all duration-base pointer-events-none -translate-x-space-1/2 -translate-y-space-1/2"
+ style={{
+ left: `${node.x / 500 * 100}%`,
+ top: `${node.y / 360 * 100}%`
+ }}>
+ 
+ <div
+ className={`radius-lg border px-space-3 py-space-2 bg-neutral-900/90 backdrop-blur-md transition-all duration-base text-center flex flex-col justify-center items-center max-w-32 ${isActive ?
+ "border-success-500/40 bg-success-500/[0.08] ring-1 ring-success-500/20 scale-105 " :
+ isDimmed ?
+ "border-border/30 opacity-30 scale-95" :
+ "border-border/80 hover:border-foreground/20"}`
+ }>
+ 
  <span className={`text-caption uppercase tracking-wider transition-colors ${isActive ? "text-success-500" : "text-foreground/80"} font-semibold`}>
  {node.name}
  </span>
@@ -823,7 +823,7 @@ export function EcosystemViewer() {
  </div>
  </div>);
 
-            })}
+ })}
  </div>
 
  {/* Bottom Indicators bar */}
@@ -839,19 +839,19 @@ export function EcosystemViewer() {
  </div>
 
  {/* ━━ Right Column: Interactive Details Sidepanel ━━━━━━━━━━━━━━━━━━━━ */}
- <div className="lg:col-span-5 radius-xl border border-[hsl(var(--foreground)/0.06)] bg-card/40 backdrop-blur-md p-space-6 flex flex-col justify-between relative overflow-hidden min-h-full">
+ <div className="lg:col-span-5 radius-xl border-[hsl(var(--foreground)/0.06)] bg-card/40 backdrop-blur-md p-space-6 flex flex-col justify-between relative overflow-hidden min-h-full">
 
  {/* Subtle top light gradient glow */}
  <div className="absolute top-space-0 right-space-0 w-80 h-48 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.04),transparent_60%)] pointer-events-none" />
 
  {/* VIEW MODE: Integration Detail */}
  {viewMode === "integration" &&
-          <div className="space-y-space-5 flex-1 flex flex-col justify-between">
+ <div className="space-y-space-5 flex-1 flex flex-col justify-between">
 
  {/* Header Info */}
  <div className="space-y-space-3">
  <div className="flex items-center gap-space-3">
- <div className="radius-md border border-border bg-card p-space-2 w-10 h-10 flex items-center justify-center">
+ <div className="radius-md border-border bg-card p-space-2 w-10 h-10 flex items-center justify-center">
  {React.createElement(INTEGRATIONS[selectedNode].logo, { className: "w-5 h-5" })}
  </div>
  <div>
@@ -870,7 +870,7 @@ export function EcosystemViewer() {
  <span className="text-caption uppercase tracking-wider text-muted-foreground block font-medium">Diagnostic Data Path</span>
  <div className="flex flex-wrap items-center gap-x-space-3 gap-y-space-3 mt-space-1 text-caption">
  {INTEGRATIONS[selectedNode].pathTrace.map((step, idx, arr) =>
-                <React.Fragment key={step}>
+ <React.Fragment key={step}>
  <div className="flex items-center gap-space-2">
  {/* Micro-pulse dot for active step */}
  <span className="relative flex h-2 w-2">
@@ -878,21 +878,21 @@ export function EcosystemViewer() {
  <span className={`relative inline-flex radius-md h-2 w-2 ${idx === 0 ? "bg-primary" : idx === arr.length - 1 ? "bg-success-500" : "bg-neutral-500"}`}></span>
  </span>
  <span className={`px-space-3 py-space-1 radius-md ${idx === 0 ?
-                    "bg-primary/10 text-primary border border-primary/20" :
-                    idx === arr.length - 1 ?
-                    "bg-success-500/10 text-success-500 border border-success-500/20" :
-                    "bg-neutral-900/60 border border-border/40 text-foreground/80"}`
-                    }>
+ "bg-primary/10 text-primary border-primary/20" :
+ idx === arr.length - 1 ?
+ "bg-success-500/10 text-success-500 border-success-500/20" :
+ "bg-neutral-900/60 border-border/40 text-foreground/80"}`
+ }>
  {step}
  </span>
  </div>
  {idx < arr.length - 1 &&
-                  <div className="h-px w-6 bg-border/20 relative flex items-center justify-center">
+ <div className="h-px w-6 bg-border/20 relative flex items-center justify-center">
  <div className="absolute w-1 h-1 radius-md bg-border/40 animate-pulse" />
  </div>
-                  }
+ }
  </React.Fragment>
-                )}
+ )}
  </div>
  </div>
 
@@ -902,15 +902,15 @@ export function EcosystemViewer() {
  <span className="text-caption uppercase tracking-wider text-muted-foreground block font-medium">Integration Capabilities</span>
  <ul className="space-y-space-2">
  {INTEGRATIONS[selectedNode].capabilities.map((cap) =>
-                  <li key={cap} className="flex items-center gap-space-2 text-caption text-foreground/80">
+ <li key={cap} className="flex items-center gap-space-2 text-caption text-foreground/80">
  <Check className="h-3.5 w-3.5 text-primary shrink-0" />
  {cap}
  </li>
-                  )}
+ )}
  </ul>
  </div>
 
- <div className="bg-primary/5 border-l-space-2 border-primary border-y border-r border-border/20 radius-lg p-space-4 space-y-space-2">
+ <div className="bg-primary/5 border-l border-primary border-y border-r border-border/20 radius-lg p-space-4 space-y-space-2">
  <span className="text-caption uppercase tracking-wider text-primary block font-medium">Business Outcomes</span>
  <p className="text-caption text-foreground/90 leading-relaxed font-medium">{INTEGRATIONS[selectedNode].benefits}</p>
  <p className="text-caption text-muted-foreground mt-space-1">{INTEGRATIONS[selectedNode].impact}</p>
@@ -924,11 +924,11 @@ export function EcosystemViewer() {
  </div>
 
  </div>
-          }
+ }
 
  {/* VIEW MODE: Workflow Detail */}
  {viewMode === "workflow" &&
-          <div className="space-y-space-5 flex-1 flex flex-col justify-between">
+ <div className="space-y-space-5 flex-1 flex flex-col justify-between">
 
  {/* Header Info */}
  <div className="space-y-space-3">
@@ -949,34 +949,34 @@ export function EcosystemViewer() {
  <span className="text-caption uppercase tracking-wider text-muted-foreground block font-medium">Data Ingestion Pipeline</span>
  <div className="flex flex-wrap items-center gap-x-space-3 gap-y-space-3 mt-space-1 text-caption">
  {WORKFLOWS.find((w) => w.key === activeWorkflow)?.pathLabels.map((step, idx, arr) =>
-                <React.Fragment key={step}>
+ <React.Fragment key={step}>
  <div className="flex items-center gap-space-2">
  <span className="relative flex h-2 w-2">
  <span className={`animate-ping absolute inline-flex h-full w-full radius-md opacity-75 ${idx === 0 ? "bg-primary" : idx === arr.length - 1 ? "bg-success-500" : "bg-neutral-400"}`}></span>
  <span className={`relative inline-flex radius-md h-2 w-2 ${idx === 0 ? "bg-primary" : idx === arr.length - 1 ? "bg-success-500" : "bg-neutral-500"}`}></span>
  </span>
  <span className={`px-space-3 py-space-1 radius-md ${idx === 0 ?
-                    "bg-primary/10 text-primary border border-primary/20" :
-                    idx === arr.length - 1 ?
-                    "bg-success-500/10 text-success-500 border border-success-500/20" :
-                    "bg-neutral-900/60 border border-border/40 text-foreground/80"}`
-                    }>
+ "bg-primary/10 text-primary border-primary/20" :
+ idx === arr.length - 1 ?
+ "bg-success-500/10 text-success-500 border-success-500/20" :
+ "bg-neutral-900/60 border-border/40 text-foreground/80"}`
+ }>
  {step}
  </span>
  </div>
  {idx < arr.length - 1 &&
-                  <div className="h-px w-6 bg-border/20 relative flex items-center justify-center">
+ <div className="h-px w-6 bg-border/20 relative flex items-center justify-center">
  <div className="absolute w-1 h-1 radius-md bg-border/40 animate-pulse" />
  </div>
-                  }
+ }
  </React.Fragment>
-                )}
+ )}
  </div>
  </div>
 
  {/* Benefits & Impact */}
  <div className="space-y-space-4 flex-1">
- <div className="bg-success-500/5 border-l-space-2 border-success-500 border-y border-r border-border/20 radius-lg p-space-4 space-y-space-2">
+ <div className="bg-success-500/5 border-l border-success-500 border-y border-r border-border/20 radius-lg p-space-4 space-y-space-2">
  <span className="text-caption uppercase tracking-wider text-success-500 block font-medium">Efficiency Impact</span>
  <p className="text-caption text-foreground/90 leading-relaxed font-medium">
  {WORKFLOWS.find((w) => w.key === activeWorkflow)?.benefits}
@@ -990,7 +990,7 @@ export function EcosystemViewer() {
  <span className="text-caption uppercase tracking-wider text-muted-foreground block font-medium">Sequence Use Cases</span>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-space-3">
  {WORKFLOWS.find((w) => w.key === activeWorkflow)?.useCases.map((use, idx) =>
-                  <div key={idx} className="flex items-start gap-space-3 p-space-3 bg-neutral-900/40 backdrop-blur-md border border-border/20 radius-lg hover:border-primary/30 transition-all duration-base">
+ <div key={idx} className="flex items-start gap-space-3 p-space-3 bg-neutral-900/40 backdrop-blur-md border-border/20 radius-lg hover:border-primary/30 transition-all duration-base">
  <Badge className="h-5 w-5 mt-space-1">
  {idx + 1}
  </Badge>
@@ -998,17 +998,17 @@ export function EcosystemViewer() {
  {use}
  </span>
  </div>
-                  )}
+ )}
  </div>
  </div>
  </div>
 
  </div>
-          }
+ }
 
  {/* VIEW MODE: Industry Detail */}
  {viewMode === "industry" &&
-          <div className="space-y-space-5 flex-1 flex flex-col justify-between">
+ <div className="space-y-space-5 flex-1 flex flex-col justify-between">
 
  {/* Header Info */}
  <div className="space-y-space-3">
@@ -1030,27 +1030,27 @@ export function EcosystemViewer() {
  <span className="text-caption uppercase tracking-wider text-muted-foreground block font-medium">Active Integrations</span>
  <div className="flex flex-wrap gap-space-2">
  {INDUSTRIES.find((i) => i.key === activeIndustry)?.activeIntegrations.map((item) =>
-                  <Badge key={item}>
+ <Badge key={item}>
  {item}
  </Badge>
-                  )}
+ )}
  </div>
  </div>
  <div className="space-y-space-2 mt-space-3">
  <span className="text-caption uppercase tracking-wider text-muted-foreground block font-medium">Target Outcomes</span>
  <div className="flex flex-wrap gap-space-2">
  {INDUSTRIES.find((i) => i.key === activeIndustry)?.activeOutcomes.map((item) =>
-                  <Badge key={item} variant="success">
+ <Badge key={item} variant="success">
  {item}
  </Badge>
-                  )}
+ )}
  </div>
  </div>
  </div>
 
  {/* Outcomes & Business Impact */}
  <div className="space-y-space-4 flex-1">
- <div className="bg-primary/5 border-l-space-2 border-primary border-y border-r border-border/20 radius-lg p-space-4 space-y-space-2">
+ <div className="bg-primary/5 border-l border-primary border-y border-r border-border/20 radius-lg p-space-4 space-y-space-2">
  <span className="text-caption uppercase tracking-wider text-primary block font-medium">Business Conversion Impact</span>
  <p className="text-caption text-foreground/90 leading-relaxed font-medium">
  {INDUSTRIES.find((i) => i.key === activeIndustry)?.businessImpact}
@@ -1062,14 +1062,14 @@ export function EcosystemViewer() {
 
  <div className="space-y-space-2">
  <span className="text-caption uppercase tracking-wider text-muted-foreground block font-medium">Real Dialogue Preview</span>
- <div className="text-caption text-foreground/80 font-mono italic leading-relaxed bg-neutral-900/40 backdrop-blur-md border border-border/20 radius-lg p-space-3">
+ <div className="text-caption text-foreground/80 font-mono italic leading-relaxed bg-neutral-900/40 backdrop-blur-md border-border/20 radius-lg p-space-3">
  {INDUSTRIES.find((i) => i.key === activeIndustry)?.dialogExample}
  </div>
  </div>
  </div>
 
  </div>
-          }
+ }
 
  </div>
 
@@ -1078,12 +1078,12 @@ export function EcosystemViewer() {
  {/* Trust & Certifications Indicators below ecosystem */}
  <div className="grid grid-cols-2 md:grid-cols-4 gap-space-4 pt-space-4 border-t border-[hsl(var(--foreground)/0.06)]">
  {[
-        { label: "100+ Integrations", desc: "Native API connectivity", icon: <Network className="h-4 w-4 text-primary transition-transform duration-base" /> },
-        { label: "SOC2 Compliance Ready", desc: "Role based access limits", icon: <Shield className="h-4 w-4 text-success-500 transition-transform duration-base" /> },
-        { label: "Real-time Sync", desc: "No booking collisions", icon: <RefreshCw className="h-4 w-4 text-primary-500 transition-transform duration-base" /> },
-        { label: "Encrypted Data Rest/Transit", desc: "Completely isolated DB", icon: <Shield className="h-4 w-4 text-primary transition-transform duration-base" /> }].
-        map((indicator, idx) =>
-        <div key={idx} className="group radius-lg border border-border/20 bg-neutral-900/40 backdrop-blur-md p-space-4 flex items-center gap-space-3 hover:border-primary/30 hover:bg-neutral-900/60 transition-all duration-base">
+ { label: "100+ Integrations", desc: "Native API connectivity", icon: <Network className="h-4 w-4 text-primary transition-transform duration-base" /> },
+ { label: "SOC2 Compliance Ready", desc: "Role based access limits", icon: <Shield className="h-4 w-4 text-success-500 transition-transform duration-base" /> },
+ { label: "Real-time Sync", desc: "No booking collisions", icon: <RefreshCw className="h-4 w-4 text-primary-500 transition-transform duration-base" /> },
+ { label: "Encrypted Data Rest/Transit", desc: "Completely isolated DB", icon: <Shield className="h-4 w-4 text-primary transition-transform duration-base" /> }].
+ map((indicator, idx) =>
+ <div key={idx} className="group radius-lg border-border/20 bg-neutral-900/40 backdrop-blur-md p-space-4 flex items-center gap-space-3 hover:border-primary/30 hover:bg-neutral-900/60 transition-all duration-base">
  <div className="radius-md bg-neutral-800/80 p-space-2 shrink-0 group-hover:bg-primary/5 transition-colors duration-base">
  <div className="transform transition-transform duration-base group-hover:scale-110 group-hover:rotate-6">
  {indicator.icon}

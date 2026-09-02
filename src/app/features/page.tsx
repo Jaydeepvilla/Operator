@@ -205,7 +205,7 @@ export default function FeaturesPage() {
  <div className="absolute top-space-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-screen bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.08),transparent_70%)] pointer-events-none" />
 
  <div className="relative mx-auto max-w-5xl px-space-6 flex flex-col items-center mt-space-12 text-center">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Sparkles className="h-3 w-3 text-primary" />
  <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Capabilities Overview</span>
  </div>
@@ -236,7 +236,7 @@ export default function FeaturesPage() {
  </div>
 
  {/* Interactive Hero Waveform Visualizer */}
- <div className="w-full max-w-4xl p-space-6 md:p-space-8 rounded-3xl border border-[hsl(var(--foreground)/0.06)] bg-card/35 backdrop-blur-md relative overflow-hidden shadow-lg">
+ <div className="w-full max-w-4xl p-space-6 md:p-space-8 rounded-3xl border-[hsl(var(--foreground)/0.06)] bg-card/35 backdrop-blur-md relative overflow-hidden shadow-lg">
  <div className="absolute inset-space-0 dot-grid opacity-10 pointer-events-none" />
  <div className="relative z-10">
  <VoiceAiFlow />
@@ -254,7 +254,7 @@ export default function FeaturesPage() {
 <ScrollReveal stagger>
 
  <div className="text-center mb-space-12">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Workflow className="h-3.5 w-3.5 text-primary" />
  <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Interactive Simulation</span>
  </div>
@@ -326,7 +326,7 @@ export default function FeaturesPage() {
  <NativeButton
  type="button"
  onClick={() => setTourPaused(!tourPaused)}
- className="mt-space-2 border border-[hsl(var(--foreground)/0.06)] bg-card/20 hover:bg-card/40 hover:border-[hsl(var(--foreground)/0.15)] text-caption py-space-2.5 px-space-4 radius-lg flex items-center justify-center gap-space-2 transition-all cursor-pointer font-semibold text-muted-foreground select-none"
+ className="mt-space-2 border-[hsl(var(--foreground)/0.06)] bg-card/20 hover:bg-card/40 hover:border-[hsl(var(--foreground)/0.15)] text-caption py-space-2.5 px-space-4 radius-lg flex items-center justify-center gap-space-2 transition-all cursor-pointer font-semibold text-muted-foreground select-none"
  >
  {tourPaused ? (
  <>
@@ -341,16 +341,16 @@ export default function FeaturesPage() {
  </div>
 
  {/* Right: Premium Visualization Preview Window */}
- <div className="lg:col-span-7 rounded-[24px] border border-[hsl(var(--foreground)/0.08)] bg-card shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-space-8 flex flex-col justify-between relative overflow-hidden min-h-[420px] ring-1 ring-white/50 ">
+ <div className="lg:col-span-7 rounded-[24px] border-[hsl(var(--foreground)/0.08)] bg-card shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-space-8 flex flex-col justify-between relative overflow-hidden min-h-[420px] ring-1 ring-white/50 ">
  <div className="absolute inset-space-0 dot-grid opacity-[0.03] pointer-events-none" />
  <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[hsl(var(--foreground)/0.1)] to-transparent" />
 
  {/* Browser Chrome Header */}
  <div className="flex items-center justify-between border-b border-[hsl(var(--foreground)/0.06)] pb-space-4 mb-space-8 relative z-10">
  <div className="flex items-center gap-space-1.5">
- <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f56] border border-[#ff5f56]/20 shadow-sm" />
- <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e] border border-[#ffbd2e]/20 shadow-sm" />
- <span className="h-2.5 w-2.5 rounded-full bg-[#27c93f] border border-[#27c93f]/20 shadow-sm" />
+ <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f56] border-[#ff5f56]/20 shadow-sm" />
+ <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e] border-[#ffbd2e]/20 shadow-sm" />
+ <span className="h-2.5 w-2.5 rounded-full bg-[#27c93f] border-[#27c93f]/20 shadow-sm" />
  </div>
  <div className="text-[10px] font-mono tracking-widest text-muted-foreground/50 uppercase font-semibold">
  Operator AI Agent Sandbox
@@ -362,7 +362,7 @@ export default function FeaturesPage() {
  <div className="flex-1 flex flex-col justify-center relative z-10">
  {activeTour === 0 && (
  <div className="space-y-space-4 text-center max-w-sm mx-auto py-space-6">
- <div className="h-16 w-16 mx-auto rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary animate-bounce">
+ <div className="h-16 w-16 mx-auto rounded-full bg-primary/10 border-primary/20 flex items-center justify-center text-primary animate-bounce">
  <Phone className="h-7 w-7" />
  </div>
  <div className="space-y-space-1.5">
@@ -385,7 +385,7 @@ export default function FeaturesPage() {
  </div>
  <span className="text-[10px] font-mono text-muted-foreground/60 font-medium">Customer (Voice)</span>
  </div>
- <div className="bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.06)] p-space-3.5 radius-xl text-caption leading-relaxed text-foreground">
+ <div className="bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.06)] p-space-3.5 radius-xl text-caption leading-relaxed text-foreground">
  "Hi! I chipped my front tooth eating lunch, do you have any emergency availability tomorrow morning?"
  </div>
 
@@ -403,12 +403,12 @@ export default function FeaturesPage() {
 
  {activeTour === 2 && (
  <div className="space-y-space-3.5 max-w-sm mx-auto w-full text-center py-space-6">
- <div className="h-16 w-16 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
+ <div className="h-16 w-16 mx-auto rounded-full bg-emerald-500/10 border-emerald-500/20 flex items-center justify-center text-emerald-500">
  <Calendar className="h-7 w-7 animate-pulse" />
  </div>
  <div className="space-y-space-2">
  <p className="text-body-sm font-semibold text-foreground">Active Slot Matcher</p>
- <div className="inline-flex gap-space-2 items-center justify-center bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.06)] p-space-2.5 radius-lg">
+ <div className="inline-flex gap-space-2 items-center justify-center bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.06)] p-space-2.5 radius-lg">
  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
  <span className="text-caption font-mono text-foreground font-bold">Matching: Tomorrow at 10:00 AM</span>
  </div>
@@ -420,7 +420,7 @@ export default function FeaturesPage() {
  )}
 
  {activeTour === 3 && (
- <div className="bg-card border border-[hsl(var(--foreground)/0.06)] p-space-5 radius-xl max-w-md mx-auto w-full">
+ <div className="bg-card border-[hsl(var(--foreground)/0.06)] p-space-5 radius-xl max-w-md mx-auto w-full">
  <div className="flex items-center justify-between border-b border-[hsl(var(--foreground)/0.05)] pb-space-3 mb-space-3">
  <span className="text-caption font-bold text-foreground">Google Calendar Matrix</span>
  <span className="text-[9px] uppercase font-mono tracking-widest text-emerald-500 bg-emerald-500/10 px-space-2 py-space-0.5 rounded-full font-bold">Confirmed</span>
@@ -443,7 +443,7 @@ export default function FeaturesPage() {
  )}
 
  {activeTour === 4 && (
- <div className="max-w-xs mx-auto border border-border-muted bg-card/60 p-space-4.5 radius-2xl relative shadow-md">
+ <div className="max-w-xs mx-auto border-border-muted bg-card/60 p-space-4.5 radius-2xl relative shadow-md">
  <div className="flex items-center gap-space-2 mb-space-3">
  <div className="h-6 w-6 rounded-md bg-emerald-500/10 flex items-center justify-center text-emerald-500">
  <MessageSquare className="h-3.5 w-3.5" />
@@ -451,14 +451,14 @@ export default function FeaturesPage() {
  <span className="text-[10px] font-mono text-muted-foreground">Immediate SMS Alert</span>
  </div>
  <p className="text-body-sm font-semibold text-foreground mb-space-1">SMS Confirmed</p>
- <p className="text-caption text-muted-foreground leading-relaxed bg-[hsl(var(--foreground)/0.02)] p-space-3 rounded-lg border border-[hsl(var(--foreground)/0.04)] font-mono">
+ <p className="text-caption text-muted-foreground leading-relaxed bg-[hsl(var(--foreground)/0.02)] p-space-3 rounded-lg border-[hsl(var(--foreground)/0.04)] font-mono">
  "Bright Smile: Your chipped tooth cleaning with Dr. Mitchell is confirmed for tomorrow at 10:00 AM. Click here to confirm insurance copy details: link.operator.ai/c/283"
  </p>
  </div>
  )}
 
  {activeTour === 5 && (
- <div className="bg-card border border-[hsl(var(--foreground)/0.06)] p-space-5 radius-xl max-w-sm mx-auto w-full">
+ <div className="bg-card border-[hsl(var(--foreground)/0.06)] p-space-5 radius-xl max-w-sm mx-auto w-full">
  <div className="flex items-center justify-between border-b border-[hsl(var(--foreground)/0.05)] pb-space-3 mb-space-4">
  <span className="text-caption font-bold text-foreground font-mono">Stripe Checkout Gate</span>
  <span className="text-[9px] uppercase font-mono tracking-widest text-primary bg-primary/10 px-space-2 py-space-0.5 rounded-full font-bold">Verified</span>
@@ -471,11 +471,11 @@ export default function FeaturesPage() {
  </div>
  <p className="text-body-sm font-mono text-foreground font-bold">$50.00</p>
  </div>
- <div className="bg-[hsl(var(--foreground)/0.02)] p-space-3 border border-[hsl(var(--foreground)/0.04)] radius-lg flex items-center justify-between text-[11px] font-mono">
+ <div className="bg-[hsl(var(--foreground)/0.02)] p-space-3 border-[hsl(var(--foreground)/0.04)] radius-lg flex items-center justify-between text-[11px] font-mono">
  <span className="text-muted-foreground">Card Authorized:</span>
  <span className="text-foreground">Visa Ending in 4242</span>
  </div>
- <div className="text-center text-caption text-emerald-500 font-bold bg-emerald-500/10 py-space-1.5 radius-lg border border-emerald-500/20 font-mono">
+ <div className="text-center text-caption text-emerald-500 font-bold bg-emerald-500/10 py-space-1.5 radius-lg border-emerald-500/20 font-mono">
  ✓ SECURE PAYMENT AUTHORIZED
  </div>
  </div>
@@ -483,7 +483,7 @@ export default function FeaturesPage() {
  )}
 
  {activeTour === 6 && (
- <div className="bg-card border border-[hsl(var(--foreground)/0.06)] p-space-5 radius-xl max-w-md mx-auto w-full">
+ <div className="bg-card border-[hsl(var(--foreground)/0.06)] p-space-5 radius-xl max-w-md mx-auto w-full">
  <div className="flex items-center gap-space-2.5 border-b border-[hsl(var(--foreground)/0.05)] pb-space-3 mb-space-4">
  <div className="h-6 w-6 rounded-md bg-indigo-500/10 flex items-center justify-center text-indigo-500">
  <Database className="h-3.5 w-3.5" />
@@ -512,7 +512,7 @@ export default function FeaturesPage() {
  )}
 
  {activeTour === 7 && (
- <div className="bg-card border border-[hsl(var(--foreground)/0.06)] p-space-5 radius-xl max-w-md mx-auto w-full">
+ <div className="bg-card border-[hsl(var(--foreground)/0.06)] p-space-5 radius-xl max-w-md mx-auto w-full">
  <div className="flex items-center justify-between border-b border-[hsl(var(--foreground)/0.05)] pb-space-3 mb-space-3">
  <span className="text-caption font-bold text-foreground font-mono">Mail Client Sandbox</span>
  <span className="text-[10px] text-muted-foreground/60 font-mono">10:01 PM</span>
@@ -552,7 +552,7 @@ export default function FeaturesPage() {
 <ScrollReveal stagger>
 
  <div className="text-center mb-space-16">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Activity className="h-3.5 w-3.5 text-primary" />
  <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Full Toolkit</span>
  </div>
@@ -565,7 +565,7 @@ export default function FeaturesPage() {
 
  <div className="grid grid-cols-1 md:grid-cols-12 gap-space-6">
  {/* Core Capability 1: Voice AI (Column Span 7) */}
- <div className="md:col-span-7 rounded-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
+ <div className="md:col-span-7 rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
  <div>
  <div className="h-8 flex items-center justify-start mb-space-4">
  <Mic className="h-6 w-6 text-primary" />
@@ -577,7 +577,7 @@ export default function FeaturesPage() {
  </div>
 
  {/* Sub-Visualizer */}
- <div className="bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--foreground)/0.04)] p-space-4.5 radius-xl">
+ <div className="bg-[hsl(var(--foreground)/0.02)] border-[hsl(var(--foreground)/0.04)] p-space-4.5 radius-xl">
  <div className="flex items-center justify-between mb-space-2.5">
  <span className="text-[10px] font-mono text-muted-foreground uppercase">Response Latency</span>
  <span className="text-caption font-mono text-emerald-500 font-bold">&lt; 900ms</span>
@@ -589,7 +589,7 @@ export default function FeaturesPage() {
  </div>
 
  {/* Core Capability 2: Omnichannel (Column Span 5) */}
- <div className="md:col-span-5 rounded-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
+ <div className="md:col-span-5 rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
  <div>
  <div className="h-8 flex items-center justify-start mb-space-4">
  <MessageSquare className="h-6 w-6 text-indigo-500" />
@@ -602,7 +602,7 @@ export default function FeaturesPage() {
 
  <div className="flex gap-space-1.5">
  {["WhatsApp", "Web", "SMS", "Instagram"].map((chan) => (
- <span key={chan} className="text-[9px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-space-2.5 py-space-1 rounded-full font-semibold font-mono">
+ <span key={chan} className="text-[9px] bg-indigo-500/10 text-indigo-400 border-indigo-500/20 px-space-2.5 py-space-1 rounded-full font-semibold font-mono">
  {chan}
  </span>
  ))}
@@ -610,7 +610,7 @@ export default function FeaturesPage() {
  </div>
 
  {/* Core Capability 3: Booking (Column Span 5) */}
- <div className="md:col-span-5 rounded-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
+ <div className="md:col-span-5 rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
  <div>
  <div className="h-8 flex items-center justify-start mb-space-4">
  <Calendar className="h-6 w-6 text-emerald-500" />
@@ -621,14 +621,14 @@ export default function FeaturesPage() {
  </p>
  </div>
 
- <div className="bg-[hsl(var(--foreground)/0.02)] p-space-3.5 border border-[hsl(var(--foreground)/0.04)] radius-xl flex items-center justify-between text-caption font-mono">
+ <div className="bg-[hsl(var(--foreground)/0.02)] p-space-3.5 border-[hsl(var(--foreground)/0.04)] radius-xl flex items-center justify-between text-caption font-mono">
  <span className="text-muted-foreground">Collision check status:</span>
  <span className="text-emerald-500 font-bold">100% Conflict-Free</span>
  </div>
  </div>
 
  {/* Core Capability 4: Qualification (Column Span 7) */}
- <div className="md:col-span-7 rounded-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
+ <div className="md:col-span-7 rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
  <div>
  <div className="h-8 flex items-center justify-start mb-space-4">
  <UserCheck className="h-6 w-6 text-primary" />
@@ -639,7 +639,7 @@ export default function FeaturesPage() {
  </p>
  </div>
 
- <div className="bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--foreground)/0.04)] p-space-4.5 radius-xl flex items-center gap-space-4">
+ <div className="bg-[hsl(var(--foreground)/0.02)] border-[hsl(var(--foreground)/0.04)] p-space-4.5 radius-xl flex items-center gap-space-4">
  <div className="text-center flex-1">
  <p className="text-body-sm font-bold text-foreground font-mono">85%</p>
  <p className="text-[10px] text-muted-foreground uppercase mt-space-1">Intake score</p>
@@ -653,7 +653,7 @@ export default function FeaturesPage() {
  </div>
 
  {/* Core Capability 5: Knowledge (Column Span 6) */}
- <div className="md:col-span-6 rounded-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
+ <div className="md:col-span-6 rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
  <div>
  <div className="h-8 flex items-center justify-start mb-space-4">
  <Database className="h-6 w-6 text-amber-500" />
@@ -664,13 +664,13 @@ export default function FeaturesPage() {
  </p>
  </div>
 
- <div className="bg-amber-500/5 border border-amber-500/20 p-space-3.5 radius-xl text-caption text-amber-400 font-mono text-center">
+ <div className="bg-amber-500/5 border-amber-500/20 p-space-3.5 radius-xl text-caption text-amber-400 font-mono text-center">
  ✓ Vector RAG Sync Complete
  </div>
  </div>
 
  {/* Core Capability 6: Analytics (Column Span 6) */}
- <div className="md:col-span-6 rounded-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
+ <div className="md:col-span-6 rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
  <div>
  <div className="h-8 flex items-center justify-start mb-space-4">
  <BarChart3 className="h-6 w-6 text-emerald-500" />
@@ -681,7 +681,7 @@ export default function FeaturesPage() {
  </p>
  </div>
 
- <div className="bg-emerald-500/5 border border-emerald-500/20 p-space-3.5 radius-xl text-caption text-emerald-400 font-mono text-center">
+ <div className="bg-emerald-500/5 border-emerald-500/20 p-space-3.5 radius-xl text-caption text-emerald-400 font-mono text-center">
  ✓ 50+ KPI Metrics Monitored Daily
  </div>
  </div>
@@ -697,7 +697,7 @@ export default function FeaturesPage() {
 <ScrollReveal stagger>
 
  <div className="text-center mb-space-12">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Workflow className="h-3.5 w-3.5 text-primary" />
  <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Workflow Architect</span>
  </div>
@@ -708,7 +708,7 @@ export default function FeaturesPage() {
  </h2>
  </div>
 
- <div className="relative rounded-3xl border border-[hsl(var(--foreground)/0.06)] bg-card/15 p-space-6 md:p-space-10 overflow-hidden">
+ <div className="relative rounded-3xl border-[hsl(var(--foreground)/0.06)] bg-card/15 p-space-6 md:p-space-10 overflow-hidden">
  <div className="absolute inset-space-0 dot-grid opacity-15" />
 
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-8 items-center relative z-10">
@@ -773,7 +773,7 @@ export default function FeaturesPage() {
  </div>
 
  {/* Right: Visual Pipeline Sandbox */}
- <div className="lg:col-span-7 bg-card border border-[hsl(var(--foreground)/0.08)] radius-2xl p-space-8 min-h-[320px] flex flex-col justify-between relative overflow-hidden group shadow-xl">
+ <div className="lg:col-span-7 bg-card border-[hsl(var(--foreground)/0.08)] radius-2xl p-space-8 min-h-[320px] flex flex-col justify-between relative overflow-hidden group shadow-xl">
  {/* Background Textures */}
  <div className="absolute inset-space-0 dot-grid opacity-[0.03] pointer-events-none" />
  <div className="absolute inset-space-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50" />
@@ -782,9 +782,9 @@ export default function FeaturesPage() {
  <div className="flex items-center justify-between border-b border-[hsl(var(--foreground)/0.08)] pb-space-4 mb-space-6 relative z-10">
  <div className="flex items-center gap-space-2">
  <div className="flex items-center gap-space-1.5 mr-space-4">
- <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f56] border border-[#ff5f56]/20" />
- <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e] border border-[#ffbd2e]/20" />
- <span className="h-2.5 w-2.5 rounded-full bg-[#27c93f] border border-[#27c93f]/20" />
+ <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f56] border-[#ff5f56]/20" />
+ <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e] border-[#ffbd2e]/20" />
+ <span className="h-2.5 w-2.5 rounded-full bg-[#27c93f] border-[#27c93f]/20" />
  </div>
  <span className="text-[11px] font-mono tracking-widest text-muted-foreground/60 uppercase flex items-center gap-space-2">
  <Terminal className="h-3 w-3" />
@@ -806,7 +806,7 @@ export default function FeaturesPage() {
  {activeWorkflowNode === "trigger" && (
  <div className="space-y-space-6 text-center animate-in fade-in zoom-in-95 duration-500">
  <div className="inline-flex items-center justify-center p-space-0.5 rounded-xl bg-gradient-to-b from-primary/30 to-primary/5 shadow-[0_0_30px_-5px_hsl(var(--primary)/0.15)]">
- <div className="px-space-5 py-space-3 bg-background rounded-[10px] border border-primary/20 flex items-center gap-space-3 font-mono">
+ <div className="px-space-5 py-space-3 bg-background rounded-[10px] border-primary/20 flex items-center gap-space-3 font-mono">
  <Activity className="h-4 w-4 text-primary animate-pulse" />
  <span className="text-primary font-semibold tracking-wide">Trigger: Inbound_Call</span>
  </div>
@@ -815,11 +815,11 @@ export default function FeaturesPage() {
  Phone call received. Resolving carrier routing metadata. Routing to Dental Clinic assistant.
  </p>
  <div className="flex items-center justify-center gap-space-4 pt-space-2">
- <div className="px-space-3 py-space-1.5 rounded-md bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.05)] flex items-center gap-space-2">
+ <div className="px-space-3 py-space-1.5 rounded-md bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.05)] flex items-center gap-space-2">
  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-widest">Protocol</span>
  <span className="text-[11px] font-mono text-muted-foreground">SIP/WebRTC</span>
  </div>
- <div className="px-space-3 py-space-1.5 rounded-md bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.05)] flex items-center gap-space-2">
+ <div className="px-space-3 py-space-1.5 rounded-md bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.05)] flex items-center gap-space-2">
  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-widest">Latency</span>
  <span className="text-[11px] font-mono text-emerald-500">12ms</span>
  </div>
@@ -830,7 +830,7 @@ export default function FeaturesPage() {
  {activeWorkflowNode === "reasoning" && (
  <div className="space-y-space-6 text-center animate-in fade-in zoom-in-95 duration-500">
  <div className="inline-flex items-center justify-center p-space-0.5 rounded-xl bg-gradient-to-b from-indigo-500/30 to-indigo-500/5 shadow-[0_0_30px_-5px_rgba(99,102,241,0.15)]">
- <div className="px-space-5 py-space-3 bg-background rounded-[10px] border border-indigo-500/20 flex items-center gap-space-3 font-mono">
+ <div className="px-space-5 py-space-3 bg-background rounded-[10px] border-indigo-500/20 flex items-center gap-space-3 font-mono">
  <Brain className="h-4 w-4 text-indigo-500 animate-pulse" />
  <span className="text-indigo-500 font-semibold tracking-wide">Reasoning: Intent_Matcher</span>
  </div>
@@ -839,11 +839,11 @@ export default function FeaturesPage() {
  Caller query matches <span className="text-indigo-500 font-medium">"schedule_appointment"</span>. Extraction context: Emergency chip tooth clean tomorrow morning.
  </p>
  <div className="flex items-center justify-center gap-space-4 pt-space-2">
- <div className="px-space-3 py-space-1.5 rounded-md bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.05)] flex items-center gap-space-2">
+ <div className="px-space-3 py-space-1.5 rounded-md bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.05)] flex items-center gap-space-2">
  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-widest">Confidence</span>
  <span className="text-[11px] font-mono text-indigo-500">99.8%</span>
  </div>
- <div className="px-space-3 py-space-1.5 rounded-md bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.05)] flex items-center gap-space-2">
+ <div className="px-space-3 py-space-1.5 rounded-md bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.05)] flex items-center gap-space-2">
  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-widest">Vector</span>
  <span className="text-[11px] font-mono text-muted-foreground">0x8F2...A1B</span>
  </div>
@@ -854,7 +854,7 @@ export default function FeaturesPage() {
  {activeWorkflowNode === "action" && (
  <div className="space-y-space-6 text-center animate-in fade-in zoom-in-95 duration-500">
  <div className="inline-flex items-center justify-center p-space-0.5 rounded-xl bg-gradient-to-b from-emerald-500/30 to-emerald-500/5 shadow-[0_0_30px_-5px_rgba(16,185,129,0.15)]">
- <div className="px-space-5 py-space-3 bg-background rounded-[10px] border border-emerald-500/20 flex items-center gap-space-3 font-mono">
+ <div className="px-space-5 py-space-3 bg-background rounded-[10px] border-emerald-500/20 flex items-center gap-space-3 font-mono">
  <Calendar className="h-4 w-4 text-emerald-500 animate-pulse" />
  <span className="text-emerald-500 font-semibold tracking-wide">Action: Google_Calendar_Lock</span>
  </div>
@@ -863,11 +863,11 @@ export default function FeaturesPage() {
  Calendar block locked for Dr. Mitchell tomorrow at 10:00 AM. Confirmation SMS dispatched. Lead record populated.
  </p>
  <div className="flex items-center justify-center gap-space-4 pt-space-2">
- <div className="px-space-3 py-space-1.5 rounded-md bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.05)] flex items-center gap-space-2">
+ <div className="px-space-3 py-space-1.5 rounded-md bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.05)] flex items-center gap-space-2">
  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-widest">Auth</span>
  <span className="text-[11px] font-mono text-emerald-500">OAUTH2_VALID</span>
  </div>
- <div className="px-space-3 py-space-1.5 rounded-md bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.05)] flex items-center gap-space-2">
+ <div className="px-space-3 py-space-1.5 rounded-md bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.05)] flex items-center gap-space-2">
  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-widest">Sync</span>
  <span className="text-[11px] font-mono text-emerald-500">SUCCESS</span>
  </div>
@@ -901,7 +901,7 @@ export default function FeaturesPage() {
 <ScrollReveal stagger>
 
  <div className="text-center mb-space-12">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Building2 className="h-3.5 w-3.5 text-primary" />
  <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Tailored Agents</span>
  </div>
@@ -925,7 +925,7 @@ export default function FeaturesPage() {
 <ScrollReveal stagger>
 
  <div className="text-center mb-space-16">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Clock className="h-3.5 w-3.5 text-primary" />
  <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Processing Pipeline</span>
  </div>
@@ -939,7 +939,7 @@ export default function FeaturesPage() {
  <div className="relative border-l border-[hsl(var(--foreground)/0.06)] pl-space-6 md:pl-space-8 space-y-space-8 max-w-3xl mx-auto">
  {/* Timeline Item 1 */}
  <div className="relative">
- <span className="absolute -left-[30px] md:-left-[38px] top-space-0.5 h-4.5 w-4.5 rounded-full bg-primary border-4 border-background" />
+ <span className="absolute -left-[30px] md:-left-[38px] top-space-0.5 h-4.5 w-4.5 rounded-full bg-primary border-background" />
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-2">
  <h4 className="text-body-sm font-semibold text-foreground">1. Audio SIP Stream Ingestion</h4>
  <span className="text-caption font-mono text-primary font-semibold">&lt; 80ms</span>
@@ -951,7 +951,7 @@ export default function FeaturesPage() {
 
  {/* Timeline Item 2 */}
  <div className="relative">
- <span className="absolute -left-[30px] md:-left-[38px] top-space-0.5 h-4.5 w-4.5 rounded-full bg-primary/60 border-4 border-background" />
+ <span className="absolute -left-[30px] md:-left-[38px] top-space-0.5 h-4.5 w-4.5 rounded-full bg-primary/60 border-background" />
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-2">
  <h4 className="text-body-sm font-semibold text-foreground">2. Speech Recognition & Transcription</h4>
  <span className="text-caption font-mono text-primary font-semibold">&lt; 120ms</span>
@@ -963,7 +963,7 @@ export default function FeaturesPage() {
 
  {/* Timeline Item 3 */}
  <div className="relative">
- <span className="absolute -left-[30px] md:-left-[38px] top-space-0.5 h-4.5 w-4.5 rounded-full bg-indigo-500 border-4 border-background" />
+ <span className="absolute -left-[30px] md:-left-[38px] top-space-0.5 h-4.5 w-4.5 rounded-full bg-indigo-500 border-background" />
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-2">
  <h4 className="text-body-sm font-semibold text-foreground">3. Triage Reasoning Core</h4>
  <span className="text-caption font-mono text-indigo-400 font-semibold">&lt; 250ms</span>
@@ -975,7 +975,7 @@ export default function FeaturesPage() {
 
  {/* Timeline Item 4 */}
  <div className="relative">
- <span className="absolute -left-[30px] md:-left-[38px] top-space-0.5 h-4.5 w-4.5 rounded-full bg-emerald-500 border-4 border-background" />
+ <span className="absolute -left-[30px] md:-left-[38px] top-space-0.5 h-4.5 w-4.5 rounded-full bg-emerald-500 border-background" />
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-2">
  <h4 className="text-body-sm font-semibold text-foreground">4. Calendar Synced Lock</h4>
  <span className="text-caption font-mono text-emerald-400 font-semibold">&lt; 350ms</span>
@@ -998,7 +998,7 @@ export default function FeaturesPage() {
 <ScrollReveal stagger>
 
  <div className="text-center mb-space-16">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Building2 className="h-3.5 w-3.5 text-primary" />
  <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Scaling Systems</span>
  </div>
@@ -1011,7 +1011,7 @@ export default function FeaturesPage() {
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-space-6">
  {/* Multi-Location Card */}
- <div className="rounded-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
+ <div className="rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
  <div>
  <h3 className="text-title-md font-bold text-foreground mb-space-2">Multi-Location Platform</h3>
  <p className="text-caption text-muted-foreground leading-relaxed mb-space-6">
@@ -1026,7 +1026,7 @@ export default function FeaturesPage() {
  </div>
 
  {/* White-Label Card */}
- <div className="rounded-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
+ <div className="rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.01] hover:border-primary/20 transition-all duration-300">
  <div>
  <h3 className="text-title-md font-bold text-foreground mb-space-2">Agency & White Label</h3>
  <p className="text-caption text-muted-foreground leading-relaxed mb-space-6">
@@ -1051,7 +1051,7 @@ export default function FeaturesPage() {
 <ScrollReveal stagger>
 
  <div className="text-center mb-space-16">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Shield className="h-3.5 w-3.5 text-primary" />
  <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Compliance Safe</span>
  </div>
@@ -1062,7 +1062,7 @@ export default function FeaturesPage() {
  </h2>
  </div>
 
- <div className="rounded-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/15 p-space-6 md:p-space-8 overflow-hidden max-w-3xl mx-auto relative">
+ <div className="rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/15 p-space-6 md:p-space-8 overflow-hidden max-w-3xl mx-auto relative">
  <div className="absolute inset-space-0 dot-grid opacity-10 pointer-events-none" />
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-space-6 relative z-10">
@@ -1098,7 +1098,7 @@ export default function FeaturesPage() {
 <ScrollReveal stagger>
 
  <div className="text-center mb-space-12">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Code className="h-3.5 w-3.5 text-primary" />
  <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Developer APIs</span>
  </div>
@@ -1109,7 +1109,7 @@ export default function FeaturesPage() {
  </h2>
  </div>
 
- <div className="rounded-2xl border border-[hsl(var(--foreground)/0.06)] bg-card overflow-hidden">
+ <div className="rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card overflow-hidden">
  {/* Developer tabs header */}
  <div className="bg-[hsl(var(--foreground)/0.015)] border-b border-[hsl(var(--foreground)/0.05)] px-space-4 py-space-3 flex items-center justify-between flex-wrap gap-space-2">
  <div className="flex gap-space-1">
@@ -1153,7 +1153,7 @@ export default function FeaturesPage() {
 <ScrollReveal stagger>
 
  <div className="text-center mb-space-16">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <TrendingUp className="h-3.5 w-3.5 text-primary" />
  <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Performance Records</span>
  </div>
@@ -1165,19 +1165,19 @@ export default function FeaturesPage() {
  </div>
 
  <div className="grid grid-cols-2 md:grid-cols-4 gap-space-6 text-center">
- <div className="p-space-5 rounded-xl border border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.015)]">
+ <div className="p-space-5 rounded-xl border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.015)]">
  <p className="text-heading-lg font-mono font-bold text-primary mb-space-1">+40%</p>
  <p className="text-caption text-muted-foreground">Revenue increase</p>
  </div>
- <div className="p-space-5 rounded-xl border border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.015)]">
+ <div className="p-space-5 rounded-xl border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.015)]">
  <p className="text-heading-lg font-mono font-bold text-primary mb-space-1">95%</p>
  <p className="text-caption text-muted-foreground">Lead capture rate</p>
  </div>
- <div className="p-space-5 rounded-xl border border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.015)]">
+ <div className="p-space-5 rounded-xl border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.015)]">
  <p className="text-heading-lg font-mono font-bold text-primary mb-space-1">94%</p>
  <p className="text-caption text-muted-foreground">Calendar fill rate</p>
  </div>
- <div className="p-space-5 rounded-xl border border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.015)]">
+ <div className="p-space-5 rounded-xl border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.015)]">
  <p className="text-heading-lg font-mono font-bold text-primary mb-space-1">&lt; 2s</p>
  <p className="text-caption text-muted-foreground">Response time</p>
  </div>

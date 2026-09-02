@@ -63,14 +63,14 @@ interface Integration {
 // Custom Premium SVG Logos for Integrations
 const LOGOS = {
  operator: (className = "h-8 w-auto object-contain") => (
-  <Image
-    src="/logo.png"
-    alt="Operator AI"
-    width={32}
-    height={32}
-    unoptimized
-    className={className}
-  />
+ <Image
+ src="/logo.png"
+ alt="Operator AI"
+ width={32}
+ height={32}
+ unoptimized
+ className={className}
+ />
  ),
  googleCalendar: (
  <img src={googleIcon.src || googleIcon} alt="Google Calendar" className="h-8 w-auto object-contain max-w-full" />
@@ -97,7 +97,7 @@ const LOGOS = {
  <img src={calendlyIcon.src || calendlyIcon} alt="Calendly" className="h-8 w-auto object-contain max-w-full" />
  ),
  vonage: (
- <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-blue-600/10 border border-blue-500/20 text-blue-500">
+ <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-blue-600/10 border-blue-500/20 text-blue-500">
  <Phone className="h-4.5 w-4.5" />
  </div>
  ),
@@ -159,29 +159,29 @@ const INTEGRATIONS: Integration[] = [
  capabilities: "Initiates post-call check-ins and qualification forms directly over WhatsApp messages."
  },
  {
-  id: "vonage",
-  name: "Vonage Communications",
-  category: "Communication",
-  status: "live",
-  logo: LOGOS.vonage,
-  desc: "Send and receive US/EU SMS messages and voice calls via enterprise Vonage APIs.",
-  features: ["Two-way SMS", "Inbound voice routing", "High throughput US/EU carrier paths", "Real-time delivery status"],
-  difficulty: "1-Click",
-  popularity: "Core",
-  capabilities: "Triggers automated appointment reminders and two-way client conversations over Vonage carrier networks."
-  },
+ id: "vonage",
+ name: "Vonage Communications",
+ category: "Communication",
+ status: "live",
+ logo: LOGOS.vonage,
+ desc: "Send and receive US/EU SMS messages and voice calls via enterprise Vonage APIs.",
+ features: ["Two-way SMS", "Inbound voice routing", "High throughput US/EU carrier paths", "Real-time delivery status"],
+ difficulty: "1-Click",
+ popularity: "Core",
+ capabilities: "Triggers automated appointment reminders and two-way client conversations over Vonage carrier networks."
+ },
  {
-  id: "razorpay",
-  name: "Razorpay",
-  category: "Payments",
-  status: "live",
-  logo: LOGOS.razorpay,
-  desc: "Collect UPI, Credit Cards, Net Banking, and automatic payment links directly inside voice calls and WhatsApp conversations.",
-  features: ["Instant UPI & QR Payments", "WhatsApp Payment Links", "Automatic Invoicing & Order APIs", "Zero-failure webhook sync"],
-  difficulty: "1-Click",
-  popularity: "Core",
-  capabilities: "Validates booking deposits and dispatches instant Razorpay payment links to secure appointment holds in real-time."
-  },
+ id: "razorpay",
+ name: "Razorpay",
+ category: "Payments",
+ status: "live",
+ logo: LOGOS.razorpay,
+ desc: "Collect UPI, Credit Cards, Net Banking, and automatic payment links directly inside voice calls and WhatsApp conversations.",
+ features: ["Instant UPI & QR Payments", "WhatsApp Payment Links", "Automatic Invoicing & Order APIs", "Zero-failure webhook sync"],
+ difficulty: "1-Click",
+ popularity: "Core",
+ capabilities: "Validates booking deposits and dispatches instant Razorpay payment links to secure appointment holds in real-time."
+ },
  {
  id: "slack",
  name: "Slack",
@@ -375,21 +375,21 @@ const WORKFLOW_STEPS = [
  }
  }
  },
-  {
-  id: "razorpay",
-  title: "Razorpay Payment",
-  desc: "Collects deposit hold",
-  logo: LOGOS.razorpay,
-  isBrand: true,
-  color: "bg-blue-500/10 text-blue-500",
-  glowColor: "shadow-blue-500/20",
-  payload: {
-  event: "payment.link_created",
-  amount: 2500,
-  currency: "INR",
-  status: "active"
-  }
-  },
+ {
+ id: "razorpay",
+ title: "Razorpay Payment",
+ desc: "Collects deposit hold",
+ logo: LOGOS.razorpay,
+ isBrand: true,
+ color: "bg-blue-500/10 text-blue-500",
+ glowColor: "shadow-blue-500/20",
+ payload: {
+ event: "payment.link_created",
+ amount: 2500,
+ currency: "INR",
+ status: "active"
+ }
+ },
  {
  id: "vonage",
  title: "Vonage SMS",
@@ -499,7 +499,7 @@ export default function IntegrationsPage() {
  SECTION 1: HERO
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
  <section className="relative mx-auto max-w-5xl px-space-6 pt-space-28 pb-space-12 text-center z-10">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 radius-full border border-primary/20 bg-primary/5 mb-space-6 animate-fade-in">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 radius-full border-primary/20 bg-primary/5 mb-space-6 animate-fade-in">
  <Sparkles className="h-3.5 w-3.5 text-primary" />
  <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Unified Ecosystem</span>
  </div>
@@ -517,60 +517,60 @@ export default function IntegrationsPage() {
  SECTION 2: AI VISUALIZATION
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
  <section className="relative max-w-5xl mx-auto px-space-6 pb-space-24 z-10">
- <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-8 items-center rounded-3xl border border-[hsl(var(--foreground)/0.06)] bg-card/25 backdrop-blur-xs p-space-8 overflow-hidden relative">
+ <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-8 items-center rounded-3xl border-[hsl(var(--foreground)/0.06)] bg-card/25 backdrop-blur-xs p-space-8 overflow-hidden relative">
  {/* Background Grid */}
  <div className="absolute inset-space-0 dot-grid opacity-35" />
 
  {/* Left Side: Circular Node Graph (column-span 7) */}
  <div className="lg:col-span-7 relative flex items-center justify-center min-h-[380px] md:min-h-[460px]">
  <div className="relative aspect-square w-full max-w-[360px] md:max-w-[420px] flex items-center justify-center overflow-visible select-none">
-  {/* Glowing lines representation from nodes to center */}
-  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100">
-  <defs>
-  <linearGradient id="activeLineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="1" />
-  <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.4" />
-  </linearGradient>
-  </defs>
-  {visualNodes.map((node) => {
-  const rad = (node.angle * Math.PI) / 180;
-  const startX = 50 + Math.cos(rad) * 36;
-  const startY = 50 + Math.sin(rad) * 36;
-  const isHovered = activeVisualId === node.id;
-  return (
-  <path
-  key={node.id}
-  d={`M ${startX} ${startY} L 50 50`}
-  stroke={isHovered ? "url(#activeLineGrad)" : "hsl(var(--foreground)/0.08)"}
-  strokeWidth={isHovered ? "0.9" : "0.3"}
-  strokeDasharray={isHovered ? "2 1" : "none"}
-  className="transition-all duration-300"
-  />
-  );
-  })}
-  </svg>
+ {/* Glowing lines representation from nodes to center */}
+ <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100">
+ <defs>
+ <linearGradient id="activeLineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+ <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="1" />
+ <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.4" />
+ </linearGradient>
+ </defs>
+ {visualNodes.map((node) => {
+ const rad = (node.angle * Math.PI) / 180;
+ const startX = 50 + Math.cos(rad) * 36;
+ const startY = 50 + Math.sin(rad) * 36;
+ const isHovered = activeVisualId === node.id;
+ return (
+ <path
+ key={node.id}
+ d={`M ${startX} ${startY} L 50 50`}
+ stroke={isHovered ? "url(#activeLineGrad)" : "hsl(var(--foreground)/0.08)"}
+ strokeWidth={isHovered ? "0.9" : "0.3"}
+ strokeDasharray={isHovered ? "2 1" : "none"}
+ className="transition-all duration-300"
+ />
+ );
+ })}
+ </svg>
 
-  {/* Center Core: Operator 3D Logo */}
-  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
-  <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full bg-card shadow-2xl border border-primary/30 p-2 select-none group">
-  <div className="absolute -inset-1.5 rounded-full bg-primary/20 animate-ping duration-1000 pointer-events-none" />
-  <div className="absolute -inset-3 rounded-full bg-primary/10 animate-pulse pointer-events-none" />
-  <div className="relative w-full h-full rounded-full overflow-hidden flex items-center justify-center">
-  <Image
-    src="/logo.png"
-    alt="Operator AI Core"
-    width={72}
-    height={72}
-    unoptimized
-    priority
-    className="w-full h-full object-contain drop-shadow-md transition-transform duration-500 group-hover:scale-110"
-  />
-  </div>
-  </div>
-  </div>
+ {/* Center Core: Operator 3D Logo */}
+ <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
+ <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full bg-card shadow-2xl border-primary/30 p-2 select-none group">
+ <div className="absolute -inset-1.5 rounded-full bg-primary/20 animate-ping duration-1000 pointer-events-none" />
+ <div className="absolute -inset-3 rounded-full bg-primary/10 animate-pulse pointer-events-none" />
+ <div className="relative w-full h-full rounded-full overflow-hidden flex items-center justify-center">
+ <Image
+ src="/logo.png"
+ alt="Operator AI Core"
+ width={72}
+ height={72}
+ unoptimized
+ priority
+ className="w-full h-full object-contain drop-shadow-md transition-transform duration-500 group-hover:scale-110"
+ />
+ </div>
+ </div>
+ </div>
 
-  {/* Orbital Integration Nodes */}
-  {visualNodes.map((node) => {
+ {/* Orbital Integration Nodes */}
+ {visualNodes.map((node) => {
  const rad = (node.angle * Math.PI) / 180;
  const xPos = 50 + Math.cos(rad) * 36;
  const yPos = 50 + Math.sin(rad) * 36;
@@ -600,7 +600,7 @@ export default function IntegrationsPage() {
  <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center relative p-space-2 bg-white">
  {node.logo}
  {isConnected && (
- <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-card flex items-center justify-center" />
+ <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-card flex items-center justify-center" />
  )}
  </div>
  </div>
@@ -618,9 +618,9 @@ export default function IntegrationsPage() {
  const isConnected = connectedIds.includes(activeNode.id);
  const isLoading = connectingId === activeNode.id;
  return (
- <div className="rounded-2xl border border-[hsl(var(--foreground)/0.08)] bg-card/65 p-space-6 shadow-md transition-all duration-300">
+ <div className="rounded-2xl border-[hsl(var(--foreground)/0.08)] bg-card/65 p-space-6 shadow-md transition-all duration-300">
  <div className="flex items-center gap-space-3 mb-space-5">
- <div className="w-12 h-12 rounded-xl overflow-hidden bg-white border border-[hsl(var(--foreground)/0.08)] p-space-2 flex items-center justify-center shadow-2xs">
+ <div className="w-12 h-12 rounded-xl overflow-hidden bg-white border-[hsl(var(--foreground)/0.08)] p-space-2 flex items-center justify-center shadow-2xs">
  {activeNode.logo}
  </div>
  <div className="flex flex-col">
@@ -643,7 +643,7 @@ export default function IntegrationsPage() {
 
  <div className="border-t border-[hsl(var(--foreground)/0.05)] pt-space-4 mb-space-6">
  <span className="text-caption text-foreground/50 block mb-space-2 font-semibold">Active AI Capability:</span>
- <p className="text-caption text-foreground leading-relaxed bg-[hsl(var(--foreground)/0.015)] border border-[hsl(var(--foreground)/0.03)] p-space-3.5 radius-lg font-medium">
+ <p className="text-caption text-foreground leading-relaxed bg-[hsl(var(--foreground)/0.015)] border-[hsl(var(--foreground)/0.03)] p-space-3.5 radius-lg font-medium">
  {activeNode.capabilities}
  </p>
  </div>
@@ -663,7 +663,7 @@ export default function IntegrationsPage() {
  {isLoading ? "Connecting..." : isConnected ? "Disconnect" : "Connect now"}
  </Button>
  ) : (
- <span className="text-caption text-amber-600 bg-amber-500/10 px-space-2.5 py-space-1 radius-full font-bold border border-amber-500/15">
+ <span className="text-caption text-amber-600 bg-amber-500/10 px-space-2.5 py-space-1 radius-full font-bold border-amber-500/15">
  Coming Soon
  </span>
  )}
@@ -694,7 +694,7 @@ export default function IntegrationsPage() {
  return (
  <div
  key={item.id}
- className="group relative rounded-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.02] hover:border-primary/20 transition-all duration-300"
+ className="group relative rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.02] hover:border-primary/20 transition-all duration-300"
  >
  <div>
  <div className="flex items-center justify-between mb-space-5">
@@ -718,7 +718,7 @@ export default function IntegrationsPage() {
 
  <div className="flex flex-wrap gap-space-1 mb-space-6">
  {item.features.slice(0, 2).map((f) => (
- <span key={f} className="text-[10px] bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--foreground)/0.04)] px-space-2 py-space-1 rounded-full text-foreground/80">
+ <span key={f} className="text-[10px] bg-[hsl(var(--foreground)/0.02)] border-[hsl(var(--foreground)/0.04)] px-space-2 py-space-1 rounded-full text-foreground/80">
  {f}
  </span>
  ))}
@@ -756,7 +756,7 @@ export default function IntegrationsPage() {
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
  <section className="mx-auto max-w-5xl px-space-6 pb-space-24 z-10 relative">
  <div className="text-center mb-space-12">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Workflow className="h-3.5 w-3.5 text-primary" />
  <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Intelligent Routing</span>
  </div>
@@ -767,7 +767,7 @@ export default function IntegrationsPage() {
  </h2>
  </div>
 
- <div className="relative rounded-3xl border border-[hsl(var(--foreground)/0.06)] bg-card/15 p-space-6 md:p-space-10 overflow-hidden">
+ <div className="relative rounded-3xl border-[hsl(var(--foreground)/0.06)] bg-card/15 p-space-6 md:p-space-10 overflow-hidden">
  {/* Background Grid */}
  <div className="absolute inset-space-0 dot-grid opacity-20" />
 
@@ -868,7 +868,7 @@ export default function IntegrationsPage() {
  </div>
 
  {/* Live Data Payload Inspector Terminal */}
- <div className="relative z-10 border border-[hsl(var(--foreground)/0.06)] bg-black/90 rounded-2xl overflow-hidden shadow-md">
+ <div className="relative z-10 border-[hsl(var(--foreground)/0.06)] bg-black/90 rounded-2xl overflow-hidden shadow-md">
  {/* Terminal Title Bar */}
  <div className="flex items-center justify-between px-space-4 py-space-2.5 border-b border-white/5 bg-white/2.5">
  <div className="flex items-center gap-space-2">
@@ -909,7 +909,7 @@ export default function IntegrationsPage() {
 
  {/* Floating Command Search Bar */}
  <div className="relative max-w-xl mx-auto mb-space-10">
- <div className="relative rounded-full border border-[hsl(var(--foreground)/0.08)] bg-card/65 p-space-1.5 flex items-center gap-space-2 shadow-xs">
+ <div className="relative rounded-full border-[hsl(var(--foreground)/0.08)] bg-card/65 p-space-1.5 flex items-center gap-space-2 shadow-xs">
  <Search className="h-4.5 w-4.5 text-muted-foreground/50 ml-space-3 shrink-0" />
  <input
  ref={searchInputRef}
@@ -918,7 +918,7 @@ export default function IntegrationsPage() {
  className="w-full bg-transparent text-body-sm outline-none border-none py-space-1.5 text-foreground placeholder:text-muted-foreground/45"
  placeholder="Search integrations directory..."
  />
- <div className="hidden sm:flex items-center gap-space-1 bg-[hsl(var(--foreground)/0.04)] border border-[hsl(var(--foreground)/0.08)] px-space-2.5 py-space-1 rounded-md text-[10px] text-muted-foreground font-mono shrink-0 mr-space-1">
+ <div className="hidden sm:flex items-center gap-space-1 bg-[hsl(var(--foreground)/0.04)] border-[hsl(var(--foreground)/0.08)] px-space-2.5 py-space-1 rounded-md text-[10px] text-muted-foreground font-mono shrink-0 mr-space-1">
  <span>⌘</span>
  <span>K</span>
  </div>
@@ -927,7 +927,7 @@ export default function IntegrationsPage() {
 
  {/* Premium Segmented Filters */}
  <div className="overflow-x-auto w-full mb-space-10 no-scrollbar">
- <div className="inline-flex items-center gap-space-1.5 rounded-full border border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.02)] p-space-1.5 min-w-full md:min-w-0">
+ <div className="inline-flex items-center gap-space-1.5 rounded-full border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.02)] p-space-1.5 min-w-full md:min-w-0">
  {CATEGORIES.map((cat) => {
  const isActive = activeCategory === cat;
  return (
@@ -956,7 +956,7 @@ export default function IntegrationsPage() {
  return (
  <div
  key={item.id}
- className="group relative rounded-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.02] hover:border-primary/20 transition-all duration-300"
+ className="group relative rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/35 p-space-6 flex flex-col justify-between hover:scale-[1.02] hover:border-primary/20 transition-all duration-300"
  >
  <div>
  <div className="flex items-center justify-between mb-space-5">
@@ -1007,7 +1007,7 @@ export default function IntegrationsPage() {
  )}
  </Button>
  ) : (
- <div className="flex items-center justify-center gap-space-2 py-space-2 radius-lg border border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.01)] text-caption text-muted-foreground font-semibold">
+ <div className="flex items-center justify-center gap-space-2 py-space-2 radius-lg border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.01)] text-caption text-muted-foreground font-semibold">
  <Clock className="h-3.5 w-3.5" />
  <span>In Development</span>
  </div>
@@ -1018,7 +1018,7 @@ export default function IntegrationsPage() {
  </div>
 
  {filtered.length === 0 && (
- <div className="text-center py-space-16 text-muted-foreground rounded-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/25">
+ <div className="text-center py-space-16 text-muted-foreground rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/25">
  <Search className="h-8 w-8 mx-auto mb-space-4 opacity-30 text-primary" />
  <p className="text-body-sm font-semibold">No integrations match your search query</p>
  <p className="text-caption text-muted-foreground mt-space-1">Try searching for other terms or request a custom integration below.</p>
@@ -1031,7 +1031,7 @@ export default function IntegrationsPage() {
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
  <section className="mx-auto max-w-5xl px-space-6 pb-space-24 z-10 relative">
  <div className="text-center mb-space-12">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Code2 className="h-3.5 w-3.5 text-primary" />
  <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Developer API</span>
  </div>
@@ -1073,7 +1073,7 @@ export default function IntegrationsPage() {
  </div>
 
  {/* Right pane: code playground */}
- <div className="lg:col-span-2 relative rounded-2xl border border-[hsl(var(--foreground)/0.08)] bg-[#0A0E17] text-slate-200 overflow-hidden flex flex-col min-h-96">
+ <div className="lg:col-span-2 relative rounded-2xl border-[hsl(var(--foreground)/0.08)] bg-[#0A0E17] text-slate-200 overflow-hidden flex flex-col min-h-96">
  <div className="flex items-center justify-between px-space-5 py-space-3 border-b border-slate-800 bg-slate-900/60 shrink-0">
  <div className="flex items-center gap-space-1.5">
  <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
@@ -1107,7 +1107,7 @@ export default function IntegrationsPage() {
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
  <section className="relative border-t border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.015)] py-space-24 z-10">
  <div className="container mx-auto max-w-4xl px-space-6 text-center">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 radius-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 radius-full border-primary/20 bg-primary/5 mb-space-6">
  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
  <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">SLA Custom Queue</span>
  </div>
@@ -1121,7 +1121,7 @@ export default function IntegrationsPage() {
  </p>
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-space-6 text-left max-w-2xl mx-auto mb-space-10">
- <div className="p-space-5 radius-xl border border-[hsl(var(--foreground)/0.04)] bg-card/45 backdrop-blur-xs flex gap-space-3.5">
+ <div className="p-space-5 radius-xl border-[hsl(var(--foreground)/0.04)] bg-card/45 backdrop-blur-xs flex gap-space-3.5">
  <div className="p-space-2.5 bg-emerald-500/10 text-emerald-600 rounded-xl h-fit">
  <Check className="h-4.5 w-4.5" />
  </div>
@@ -1130,7 +1130,7 @@ export default function IntegrationsPage() {
  <p className="text-caption text-muted-foreground leading-relaxed">Fast-tracked planning, testing, and rollout protocols matching organizational guidelines.</p>
  </div>
  </div>
- <div className="p-space-5 radius-xl border border-[hsl(var(--foreground)/0.04)] bg-card/45 backdrop-blur-xs flex gap-space-3.5">
+ <div className="p-space-5 radius-xl border-[hsl(var(--foreground)/0.04)] bg-card/45 backdrop-blur-xs flex gap-space-3.5">
  <div className="p-space-2.5 bg-primary/10 text-primary rounded-xl h-fit">
  <Check className="h-4.5 w-4.5" />
  </div>

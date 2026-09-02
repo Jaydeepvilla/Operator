@@ -218,7 +218,7 @@ export default function ChannelsPage() {
  </div>
 
  {errorMsg && (
- <div className="flex items-center gap-space-3 radius-xl bg-state-error-bg/15 border border-state-error-text/20 p-space-4 text-caption text-state-error-text animate-fade-in relative z-10">
+ <div className="flex items-center gap-space-3 radius-xl bg-state-error-bg/15 border-state-error-text/20 p-space-4 text-caption text-state-error-text animate-fade-in relative z-10">
  <AlertCircle className="h-4.5 w-4.5 shrink-0"/>
  <span className="flex-1 font-medium">{errorMsg}</span>
  <Button 
@@ -231,7 +231,7 @@ export default function ChannelsPage() {
  )}
 
  {loading ? (
- <div className="h-96 flex flex-col items-center justify-center text-caption text-muted-foreground/80 gap-space-3 border border-border-muted bg-card/15 backdrop-blur-xs radius-2xl relative z-10">
+ <div className="h-96 flex flex-col items-center justify-center text-caption text-muted-foreground/80 gap-space-3 border-border-muted bg-card/15 backdrop-blur-xs radius-2xl relative z-10">
  <Loader2 className="h-6 w-6 animate-spin text-primary"/>
  <span className="font-medium">Syncing live channel directory...</span>
  </div>
@@ -242,20 +242,20 @@ export default function ChannelsPage() {
  <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-space-6">
 
  {/* 1. Meta WhatsApp */}
- <Card className="border border-border-muted hover:border-emerald-500/40 hover:-translate-y-1 transition-all duration-300 bg-card/25 backdrop-blur-md flex flex-col justify-between group overflow-hidden relative">
+ <Card className="border-border-muted hover:border-emerald-500/40 hover:-translate-y-1 transition-all duration-300 bg-card/25 backdrop-blur-md flex flex-col justify-between group overflow-hidden relative">
  <div className="absolute top-0 right-0 h-24 w-24 bg-emerald-500/5 radial-gradient(circle, var(--color-success-500) 0%, transparent 70%) pointer-events-none filter blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
  <CardHeader className="pb-space-3">
  <div className="flex items-center justify-between">
- <div className="h-10 w-10 radius-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 transition-transform duration-300 group-hover:scale-105">
+ <div className="h-10 w-10 radius-lg bg-emerald-500/10 border-emerald-500/20 flex items-center justify-center text-emerald-500 transition-transform duration-300 group-hover:scale-105">
  <Phone className="h-5 w-5"/>
  </div>
  {isConnected("whatsapp") ? (
- <span className="text-caption font-semibold flex items-center gap-space-1.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-space-3 py-space-1 radius-full">
+ <span className="text-caption font-semibold flex items-center gap-space-1.5 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-space-3 py-space-1 radius-full">
  <span className="h-1.5 w-1.5 radius-full bg-emerald-500 animate-pulse"/>
  Connected
  </span>
  ) : (
- <span className="text-caption font-medium bg-neutral-500/10 text-muted-foreground border border-neutral-500/20 px-space-3 py-space-1 radius-full">
+ <span className="text-caption font-medium bg-neutral-500/10 text-muted-foreground border-neutral-500/20 px-space-3 py-space-1 radius-full">
  Disconnected
  </span>
  )}
@@ -278,58 +278,58 @@ export default function ChannelsPage() {
  </CardFooter>
  </Card>
 
-  {/* 2. Vonage / Sinch SMS */}
-  <Card className="border border-border-muted hover:border-orange-500/40 hover:-translate-y-1 transition-all duration-300 bg-card/25 backdrop-blur-md flex flex-col justify-between group overflow-hidden relative">
-  <div className="absolute top-0 right-0 h-24 w-24 bg-orange-500/5 radial-gradient(circle, var(--color-warning-500) 0%, transparent 70%) pointer-events-none filter blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
-  <CardHeader className="pb-space-3">
-  <div className="flex items-center justify-between">
-  <div className="h-10 w-10 radius-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 transition-transform duration-300 group-hover:scale-105">
-  <MessageSquare className="h-5 w-5"/>
-  </div>
-  {isConnected("sms") ? (
-  <span className="text-caption font-semibold flex items-center gap-space-1.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-space-3 py-space-1 radius-full">
-  <span className="h-1.5 w-1.5 radius-full bg-emerald-500 animate-pulse"/>
-  Connected
-  </span>
-  ) : (
-  <span className="text-caption font-medium bg-neutral-500/10 text-muted-foreground border border-neutral-500/20 px-space-3 py-space-1 radius-full">
-  Disconnected
-  </span>
-  )}
-  </div>
-  <CardTitle className="text-body-sm font-semibold text-foreground mt-space-4">Vonage / Sinch SMS</CardTitle>
-  <CardDescription className="text-caption text-muted-foreground/80 mt-space-1.5 leading-relaxed">
-  Enable customer communication over US and European SMS networks via Vonage (Primary) or Sinch. Supports automated appointment reminders and two-way conversations.
-  </CardDescription>
-  </CardHeader>
-  <CardFooter className="pt-space-3 border-t border-border-muted flex gap-space-2 justify-end bg-card/5">
-  {isConnected("sms") ? (
-  <Button size="sm"variant="outline"className="h-8 text-caption border-border-muted hover:border-orange-500/30 hover:bg-orange-500/5 hover:text-orange-500 transition-colors"onClick={() => openSettings(getChannelInstance("sms"))}>
-  <Settings className="h-3.5 w-3.5 mr-space-1"/> Settings
-  </Button>
-  ) : (
-  <Button size="sm"className="h-8 text-caption bg-orange-600 hover:bg-orange-500 text-white border-none transition-all"onClick={() => openSetup("sms")}>
-  Connect SMS
-  </Button>
-  )}
-  </CardFooter>
-  </Card>
-
- {/* 3. SMTP Email */}
- <Card className="border border-border-muted hover:border-amber-500/40 hover:-translate-y-1 transition-all duration-300 bg-card/25 backdrop-blur-md flex flex-col justify-between group overflow-hidden relative">
- <div className="absolute top-0 right-0 h-24 w-24 bg-amber-500/5 radial-gradient(circle, var(--color-warning-500) 0%, transparent 70%) pointer-events-none filter blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
+ {/* 2. Vonage / Sinch SMS */}
+ <Card className="border-border-muted hover:border-orange-500/40 hover:-translate-y-1 transition-all duration-300 bg-card/25 backdrop-blur-md flex flex-col justify-between group overflow-hidden relative">
+ <div className="absolute top-0 right-0 h-24 w-24 bg-orange-500/5 radial-gradient(circle, var(--color-warning-500) 0%, transparent 70%) pointer-events-none filter blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
  <CardHeader className="pb-space-3">
  <div className="flex items-center justify-between">
- <div className="h-10 w-10 radius-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 transition-transform duration-300 group-hover:scale-105">
- <Mail className="h-5 w-5"/>
+ <div className="h-10 w-10 radius-lg bg-orange-500/10 border-orange-500/20 flex items-center justify-center text-orange-500 transition-transform duration-300 group-hover:scale-105">
+ <MessageSquare className="h-5 w-5"/>
  </div>
- {isConnected("email") ? (
- <span className="text-caption font-semibold flex items-center gap-space-1.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-space-3 py-space-1 radius-full">
+ {isConnected("sms") ? (
+ <span className="text-caption font-semibold flex items-center gap-space-1.5 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-space-3 py-space-1 radius-full">
  <span className="h-1.5 w-1.5 radius-full bg-emerald-500 animate-pulse"/>
  Connected
  </span>
  ) : (
- <span className="text-caption font-medium bg-neutral-500/10 text-muted-foreground border border-neutral-500/20 px-space-3 py-space-1 radius-full">
+ <span className="text-caption font-medium bg-neutral-500/10 text-muted-foreground border-neutral-500/20 px-space-3 py-space-1 radius-full">
+ Disconnected
+ </span>
+ )}
+ </div>
+ <CardTitle className="text-body-sm font-semibold text-foreground mt-space-4">Vonage / Sinch SMS</CardTitle>
+ <CardDescription className="text-caption text-muted-foreground/80 mt-space-1.5 leading-relaxed">
+ Enable customer communication over US and European SMS networks via Vonage (Primary) or Sinch. Supports automated appointment reminders and two-way conversations.
+ </CardDescription>
+ </CardHeader>
+ <CardFooter className="pt-space-3 border-t border-border-muted flex gap-space-2 justify-end bg-card/5">
+ {isConnected("sms") ? (
+ <Button size="sm"variant="outline"className="h-8 text-caption border-border-muted hover:border-orange-500/30 hover:bg-orange-500/5 hover:text-orange-500 transition-colors"onClick={() => openSettings(getChannelInstance("sms"))}>
+ <Settings className="h-3.5 w-3.5 mr-space-1"/> Settings
+ </Button>
+ ) : (
+ <Button size="sm"className="h-8 text-caption bg-orange-600 hover:bg-orange-500 text-white border-none transition-all"onClick={() => openSetup("sms")}>
+ Connect SMS
+ </Button>
+ )}
+ </CardFooter>
+ </Card>
+
+ {/* 3. SMTP Email */}
+ <Card className="border-border-muted hover:border-amber-500/40 hover:-translate-y-1 transition-all duration-300 bg-card/25 backdrop-blur-md flex flex-col justify-between group overflow-hidden relative">
+ <div className="absolute top-0 right-0 h-24 w-24 bg-amber-500/5 radial-gradient(circle, var(--color-warning-500) 0%, transparent 70%) pointer-events-none filter blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
+ <CardHeader className="pb-space-3">
+ <div className="flex items-center justify-between">
+ <div className="h-10 w-10 radius-lg bg-amber-500/10 border-amber-500/20 flex items-center justify-center text-amber-500 transition-transform duration-300 group-hover:scale-105">
+ <Mail className="h-5 w-5"/>
+ </div>
+ {isConnected("email") ? (
+ <span className="text-caption font-semibold flex items-center gap-space-1.5 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-space-3 py-space-1 radius-full">
+ <span className="h-1.5 w-1.5 radius-full bg-emerald-500 animate-pulse"/>
+ Connected
+ </span>
+ ) : (
+ <span className="text-caption font-medium bg-neutral-500/10 text-muted-foreground border-neutral-500/20 px-space-3 py-space-1 radius-full">
  Disconnected
  </span>
  )}
@@ -353,20 +353,20 @@ export default function ChannelsPage() {
  </Card>
 
  {/* 4. Instagram Direct */}
- <Card className="border border-border-muted hover:border-rose-500/40 hover:-translate-y-1 transition-all duration-300 bg-card/25 backdrop-blur-md flex flex-col justify-between group overflow-hidden relative">
+ <Card className="border-border-muted hover:border-rose-500/40 hover:-translate-y-1 transition-all duration-300 bg-card/25 backdrop-blur-md flex flex-col justify-between group overflow-hidden relative">
  <div className="absolute top-0 right-0 h-24 w-24 bg-rose-500/5 radial-gradient(circle, var(--color-error-500) 0%, transparent 70%) pointer-events-none filter blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
  <CardHeader className="pb-space-3">
  <div className="flex items-center justify-between">
- <div className="h-10 w-10 radius-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 transition-transform duration-300 group-hover:scale-105">
+ <div className="h-10 w-10 radius-lg bg-rose-500/10 border-rose-500/20 flex items-center justify-center text-rose-500 transition-transform duration-300 group-hover:scale-105">
  <ExternalLink className="h-5 w-5"/>
  </div>
  {isConnected("instagram") ? (
- <span className="text-caption font-semibold flex items-center gap-space-1.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-space-3 py-space-1 radius-full">
+ <span className="text-caption font-semibold flex items-center gap-space-1.5 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-space-3 py-space-1 radius-full">
  <span className="h-1.5 w-1.5 radius-full bg-emerald-500 animate-pulse"/>
  Connected
  </span>
  ) : (
- <span className="text-caption font-medium bg-neutral-500/10 text-muted-foreground border border-neutral-500/20 px-space-3 py-space-1 radius-full">
+ <span className="text-caption font-medium bg-neutral-500/10 text-muted-foreground border-neutral-500/20 px-space-3 py-space-1 radius-full">
  Disconnected
  </span>
  )}
@@ -397,7 +397,7 @@ export default function ChannelsPage() {
  {/* WIZARD 1: CONNECTION WIZARD */}
  {activeSetupChannel && (
  <form onSubmit={handleConnect} className="animate-fade-in">
- <Card className="border border-border-muted bg-card/30 backdrop-blur-md radius-2xl overflow-hidden">
+ <Card className="border-border-muted bg-card/30 backdrop-blur-md radius-2xl overflow-hidden">
  <CardHeader className="border-b border-border-muted bg-card/5">
  <CardTitle className="capitalize text-body-md font-semibold text-foreground flex items-center gap-space-2">
  <Plus className="h-4.5 w-4.5 text-primary"/>
@@ -417,45 +417,45 @@ export default function ChannelsPage() {
  />
  </div>
 
-  {/* Vonage / Sinch SMS Input fields */}
-  {activeSetupChannel === "sms" && (
-    <div className="space-y-space-3 pt-space-2 border-t border-border-muted/50">
-      <div className="space-y-space-1">
-        <Label htmlFor="vonageApiKey" className="font-semibold text-foreground/80">Vonage API Key (or Sinch Plan ID)</Label>
-        <Input
-          id="vonageApiKey"
-          value={msg91AuthKey}
-          onChange={(e) => setMsg91AuthKey(e.target.value)}
-          placeholder="e.g. vonage_api_key_xxx"
-          className="h-9 bg-background/50 text-caption border-border-muted hover:border-border focus:border-primary transition-colors focus-visible:ring-0 focus-visible:outline-hidden"
-          required
-        />
-      </div>
-      <div className="space-y-space-1">
-        <Label htmlFor="vonageApiSecret" className="font-semibold text-foreground/80">Vonage API Secret (or Sinch API Token)</Label>
-        <Input
-          id="vonageApiSecret"
-          type="password"
-          value={msg91FlowId}
-          onChange={(e) => setMsg91FlowId(e.target.value)}
-          placeholder="••••••••"
-          className="h-9 bg-background/50 text-caption border-border-muted hover:border-border focus:border-primary transition-colors focus-visible:ring-0 focus-visible:outline-hidden"
-          required
-        />
-      </div>
-      <div className="space-y-space-1">
-        <Label htmlFor="vonageSenderId" className="font-semibold text-foreground/80">Sender ID / Brand Name</Label>
-        <Input
-          id="vonageSenderId"
-          value={msg91SenderId}
-          onChange={(e) => setMsg91SenderId(e.target.value)}
-          placeholder="e.g. Operator or 15551234567"
-          className="h-9 bg-background/50 text-caption border-border-muted hover:border-border focus:border-primary transition-colors focus-visible:ring-0 focus-visible:outline-hidden"
-          required
-        />
-      </div>
-    </div>
-  )}
+ {/* Vonage / Sinch SMS Input fields */}
+ {activeSetupChannel === "sms" && (
+ <div className="space-y-space-3 pt-space-2 border-t border-border-muted/50">
+ <div className="space-y-space-1">
+ <Label htmlFor="vonageApiKey" className="font-semibold text-foreground/80">Vonage API Key (or Sinch Plan ID)</Label>
+ <Input
+ id="vonageApiKey"
+ value={msg91AuthKey}
+ onChange={(e) => setMsg91AuthKey(e.target.value)}
+ placeholder="e.g. vonage_api_key_xxx"
+ className="h-9 bg-background/50 text-caption border-border-muted hover:border-border focus:border-primary transition-colors focus-visible:ring-0 focus-visible:outline-hidden"
+ required
+ />
+ </div>
+ <div className="space-y-space-1">
+ <Label htmlFor="vonageApiSecret" className="font-semibold text-foreground/80">Vonage API Secret (or Sinch API Token)</Label>
+ <Input
+ id="vonageApiSecret"
+ type="password"
+ value={msg91FlowId}
+ onChange={(e) => setMsg91FlowId(e.target.value)}
+ placeholder="••••••••"
+ className="h-9 bg-background/50 text-caption border-border-muted hover:border-border focus:border-primary transition-colors focus-visible:ring-0 focus-visible:outline-hidden"
+ required
+ />
+ </div>
+ <div className="space-y-space-1">
+ <Label htmlFor="vonageSenderId" className="font-semibold text-foreground/80">Sender ID / Brand Name</Label>
+ <Input
+ id="vonageSenderId"
+ value={msg91SenderId}
+ onChange={(e) => setMsg91SenderId(e.target.value)}
+ placeholder="e.g. Operator or 15551234567"
+ className="h-9 bg-background/50 text-caption border-border-muted hover:border-border focus:border-primary transition-colors focus-visible:ring-0 focus-visible:outline-hidden"
+ required
+ />
+ </div>
+ </div>
+ )}
 
  {/* Meta WhatsApp fields */}
  {activeSetupChannel ==="whatsapp"&& (
@@ -607,7 +607,7 @@ export default function ChannelsPage() {
  {/* WIZARD 2: TONE & AI SETTINGS WIDGET */}
  {activeSettingsChannel && (
  <form onSubmit={handleSaveSettings} className="animate-fade-in">
- <Card className="border border-border-muted bg-card/30 backdrop-blur-md radius-2xl overflow-hidden">
+ <Card className="border-border-muted bg-card/30 backdrop-blur-md radius-2xl overflow-hidden">
  <CardHeader className="border-b border-border-muted bg-card/5">
  <CardTitle className="capitalize text-body-md font-semibold text-foreground flex items-center gap-space-2">
  <Settings className="h-4.5 w-4.5 text-primary"/>
@@ -693,12 +693,12 @@ export default function ChannelsPage() {
  <label 
  onClick={() => setSettingsHoursOnly(!settingsHoursOnly)}
  className={cn(
- "flex items-center gap-space-2 cursor-pointer p-space-2 border border-border-muted radius-lg transition-colors select-none",
+ "flex items-center gap-space-2 cursor-pointer p-space-2 border-border-muted radius-lg transition-colors select-none",
  settingsHoursOnly ?"bg-primary/5 border-primary/20 text-primary":"bg-background/25 hover:bg-bg-layer-1 text-muted-foreground"
  )}
  >
  <div className={cn(
- "w-4 h-4 radius-md border border-border-muted flex items-center justify-center transition-colors shrink-0",
+ "w-4 h-4 radius-md border-border-muted flex items-center justify-center transition-colors shrink-0",
  settingsHoursOnly ?"bg-primary border-primary text-white":"bg-transparent"
  )}>
  {settingsHoursOnly && <Check className="h-3 w-3 stroke-[3]"/>}
@@ -711,7 +711,7 @@ export default function ChannelsPage() {
  {/* Webhook URLs (Meta/Vonage) */}
  <div className="space-y-space-2 border-t border-border-muted pt-space-4">
  <Label className="text-caption text-muted-foreground uppercase font-semibold tracking-wider">Incoming Webhook URL</Label>
- <div className="relative flex items-center justify-between p-space-3 bg-bg-layer-2 border border-border-muted radius-lg font-mono text-caption text-foreground/80 break-all select-all group overflow-hidden">
+ <div className="relative flex items-center justify-between p-space-3 bg-bg-layer-2 border-border-muted radius-lg font-mono text-caption text-foreground/80 break-all select-all group overflow-hidden">
  <span className="pr-space-12 text-caption sm:text-caption truncate">
  {activeSettingsChannel.type ==="sms"
  ?`${typeof window !=="undefined"? window.location.origin :""}/api/webhooks/vonage`
@@ -723,7 +723,7 @@ export default function ChannelsPage() {
  size="sm"
  variant="outline"
  className={cn(
- "absolute right-space-2 h-7 px-space-2 text-caption bg-card hover:bg-bg-layer-1 border border-border-muted shrink-0 transition-all cursor-pointer",
+ "absolute right-space-2 h-7 px-space-2 text-caption bg-card hover:bg-bg-layer-1 border-border-muted shrink-0 transition-all cursor-pointer",
  copied &&"border-success-500/40 text-success-500 bg-success-500/5 hover:bg-success-500/10"
  )}
  onClick={() => {
@@ -772,9 +772,9 @@ export default function ChannelsPage() {
  )}
 
  {!activeSetupChannel && !activeSettingsChannel && (
- <div className="border border-dashed border-border-muted radius-2xl p-space-8 text-center text-caption text-muted-foreground/80 flex flex-col items-center justify-center gap-space-4 min-h-full bg-card/25 backdrop-blur-xs relative overflow-hidden">
+ <div className="border-border-muted radius-2xl p-space-8 text-center text-caption text-muted-foreground/80 flex flex-col items-center justify-center gap-space-4 min-h-full bg-card/25 backdrop-blur-xs relative overflow-hidden">
  <div className="absolute inset-0 bg-radial-gradient(circle at center, hsl(var(--primary)/0.03) 0%, transparent 70%) pointer-events-none"/>
- <div className="h-12 w-12 radius-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 mb-space-2 animate-pulse">
+ <div className="h-12 w-12 radius-full bg-primary/10 flex items-center justify-center text-primary border-primary/20 mb-space-2 animate-pulse">
  <Settings className="h-5 w-5"/>
  </div>
  <div className="max-w-xs space-y-space-1.5">

@@ -56,10 +56,10 @@ import {
 } from"@/components/shared/dialog";
 import { EmptyState } from"@/components/shared/empty-state";
 import {
-  createFlowQuestionAction,
-  updateFlowQuestionAction,
-  deleteFlowQuestionAction,
-  updateFlowQuestionsOrderAction,
+ createFlowQuestionAction,
+ updateFlowQuestionAction,
+ deleteFlowQuestionAction,
+ updateFlowQuestionsOrderAction,
 } from "@/server/actions/flows";
 import { useToast } from "@/components/shared/toast";
 import { formatUserErrorMessage } from "@/lib/errors";
@@ -167,7 +167,7 @@ function SortableCard({
  <div className="relative shrink-0 z-10 mt-space-3.5">
  <div
  className={cn(
- "h-9 w-9 rounded-full bg-card border-2 flex items-center justify-center transition-colors duration-200",
+ "h-9 w-9 rounded-full bg-card border flex items-center justify-center transition-colors duration-200",
  isDragOverlay
  ?"border-primary/60"
  :"border-primary/25 group-hover:border-primary/50"
@@ -222,7 +222,7 @@ function SortableCard({
 
  {/* Enhanced Required Pill */}
  {q.isRequired && (
- <span className="inline-flex items-center gap-space-1 text-caption font-normal px-space-1.5 py-space-0.5 rounded-md uppercase tracking-wider bg-gradient-to-r from-rose-500/15 to-orange-500/10 border border-rose-400/25 text-rose-500 inset_0_1px_0_rgba(255,255,255,0.08)]">
+ <span className="inline-flex items-center gap-space-1 text-caption font-normal px-space-1.5 py-space-0.5 rounded-md uppercase tracking-wider bg-gradient-to-r from-rose-500/15 to-orange-500/10 border-rose-400/25 text-rose-500 inset_0_1px_0_rgba(255,255,255,0.08)]">
  <ShieldCheck className="h-2.5 w-2.5"/>
  Required
  </span>
@@ -242,7 +242,7 @@ function SortableCard({
  {q.options.map((option, optIdx) => (
  <span
  key={optIdx}
- className="text-caption font-medium bg-[hsl(var(--foreground)/0.04)] border border-[hsl(var(--foreground)/0.07)] text-muted-foreground px-space-2 py-space-0.5 rounded-md"
+ className="text-caption font-medium bg-[hsl(var(--foreground)/0.04)] border-[hsl(var(--foreground)/0.07)] text-muted-foreground px-space-2 py-space-0.5 rounded-md"
  >
  {option}
  </span>
@@ -252,7 +252,7 @@ function SortableCard({
  </div>
 
  {/* Action Toolbar */}
- <div className="flex items-center gap-space-1 shrink-0 rounded-lg border border-[hsl(var(--foreground)/0.07)] bg-[hsl(var(--foreground)/0.015)] p-space-0.5 ml-space-1">
+ <div className="flex items-center gap-space-1 shrink-0 rounded-lg border-[hsl(var(--foreground)/0.07)] bg-[hsl(var(--foreground)/0.015)] p-space-0.5 ml-space-1">
  <Button
  variant="ghost"
  onClick={() => onEdit(q)}
@@ -330,9 +330,9 @@ export function QualificationBuilder({ initialQuestions }: Props) {
  reordered.map((item) => ({ id: item.id, order: item.order }))
  );
  if (!res.success) {
-   toast.error("Failed to persist ordering", formatUserErrorMessage(res.error));
+ toast.error("Failed to persist ordering", formatUserErrorMessage(res.error));
  } else {
-   toast.success("Order Updated", "Qualification flow step sequence persisted.");
+ toast.success("Order Updated", "Qualification flow step sequence persisted.");
  }
  };
 
@@ -410,9 +410,9 @@ export function QualificationBuilder({ initialQuestions }: Props) {
  reset();
  toast.success(editingQuestion ? "Question Updated" : "Question Added", "Qualification flow question saved.");
  } else {
-   const errorMsg = formatUserErrorMessage(res.error, "Failed to save question");
-   setActionError(errorMsg);
-   toast.error("Failed to save question", errorMsg);
+ const errorMsg = formatUserErrorMessage(res.error, "Failed to save question");
+ setActionError(errorMsg);
+ toast.error("Failed to save question", errorMsg);
  }
  } catch (err: any) {
  const errorMsg = formatUserErrorMessage(err, "An unexpected error occurred");
@@ -423,22 +423,22 @@ export function QualificationBuilder({ initialQuestions }: Props) {
  }
  };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this question?")) return;
-    setDeletingId(id);
-    const res = await deleteFlowQuestionAction(id);
-    setDeletingId(null);
-    if (!res.success) {
-      toast.error("Failed to delete question", formatUserErrorMessage(res.error));
-    } else {
-      toast.success("Question Deleted", "Question removed from qualification flow.");
-    }
-  };
+ const handleDelete = async (id: string) => {
+ if (!confirm("Are you sure you want to delete this question?")) return;
+ setDeletingId(id);
+ const res = await deleteFlowQuestionAction(id);
+ setDeletingId(null);
+ if (!res.success) {
+ toast.error("Failed to delete question", formatUserErrorMessage(res.error));
+ } else {
+ toast.success("Question Deleted", "Question removed from qualification flow.");
+ }
+ };
 
  return (
  <div className="flex-1 min-h-0 flex flex-col gap-space-4 max-w-2xl">
  {/* Header Bar */}
- <div className="shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-3 bg-card border border-[hsl(var(--foreground)/0.06)] p-space-3.5 rounded-xl soft-">
+ <div className="shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-3 bg-card border-[hsl(var(--foreground)/0.06)] p-space-3.5 rounded-xl soft-">
  <div className="flex items-start gap-space-2.5">
  <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-space-0.5">
  <Sparkles className="h-3.5 w-3.5 text-primary"/>
@@ -463,7 +463,7 @@ export function QualificationBuilder({ initialQuestions }: Props) {
  {/* Step Count Bar */}
  {questions.length > 0 && (
  <div className="shrink-0 flex items-center gap-space-2">
- <div className="flex items-center gap-space-1.5 px-space-2.5 py-space-1 bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.05)] rounded-full">
+ <div className="flex items-center gap-space-1.5 px-space-2.5 py-space-1 bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.05)] rounded-full">
  <ListChecks className="h-3 w-3 text-primary/70"/>
  <span className="text-caption font-semibold text-muted-foreground/60 uppercase tracking-wider">
  {questions.length}{""}
@@ -543,7 +543,7 @@ export function QualificationBuilder({ initialQuestions }: Props) {
 
  {/* ── Dialog ─────────────────────────────────────────────── */}
  <Dialog open={isOpen} onOpenChange={setIsOpen}>
- <DialogContent className="max-w-md bg-card border border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden">
+ <DialogContent className="max-w-md bg-card border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden">
  {/* Header */}
  <div className="px-space-5 pt-space-5 pb-space-4 border-b border-[hsl(var(--foreground)/0.05)]">
  <div className="flex items-center gap-space-2.5">
@@ -568,7 +568,7 @@ export function QualificationBuilder({ initialQuestions }: Props) {
  className="px-space-5 pb-space-5 pt-space-4 space-y-space-4"
  >
  {actionError && (
- <div className="p-space-3 rounded-lg bg-rose-500/8 border border-rose-500/12 text-caption text-rose-600 font-medium">
+ <div className="p-space-3 rounded-lg bg-rose-500/8 border-rose-500/12 text-caption text-rose-600 font-medium">
  {actionError}
  </div>
  )}
@@ -659,7 +659,7 @@ export function QualificationBuilder({ initialQuestions }: Props) {
  )}
 
  {/* Required Toggle */}
- <div className="flex items-center justify-between p-space-3 bg-[hsl(var(--foreground)/0.015)] border border-[hsl(var(--foreground)/0.05)] rounded-xl">
+ <div className="flex items-center justify-between p-space-3 bg-[hsl(var(--foreground)/0.015)] border-[hsl(var(--foreground)/0.05)] rounded-xl">
  <div className="flex items-center gap-space-2">
  <ShieldCheck className="h-3.5 w-3.5 text-rose-500/70"/>
  <div>

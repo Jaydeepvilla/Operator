@@ -225,41 +225,41 @@ export function KnowledgeCenterClient({
  });
  }
 
-      if (res.success) {
-        setIsCategoryOpen(false);
-        setCategoryName("");
-        setCategoryDesc("");
-        setEditingCategory(null);
-        toast.success(editingCategory ? "Category Updated" : "Category Created", "Knowledge category saved.");
-        router.refresh();
-      } else {
-        toast.error("Failed to save category", formatUserErrorMessage(res.error));
-      }
-    } catch (err: any) {
-      toast.error("Error", formatUserErrorMessage(err, "An error occurred while saving category."));
-    } finally {
-      setIsCategorySubmitting(false);
-    }
-  };
+ if (res.success) {
+ setIsCategoryOpen(false);
+ setCategoryName("");
+ setCategoryDesc("");
+ setEditingCategory(null);
+ toast.success(editingCategory ? "Category Updated" : "Category Created", "Knowledge category saved.");
+ router.refresh();
+ } else {
+ toast.error("Failed to save category", formatUserErrorMessage(res.error));
+ }
+ } catch (err: any) {
+ toast.error("Error", formatUserErrorMessage(err, "An error occurred while saving category."));
+ } finally {
+ setIsCategorySubmitting(false);
+ }
+ };
 
-  const handleEditCategory = (cat: any) => {
-    setEditingCategory(cat);
-    setCategoryName(cat.name);
-    setCategoryDesc(cat.description || "");
-    setIsCategoryOpen(true);
-  };
+ const handleEditCategory = (cat: any) => {
+ setEditingCategory(cat);
+ setCategoryName(cat.name);
+ setCategoryDesc(cat.description || "");
+ setIsCategoryOpen(true);
+ };
 
-  const handleDeleteCategory = async (id: string) => {
-    if (confirm("Are you sure you want to delete this category?")) {
-      const res = await deleteKnowledgeCategoryAction(id);
-      if (res.success) {
-        toast.success("Category Deleted", "Category removed from knowledge base.");
-        router.refresh();
-      } else {
-        toast.error("Failed to delete category", formatUserErrorMessage(res.error));
-      }
-    }
-  };
+ const handleDeleteCategory = async (id: string) => {
+ if (confirm("Are you sure you want to delete this category?")) {
+ const res = await deleteKnowledgeCategoryAction(id);
+ if (res.success) {
+ toast.success("Category Deleted", "Category removed from knowledge base.");
+ router.refresh();
+ } else {
+ toast.error("Failed to delete category", formatUserErrorMessage(res.error));
+ }
+ }
+ };
 
  const handleFile = (file: File) => {
  setUploadError(null);
@@ -367,50 +367,50 @@ export function KnowledgeCenterClient({
  }
  };
 
-  const handleRenameDocument = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newDocName.trim() || !renamingDoc) return;
-    setIsRenameSubmitting(true);
+ const handleRenameDocument = async (e: React.FormEvent) => {
+ e.preventDefault();
+ if (!newDocName.trim() || !renamingDoc) return;
+ setIsRenameSubmitting(true);
 
-    try {
-      const res = await renameKnowledgeDocumentAction(renamingDoc.id, newDocName);
-      if (res.success) {
-        setIsRenameOpen(false);
-        setNewDocName("");
-        setRenamingDoc(null);
-        toast.success("Document Renamed", `Document renamed to "${newDocName}".`);
-        router.refresh();
-      } else {
-        toast.error("Failed to rename document", formatUserErrorMessage(res.error));
-      }
-    } catch (err: any) {
-      toast.error("Error", formatUserErrorMessage(err, "An error occurred while renaming document."));
-    } finally {
-      setIsRenameSubmitting(false);
-    }
-  };
+ try {
+ const res = await renameKnowledgeDocumentAction(renamingDoc.id, newDocName);
+ if (res.success) {
+ setIsRenameOpen(false);
+ setNewDocName("");
+ setRenamingDoc(null);
+ toast.success("Document Renamed", `Document renamed to "${newDocName}".`);
+ router.refresh();
+ } else {
+ toast.error("Failed to rename document", formatUserErrorMessage(res.error));
+ }
+ } catch (err: any) {
+ toast.error("Error", formatUserErrorMessage(err, "An error occurred while renaming document."));
+ } finally {
+ setIsRenameSubmitting(false);
+ }
+ };
 
-  const handleArchiveToggle = async (doc: any) => {
-    const res = await archiveKnowledgeDocumentAction(doc.id, !doc.isArchived);
-    if (res.success) {
-      toast.success(doc.isArchived ? "Document Restored" : "Document Archived", doc.isArchived ? "Document restored from archive." : "Document moved to archive.");
-      router.refresh();
-    } else {
-      toast.error("Failed to update archive status", formatUserErrorMessage(res.error));
-    }
-  };
+ const handleArchiveToggle = async (doc: any) => {
+ const res = await archiveKnowledgeDocumentAction(doc.id, !doc.isArchived);
+ if (res.success) {
+ toast.success(doc.isArchived ? "Document Restored" : "Document Archived", doc.isArchived ? "Document restored from archive." : "Document moved to archive.");
+ router.refresh();
+ } else {
+ toast.error("Failed to update archive status", formatUserErrorMessage(res.error));
+ }
+ };
 
-  const handleDeleteDocument = async (id: string) => {
-    if (confirm("Are you sure you want to permanently delete this document and all associated chunks?")) {
-      const res = await deleteKnowledgeDocumentAction(id);
-      if (res.success) {
-        toast.success("Document Deleted", "Document and associated vectors deleted.");
-        router.refresh();
-      } else {
-        toast.error("Failed to delete document", formatUserErrorMessage(res.error));
-      }
-    }
-  };
+ const handleDeleteDocument = async (id: string) => {
+ if (confirm("Are you sure you want to permanently delete this document and all associated chunks?")) {
+ const res = await deleteKnowledgeDocumentAction(id);
+ if (res.success) {
+ toast.success("Document Deleted", "Document and associated vectors deleted.");
+ router.refresh();
+ } else {
+ toast.error("Failed to delete document", formatUserErrorMessage(res.error));
+ }
+ }
+ };
 
  const loadHistory = async () => {
  try {
@@ -455,88 +455,88 @@ export function KnowledgeCenterClient({
  }
  });
 
-    if (res.success && res.discoveredPages && res.importId) {
-      setDiscoveredPages(res.discoveredPages);
-      setCurrentImportId(res.importId);
-      // Pre-select pages that are not excluded
-      const preselected = res.discoveredPages
-        .filter(p => p.status === "pending")
-        .map(p => p.url);
-      setSelectedPagesToImport(preselected);
-      setIsPreviewOpen(true);
-      toast.success("Crawler Finished", `Discovered ${res.discoveredPages.length} pages.`);
-    } else {
-      toast.error("Failed to trigger crawler", formatUserErrorMessage(res.error));
-    }
-  } catch (err: any) {
-    toast.error("Error", formatUserErrorMessage(err, "An error occurred starting website crawler."));
-  } finally {
-    setIsScraperSubmitting(false);
-  }
+ if (res.success && res.discoveredPages && res.importId) {
+ setDiscoveredPages(res.discoveredPages);
+ setCurrentImportId(res.importId);
+ // Pre-select pages that are not excluded
+ const preselected = res.discoveredPages
+ .filter(p => p.status === "pending")
+ .map(p => p.url);
+ setSelectedPagesToImport(preselected);
+ setIsPreviewOpen(true);
+ toast.success("Crawler Finished", `Discovered ${res.discoveredPages.length} pages.`);
+ } else {
+ toast.error("Failed to trigger crawler", formatUserErrorMessage(res.error));
+ }
+ } catch (err: any) {
+ toast.error("Error", formatUserErrorMessage(err, "An error occurred starting website crawler."));
+ } finally {
+ setIsScraperSubmitting(false);
+ }
 };
 
 const handleExecuteIngestion = async () => {
-  if (!currentImportId) return;
+ if (!currentImportId) return;
 
-  const selectedData = discoveredPages.filter(p => selectedPagesToImport.includes(p.url));
-  if (selectedData.length === 0) {
-    toast.error("Selection Required", "Please select at least one page to import.");
-    return;
-  }
+ const selectedData = discoveredPages.filter(p => selectedPagesToImport.includes(p.url));
+ if (selectedData.length === 0) {
+ toast.error("Selection Required", "Please select at least one page to import.");
+ return;
+ }
 
-  setIsPreviewOpen(false);
-  setIsProgressOpen(true);
-  setProgressStage("Discovering pages");
-  setProgressValue(10);
+ setIsPreviewOpen(false);
+ setIsProgressOpen(true);
+ setProgressStage("Discovering pages");
+ setProgressValue(10);
 
-  try {
-    const res = await executeWebsiteIngestionAction({
-      importId: currentImportId,
-      selectedPages: selectedData,
-      duplicateHandling,
-    });
+ try {
+ const res = await executeWebsiteIngestionAction({
+ importId: currentImportId,
+ selectedPages: selectedData,
+ duplicateHandling,
+ });
 
-    if (res.success) {
-      let attempts = 0;
-      const interval = setInterval(async () => {
-        attempts++;
-        const statusRes = await getImportStatusAction(currentImportId);
-        if (statusRes.success && statusRes.import) {
-          const record = statusRes.import;
-          const meta = (record.metadata || {}) as Record<string, any>;
+ if (res.success) {
+ let attempts = 0;
+ const interval = setInterval(async () => {
+ attempts++;
+ const statusRes = await getImportStatusAction(currentImportId);
+ if (statusRes.success && statusRes.import) {
+ const record = statusRes.import;
+ const meta = (record.metadata || {}) as Record<string, any>;
 
-          setProgressStage(meta.stage || record.status);
-          setProgressValue(meta.progress || 0);
+ setProgressStage(meta.stage || record.status);
+ setProgressValue(meta.progress || 0);
 
-          if (record.status === "completed" || record.status === "failed") {
-            clearInterval(interval);
-            if (record.status === "completed") {
-              toast.success("Ingestion Completed", "Website pages successfully imported to knowledge base.");
-            } else {
-              toast.error("Ingestion Incomplete", "Some pages could not be processed. Check import history.");
-            }
-            setTimeout(() => {
-              setIsProgressOpen(false);
-              router.refresh();
-              loadHistory();
-            }, 1500);
-          }
-        }
+ if (record.status === "completed" || record.status === "failed") {
+ clearInterval(interval);
+ if (record.status === "completed") {
+ toast.success("Ingestion Completed", "Website pages successfully imported to knowledge base.");
+ } else {
+ toast.error("Ingestion Incomplete", "Some pages could not be processed. Check import history.");
+ }
+ setTimeout(() => {
+ setIsProgressOpen(false);
+ router.refresh();
+ loadHistory();
+ }, 1500);
+ }
+ }
 
-        if (attempts > 60) {
-          clearInterval(interval);
-          setIsProgressOpen(false);
-          toast.error("Ingestion Timed Out", "Server background ingestion timed out. Please check import history.");
-        }
-      }, 1000);
-    } else {
-      setIsProgressOpen(false);
-      toast.error("Failed to start ingestion", formatUserErrorMessage(res.error));
-    }
-  } catch (err: any) {
-    setIsProgressOpen(false);
-    toast.error("Ingestion Error", formatUserErrorMessage(err, "An error occurred starting website ingestion."));
-  }
+ if (attempts > 60) {
+ clearInterval(interval);
+ setIsProgressOpen(false);
+ toast.error("Ingestion Timed Out", "Server background ingestion timed out. Please check import history.");
+ }
+ }, 1000);
+ } else {
+ setIsProgressOpen(false);
+ toast.error("Failed to start ingestion", formatUserErrorMessage(res.error));
+ }
+ } catch (err: any) {
+ setIsProgressOpen(false);
+ toast.error("Ingestion Error", formatUserErrorMessage(err, "An error occurred starting website ingestion."));
+ }
 };
 
  const handleSearch = async (query: string) => {
@@ -756,7 +756,7 @@ const handleExecuteIngestion = async () => {
  { label:"Structured Services Catalog (Min 2)", state: stats.healthScore >= 75 },
  { label:"Organized Custom Categories (Min 2)", state: stats.healthScore === 100 },
  ].map((param, idx) => (
- <div key={idx} className="flex justify-between items-center p-space-4 px-space-5 radius-xl border border-[hsl(var(--foreground)/0.06)] bg-background hover:border-primary/20 transition-all duration-300 group">
+ <div key={idx} className="flex justify-between items-center p-space-4 px-space-5 radius-xl border-[hsl(var(--foreground)/0.06)] bg-background hover:border-primary/20 transition-all duration-300 group">
  <span className="text-body-sm font-semibold text-foreground group-hover:text-primary transition-colors">{param.label}</span>
  <span className={cn(
  "inline-flex items-center gap-space-1.5 text-caption font-normal border px-space-2.5 py-space-1 radius-full uppercase tracking-wider",
@@ -902,7 +902,7 @@ const handleExecuteIngestion = async () => {
  setNewDocName(doc.name);
  setIsRenameOpen(true);
  }}
- className="h-7 w-8 p-space-0 radius-lg border border-[hsl(var(--foreground)/0.07)] bg-[hsl(var(--foreground)/0.015)] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.04)] hover:border-[hsl(var(--foreground)/0.12)] cursor-pointer transition-all"
+ className="h-7 w-8 p-space-0 radius-lg border-[hsl(var(--foreground)/0.07)] bg-[hsl(var(--foreground)/0.015)] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.04)] hover:border-[hsl(var(--foreground)/0.12)] cursor-pointer transition-all"
  title="Rename"
  >
  <Edit3 className="h-3.5 w-3.5"/>
@@ -910,7 +910,7 @@ const handleExecuteIngestion = async () => {
  <Button
  variant="ghost"
  onClick={() => handleArchiveToggle(doc)}
- className="h-7 w-8 p-space-0 radius-lg border border-[hsl(var(--foreground)/0.07)] bg-[hsl(var(--foreground)/0.015)] flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-[hsl(var(--foreground)/0.04)] hover:border-primary/20 hover:text-primary cursor-pointer transition-all"
+ className="h-7 w-8 p-space-0 radius-lg border-[hsl(var(--foreground)/0.07)] bg-[hsl(var(--foreground)/0.015)] flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-[hsl(var(--foreground)/0.04)] hover:border-primary/20 hover:text-primary cursor-pointer transition-all"
  title={doc.isArchived ?"Restore":"Archive"}
  >
  {doc.isArchived ? <RotateCcw className="h-3.5 w-3.5"/> : <Archive className="h-3.5 w-3.5"/>}
@@ -918,7 +918,7 @@ const handleExecuteIngestion = async () => {
  <Button
  variant="ghost"
  onClick={() => handleDeleteDocument(doc.id)}
- className="h-7 w-8 p-space-0 radius-lg border border-rose-500/15 bg-rose-500/5 flex items-center justify-center text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 hover:border-rose-500/30 cursor-pointer transition-all"
+ className="h-7 w-8 p-space-0 radius-lg border-rose-500/15 bg-rose-500/5 flex items-center justify-center text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 hover:border-rose-500/30 cursor-pointer transition-all"
  title="Delete"
  >
  <Trash2 className="h-3.5 w-3.5"/>
@@ -942,7 +942,7 @@ const handleExecuteIngestion = async () => {
  {activeTab === "imports" && (
  <div className="space-y-space-4 animate-fade-in w-full">
  {/* Input URL */}
- <Card className="border border-[hsl(var(--foreground)/0.06)] bg-card overflow-hidden">
+ <Card className="border-[hsl(var(--foreground)/0.06)] bg-card overflow-hidden">
  <CardHeader className="flex flex-row items-center justify-between border-b border-[hsl(var(--foreground)/0.06)] py-space-4 px-space-6 bg-[hsl(var(--foreground)/0.005)] shrink-0">
  <div className="flex items-center gap-space-4">
  <div className="h-9 w-9 radius-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -1016,7 +1016,7 @@ const handleExecuteIngestion = async () => {
 
  {/* Collapsible Configurations Panel */}
  {isAdvancedOptionsOpen && (
- <div className="border border-[hsl(var(--foreground)/0.06)] radius-lg bg-[hsl(var(--foreground)/0.005)] p-space-5 space-y-space-6 animate-fade-in w-full max-w-4xl">
+ <div className="border-[hsl(var(--foreground)/0.06)] radius-lg bg-[hsl(var(--foreground)/0.005)] p-space-5 space-y-space-6 animate-fade-in w-full max-w-4xl">
  
  {/* Advanced Row 1: Depth and Limits */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-space-5">
@@ -1148,7 +1148,7 @@ const handleExecuteIngestion = async () => {
  </div>
  <div className="flex flex-wrap gap-space-1 mt-space-1.5">
  {includePaths.map((path, idx) => (
- <span key={idx} className="inline-flex items-center gap-space-1 px-space-2 py-space-0.5 radius-md border border-emerald-500/15 bg-emerald-500/5 text-emerald-600 text-caption">
+ <span key={idx} className="inline-flex items-center gap-space-1 px-space-2 py-space-0.5 radius-md border-emerald-500/15 bg-emerald-500/5 text-emerald-600 text-caption">
  {path}
  <NativeButton 
  type="button" 
@@ -1199,7 +1199,7 @@ const handleExecuteIngestion = async () => {
  </div>
  <div className="flex flex-wrap gap-space-1 mt-space-1.5">
  {excludePaths.map((path, idx) => (
- <span key={idx} className="inline-flex items-center gap-space-1 px-space-2 py-space-0.5 radius-md border border-rose-500/15 bg-rose-500/5 text-rose-600 text-caption">
+ <span key={idx} className="inline-flex items-center gap-space-1 px-space-2 py-space-0.5 radius-md border-rose-500/15 bg-rose-500/5 text-rose-600 text-caption">
  {path}
  <NativeButton 
  type="button" 
@@ -1300,7 +1300,7 @@ const handleExecuteIngestion = async () => {
  >
  {strategy.label}
  <span className={cn(
- "h-3 w-3 radius-full border border-muted-foreground/40 flex items-center justify-center shrink-0 ml-space-1.5",
+ "h-3 w-3 radius-full border-muted-foreground/40 flex items-center justify-center shrink-0 ml-space-1.5",
  duplicateHandling === strategy.id && "border-primary bg-primary"
  )}>
  {duplicateHandling === strategy.id && <span className="h-1.5 w-1.5 radius-full bg-white" />}
@@ -1318,7 +1318,7 @@ const handleExecuteIngestion = async () => {
  </Card>
 
  {/* Quick History Log preview card */}
- <Card className="border border-[hsl(var(--foreground)/0.06)] bg-card overflow-hidden">
+ <Card className="border-[hsl(var(--foreground)/0.06)] bg-card overflow-hidden">
  <CardHeader className="flex flex-row items-center justify-between border-b border-[hsl(var(--foreground)/0.06)] py-space-4 px-space-6 bg-[hsl(var(--foreground)/0.005)] shrink-0">
  <div className="flex items-center gap-space-4">
  <div className="h-9 w-9 radius-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -1335,7 +1335,7 @@ const handleExecuteIngestion = async () => {
  <CardContent className="p-space-0 bg-[hsl(var(--foreground)/0.002)]">
  {historyList.length === 0 ? (
  <div className="flex flex-col items-center justify-center p-space-12 text-center select-none">
- <div className="h-10 w-10 radius-full bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.06)] flex items-center justify-center text-muted-foreground/40 mb-space-3.5">
+ <div className="h-10 w-10 radius-full bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.06)] flex items-center justify-center text-muted-foreground/40 mb-space-3.5">
  <Globe className="h-5 w-5" />
  </div>
  <h4 className="text-body-sm font-semibold text-foreground leading-none">No active crawl imports</h4>
@@ -1436,11 +1436,11 @@ const handleExecuteIngestion = async () => {
  <div className="flex items-start justify-between gap-space-3">
  <div className="min-w-0">
  <h4 className="text-body-md font-semibold text-foreground group-hover:text-primary transition-colors truncate">{cat.name}</h4>
- <span className="inline-flex text-caption font-mono font-semibold bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.05)] text-muted-foreground/80 px-space-2 py-space-0.5 radius-md mt-space-1 w-fit">
+ <span className="inline-flex text-caption font-mono font-semibold bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.05)] text-muted-foreground/80 px-space-2 py-space-0.5 radius-md mt-space-1 w-fit">
  slug: {cat.slug}
  </span>
  </div>
- <div className="h-8 w-8 radius-lg bg-primary/5 text-primary flex items-center justify-center shrink-0 border border-primary/10">
+ <div className="h-8 w-8 radius-lg bg-primary/5 text-primary flex items-center justify-center shrink-0 border-primary/10">
  <FolderOpen className="h-4 w-4"/>
  </div>
  </div>
@@ -1449,7 +1449,7 @@ const handleExecuteIngestion = async () => {
  </p>
  </div>
  <div className="p-space-3 px-space-5 border-t border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.005)] flex justify-end gap-space-1.5 items-center">
- <div className="inline-flex radius-lg border border-[hsl(var(--foreground)/0.07)] bg-[hsl(var(--foreground)/0.015)] overflow-hidden">
+ <div className="inline-flex radius-lg border-[hsl(var(--foreground)/0.07)] bg-[hsl(var(--foreground)/0.015)] overflow-hidden">
  <NativeButton
  onClick={() => handleEditCategory(cat)}
  className="h-7 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.04)] border-r border-[hsl(var(--foreground)/0.07)] cursor-pointer transition-colors"
@@ -1486,7 +1486,7 @@ const handleExecuteIngestion = async () => {
 
  {/* Jobs list */}
  {jobs.length === 0 ? (
- <div className="border border-dashed border-[hsl(var(--foreground)/0.08)] bg-card/20 radius-xl p-space-10 text-center text-caption text-muted-foreground/60 italic">
+ <div className="border-[hsl(var(--foreground)/0.08)] bg-card/20 radius-xl p-space-10 text-center text-caption text-muted-foreground/60 italic">
  No processing jobs executed yet.
  </div>
  ) : (
@@ -1621,7 +1621,7 @@ const handleExecuteIngestion = async () => {
  {searchResults.faqs.map((faq: any) => (
  <div key={faq.id} className="p-space-4 px-space-6 space-y-space-2">
  <span className="text-foreground font-semibold block">Q: {faq.question}</span>
- <p className="text-muted-foreground leading-relaxed pl-space-3 border-l-2 border-primary/20">{faq.answer}</p>
+ <p className="text-muted-foreground leading-relaxed pl-space-3 border-l border-primary/20">{faq.answer}</p>
  </div>
  ))}
  </div>
@@ -1667,7 +1667,7 @@ const handleExecuteIngestion = async () => {
  {activeTab ==="settings"&& (
  <form onSubmit={handleSaveSettings} className="space-y-space-4 animate-fade-in w-full">
  {settingsSuccess && (
- <div className="flex items-center gap-space-2 p-space-3 radius-xl bg-emerald-500/8 border border-emerald-500/15 text-caption text-emerald-600 font-medium animate-fade-in">
+ <div className="flex items-center gap-space-2 p-space-3 radius-xl bg-emerald-500/8 border-emerald-500/15 text-caption text-emerald-600 font-medium animate-fade-in">
  <Check className="h-4 w-4 shrink-0 text-emerald-500"/>
  <span className="leading-none">Storage configurations saved successfully.</span>
  </div>
@@ -1760,7 +1760,7 @@ const handleExecuteIngestion = async () => {
  {/* DIALOG 1: ADD/EDIT CATEGORY */}
  {/* ========================================== */}
  <Dialog open={isCategoryOpen} onOpenChange={setIsCategoryOpen}>
- <DialogContent className="max-w-md bg-card border border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden">
+ <DialogContent className="max-w-md bg-card border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden">
  <form onSubmit={handleSaveCategory}>
  <div className="px-space-5 pt-space-5 pb-space-4 border-b border-[hsl(var(--foreground)/0.05)]">
  <div className="flex items-center gap-space-2.5">
@@ -1794,7 +1794,7 @@ const handleExecuteIngestion = async () => {
  id="cat_desc"
  rows={3}
  placeholder="Brief description of the context rules..."
- className="flex w-full radius-lg border border-[hsl(var(--foreground)/0.08)] bg-background px-space-3 py-space-2 text-caption transition-colors placeholder:text-muted-foreground/50 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground"
+ className="flex w-full radius-lg border-[hsl(var(--foreground)/0.08)] bg-background px-space-3 py-space-2 text-caption transition-colors placeholder:text-muted-foreground/50 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground"
  value={categoryDesc}
  onChange={(e) => setCategoryDesc(e.target.value)}
  />
@@ -1823,7 +1823,7 @@ const handleExecuteIngestion = async () => {
  {/* DIALOG 2: ADD DOCUMENT (Using custom Radix Select dropdown) */}
  {/* ========================================== */}
  <Dialog open={isDocOpen} onOpenChange={(open) => { if (!open) { setUploadError(null); } setIsDocOpen(open); }}>
- <DialogContent className="max-w-lg bg-card border border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden">
+ <DialogContent className="max-w-lg bg-card border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden">
  <form onSubmit={handleUploadDocument}>
  <div className="px-space-5 pt-space-5 pb-space-4 border-b border-[hsl(var(--foreground)/0.05)]">
  <div className="flex items-center gap-space-2.5">
@@ -1851,7 +1851,7 @@ const handleExecuteIngestion = async () => {
  onDrop={handleDrop}
  onClick={() => fileInputRef.current?.click()}
  className={cn(
- "relative flex flex-col items-center justify-center border border-dashed radius-xl p-space-6 text-center cursor-pointer transition-all duration-200 select-none min-h-32",
+ "relative flex flex-col items-center justify-center border radius-xl p-space-6 text-center cursor-pointer transition-all duration-200 select-none min-h-32",
  dragActive 
  ?"border-primary bg-primary/5 scale-[1.01] "
  :"border-[hsl(var(--foreground)/0.08)] hover:border-primary/40 hover:bg-[hsl(var(--foreground)/0.015)]"
@@ -1913,7 +1913,7 @@ const handleExecuteIngestion = async () => {
  id="doc_content"
  rows={5}
  placeholder="Paste company instructions or manual text here..."
- className="flex w-full radius-lg border border-[hsl(var(--foreground)/0.08)] bg-background px-space-3 py-space-2 text-caption transition-colors placeholder:text-muted-foreground/50 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground"
+ className="flex w-full radius-lg border-[hsl(var(--foreground)/0.08)] bg-background px-space-3 py-space-2 text-caption transition-colors placeholder:text-muted-foreground/50 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground"
  value={docContent}
  onChange={(e) => setDocContent(e.target.value)}
  required
@@ -1921,7 +1921,7 @@ const handleExecuteIngestion = async () => {
  </div>
 
  {uploadError && (
- <div className="flex items-center gap-space-2 radius-lg bg-rose-500/8 border border-rose-500/15 p-space-3 text-caption text-rose-600 font-semibold animate-fade-in">
+ <div className="flex items-center gap-space-2 radius-lg bg-rose-500/8 border-rose-500/15 p-space-3 text-caption text-rose-600 font-semibold animate-fade-in">
  <AlertTriangle className="h-4 w-4 shrink-0 text-rose-500"/>
  <span className="flex-1">{uploadError}</span>
  <Button 
@@ -1957,7 +1957,7 @@ const handleExecuteIngestion = async () => {
  {/* DIALOG 3: RENAME DOCUMENT */}
  {/* ========================================== */}
  <Dialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>
- <DialogContent className="max-w-md bg-card border border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden">
+ <DialogContent className="max-w-md bg-card border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden">
  <form onSubmit={handleRenameDocument}>
  <div className="px-space-5 pt-space-5 pb-space-4 border-b border-[hsl(var(--foreground)/0.05)]">
  <div className="flex items-center gap-space-2.5">
@@ -2005,7 +2005,7 @@ const handleExecuteIngestion = async () => {
  {/* DIALOG 4: VIEW JOB LOGS */}
  {/* ========================================== */}
  <Dialog open={viewingJobLogs !== null} onOpenChange={(open) => !open && setViewingJobLogs(null)}>
- <DialogContent className="max-w-lg bg-card border border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden">
+ <DialogContent className="max-w-lg bg-card border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden">
  <div className="px-space-5 pt-space-5 pb-space-4 border-b border-[hsl(var(--foreground)/0.05)]">
  <div className="flex items-center gap-space-2.5">
  <div className="h-8 w-8 radius-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -2018,7 +2018,7 @@ const handleExecuteIngestion = async () => {
  </div>
 
  <div className="px-space-5 py-space-4">
- <pre className="bg-background border border-[hsl(var(--foreground)/0.06)] p-space-4 radius-xl font-mono text-caption text-muted-foreground/80 leading-relaxed whitespace-pre-wrap max-h-60"><ScrollArea className="h-full w-full" horizontal={false}>
+ <pre className="bg-background border-[hsl(var(--foreground)/0.06)] p-space-4 radius-xl font-mono text-caption text-muted-foreground/80 leading-relaxed whitespace-pre-wrap max-h-60"><ScrollArea className="h-full w-full" horizontal={false}>
  {viewingJobLogs}
  </ScrollArea></pre>
  </div>
@@ -2035,7 +2035,7 @@ const handleExecuteIngestion = async () => {
  {/* DIALOG 5: WEBSITE IMPORT PREVIEW */}
  {/* ========================================== */}
  <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
- <DialogContent className="max-w-4xl h-144 bg-card border border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden flex flex-col">
+ <DialogContent className="max-w-4xl h-144 bg-card border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden flex flex-col">
  <div className="px-space-5 pt-space-5 pb-space-4 border-b border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.005)] shrink-0 flex items-center justify-between">
  <div className="flex items-center gap-space-2.5">
  <div className="h-8 w-8 radius-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -2052,7 +2052,7 @@ const handleExecuteIngestion = async () => {
 
  <ScrollArea className="flex-1 min-h-0 p-space-5 space-y-space-4" horizontal={false}>
  {discoveredPages.some(p => p.status === "excluded") && (
- <div className="p-space-3 bg-amber-500/5 border border-amber-500/15 radius-lg flex gap-space-3 items-start text-caption text-amber-500">
+ <div className="p-space-3 bg-amber-500/5 border-amber-500/15 radius-lg flex gap-space-3 items-start text-caption text-amber-500">
  <AlertTriangle className="h-4 w-4 shrink-0 mt-space-0.5" />
  <div>
  <span className="font-semibold block">Paths Ignored by Crawl Rules</span>
@@ -2061,7 +2061,7 @@ const handleExecuteIngestion = async () => {
  </div>
  )}
 
- <div className="border border-[hsl(var(--foreground)/0.08)] radius-lg overflow-hidden bg-background">
+ <div className="border-[hsl(var(--foreground)/0.08)] radius-lg overflow-hidden bg-background">
  <NativeTable className="w-full text-left border-collapse text-caption">
  <thead>
  <tr className="border-b border-[hsl(var(--foreground)/0.08)] text-caption font-semibold text-muted-foreground bg-[hsl(var(--foreground)/0.005)] uppercase tracking-wider select-none">
@@ -2123,7 +2123,7 @@ const handleExecuteIngestion = async () => {
  <td className="p-space-3 text-center text-muted-foreground font-mono text-caption">{page.estimatedChunks}</td>
  <td className="p-space-3">
  {page.suggestedCategory ? (
- <span className="inline-flex text-caption font-semibold border border-primary/10 bg-primary/5 text-primary px-space-2 py-space-0.5 radius-full">
+ <span className="inline-flex text-caption font-semibold border-primary/10 bg-primary/5 text-primary px-space-2 py-space-0.5 radius-full">
  {page.suggestedCategory}
  </span>
  ) : (
@@ -2168,7 +2168,7 @@ const handleExecuteIngestion = async () => {
  {/* DIALOG 6: LIVE INGESTION PROGRESS OVERLAY */}
  {/* ========================================== */}
  <Dialog open={isProgressOpen} onOpenChange={() => {}}>
- <DialogContent className="max-w-md bg-card border border-[hsl(var(--foreground)/0.08)] p-space-6 overflow-hidden flex flex-col items-center justify-center text-center select-none">
+ <DialogContent className="max-w-md bg-card border-[hsl(var(--foreground)/0.08)] p-space-6 overflow-hidden flex flex-col items-center justify-center text-center select-none">
  <div className="h-12 w-12 radius-full bg-primary/10 flex items-center justify-center text-primary mb-space-4 animate-pulse">
  <Loader2 className="h-6 w-6 animate-spin" />
  </div>
@@ -2198,14 +2198,14 @@ const handleExecuteIngestion = async () => {
  if (!open) setSelectedHistoryItem(null);
  setImportHistoryOpen(open);
  }}>
- <DialogContent className="max-w-2xl bg-card border border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden flex flex-col h-128">
+ <DialogContent className="max-w-2xl bg-card border-[hsl(var(--foreground)/0.08)] p-space-0 overflow-hidden flex flex-col h-128">
  {selectedHistoryItem ? (
  <div className="flex flex-col h-full overflow-hidden">
  <div className="px-space-5 pt-space-5 pb-space-4 border-b border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.005)] shrink-0 flex items-center gap-space-2.5">
  <Button
  variant="outline"
  onClick={() => setSelectedHistoryItem(null)}
- className="h-8 w-8 p-space-0 radius-lg hover:bg-[hsl(var(--foreground)/0.02)] cursor-pointer flex items-center justify-center shrink-0 border border-[hsl(var(--foreground)/0.08)]"
+ className="h-8 w-8 p-space-0 radius-lg hover:bg-[hsl(var(--foreground)/0.02)] cursor-pointer flex items-center justify-center shrink-0 border-[hsl(var(--foreground)/0.08)]"
  >
  <ChevronRight className="h-4 w-4 rotate-180 text-muted-foreground" />
  </Button>
@@ -2218,7 +2218,7 @@ const handleExecuteIngestion = async () => {
  </div>
 
  <ScrollArea className="flex-1 min-h-0 p-space-5" horizontal={false}>
- <div className="border border-[hsl(var(--foreground)/0.08)] radius-lg overflow-hidden bg-background">
+ <div className="border-[hsl(var(--foreground)/0.08)] radius-lg overflow-hidden bg-background">
  <NativeTable className="w-full text-left border-collapse text-caption">
  <thead>
  <tr className="border-b border-[hsl(var(--foreground)/0.08)] text-caption font-semibold text-muted-foreground bg-[hsl(var(--foreground)/0.005)] uppercase tracking-wider select-none">
@@ -2243,15 +2243,15 @@ const handleExecuteIngestion = async () => {
  </td>
  <td className="p-space-3">
  {isIngested ? (
- <span className="inline-flex text-caption font-semibold border border-emerald-500/15 bg-emerald-500/5 text-emerald-600 px-space-2 py-space-0.5 radius-full">
+ <span className="inline-flex text-caption font-semibold border-emerald-500/15 bg-emerald-500/5 text-emerald-600 px-space-2 py-space-0.5 radius-full">
  Ingested
  </span>
  ) : page.status === "excluded" ? (
- <span className="inline-flex text-caption font-semibold border border-muted-foreground/15 bg-secondary text-muted-foreground/75 px-space-2 py-space-0.5 radius-full">
+ <span className="inline-flex text-caption font-semibold border-muted-foreground/15 bg-secondary text-muted-foreground/75 px-space-2 py-space-0.5 radius-full">
  Excluded
  </span>
  ) : (
- <span className="inline-flex text-caption font-semibold border border-amber-500/15 bg-amber-500/5 text-amber-600 px-space-2 py-space-0.5 radius-full">
+ <span className="inline-flex text-caption font-semibold border-amber-500/15 bg-amber-500/5 text-amber-600 px-space-2 py-space-0.5 radius-full">
  Not Ingested
  </span>
  )}
@@ -2262,18 +2262,18 @@ const handleExecuteIngestion = async () => {
  <Button
  variant="ghost"
  onClick={async () => {
-                        if (confirm(`Remove page "${page.title}" from the Knowledge Base?`)) {
-                          const res = await deleteKnowledgeDocumentAction(matchingDoc.id);
-                          if (res.success) {
-                            toast.success("Page Removed", `"${page.title}" removed from knowledge base.`);
-                            router.refresh();
-                            setDocuments((prev: any[]) => prev.filter((d: any) => d.id !== matchingDoc.id));
-                          } else {
-                            toast.error("Failed to remove page", formatUserErrorMessage(res.error));
-                          }
-                        }
+ if (confirm(`Remove page "${page.title}" from the Knowledge Base?`)) {
+ const res = await deleteKnowledgeDocumentAction(matchingDoc.id);
+ if (res.success) {
+ toast.success("Page Removed", `"${page.title}" removed from knowledge base.`);
+ router.refresh();
+ setDocuments((prev: any[]) => prev.filter((d: any) => d.id !== matchingDoc.id));
+ } else {
+ toast.error("Failed to remove page", formatUserErrorMessage(res.error));
+ }
+ }
  }}
- className="h-7 w-7 p-space-0 radius-md border border-rose-500/15 bg-rose-500/5 flex items-center justify-center text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 cursor-pointer ml-auto"
+ className="h-7 w-7 p-space-0 radius-md border-rose-500/15 bg-rose-500/5 flex items-center justify-center text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 cursor-pointer ml-auto"
  title="Remove from Knowledge Base"
  >
  <Trash className="h-3.5 w-3.5" />
@@ -2324,7 +2324,7 @@ const handleExecuteIngestion = async () => {
  </p>
  </div>
  ) : (
- <div className="border border-[hsl(var(--foreground)/0.08)] radius-lg overflow-hidden bg-background">
+ <div className="border-[hsl(var(--foreground)/0.08)] radius-lg overflow-hidden bg-background">
  <NativeTable className="w-full text-left border-collapse text-caption">
  <thead>
  <tr className="border-b border-[hsl(var(--foreground)/0.08)] text-caption font-semibold text-muted-foreground bg-[hsl(var(--foreground)/0.005)] uppercase tracking-wider select-none">

@@ -78,7 +78,7 @@ export default function AboutPage() {
  { value:"40+", label:"Countries"},
  { value:"2M+", label:"Conversations Handled"},
  ].map((m) => (
- <div key={m.label} className="text-center radius-lg border border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.02)] px-space-8 py-space-5 min-w-32">
+ <div key={m.label} className="text-center radius-lg border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.02)] px-space-8 py-space-5 min-w-32">
  <p className="text-heading-lg text-primary font-mono mb-space-1">{m.value}</p>
  <p className="text-caption text-muted-foreground">{m.label}</p>
  </div>
@@ -91,7 +91,7 @@ export default function AboutPage() {
  <section className="border-y border-[hsl(var(--foreground)/0.06)] py-space-20">
  <div className="mx-auto max-w-5xl px-space-6">
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-space-8">
- <div className="radius-2xl border border-primary/20 bg-primary/[0.03] p-space-8">
+ <div className="radius-2xl border-primary/20 bg-primary/[0.03] p-space-8">
  <div className="h-10 w-10 radius-lg bg-primary/10 text-primary flex items-center justify-center mb-space-5">
  <Target className="h-5 w-5"/>
  </div>
@@ -103,7 +103,7 @@ export default function AboutPage() {
  A dental clinic in Lagos should have the same 24/7 Operator AI as a hospital chain. A solo lawyer in Mumbai should never miss a lead because they were in court.
  </p>
  </div>
- <div className="radius-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/65 p-space-8">
+ <div className="radius-2xl border-[hsl(var(--foreground)/0.06)] bg-card/65 p-space-8">
  <div className="h-10 w-10 radius-lg bg-primary/10 text-primary flex items-center justify-center mb-space-5">
  <Globe className="h-5 w-5"/>
  </div>
@@ -123,7 +123,7 @@ export default function AboutPage() {
  <section className="py-space-28 md:py-space-36">
  <div className="mx-auto max-w-3xl px-space-6">
  <div className="mb-space-12 text-center">
- <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border-primary/20 bg-primary/5 mb-space-6">
  <span className="text-caption uppercase tracking-widest text-primary font-semibold">Why We Exist</span>
  </div>
  <h2 className="text-heading-lg tracking-tight-sm text-foreground mb-space-6">
@@ -156,7 +156,7 @@ export default function AboutPage() {
  <section className="py-space-20 border-y border-[hsl(var(--foreground)/0.06)]">
  <div className="mx-auto max-w-5xl px-space-6">
  <div className="mb-space-16 text-center">
- <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border-primary/20 bg-primary/5 mb-space-6">
  <span className="text-caption uppercase tracking-widest text-primary font-semibold">Our Values</span>
  </div>
  <h2 className="text-heading-lg tracking-tight-sm text-foreground">
@@ -173,7 +173,7 @@ export default function AboutPage() {
  key={v.title}
  className={`radius-2xl p-space-6 transition-all duration-300 ${isDarkCard
  ?"bg-foreground text-background scale-[1.02] border-none"
- :"border border-[hsl(var(--foreground)/0.06)] bg-card/65 hover:border-primary/20"
+ :"border-[hsl(var(--foreground)/0.06)] bg-card/65 hover:border-primary/20"
  }`}
  >
  <h3 className={`text-body-sm font-semibold mb-space-2 ${isDarkCard ?"text-background":"text-foreground"}`}>{v.title}</h3>
@@ -189,7 +189,7 @@ export default function AboutPage() {
  <section className="py-space-28 md:py-space-36">
  <div className="mx-auto max-w-3xl px-space-6">
  <div className="mb-space-16 text-center">
- <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border-primary/20 bg-primary/5 mb-space-6">
  <span className="text-caption uppercase tracking-widest text-primary font-semibold">Product Journey</span>
  </div>
  <h2 className="text-heading-lg tracking-tight-sm text-foreground">
@@ -214,11 +214,11 @@ export default function AboutPage() {
  </div>
  {/* Circle Indicator (Image 5 style) */}
  <div className="relative hidden sm:flex">
- <div className="h-6 w-6 radius-full border border-primary bg-card text-primary flex items-center justify-center text-caption font-semibold mt-space-1 shrink-0 z-10 font-mono">
+ <div className="h-6 w-6 radius-full border-primary bg-card text-primary flex items-center justify-center text-caption font-semibold mt-space-1 shrink-0 z-10 font-mono">
  {i + 1}
  </div>
  </div>
- <div className="flex-1 radius-2xl border border-[hsl(var(--foreground)/0.06)] bg-card/65 p-space-5 hover:border-primary/20 hover:scale-[1.01] transition-all">
+ <div className="flex-1 radius-2xl border-[hsl(var(--foreground)/0.06)] bg-card/65 p-space-5 hover:border-primary/20 hover:scale-[1.01] transition-all">
  <div className="flex items-center gap-space-2 mb-space-2">
  <span className="text-caption uppercase tracking-wider text-primary sm:hidden font-semibold font-mono">{t.year} {t.q}</span>
  <span className="text-body-sm font-semibold text-foreground">{t.event}</span>
@@ -236,7 +236,7 @@ export default function AboutPage() {
  <section className="py-space-20 border-y border-[hsl(var(--foreground)/0.06)]">
  <div className="mx-auto max-w-5xl px-space-6">
  <div className="mb-space-16 text-center">
- <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border-primary/20 bg-primary/5 mb-space-6">
  <span className="text-caption uppercase tracking-widest text-primary font-semibold">Leadership</span>
  </div>
  <h2 className="text-heading-lg tracking-tight-sm text-foreground">
@@ -249,7 +249,7 @@ export default function AboutPage() {
  {TEAM.map((p) => (
  <div
  key={p.name}
- className={`radius-2xl border p-space-6 hover:border-primary/20 hover:scale-[1.02] transition-all duration-300 bg-card/65 flex flex-col justify-between ${p.isHiring ?"border-dashed border-[hsl(var(--foreground)/0.15)] bg-card/30":"border-[hsl(var(--foreground)/0.06)]"
+ className={`radius-2xl border p-space-6 hover:border-primary/20 hover:scale-[1.02] transition-all duration-300 bg-card/65 flex flex-col justify-between ${p.isHiring ?"border-[hsl(var(--foreground)/0.15)] bg-card/30":"border-[hsl(var(--foreground)/0.06)]"
  }`}
  >
  <div>
@@ -270,7 +270,7 @@ export default function AboutPage() {
  <section className="py-space-28 md:py-space-36">
  <div className="mx-auto max-w-3xl px-space-6">
  <div className="mb-space-12 text-center">
- <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border-primary/20 bg-primary/5 mb-space-6">
  <span className="text-caption uppercase tracking-widest text-primary font-semibold">Roadmap</span>
  </div>
  <h2 className="text-heading-lg tracking-tight-sm text-foreground">
@@ -279,7 +279,7 @@ export default function AboutPage() {
  What we're <span className="text-primary">building next.</span>
  </h2>
  </div>
- <div className="radius-xl border border-[hsl(var(--foreground)/0.06)] divide-y divide-[hsl(var(--foreground)/0.06)]">
+ <div className="radius-xl border-[hsl(var(--foreground)/0.06)] divide-y divide-[hsl(var(--foreground)/0.06)]">
  {ROADMAP.map((r) => (
  <div key={r.item} className="flex items-center justify-between p-space-5 hover:bg-[hsl(var(--foreground)/0.02)] transition-colors">
  <div className="flex items-center gap-space-3">
@@ -300,7 +300,7 @@ export default function AboutPage() {
  <section className="relative py-space-28 md:py-space-36 overflow-hidden border-t border-[hsl(var(--foreground)/0.06)]">
  <div className="absolute inset-space-0 dot-grid grid-fade-y pointer-events-none"/>
  <div className="relative mx-auto max-w-2xl px-space-6 text-center">
- <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border border-primary/20 bg-primary/5 mb-space-6">
+ <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border-primary/20 bg-primary/5 mb-space-6">
  <span className="text-caption uppercase tracking-widest text-primary font-semibold">Join Us</span>
  </div>
  <h2 className="text-heading-lg sm:text-heading-lg tracking-tight-sm text-foreground mb-space-5">
