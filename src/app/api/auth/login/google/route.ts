@@ -3,7 +3,7 @@ import { getGoogleOAuthConfig } from "@/lib/auth/google-config";
 import crypto from "crypto";
 
 export async function GET(request: NextRequest) {
-  const { clientId } = getGoogleOAuthConfig();
+  const { clientId, clientSecret } = getGoogleOAuthConfig();
 
   if (!clientId) {
     return NextResponse.redirect(
@@ -15,7 +15,14 @@ export async function GET(request: NextRequest) {
   const proto = request.headers.get("x-forwarded-proto") || (process.env.NODE_ENV === "production" ? "https" : "http");
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${proto}://${host}`;
   const redirectUri = `${baseUrl}/api/auth/callback/google`;
-  const state = crypto.randomBytes(16).toString("hex");
+
+  // Generate cryptographic stateless signed state token to resist cross-browser cookie blocking (Brave, Safari)
+  const timestamp = Date.now().toString();
+  const nonce = crypto.randomBytes(16).toString("hex");
+  const payload = `${nonce}_${timestamp}`;
+  const secretKey = clientSecret || "operator_oauth_secret_default";
+  const signature = crypto.createHmac("sha256", secretKey).update(payload).digest("hex");
+  const state = `${payload}_${signature}`;
 
   const googleAuthUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   googleAuthUrl.searchParams.set("client_id", clientId);
@@ -32,7 +39,7 @@ export async function GET(request: NextRequest) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 10, // 10 minutes
+    maxAge: 60 * 15, // 15 minutes
   });
 
   return response;

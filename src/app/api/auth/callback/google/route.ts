@@ -29,17 +29,37 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Validate state
-  if (!state || !savedState || state !== savedState) {
-    return NextResponse.redirect(
-      new URL("/sign-in?error=Invalid+OAuth+state", request.url)
-    );
-  }
-
   const { clientId, clientSecret } = getGoogleOAuthConfig();
   if (!clientId || !clientSecret) {
     return NextResponse.redirect(
       new URL("/sign-in?error=Google+OAuth+credentials+missing", request.url)
+    );
+  }
+
+  // Validate state (via cookie match OR cryptographic HMAC signature check)
+  let isValidState = false;
+  if (state) {
+    if (savedState && state === savedState) {
+      isValidState = true;
+    } else {
+      const parts = state.split("_");
+      if (parts.length === 3) {
+        const [nonce, timestamp, signature] = parts;
+        const payload = `${nonce}_${timestamp}`;
+        const secretKey = clientSecret || "operator_oauth_secret_default";
+        const expectedSig = crypto.createHmac("sha256", secretKey).update(payload).digest("hex");
+        const timeDiff = Date.now() - parseInt(timestamp, 10);
+        const isNotExpired = !isNaN(timeDiff) && timeDiff >= 0 && timeDiff < 15 * 60 * 1000;
+        if (signature === expectedSig && isNotExpired) {
+          isValidState = true;
+        }
+      }
+    }
+  }
+
+  if (!isValidState) {
+    return NextResponse.redirect(
+      new URL("/sign-in?error=Invalid+OAuth+state.+Please+try+again.", request.url)
     );
   }
 
