@@ -4,8 +4,9 @@ import Image from "next/image";
 import { auth } from "@/lib/auth/server";
 import { MarketingNav } from"@/components/marketing/nav";
 import { MarketingFooter } from"@/components/marketing/footer";
-import { InteractiveArchitecture } from"@/components/marketing/interactive-architecture";
-import { ProductSimulation } from"@/components/marketing/visualizations/product-simulation";
+import { InteractiveArchitecture } from "@/components/marketing/interactive-architecture";
+import { DashboardPreview } from "@/components/marketing/visualizations/dashboard-preview";
+import { ProductSimulation } from "@/components/marketing/visualizations/product-simulation";
 import { InteractiveIndustryExplorer } from"@/components/marketing/visualizations/industry-explorer";
 import { ROISimulatorSection } from"@/components/marketing/visualizations/revenue-recovery-simulator";
 import { SessionAwareCta } from "@/components/marketing/session-aware-cta";
@@ -186,19 +187,28 @@ export default async function HomePage() {
     </Button>
   </div>
 
-  {/* Browser preview window — Real Dashboard Image */}
+  {/* Interactive Live Operator Cockpit */}
   <div className="relative w-full max-w-screen-xl mt-space-6">
-    <div className="absolute -inset-space-8 mesh-glow opacity-[0.18] pointer-events-none z-0"/>
-    <div className="relative z-10 radius-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] border border-white/10 bg-[#0B0F19]">
-      <Image
-        src="/images/dashboard-hero.png"
-        alt="Operator AI Live Dashboard"
-        width={1366}
-        height={520}
-        unoptimized
-        priority
-        className="w-full h-auto object-contain rounded-2xl block"
-      />
+    <div className="absolute -inset-space-8 mesh-glow opacity-[0.25] pointer-events-none z-0" />
+    <div className="relative z-10 radius-2xl overflow-hidden shadow-[0_25px_70px_-15px_rgba(0,0,0,0.9)] border border-white/10 bg-[#0B0F19]">
+      {/* Top Browser / App Window Chrome */}
+      <div className="flex items-center justify-between px-space-5 py-space-3 bg-white/[0.04] border-b border-white/10 backdrop-blur-md">
+        <div className="flex items-center gap-space-2">
+          <div className="h-3 w-3 rounded-full bg-[#FF5F56]/80 border border-[#E0443E]/60" />
+          <div className="h-3 w-3 rounded-full bg-[#FFBD2E]/80 border border-[#DEA123]/60" />
+          <div className="h-3 w-3 rounded-full bg-[#27C93F]/80 border border-[#1AAB29]/60" />
+        </div>
+        <div className="flex items-center gap-space-2 bg-black/40 border border-white/10 px-space-4 py-space-1 radius-full text-caption font-mono text-muted-foreground/80">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span>app.operator.ai/live-cockpit</span>
+        </div>
+        <div className="flex items-center gap-space-2 text-caption text-emerald-400 font-mono text-xs hidden sm:flex">
+          <span>⚡ Latency: 420ms</span>
+          <span className="text-white/20">|</span>
+          <span>100% Uptime</span>
+        </div>
+      </div>
+      <DashboardPreview />
     </div>
   </div>
 
