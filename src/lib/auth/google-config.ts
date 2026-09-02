@@ -85,3 +85,12 @@ export function getGoogleOAuthConfig() {
     clientSecret: (clientSecret || "").trim(),
   };
 }
+
+export function getGoogleRedirectUri(requestHost?: string | null): string {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")}/api/auth/callback/google`;
+  }
+  const host = requestHost || "operator-azure.vercel.app";
+  const proto = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
+  return `${proto}://${host}/api/auth/callback/google`;
+}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGoogleOAuthConfig } from "@/lib/auth/google-config";
+import { getGoogleOAuthConfig, getGoogleRedirectUri } from "@/lib/auth/google-config";
 import { db } from "@/server/db";
 import {
   users,
@@ -35,9 +35,7 @@ export async function GET(request: NextRequest) {
   }
 
   const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || request.nextUrl.host;
-  const proto = request.headers.get("x-forwarded-proto") || (process.env.NODE_ENV === "production" ? "https" : "http");
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${proto}://${host}`;
-  const redirectUri = `${baseUrl}/api/auth/callback/google`;
+  const redirectUri = getGoogleRedirectUri(host);
 
   try {
     // 1. Exchange authorization code for tokens directly with Google

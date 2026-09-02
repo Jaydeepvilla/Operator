@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGoogleOAuthConfig } from "@/lib/auth/google-config";
+import { getGoogleOAuthConfig, getGoogleRedirectUri } from "@/lib/auth/google-config";
 import crypto from "crypto";
 
 export async function GET(request: NextRequest) {
@@ -12,9 +12,7 @@ export async function GET(request: NextRequest) {
   }
 
   const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || request.nextUrl.host;
-  const proto = request.headers.get("x-forwarded-proto") || (process.env.NODE_ENV === "production" ? "https" : "http");
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${proto}://${host}`;
-  const redirectUri = `${baseUrl}/api/auth/callback/google`;
+  const redirectUri = getGoogleRedirectUri(host);
   const state = crypto.randomBytes(16).toString("hex");
 
   const googleAuthUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
