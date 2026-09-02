@@ -63,6 +63,9 @@ export async function markOrganizationVerifiedAction(_orgId?: string) {
       .update(organizations)
       .set({
         verificationStatus: "verified",
+        onboardingStatus: "completed",
+        onboardingStep: "completed",
+        onboardingCompletedAt: new Date(),
         updatedAt: new Date(),
       })
       .where(eq(organizations.id, organizationId));
