@@ -27,8 +27,11 @@ export const servicesRepository = {
       .where(eq(services.organizationId, organizationId));
   },
 
-  async getById(id: string) {
-    const [service] = await db.select().from(services).where(eq(services.id, id));
+  async getById(id: string, organizationId?: string) {
+    const conditions = organizationId
+      ? and(eq(services.id, id), eq(services.organizationId, organizationId))
+      : eq(services.id, id);
+    const [service] = await db.select().from(services).where(conditions);
     return service || null;
   },
 
@@ -37,17 +40,21 @@ export const servicesRepository = {
     return newService;
   },
 
-  async update(id: string, service: Partial<NewService> & { isArchived?: boolean; isActive?: boolean }) {
+  async update(id: string, organizationId: string, service: Partial<NewService> & { isArchived?: boolean; isActive?: boolean }) {
     const [updated] = await db
       .update(services)
       .set({ ...service, updatedAt: new Date() })
-      .where(eq(services.id, id))
+      .where(and(eq(services.id, id), eq(services.organizationId, organizationId)))
       .returning();
     return updated;
   },
 
-  async delete(id: string) {
-    await db.delete(services).where(eq(services.id, id));
+  async delete(id: string, organizationId: string) {
+    const [deleted] = await db
+      .delete(services)
+      .where(and(eq(services.id, id), eq(services.organizationId, organizationId)))
+      .returning();
+    return deleted;
   },
 
   // Categories

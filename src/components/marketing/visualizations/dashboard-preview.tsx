@@ -148,7 +148,7 @@ export function DashboardPreview() {
       timeline: [
         {
           title: "Call Answered",
-          desc: "0.2s via Nexx SIP Gateway",
+          desc: "0.2s via Operator SIP Gateway",
           icon: <Phone className="h-3.5 w-3.5" />,
           active: true,
         },
@@ -273,7 +273,7 @@ export function DashboardPreview() {
       timeline: [
         {
           title: "Call Answered",
-          desc: "0.1s via Nexx SIP",
+          desc: "0.1s via Operator SIP",
           icon: <Phone className="h-3.5 w-3.5" />,
           active: true,
         },
@@ -455,7 +455,7 @@ export function DashboardPreview() {
               </div>
               <div className="xl:flex flex-col min-w-0 hidden">
                 <span className="text-body-sm font-semibold tracking-tight text-foreground flex items-center gap-space-1.5 truncate">
-                  Nexx Services{" "}
+                  Operator AI{" "}
                   <ChevronDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
                 </span>
                 <span className="text-caption text-muted-foreground leading-none font-medium truncate mt-space-0.5">
@@ -819,7 +819,7 @@ export function DashboardPreview() {
                       <p className="text-caption text-muted-foreground mt-space-1.5 whitespace-nowrap uppercase tracking-widest">
                         Interaction Ref:{" "}
                         <span className="font-mono text-primary font-semibold tracking-wider ml-space-1">
-                          #NEXX-{selectedCall.id}29-A
+                          #OPR-{selectedCall.id}29-A
                         </span>
                       </p>
                     </div>
@@ -1193,8 +1193,8 @@ export function DashboardPreview() {
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-border-default pb-space-5 gap-space-4">
                   <div>
                     <h4 className="text-body-md font-semibold text-foreground flex items-center gap-space-2">
-                      <BarChart3 className="h-4.5 w-4.5 text-primary" /> Nexx
-                      Services Diagnostics
+                      <BarChart3 className="h-4.5 w-4.5 text-primary" /> Operator
+                      Diagnostics
                     </h4>
                     <p className="text-caption text-muted-foreground mt-space-1 font-medium">
                       Automated savings and capturing rates analysis

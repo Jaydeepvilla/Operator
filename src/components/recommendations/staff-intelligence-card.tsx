@@ -64,7 +64,7 @@ export function StaffIntelligenceCard({ quality }: { quality: HealthScoreResult 
           <span className="text-caption text-muted-foreground">
             Confidence: {quality.confidence}%
           </span>
-          <Link href="/settings/staff" passHref>
+          <Link href="/staff" passHref>
             <Button size="sm" variant="outline" className="gap-space-1 h-8 px-space-2">
               Optimize <ArrowRight className="h-3 w-3" />
             </Button>

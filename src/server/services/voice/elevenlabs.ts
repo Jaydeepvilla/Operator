@@ -43,8 +43,9 @@ export class ElevenLabsTtsProvider implements TextToSpeechProvider {
       });
 
       if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`ElevenLabs API returned HTTP ${response.status}: ${errText}`);
+        const errText = await response.text().catch(() => "");
+        console.warn(`[ElevenLabs TTS] HTTP ${response.status} (${errText}). Falling back to OpenAI Voice TTS...`);
+        return await this.synthesizeWithOpenAI(text);
       }
 
       const arrayBuffer = await response.arrayBuffer();
@@ -55,9 +56,39 @@ export class ElevenLabsTtsProvider implements TextToSpeechProvider {
         mimeType: "audio/mpeg",
       };
     } catch (e: any) {
-      console.error("[ElevenLabs TTS] Synthesis request failed:", e);
-      throw e;
+      console.warn("[ElevenLabs TTS] Falling back to OpenAI Voice TTS due to error:", e.message);
+      return await this.synthesizeWithOpenAI(text);
     }
+  }
+
+  private async synthesizeWithOpenAI(text: string): Promise<{ audioBuffer: Buffer; mimeType: string }> {
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (!openaiKey) {
+      throw new Error("Neither ElevenLabs nor OpenAI TTS key is available.");
+    }
+
+    const res = await fetch("https://api.openai.com/v1/audio/speech", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${openaiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "tts-1",
+        input: text,
+        voice: "alloy",
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`OpenAI TTS fallback returned HTTP ${res.status}`);
+    }
+
+    const arrayBuffer = await res.arrayBuffer();
+    return {
+      audioBuffer: Buffer.from(arrayBuffer),
+      mimeType: "audio/mpeg",
+    };
   }
 }
 

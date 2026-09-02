@@ -11,10 +11,10 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   return NextResponse.json({
     status: "online",
-    service: "Nexx Voice Streaming Routing Gateway",
+    service: "Operator Voice Streaming Routing Gateway",
     supportedCodecs: ["audio/x-mulaw", "audio/mulaw"],
     sampleRate: 8000,
-    webSocketUrl: `wss://${req.headers.get("host") || "receptionist.nexx.ai"}/api/webhooks/voice/stream`,
+    webSocketUrl: `wss://${req.headers.get("host") || "app.operator.ai"}/api/webhooks/voice/stream`,
   });
 }
 

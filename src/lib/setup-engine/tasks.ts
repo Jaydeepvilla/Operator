@@ -94,7 +94,7 @@ export const SETUP_TASKS: SetupTask[] = [
     difficulty: "Easy",
     dependencies: ["profile"],
     isCompleted: (state: SetupState) => !!state.settings?.general?.language, // Approximation for now
-    href: "/settings",
+    href: "/settings/ai",
   },
   // Phase: Channels
   {
@@ -108,7 +108,7 @@ export const SETUP_TASKS: SetupTask[] = [
     difficulty: "Medium",
     dependencies: ["profile", "faqs", "services"],
     isCompleted: (state: SetupState) => !!state.channels && state.channels.filter((c: any) => c.status === "active").length > 0,
-    href: "/settings",
+    href: "/channels",
   },
   // Phase: Launch
   {

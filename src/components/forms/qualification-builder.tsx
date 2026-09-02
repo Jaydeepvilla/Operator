@@ -56,11 +56,13 @@ import {
 } from"@/components/shared/dialog";
 import { EmptyState } from"@/components/shared/empty-state";
 import {
- createFlowQuestionAction,
- updateFlowQuestionAction,
- deleteFlowQuestionAction,
- updateFlowQuestionsOrderAction,
-} from"@/server/actions/flows";
+  createFlowQuestionAction,
+  updateFlowQuestionAction,
+  deleteFlowQuestionAction,
+  updateFlowQuestionsOrderAction,
+} from "@/server/actions/flows";
+import { useToast } from "@/components/shared/toast";
+import { formatUserErrorMessage } from "@/lib/errors";
 import { z } from"zod";
 import { cn } from"@/components/shared/utils";
 import { NativeButton } from "@/components/shared/native";
@@ -290,6 +292,7 @@ export function QualificationBuilder({ initialQuestions }: Props) {
  const [actionError, setActionError] = React.useState<string | null>(null);
  const [deletingId, setDeletingId] = React.useState<string | null>(null);
  const [activeId, setActiveId] = React.useState<UniqueIdentifier | null>(null);
+ const toast = useToast();
 
  React.useEffect(() => {
  setQuestions(initialQuestions);
@@ -326,7 +329,11 @@ export function QualificationBuilder({ initialQuestions }: Props) {
  const res = await updateFlowQuestionsOrderAction(
  reordered.map((item) => ({ id: item.id, order: item.order }))
  );
- if (!res.success) alert(res.error ||"Failed to persist ordering");
+ if (!res.success) {
+   toast.error("Failed to persist ordering", formatUserErrorMessage(res.error));
+ } else {
+   toast.success("Order Updated", "Qualification flow step sequence persisted.");
+ }
  };
 
  /* Form */
@@ -401,21 +408,32 @@ export function QualificationBuilder({ initialQuestions }: Props) {
  if (res.success) {
  setIsOpen(false);
  reset();
- } else setActionError(res.error ||"Failed to save question");
+ toast.success(editingQuestion ? "Question Updated" : "Question Added", "Qualification flow question saved.");
+ } else {
+   const errorMsg = formatUserErrorMessage(res.error, "Failed to save question");
+   setActionError(errorMsg);
+   toast.error("Failed to save question", errorMsg);
+ }
  } catch (err: any) {
- setActionError(err?.message ||"An unexpected error occurred");
+ const errorMsg = formatUserErrorMessage(err, "An unexpected error occurred");
+ setActionError(errorMsg);
+ toast.error("Failed to save question", errorMsg);
  } finally {
  setIsSubmitting(false);
  }
  };
 
- const handleDelete = async (id: string) => {
- if (!confirm("Are you sure you want to delete this question?")) return;
- setDeletingId(id);
- const res = await deleteFlowQuestionAction(id);
- setDeletingId(null);
- if (!res.success) alert(res.error ||"Failed to delete question");
- };
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this question?")) return;
+    setDeletingId(id);
+    const res = await deleteFlowQuestionAction(id);
+    setDeletingId(null);
+    if (!res.success) {
+      toast.error("Failed to delete question", formatUserErrorMessage(res.error));
+    } else {
+      toast.success("Question Deleted", "Question removed from qualification flow.");
+    }
+  };
 
  return (
  <div className="flex-1 min-h-0 flex flex-col gap-space-4 max-w-2xl">

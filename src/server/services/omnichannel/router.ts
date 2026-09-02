@@ -17,6 +17,12 @@ import { WebhookMessagePayload, ProviderRegistry } from "./types";
 import { orchestratorService } from "../orchestrator";
 import { crmDeduplicationService } from "../crm/deduplication";
 
+// Register providers
+import "./vonage";
+import "./sinch";
+import "./resend";
+import "./whatsapp";
+
 export const omnichannelRouter = {
   /**
    * Route incoming message payload received via webhooks
@@ -273,7 +279,7 @@ export const omnichannelRouter = {
           channelId,
           conversationId,
           direction: "outgoing",
-          senderId: channel.type === "email" ? (config.user || "nexx@assistant.com") : (config.fromNumber || "business-handle"),
+          senderId: channel.type === "email" ? (config.user || "assistant@operator.ai") : (config.fromNumber || "business-handle"),
           recipientId,
           content,
           status: "queued",

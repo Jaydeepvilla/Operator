@@ -14,6 +14,14 @@ export const metadata: Metadata = {
   title: "Operator | 24/7 AI That Books, Qualifies & Answers",
   description:
     "Deploy Operator AI to answer calls, book appointments, capture leads, and support customers 24/7 — for dental clinics, law firms, salons, and service businesses.",
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/favicon.ico" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default async function RootLayout({

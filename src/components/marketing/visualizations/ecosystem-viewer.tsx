@@ -752,7 +752,7 @@ export function EcosystemViewer() {
  <div className="relative radius-md border border-primary/30 bg-neutral-900/90 backdrop-blur-md text-center transition-all duration-base w-20 h-20 flex flex-col justify-center items-center ">
  <div className="absolute inset-space-0 radius-md bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.12),transparent_70%)] pointer-events-none" />
  <Brain className="h-5 w-5 text-primary animate-pulse" />
- <span className="text-caption uppercase tracking-widest text-primary mt-space-1 relative z-10 font-semibold">Nexx Core</span>
+ <span className="text-caption uppercase tracking-widest text-primary mt-space-1 relative z-10 font-semibold">Operator Core</span>
  </div>
  </div>
  </div>

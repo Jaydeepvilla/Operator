@@ -34,15 +34,14 @@ export async function checkUserOrganization() {
     const activeOrgCookie = cookieStore.get("active_org_id")?.value;
     const targetOrgId = orgId || activeOrgCookie;
 
-    // 1. If explicit org ID is present, fetch it
+    // 1. If explicit org ID is present, verify membership
     if (targetOrgId) {
-      try {
+      const isMember = await membershipRepository.getByUserAndOrg(userId, targetOrgId);
+      if (isMember) {
         const org = await organizationRepository.getById(targetOrgId);
         if (org) {
           return { hasOrg: true, org };
         }
-      } catch (e) {
-        // Continue to membership check
       }
     }
 

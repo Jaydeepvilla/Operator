@@ -219,7 +219,7 @@ export default function SecurityPage() {
                     <Mail className="h-5 w-5 text-primary shrink-0" />
                     <div>
                       <p className="text-caption text-muted-foreground">Email</p>
-                      <NativeA href="mailto:security@nexx.ai" className="text-body-sm  text-foreground hover:text-primary transition-colors">security@nexx.ai</NativeA>
+                      <NativeA href="mailto:security@operator.ai" className="text-body-sm  text-foreground hover:text-primary transition-colors">security@operator.ai</NativeA>
                     </div>
                   </div>
                   <div className="flex items-start gap-space-3">

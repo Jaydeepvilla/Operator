@@ -38,6 +38,8 @@ export async function sendMessageAction(data: {
   }
 }
 
+import { auth, requireOrganizationAccess } from "@/lib/auth/server";
+
 export async function getConversationHistoryAction(conversationId: string) {
   try {
     if (!conversationId) {
@@ -47,6 +49,15 @@ export async function getConversationHistoryAction(conversationId: string) {
     const conversation = await conversationsRepository.findById(conversationId);
     if (!conversation) {
       throw new Error("Conversation not found");
+    }
+
+    // If caller is authenticated, enforce organization isolation
+    const session = await auth();
+    if (session?.userId) {
+      const { organizationId } = await requireOrganizationAccess();
+      if (conversation.organizationId !== organizationId) {
+        throw new Error("Conversation not found or access denied");
+      }
     }
 
     const messages = await messagesRepository.listByConversation(conversationId);

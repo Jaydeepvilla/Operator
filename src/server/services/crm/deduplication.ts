@@ -6,10 +6,11 @@ import {
   appointments, 
   leadAnswers, 
   leadScores, 
-  inboxParticipants,
   auditLogs 
 } from "../../db/schema";
-import { eq, and, or, inArray, sql } from "drizzle-orm";
+import { eq, and, inArray, sql } from "drizzle-orm";
+import { normalizePhoneNumber, normalizeEmail } from "@/lib/identity";
+import { identityResolverService } from "../identity";
 
 export interface DuplicateCandidateGroup {
   matchType: "phone" | "email" | "name";
@@ -19,6 +20,8 @@ export interface DuplicateCandidateGroup {
     name: string | null;
     email: string | null;
     phone: string | null;
+    normalizedPhone?: string | null;
+    normalizedEmail?: string | null;
     status: string | null;
     leadScore: number | null;
     createdAt: Date;
@@ -26,24 +29,27 @@ export interface DuplicateCandidateGroup {
   }>;
 }
 
-export function normalizePhone(rawPhone?: string | null): string | null {
+export function normalizePhone(rawPhone?: string | null, defaultCountry?: string | null): string | null {
   if (!rawPhone) return null;
-  const digits = rawPhone.replace(/\D/g, "");
-  if (!digits) return null;
-  // If 10 digits and starts without country code in North America, or raw starts with +, normalize
-  return digits;
+  const res = normalizePhoneNumber(rawPhone, { defaultCountry });
+  return res.success ? res.e164 : null;
 }
 
-export function normalizeEmail(rawEmail?: string | null): string | null {
+export function normalizeEmailStr(rawEmail?: string | null): string | null {
   if (!rawEmail) return null;
-  return rawEmail.trim().toLowerCase();
+  const res = normalizeEmail(rawEmail);
+  return res.success ? res.normalizedEmail : null;
 }
+
+export { normalizeEmailStr as normalizeEmail };
 
 export const crmDeduplicationService = {
   /**
-   * Discovers potential duplicate lead profiles within an organization based on phone, email, or exact name.
+   * Discovers potential duplicate lead profiles within an organization based on canonical phone or email.
    */
   async findDuplicateCandidates(organizationId: string): Promise<DuplicateCandidateGroup[]> {
+    const orgCountry = await identityResolverService.getOrganizationCountry(organizationId);
+
     const allProfiles = await db
       .select()
       .from(leadProfiles)
@@ -54,22 +60,25 @@ export const crmDeduplicationService = {
     const nameGroups = new Map<string, typeof allProfiles>();
 
     for (const profile of allProfiles) {
-      const cleanPhone = normalizePhone(profile.phone);
-      if (cleanPhone && cleanPhone.length >= 7) {
+      // 1. Group by normalized E.164 phone
+      const cleanPhone = profile.normalizedPhone || normalizePhone(profile.phone, orgCountry);
+      if (cleanPhone) {
         const existing = phoneGroups.get(cleanPhone) || [];
         existing.push(profile);
         phoneGroups.set(cleanPhone, existing);
       }
 
-      const cleanEmail = normalizeEmail(profile.email);
-      if (cleanEmail && cleanEmail.includes("@")) {
+      // 2. Group by normalized email
+      const cleanEmail = profile.normalizedEmail || normalizeEmailStr(profile.email);
+      if (cleanEmail) {
         const existing = emailGroups.get(cleanEmail) || [];
         existing.push(profile);
         emailGroups.set(cleanEmail, existing);
       }
 
+      // 3. Exact name match (only for specific non-generic full names)
       const cleanName = profile.name?.trim().toLowerCase();
-      if (cleanName && cleanName.length > 2 && cleanName !== "unknown" && cleanName !== "customer") {
+      if (cleanName && cleanName.length > 3 && !cleanName.includes("contact") && cleanName !== "unknown" && cleanName !== "customer") {
         const existing = nameGroups.get(cleanName) || [];
         existing.push(profile);
         nameGroups.set(cleanName, existing);
@@ -89,6 +98,8 @@ export const crmDeduplicationService = {
             name: p.name,
             email: p.email,
             phone: p.phone,
+            normalizedPhone: p.normalizedPhone,
+            normalizedEmail: p.normalizedEmail,
             status: p.status,
             leadScore: p.leadScore,
             createdAt: p.createdAt,
@@ -100,7 +111,6 @@ export const crmDeduplicationService = {
     // Aggregate email matches
     for (const [email, group] of emailGroups.entries()) {
       if (group.length > 1) {
-        // Only add if not already covered identically
         candidateGroups.push({
           matchType: "email",
           matchValue: email,
@@ -109,6 +119,8 @@ export const crmDeduplicationService = {
             name: p.name,
             email: p.email,
             phone: p.phone,
+            normalizedPhone: p.normalizedPhone,
+            normalizedEmail: p.normalizedEmail,
             status: p.status,
             leadScore: p.leadScore,
             createdAt: p.createdAt,
@@ -129,98 +141,14 @@ export const crmDeduplicationService = {
     senderUserId: string;
     senderName?: string | null;
   }): Promise<{ leadProfileId: string; isNew: boolean }> {
-    const { organizationId, channelType, senderUserId, senderName } = params;
-
-    // 1. Direct channel mapping check
-    const existingChannel = await db.query.contactChannels.findFirst({
-      where: and(
-        eq(contactChannels.organizationId, organizationId),
-        eq(contactChannels.channelType, channelType),
-        eq(contactChannels.channelUserId, senderUserId)
-      ),
+    const res = await identityResolverService.resolveCustomerIdentity({
+      organizationId: params.organizationId,
+      channel: params.channelType,
+      channelUserId: params.senderUserId,
+      name: params.senderName,
     });
 
-    if (existingChannel) {
-      return { leadProfileId: existingChannel.contactId, isNew: false };
-    }
-
-    // 2. Omnichannel Deduplication Lookup
-    // If incoming is email or phone/sms/whatsapp, check if an existing profile has this phone or email
-    let matchingProfile = null;
-
-    if (channelType === "email") {
-      const cleanEmail = normalizeEmail(senderUserId);
-      if (cleanEmail) {
-        matchingProfile = await db.query.leadProfiles.findFirst({
-          where: and(
-            eq(leadProfiles.organizationId, organizationId),
-            sql`LOWER(${leadProfiles.email}) = ${cleanEmail}`
-          ),
-        });
-      }
-    } else if (channelType === "sms" || channelType === "whatsapp" || channelType === "voice") {
-      const cleanPhone = normalizePhone(senderUserId);
-      if (cleanPhone) {
-        // Query profiles with matching digits
-        const profiles = await db
-          .select()
-          .from(leadProfiles)
-          .where(eq(leadProfiles.organizationId, organizationId));
-
-        matchingProfile = profiles.find((p) => normalizePhone(p.phone) === cleanPhone) || null;
-      }
-    }
-
-    // If an existing lead profile matches, attach this channel without creating a duplicate profile!
-    if (matchingProfile) {
-      await db.insert(contactChannels).values({
-        organizationId,
-        contactId: matchingProfile.id,
-        channelType,
-        channelUserId: senderUserId,
-        value: senderUserId,
-        isVerified: true,
-      });
-
-      // Update name if profile was previously untitled
-      if ((!matchingProfile.name || matchingProfile.name.toLowerCase().includes("user")) && senderName) {
-        await db
-          .update(leadProfiles)
-          .set({ name: senderName, updatedAt: new Date() })
-          .where(eq(leadProfiles.id, matchingProfile.id));
-      }
-
-      return { leadProfileId: matchingProfile.id, isNew: false };
-    }
-
-    // 3. Create fresh new lead profile if no matching identity was found
-    const nameToUse = senderName || `${channelType.toUpperCase()} Contact`;
-    const isPhoneChannel = ["sms", "whatsapp", "voice"].includes(channelType);
-
-    const [newLead] = await db
-      .insert(leadProfiles)
-      .values({
-        organizationId,
-        name: nameToUse,
-        phone: isPhoneChannel ? senderUserId : null,
-        email: channelType === "email" ? senderUserId : null,
-        status: "New",
-        leadScore: 0,
-        conversationCount: 1,
-      })
-      .returning();
-
-    // Map initial channel
-    await db.insert(contactChannels).values({
-      organizationId,
-      contactId: newLead.id,
-      channelType,
-      channelUserId: senderUserId,
-      value: senderUserId,
-      isVerified: true,
-    });
-
-    return { leadProfileId: newLead.id, isNew: true };
+    return { leadProfileId: res.leadProfileId, isNew: res.isNew };
   },
 
   /**
@@ -232,11 +160,12 @@ export const crmDeduplicationService = {
     sourceProfileIds: string[],
     userId?: string
   ): Promise<{ success: boolean; mergedCount: number }> {
-    // Filter out target from source IDs
     const validSourceIds = sourceProfileIds.filter((id) => id && id !== targetProfileId);
     if (validSourceIds.length === 0) {
       return { success: true, mergedCount: 0 };
     }
+
+    const orgCountry = await identityResolverService.getOrganizationCountry(organizationId);
 
     return await db.transaction(async (tx) => {
       // 1. Fetch target profile
@@ -268,15 +197,25 @@ export const crmDeduplicationService = {
 
       // 3. Merge profile attributes (fill missing phone, email, notes, score)
       let updatedPhone = target.phone;
+      let updatedNormalizedPhone = target.normalizedPhone;
       let updatedEmail = target.email;
+      let updatedNormalizedEmail = target.normalizedEmail;
       let updatedName = target.name;
       let highestScore = target.leadScore || 0;
       let combinedConversations = target.conversationCount || 0;
 
       for (const src of sources) {
-        if (!updatedPhone && src.phone) updatedPhone = src.phone;
-        if (!updatedEmail && src.email) updatedEmail = src.email;
-        if ((!updatedName || updatedName.toLowerCase().includes("user")) && src.name) {
+        if (!updatedPhone && src.phone) {
+          updatedPhone = src.phone;
+          const pRes = normalizePhoneNumber(src.phone, { organizationCountry: orgCountry });
+          if (pRes.success) updatedNormalizedPhone = pRes.e164;
+        }
+        if (!updatedEmail && src.email) {
+          updatedEmail = src.email;
+          const eRes = normalizeEmail(src.email);
+          if (eRes.success) updatedNormalizedEmail = eRes.normalizedEmail;
+        }
+        if ((!updatedName || updatedName.toLowerCase().includes("contact") || updatedName.toLowerCase().includes("user")) && src.name) {
           updatedName = src.name;
         }
         if ((src.leadScore || 0) > highestScore) highestScore = src.leadScore || 0;
@@ -288,7 +227,9 @@ export const crmDeduplicationService = {
         .set({
           name: updatedName,
           phone: updatedPhone,
+          normalizedPhone: updatedNormalizedPhone || null,
           email: updatedEmail,
+          normalizedEmail: updatedNormalizedEmail || null,
           leadScore: highestScore,
           conversationCount: combinedConversations,
           updatedAt: new Date(),

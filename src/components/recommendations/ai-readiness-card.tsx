@@ -101,7 +101,7 @@ export function AIReadinessCard({ readiness }: { readiness: GlobalAIReadiness })
           <span className="text-caption text-muted-foreground">
             {Object.values(domains).reduce((acc, curr) => acc + curr.improvements.length, 0)} improvements found
           </span>
-          <Link href="/settings" passHref>
+          <Link href="/settings/ai" passHref>
             <Button size="sm" variant="default" className="gap-space-1 h-8 px-space-3 bg-indigo-600 hover:bg-indigo-700 text-white">
               View Readiness <ArrowRight className="h-3 w-3" />
             </Button>

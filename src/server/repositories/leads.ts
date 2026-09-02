@@ -1,15 +1,22 @@
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, or, ilike, sql } from "drizzle-orm";
 import { db } from "../db";
 import { leadProfiles, leadAnswers, leadScores } from "../db/schema";
+import { normalizePhoneNumber, normalizeEmail } from "@/lib/identity";
 
 export interface NewLeadProfile {
   organizationId: string;
   name?: string | null;
   email?: string | null;
   phone?: string | null;
+  normalizedPhone?: string | null;
+  normalizedEmail?: string | null;
   status?: string;
   leadScore?: number;
   summary?: string | null;
+  lifetimeValue?: number;
+  tags?: any;
+  notes?: string | null;
+  conversationCount?: number;
 }
 
 export interface NewLeadAnswer {
@@ -36,6 +43,34 @@ export const leadsRepository = {
     return profile || null;
   },
 
+  async findByNormalizedPhone(organizationId: string, normalizedPhone: string) {
+    if (!normalizedPhone) return null;
+    const [profile] = await db
+      .select()
+      .from(leadProfiles)
+      .where(
+        and(
+          eq(leadProfiles.organizationId, organizationId),
+          eq(leadProfiles.normalizedPhone, normalizedPhone)
+        )
+      );
+    return profile || null;
+  },
+
+  async findByNormalizedEmail(organizationId: string, normalizedEmail: string) {
+    if (!normalizedEmail) return null;
+    const [profile] = await db
+      .select()
+      .from(leadProfiles)
+      .where(
+        and(
+          eq(leadProfiles.organizationId, organizationId),
+          eq(leadProfiles.normalizedEmail, normalizedEmail)
+        )
+      );
+    return profile || null;
+  },
+
   async listProfiles(organizationId: string) {
     return db
       .select()
@@ -44,15 +79,90 @@ export const leadsRepository = {
       .orderBy(desc(leadProfiles.createdAt));
   },
 
+  async searchProfiles(organizationId: string, rawQuery: string) {
+    if (!rawQuery || !rawQuery.trim()) {
+      return this.listProfiles(organizationId);
+    }
+
+    const trimmed = rawQuery.trim();
+    const phoneNorm = normalizePhoneNumber(trimmed);
+    const emailNorm = normalizeEmail(trimmed);
+
+    const conditions = [
+      ilike(leadProfiles.name, `%${trimmed}%`),
+      ilike(leadProfiles.phone, `%${trimmed}%`),
+      ilike(leadProfiles.email, `%${trimmed}%`),
+    ];
+
+    if (phoneNorm.success) {
+      conditions.push(eq(leadProfiles.normalizedPhone, phoneNorm.e164));
+      conditions.push(ilike(leadProfiles.normalizedPhone, `%${phoneNorm.nationalNumber}%`));
+    }
+
+    if (emailNorm.success) {
+      conditions.push(eq(leadProfiles.normalizedEmail, emailNorm.normalizedEmail));
+    }
+
+    return db
+      .select()
+      .from(leadProfiles)
+      .where(
+        and(
+          eq(leadProfiles.organizationId, organizationId),
+          or(...conditions)
+        )
+      )
+      .orderBy(desc(leadProfiles.createdAt));
+  },
+
   async createProfile(profile: NewLeadProfile) {
-    const [newProfile] = await db.insert(leadProfiles).values(profile).returning();
+    let normPhone = profile.normalizedPhone;
+    if (!normPhone && profile.phone) {
+      const pRes = normalizePhoneNumber(profile.phone);
+      if (pRes.success) normPhone = pRes.e164;
+    }
+
+    let normEmail = profile.normalizedEmail;
+    if (!normEmail && profile.email) {
+      const eRes = normalizeEmail(profile.email);
+      if (eRes.success) normEmail = eRes.normalizedEmail;
+    }
+
+    const [newProfile] = await db
+      .insert(leadProfiles)
+      .values({
+        ...profile,
+        normalizedPhone: normPhone || null,
+        normalizedEmail: normEmail || null,
+      })
+      .returning();
     return newProfile;
   },
 
   async updateProfile(id: string, updates: Partial<NewLeadProfile>) {
+    const payload: any = { ...updates, updatedAt: new Date() };
+
+    if (updates.phone !== undefined) {
+      if (updates.phone) {
+        const pRes = normalizePhoneNumber(updates.phone);
+        payload.normalizedPhone = pRes.success ? pRes.e164 : null;
+      } else {
+        payload.normalizedPhone = null;
+      }
+    }
+
+    if (updates.email !== undefined) {
+      if (updates.email) {
+        const eRes = normalizeEmail(updates.email);
+        payload.normalizedEmail = eRes.success ? eRes.normalizedEmail : null;
+      } else {
+        payload.normalizedEmail = null;
+      }
+    }
+
     const [updated] = await db
       .update(leadProfiles)
-      .set({ ...updates, updatedAt: new Date() })
+      .set(payload)
       .where(eq(leadProfiles.id, id))
       .returning();
     return updated;
@@ -77,7 +187,6 @@ export const leadsRepository = {
   },
 
   async upsertAnswer(answer: NewLeadAnswer) {
-    // Check if answer for the same questionText already exists
     const [existing] = await db
       .select()
       .from(leadAnswers)
@@ -114,7 +223,6 @@ export const leadsRepository = {
 
   async createScore(score: NewLeadScore) {
     const [newScore] = await db.insert(leadScores).values(score).returning();
-    // Also update overall leadScore in profile
     await this.updateProfile(score.leadProfileId, { leadScore: score.score });
     return newScore;
   },

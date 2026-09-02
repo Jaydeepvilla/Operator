@@ -10,7 +10,7 @@ export function getBookingRecommendations(state: RecommendationState): Recommend
       title: "Set Business Hours",
       description: "Customers cannot book appointments because business hours are missing. The AI needs to know when you are open.",
       primaryCtaText: "Set Hours",
-      primaryCtaHref: "/settings/business",
+      primaryCtaHref: "/settings",
       estimatedTimeMinutes: 2,
       impact: "High",
       impactReason: "Directly blocks all booking conversion.",

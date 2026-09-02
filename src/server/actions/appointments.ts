@@ -1,24 +1,16 @@
 "use server";
 
-import { auth } from "@/lib/auth/server";
+import { requireOrganizationAccess, assertResourceOwnership } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { eq, and } from "drizzle-orm";
 import { db } from "../db";
 import { appointments, conversations } from "../db/schema";
-import { membershipRepository } from "../repositories/membership";
 import { appointmentsRepository } from "../repositories/appointments";
 import { bookingService } from "../services/booking";
 import { leadsRepository } from "../repositories/leads";
 import { summariesRepository } from "../repositories/summaries";
-
-async function getVerifiedOrgId() {
-  const { userId, orgId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  if (orgId) return orgId;
-  const memberships = await membershipRepository.getByUser(userId);
-  if (memberships.length === 0) throw new Error("No organization found");
-  return memberships[0].organizationId;
-}
+import { organizationRepository } from "../repositories/organization";
+import { parseNaturalDateTime } from "@/lib/date";
 
 export async function getAppointmentsAction(filters?: {
   staffMemberId?: string;
@@ -27,7 +19,9 @@ export async function getAppointmentsAction(filters?: {
   endDate?: string;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
+    const org = await organizationRepository.getById(organizationId);
+    const timezone = org?.timezone || "UTC";
     
     const parsedFilters: any = {};
     if (filters?.staffMemberId && filters.staffMemberId !== "all") {
@@ -37,13 +31,19 @@ export async function getAppointmentsAction(filters?: {
       parsedFilters.status = filters.status;
     }
     if (filters?.startDate) {
-      parsedFilters.startDate = new Date(filters.startDate);
+      const parsedStart = parseNaturalDateTime(filters.startDate, { timezone });
+      if (parsedStart.success) {
+        parsedFilters.startDate = parsedStart.date;
+      }
     }
     if (filters?.endDate) {
-      parsedFilters.endDate = new Date(filters.endDate);
+      const parsedEnd = parseNaturalDateTime(filters.endDate, { timezone });
+      if (parsedEnd.success) {
+        parsedFilters.endDate = parsedEnd.date;
+      }
     }
 
-    const list = await appointmentsRepository.list(orgId, parsedFilters);
+    const list = await appointmentsRepository.list(organizationId, parsedFilters);
     return { success: true, appointments: list };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to load appointments" };
@@ -52,14 +52,10 @@ export async function getAppointmentsAction(filters?: {
 
 export async function getAppointmentDetailsAction(appointmentId: string) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
     
-    // Safety check org mapping
-    const [apt] = await db
-      .select()
-      .from(appointments)
-      .where(and(eq(appointments.id, appointmentId), eq(appointments.organizationId, orgId)));
-    if (!apt) throw new Error("Appointment not found");
+    // Safety check org mapping & IDOR guard
+    const apt = await assertResourceOwnership(appointments, appointmentId, organizationId, "Appointment");
 
     const fullDetails = await appointmentsRepository.findById(appointmentId);
     const history = await appointmentsRepository.getStatusHistory(appointmentId);
@@ -72,14 +68,15 @@ export async function getAppointmentDetailsAction(appointmentId: string) {
     let leadAnswers: any[] = [];
     let summary = null;
 
-    if (apt.leadProfileId) {
-      leadProfile = await leadsRepository.findProfileById(apt.leadProfileId);
-      leadAnswers = await leadsRepository.listAnswers(apt.leadProfileId);
+    const leadProfileId = fullDetails?.appointment?.leadProfileId;
+    if (leadProfileId) {
+      leadProfile = await leadsRepository.findProfileById(leadProfileId);
+      leadAnswers = await leadsRepository.listAnswers(leadProfileId);
       
       const [conv] = await db
         .select()
         .from(conversations)
-        .where(eq(conversations.leadProfileId, apt.leadProfileId))
+        .where(eq(conversations.leadProfileId, leadProfileId))
         .limit(1);
 
       if (conv) {
@@ -114,14 +111,20 @@ export async function createAppointmentAction(data: {
   customerPhone?: string | null;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
+    const org = await organizationRepository.getById(organizationId);
+    const timezone = org?.timezone || "UTC";
 
-    const start = new Date(data.startTime);
+    const parsedStart = parseNaturalDateTime(data.startTime, { timezone });
+    if (!parsedStart.success) {
+      throw new Error(parsedStart.reason || `Invalid appointment start time: "${data.startTime}"`);
+    }
+
     const appointment = await bookingService.createAppointment({
-      organizationId: orgId,
+      organizationId,
       serviceId: data.serviceId,
       staffMemberId: data.staffMemberId,
-      startTime: start,
+      startTime: parsedStart.date,
       customerName: data.customerName,
       customerEmail: data.customerEmail,
       customerPhone: data.customerPhone,
@@ -140,18 +143,20 @@ export async function rescheduleAppointmentAction(data: {
   reason?: string;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(appointments, data.appointmentId, organizationId, "Appointment");
 
-    const [existing] = await db
-      .select()
-      .from(appointments)
-      .where(and(eq(appointments.id, data.appointmentId), eq(appointments.organizationId, orgId)));
-    if (!existing) throw new Error("Appointment not found");
+    const org = await organizationRepository.getById(organizationId);
+    const timezone = org?.timezone || "UTC";
 
-    const start = new Date(data.newStartTime);
+    const parsedNewStart = parseNaturalDateTime(data.newStartTime, { timezone });
+    if (!parsedNewStart.success) {
+      throw new Error(parsedNewStart.reason || `Invalid appointment start time: "${data.newStartTime}"`);
+    }
+
     const updated = await bookingService.rescheduleAppointment(
       data.appointmentId,
-      start,
+      parsedNewStart.date,
       data.reason || "Staff rescheduled from dashboard",
       "staff"
     );
@@ -168,13 +173,8 @@ export async function cancelAppointmentAction(data: {
   reason?: string;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
-
-    const [existing] = await db
-      .select()
-      .from(appointments)
-      .where(and(eq(appointments.id, data.appointmentId), eq(appointments.organizationId, orgId)));
-    if (!existing) throw new Error("Appointment not found");
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(appointments, data.appointmentId, organizationId, "Appointment");
 
     const updated = await bookingService.cancelAppointment(
       data.appointmentId,
@@ -194,16 +194,11 @@ export async function addAppointmentNoteAction(data: {
   noteText: string;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
-
-    const [existing] = await db
-      .select()
-      .from(appointments)
-      .where(and(eq(appointments.id, data.appointmentId), eq(appointments.organizationId, orgId)));
-    if (!existing) throw new Error("Appointment not found");
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(appointments, data.appointmentId, organizationId, "Appointment");
 
     const note = await appointmentsRepository.addNote(
-      orgId,
+      organizationId,
       data.appointmentId,
       data.noteText,
       "staff"
@@ -222,13 +217,8 @@ export async function updateAppointmentStatusAction(data: {
   reason?: string;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
-
-    const [existing] = await db
-      .select()
-      .from(appointments)
-      .where(and(eq(appointments.id, data.appointmentId), eq(appointments.organizationId, orgId)));
-    if (!existing) throw new Error("Appointment not found");
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(appointments, data.appointmentId, organizationId, "Appointment");
 
     const updated = await appointmentsRepository.update(
       data.appointmentId,
@@ -249,8 +239,8 @@ export async function updateAppointmentStatusAction(data: {
  */
 export async function getAppointmentWaitlistAction(status?: string) {
   try {
-    const orgId = await getVerifiedOrgId();
-    const waitlist = await bookingService.getWaitlist(orgId, status);
+    const { organizationId } = await requireOrganizationAccess();
+    const waitlist = await bookingService.getWaitlist(organizationId, status);
     return { success: true, waitlist };
   } catch (error: any) {
     console.error("getAppointmentWaitlistAction error:", error);
@@ -271,14 +261,14 @@ export async function joinAppointmentWaitlistAction(data: {
   leadProfileId?: string;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     if (!data.customerName?.trim() || (!data.customerEmail && !data.customerPhone)) {
       return { success: false, error: "Customer name and at least one contact method (phone or email) are required." };
     }
 
     const entry = await bookingService.joinWaitlist({
-      organizationId: orgId,
+      organizationId,
       staffMemberId: data.staffMemberId,
       serviceId: data.serviceId,
       customerName: data.customerName.trim(),
@@ -295,4 +285,5 @@ export async function joinAppointmentWaitlistAction(data: {
     return { success: false, error: error?.message || "Failed to join waitlist" };
   }
 }
+
 

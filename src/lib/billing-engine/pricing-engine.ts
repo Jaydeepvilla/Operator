@@ -17,7 +17,7 @@ export function checkPricing(state: RecommendationState): RecommendationAction[]
       title: "Add Pricing to Services",
       description: `You have ${servicesWithoutPricing.length} service(s) without a price. Setting up pricing allows clients to pay or deposit online.`,
       primaryCtaText: "Configure Pricing",
-      primaryCtaHref: "/settings/services",
+      primaryCtaHref: "/services",
       estimatedTimeMinutes: 5,
       impact: "High",
       impactReason: "Required to collect payments and deposits.",

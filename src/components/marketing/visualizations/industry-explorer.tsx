@@ -298,7 +298,7 @@ export function InteractiveIndustryExplorer() {
               </div>
               <div className="flex-1 max-w-40 mx-auto">
                 <div className="w-full text-center py-space-0.5 text-caption font-mono tracking-tight text-muted-foreground/50 bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.04)] radius-md select-none">
-                  chat.nexx.ai
+                  chat.operator.ai
                 </div>
               </div>
               <div className="w-10 hidden sm:block" />
@@ -383,7 +383,7 @@ export function InteractiveIndustryExplorer() {
             {/* Footer */}
             <div className="border-t border-[hsl(var(--foreground)/0.05)] px-space-4 py-space-2.5 flex items-center justify-between relative z-10">
               <span className="text-caption font-mono text-muted-foreground/40 tracking-wider uppercase">
-                Powered by Nexx AI
+                Powered by Operator AI
               </span>
               <span className="flex items-center gap-space-1.5 text-caption font-mono text-primary/60 font-semibold tracking-wider uppercase">
                 <Sparkles className="h-3 w-3" />

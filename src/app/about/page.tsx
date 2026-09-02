@@ -24,12 +24,12 @@ const VALUES = [
 const TIMELINE = [
  { year:"2023", q:"Q1", event:"Problem Discovery", desc:"Our founders spent 3 months interviewing dental clinic owners, law firms, and salon managers. The same problem surfaced in every conversation: missed calls and slow responses were losing thousands of dollars every week."},
  { year:"2023", q:"Q2", event:"First Prototype", desc:"Built a basic AI chat widget for a dental clinic in Mumbai. Within 30 days, they had booked 40+ new patient appointments through the widget — all outside business hours."},
- { year:"2023", q:"Q3", event:"Voice AI Addition", desc:"The clinic asked: can it answer phone calls too? Six weeks later, the first version of Nexx Voice AI answered its first real inbound call. The caller didn't know it wasn't human."},
+ { year:"2023", q:"Q3", event:"Voice AI Addition", desc:"The clinic asked: can it answer phone calls too? Six weeks later, the first version of Operator Voice AI answered its first real inbound call. The caller didn't know it wasn't human."},
  { year:"2023", q:"Q4", event:"Multi-Industry Expansion", desc:"Expanded to law firms, salons, real estate agencies, and gyms. Each industry had unique needs — we built the Knowledge Base system to handle them without custom engineering."},
  { year:"2024", q:"Q1", event:"Omnichannel Launch", desc:"Added WhatsApp, SMS, Instagram, and Facebook Messenger. One AI brain now handles all channels from a unified inbox."},
  { year:"2024", q:"Q2", event:"Agency Platform", desc:"Launched the white-label Agency plan. The first agency went from signup to managing 12 client accounts in under 48 hours."},
  { year:"2024", q:"Q3", event:"Billing & Scale", desc:"Launched Stripe + Razorpay billing, usage metering, and the full subscription infrastructure. Platform became self-sustaining."},
- { year:"2025", q:"Now", event:"Launch", desc:"Operatoris now production-ready. Launching publicly to serve thousands of service businesses globally."},
+ { year:"2025", q:"Now", event:"Launch", desc:"Operator is now production-ready. Launching publicly to serve thousands of service businesses globally."},
 ];
 
 const ROADMAP = [
@@ -119,7 +119,7 @@ export default function AboutPage() {
  </div>
  </section>
 
- {/* Why Nexx Exists */}
+ {/* Why Operator Exists */}
  <section className="py-space-28 md:py-space-36">
  <div className="mx-auto max-w-3xl px-space-6">
  <div className="mb-space-12 text-center">

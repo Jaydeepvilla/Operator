@@ -46,7 +46,7 @@ export default function TeamPage() {
   {
     id: "1",
     name: "Workspace Creator",
-    email: "owner@nexxservices.com",
+    email: "owner@operator.ai",
     role: "owner",
     status: "active",
     joinedAt: "Jun 22, 2026"
@@ -54,7 +54,7 @@ export default function TeamPage() {
   {
     id: "2",
     name: "Office Manager",
-    email: "manager@nexxservices.com",
+    email: "manager@operator.ai",
     role: "manager",
     status: "active",
     joinedAt: "Jun 28, 2026"
@@ -62,7 +62,7 @@ export default function TeamPage() {
   {
     id: "3",
     name: "Front Desk Staff",
-    email: "staff@nexxservices.com",
+    email: "staff@operator.ai",
     role: "staff",
     status: "pending",
     joinedAt: "Jul 01, 2026"
@@ -461,7 +461,7 @@ export default function TeamPage() {
                 id="invite-email"
                 type="email"
                 required
-                placeholder="sarah@nexxservices.com"
+                placeholder="sarah@operator.ai"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 className="h-9.5 text-caption bg-background border-[hsl(var(--foreground)/0.08)] focus-visible:ring-primary/20" />

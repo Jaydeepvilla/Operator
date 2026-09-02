@@ -22,6 +22,8 @@ import {
   EyeOff,
   CheckCircle,
 } from "lucide-react";
+import { useToast } from "@/components/shared/toast";
+import { formatUserErrorMessage } from "@/lib/errors";
 import { Button } from "@/components/shared/button";
 import { Input } from "@/components/shared/input";
 import { Label } from "@/components/shared/label";
@@ -160,12 +162,14 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
     }
   }, [activeTab, loadSessions]);
 
+  const { error: toastError, success: toastSuccess } = useToast();
+
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      alert("Image file size must be less than 2MB.");
+      toastError("File too large", "Avatar image file size must be less than 2MB.");
       return;
     }
 
@@ -310,12 +314,13 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
     try {
       const result = await logoutDeviceAction(sessionId);
       if (result.success) {
+        toastSuccess("Session Revoked", "The device session has been terminated.");
         loadSessions();
       } else {
-        alert(result.error || "Failed to revoke session");
+        toastError("Failed to revoke session", formatUserErrorMessage(result.error));
       }
     } catch (e) {
-      alert("An unexpected error occurred");
+      toastError("Error", "An unexpected error occurred while revoking the session.");
     }
   };
 
@@ -324,12 +329,13 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
     try {
       const result = await logoutOtherDevicesAction();
       if (result.success) {
+        toastSuccess("Sessions Terminated", "All other device sessions have been revoked.");
         loadSessions();
       } else {
-        alert(result.error || "Failed to revoke sessions");
+        toastError("Failed to revoke sessions", formatUserErrorMessage(result.error));
       }
     } catch (e) {
-      alert("An unexpected error occurred");
+      toastError("Error", "An unexpected error occurred while revoking sessions.");
     }
   };
 
@@ -337,12 +343,13 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
     try {
       const result = await deactivateAccountAction();
       if (result.success) {
+        toastSuccess("Account Deactivated", "Redirecting to sign in...");
         router.push("/sign-in");
       } else {
-        alert(result.error || "Failed to deactivate account");
+        toastError("Failed to deactivate account", formatUserErrorMessage(result.error));
       }
     } catch (e) {
-      alert("An unexpected error occurred");
+      toastError("Error", "An unexpected error occurred during deactivation.");
     }
   };
 
@@ -350,12 +357,13 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
     try {
       const result = await deleteAccountAction();
       if (result.success) {
+        toastSuccess("Account Deleted", "Redirecting to sign in...");
         router.push("/sign-in");
       } else {
-        alert(result.error || "Failed to delete account");
+        toastError("Failed to delete account", formatUserErrorMessage(result.error));
       }
     } catch (e) {
-      alert("An unexpected error occurred");
+      toastError("Error", "An unexpected error occurred during account deletion.");
     }
   };
 

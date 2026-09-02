@@ -38,14 +38,14 @@ export const voiceRepository = {
     return inserted;
   },
 
-  async updatePhoneNumberRecording(phoneNumberId: string, isEnabled: boolean) {
+  async updatePhoneNumberRecording(phoneNumberId: string, organizationId: string, isEnabled: boolean) {
     const [updated] = await db
       .update(phoneNumbers)
       .set({
         isRecordingEnabled: isEnabled,
         updatedAt: new Date(),
       })
-      .where(eq(phoneNumbers.id, phoneNumberId))
+      .where(and(eq(phoneNumbers.id, phoneNumberId), eq(phoneNumbers.organizationId, organizationId)))
       .returning();
     return updated;
   },
@@ -61,9 +61,11 @@ export const voiceRepository = {
       .offset(offset);
   },
 
-  async getCallSessionDetails(sessionId: string) {
+  async getCallSessionDetails(sessionId: string, organizationId?: string) {
     const session = await db.query.callSessions.findFirst({
-      where: eq(callSessions.id, sessionId),
+      where: organizationId
+        ? and(eq(callSessions.id, sessionId), eq(callSessions.organizationId, organizationId))
+        : eq(callSessions.id, sessionId),
       with: {
         transcripts: true,
         events: true,
@@ -84,14 +86,14 @@ export const voiceRepository = {
       .orderBy(desc(voicemailMessages.createdAt));
   },
 
-  async updateVoicemailStatus(voicemailId: string, status: "pending" | "called" | "no-action") {
+  async updateVoicemailStatus(voicemailId: string, organizationId: string, status: "pending" | "called" | "no-action") {
     const [updated] = await db
       .update(voicemailMessages)
       .set({
         callbackStatus: status,
         callbackTime: status === "called" ? new Date() : null,
       })
-      .where(eq(voicemailMessages.id, voicemailId))
+      .where(and(eq(voicemailMessages.id, voicemailId), eq(voicemailMessages.organizationId, organizationId)))
       .returning();
     return updated;
   },
@@ -161,17 +163,19 @@ export const voiceRepository = {
     return inserted;
   },
 
-  async updateRoutingRule(ruleId: string, data: Partial<typeof callRoutingRules.$inferInsert>) {
+  async updateRoutingRule(ruleId: string, organizationId: string, data: Partial<typeof callRoutingRules.$inferInsert>) {
     const [updated] = await db
       .update(callRoutingRules)
       .set(data)
-      .where(eq(callRoutingRules.id, ruleId))
+      .where(and(eq(callRoutingRules.id, ruleId), eq(callRoutingRules.organizationId, organizationId)))
       .returning();
     return updated;
   },
 
-  async deleteRoutingRule(ruleId: string) {
-    await db.delete(callRoutingRules).where(eq(callRoutingRules.id, ruleId));
+  async deleteRoutingRule(ruleId: string, organizationId: string) {
+    await db
+      .delete(callRoutingRules)
+      .where(and(eq(callRoutingRules.id, ruleId), eq(callRoutingRules.organizationId, organizationId)));
     return true;
   },
 

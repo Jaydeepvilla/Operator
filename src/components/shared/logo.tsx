@@ -1,37 +1,53 @@
+import React from "react";
 import { cn } from "@/components/shared/utils";
 
 interface LogoProps {
   className?: string;
   iconClassName?: string;
+  showText?: boolean;
 }
 
-export function LogoIcon({ className }: { className?: string }) {
+export function LogoIcon({
+  className,
+  alt = "Operator logo",
+}: {
+  className?: string;
+  alt?: string;
+}) {
   return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      className={cn("text-primary shrink-0", className)}
+    <div
+      className={cn(
+        "relative flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#6366F1] via-[#7C3AED] to-[#8B5CF6] text-white shadow-md shadow-indigo-500/25 ring-1 ring-white/20 shrink-0 select-none",
+        className
+      )}
+      aria-label={alt}
     >
-      {/* Main gateway loop */}
-      <path
-        d="M 3 13 L 3 8 A 5 5 0 0 1 8 3 L 16 3 A 5 5 0 0 1 21 8 L 21 16 A 5 5 0 0 1 16 21 L 9 21 A 2 2 0 0 1 9 17 L 15 17 A 2 2 0 0 0 17 15 L 17 9 A 2 2 0 0 0 15 7 L 9 7 A 2 2 0 0 0 7 9 L 7 13 A 2 2 0 0 1 3 13 Z"
-        fill="currentColor"
-      />
-      {/* Bottom-left accent square */}
-      <rect x="3" y="17" width="4" height="4" rx="1.2" fill="currentColor" />
-    </svg>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-4 w-4 drop-shadow-sm"
+      >
+        <path
+          d="M12 3C12 7.97056 7.97056 12 3 12C7.97056 12 12 16.0294 12 21C12 16.0294 16.0294 12 21 12C16.0294 12 12 7.97056 12 3Z"
+          fill="currentColor"
+        />
+        <circle cx="18" cy="6" r="1.5" fill="currentColor" opacity="0.9" />
+        <circle cx="6" cy="18" r="1" fill="currentColor" opacity="0.75" />
+      </svg>
+    </div>
   );
 }
 
-export function Logo({ className, iconClassName }: LogoProps) {
+export function Logo({ className, iconClassName, showText = true }: LogoProps) {
   return (
-    <div className={cn("flex items-center gap-space-2", className)}>
+    <div className={cn("flex items-center gap-space-2.5", className)}>
       <LogoIcon className={iconClassName} />
-      <span className="text-base tracking-tight text-foreground font-bold">
-        Operator
-      </span>
+      {showText && (
+        <span className="text-base tracking-tight text-foreground font-bold font-sans">
+          Operator <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">AI</span>
+        </span>
+      )}
     </div>
   );
 }

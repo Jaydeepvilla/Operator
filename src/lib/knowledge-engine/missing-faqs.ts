@@ -21,7 +21,7 @@ export function getMissingFaqs(state: RecommendationState): RecommendationAction
         title: `Add FAQ: ${topic.key}`,
         description: `Customers frequently ask about ${topic.key}. Adding an FAQ helps the AI answer instantly.`,
         primaryCtaText: "Generate with AI",
-        primaryCtaHref: "/knowledge/faq",
+        primaryCtaHref: "/faqs",
         primaryCtaAction: `generate_${topic.id}`,
         estimatedTimeMinutes: 1,
         impact: "Low",

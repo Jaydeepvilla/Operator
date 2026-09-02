@@ -75,7 +75,7 @@ export function KnowledgeIntelligenceCard({ quality }: KnowledgeIntelligenceCard
         </div>
         
         <div className="mt-auto pt-space-4">
-          <Link href="/knowledge" passHref>
+          <Link href="/kb" passHref>
             <Button variant="outline" className="w-full">Manage Knowledge Base</Button>
           </Link>
         </div>

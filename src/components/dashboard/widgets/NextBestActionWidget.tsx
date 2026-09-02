@@ -4,6 +4,7 @@ import { Button } from "@/components/shared/button";
 import { RecommendationAction } from "@/lib/recommendation-engine/types";
 import { ArrowRight, Zap, Clock, CheckCircle2, TrendingUp, Target } from "lucide-react";
 import Link from "next/link";
+import { APP_ROUTES } from "@/lib/constants/routes";
 
 interface NextBestActionWidgetProps {
   action: RecommendationAction | null;
@@ -100,7 +101,7 @@ export function NextBestActionWidget({ action }: NextBestActionWidgetProps) {
             asChild
             className="interactive-button w-full h-space-10 text-body-sm font-semibold radius-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
           >
-            <Link href={action.primaryCtaHref || "#"}>
+            <Link href={action.primaryCtaHref || APP_ROUTES.dashboard}>
               {action.primaryCtaText}
               <ArrowRight className="ml-space-2 w-space-4 h-space-4 transition-transform group-hover:translate-x-1" />
             </Link>

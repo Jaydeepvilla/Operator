@@ -43,11 +43,14 @@ export const staffRepository = {
       .orderBy(staffMembers.name);
   },
 
-  async findById(id: string) {
+  async findById(id: string, organizationId?: string) {
+    const conditions = organizationId
+      ? and(eq(staffMembers.id, id), eq(staffMembers.organizationId, organizationId))
+      : eq(staffMembers.id, id);
     const [staff] = await db
       .select()
       .from(staffMembers)
-      .where(eq(staffMembers.id, id));
+      .where(conditions);
     return staff || null;
   },
 
@@ -56,25 +59,32 @@ export const staffRepository = {
     return newStaff;
   },
 
-  async update(id: string, updates: Partial<NewStaffMember>) {
+  async update(id: string, organizationId: string, updates: Partial<NewStaffMember>) {
     const [updated] = await db
       .update(staffMembers)
       .set({ ...updates, updatedAt: new Date() })
-      .where(eq(staffMembers.id, id))
+      .where(and(eq(staffMembers.id, id), eq(staffMembers.organizationId, organizationId)))
       .returning();
     return updated;
   },
 
-  async delete(id: string) {
-    await db.delete(staffMembers).where(eq(staffMembers.id, id));
+  async delete(id: string, organizationId: string) {
+    const [deleted] = await db
+      .delete(staffMembers)
+      .where(and(eq(staffMembers.id, id), eq(staffMembers.organizationId, organizationId)))
+      .returning();
+    return deleted;
   },
 
   // Schedules (Shifts)
-  async getSchedules(staffMemberId: string) {
+  async getSchedules(staffMemberId: string, organizationId?: string) {
+    const conditions = organizationId
+      ? and(eq(staffSchedules.staffMemberId, staffMemberId), eq(staffSchedules.organizationId, organizationId))
+      : eq(staffSchedules.staffMemberId, staffMemberId);
     return db
       .select()
       .from(staffSchedules)
-      .where(eq(staffSchedules.staffMemberId, staffMemberId))
+      .where(conditions)
       .orderBy(staffSchedules.dayOfWeek);
   },
 
@@ -85,6 +95,7 @@ export const staffRepository = {
       .where(
         and(
           eq(staffSchedules.staffMemberId, schedule.staffMemberId),
+          eq(staffSchedules.organizationId, schedule.organizationId),
           eq(staffSchedules.dayOfWeek, schedule.dayOfWeek)
         )
       );
@@ -106,11 +117,14 @@ export const staffRepository = {
   },
 
   // Exceptions (Holidays/Overrides)
-  async getAvailabilityExceptions(staffMemberId: string) {
+  async getAvailabilityExceptions(staffMemberId: string, organizationId?: string) {
+    const conditions = organizationId
+      ? and(eq(staffAvailability.staffMemberId, staffMemberId), eq(staffAvailability.organizationId, organizationId))
+      : eq(staffAvailability.staffMemberId, staffMemberId);
     return db
       .select()
       .from(staffAvailability)
-      .where(eq(staffAvailability.staffMemberId, staffMemberId))
+      .where(conditions)
       .orderBy(staffAvailability.exceptionDate);
   },
 
@@ -121,6 +135,7 @@ export const staffRepository = {
       .where(
         and(
           eq(staffAvailability.staffMemberId, exception.staffMemberId),
+          eq(staffAvailability.organizationId, exception.organizationId),
           eq(staffAvailability.exceptionDate, exception.exceptionDate)
         )
       );
@@ -143,16 +158,21 @@ export const staffRepository = {
     }
   },
 
-  async deleteAvailabilityException(id: string) {
-    await db.delete(staffAvailability).where(eq(staffAvailability.id, id));
+  async deleteAvailabilityException(id: string, organizationId: string) {
+    await db
+      .delete(staffAvailability)
+      .where(and(eq(staffAvailability.id, id), eq(staffAvailability.organizationId, organizationId)));
   },
 
   // Service Assignments
-  async listAssignments(staffMemberId: string) {
+  async listAssignments(staffMemberId: string, organizationId?: string) {
+    const conditions = organizationId
+      ? and(eq(serviceAssignments.staffMemberId, staffMemberId), eq(serviceAssignments.organizationId, organizationId))
+      : eq(serviceAssignments.staffMemberId, staffMemberId);
     return db
       .select()
       .from(serviceAssignments)
-      .where(eq(serviceAssignments.staffMemberId, staffMemberId));
+      .where(conditions);
   },
 
   async assignService(organizationId: string, staffMemberId: string, serviceId: string) {
@@ -161,6 +181,7 @@ export const staffRepository = {
       .from(serviceAssignments)
       .where(
         and(
+          eq(serviceAssignments.organizationId, organizationId),
           eq(serviceAssignments.staffMemberId, staffMemberId),
           eq(serviceAssignments.serviceId, serviceId)
         )
@@ -175,25 +196,33 @@ export const staffRepository = {
     return inserted;
   },
 
-  async unassignService(staffMemberId: string, serviceId: string) {
+  async unassignService(staffMemberId: string, serviceId: string, organizationId: string) {
     await db
       .delete(serviceAssignments)
       .where(
         and(
+          eq(serviceAssignments.organizationId, organizationId),
           eq(serviceAssignments.staffMemberId, staffMemberId),
           eq(serviceAssignments.serviceId, serviceId)
         )
       );
   },
 
-  async listStaffForService(serviceId: string) {
+  async listStaffForService(serviceId: string, organizationId?: string) {
+    const conditions = organizationId
+      ? and(
+          eq(serviceAssignments.serviceId, serviceId),
+          eq(serviceAssignments.organizationId, organizationId),
+          eq(staffMembers.isActive, true)
+        )
+      : and(eq(serviceAssignments.serviceId, serviceId), eq(staffMembers.isActive, true));
     return db
       .select({
         staffMember: staffMembers,
       })
       .from(serviceAssignments)
       .innerJoin(staffMembers, eq(serviceAssignments.staffMemberId, staffMembers.id))
-      .where(and(eq(serviceAssignments.serviceId, serviceId), eq(staffMembers.isActive, true)));
+      .where(conditions);
   },
 
   // Organization-wide getters for Intelligence Engines

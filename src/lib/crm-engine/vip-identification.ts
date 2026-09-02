@@ -15,7 +15,7 @@ export function getVipRecommendations(state: RecommendationState): Recommendatio
       title: `Tag ${potentialVips.length} VIP Customers`,
       description: "We identified high-value customers based on engagement score. Tagging them allows the AI to provide white-glove routing.",
       primaryCtaText: "Tag as VIP",
-      primaryCtaHref: "/crm/contacts?filter=high_score",
+      primaryCtaHref: "/contacts?filter=high_score",
       primaryCtaAction: "auto_tag_vips",
       estimatedTimeMinutes: 1,
       impact: "High",

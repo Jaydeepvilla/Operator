@@ -46,6 +46,8 @@ import { z } from "zod";
 import { cn } from "@/components/shared/utils";
 import { NativeTable, NativeButton, NativeTextarea } from "@/components/shared/native";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/components/shared/toast";
+import { formatUserErrorMessage } from "@/lib/errors";
 
 const faqFormSchema = z.object({
  question: z.string().min(8, "Question must be at least 8 characters"),
@@ -79,6 +81,7 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  const [editingFaq, setEditingFaq] = React.useState<FaqItem | null>(null);
  const [isSubmitting, setIsSubmitting] = React.useState(false);
  const [actionError, setActionError] = React.useState<string | null>(null);
+ const toast = useToast();
 
  const {
  register,
@@ -140,11 +143,16 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  if (res.success) {
  setIsOpen(false);
  reset();
+ toast.success(editingFaq ? "FAQ Updated" : "FAQ Created", "Changes saved to the knowledge base.");
  } else {
- setActionError(res.error || "Failed to save FAQ");
+ const errorMsg = formatUserErrorMessage(res.error, "Failed to save FAQ");
+ setActionError(errorMsg);
+ toast.error("Failed to save FAQ", errorMsg);
  }
  } catch (err: any) {
- setActionError(err?.message || "An unexpected error occurred");
+ const errorMsg = formatUserErrorMessage(err, "An unexpected error occurred");
+ setActionError(errorMsg);
+ toast.error("Failed to save FAQ", errorMsg);
  } finally {
  setIsSubmitting(false);
  }
@@ -154,7 +162,9 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  if (confirm("Are you sure you want to delete this FAQ item?")) {
  const res = await deleteFaqAction(id);
  if (!res.success) {
- alert(res.error || "Failed to delete FAQ");
+ toast.error("Failed to delete FAQ", formatUserErrorMessage(res.error));
+ } else {
+ toast.success("FAQ Deleted", "The item has been removed.");
  }
  }
  };
@@ -179,8 +189,9 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  const res = await bulkDeleteFaqsAction(selectedIds);
  if (res.success) {
  setSelectedIds([]);
+ toast.success("FAQs Deleted", `${selectedIds.length} FAQs removed.`);
  } else {
- alert(res.error || "Failed to delete FAQs");
+ toast.error("Failed to delete FAQs", formatUserErrorMessage(res.error));
  }
  }
  };
@@ -189,8 +200,9 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  const res = await bulkToggleActiveFaqsAction(selectedIds, isActive);
  if (res.success) {
  setSelectedIds([]);
+ toast.success("FAQ Status Updated", `Selected FAQs marked as ${isActive ? "active" : "inactive"}.`);
  } else {
- alert(res.error || "Failed to update FAQ states");
+ toast.error("Failed to update FAQ states", formatUserErrorMessage(res.error));
  }
  };
 

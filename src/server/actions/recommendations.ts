@@ -1,14 +1,13 @@
 "use server";
 
-import { checkUserOrganization } from "./onboarding";
+import { requireOrganizationAccess } from "@/lib/auth/server";
 import { settingsRepository } from "../repositories/settings";
 import { revalidatePath } from "next/cache";
 
 export async function skipRecommendation(recommendationId: string) {
-  const { org } = await checkUserOrganization();
-  if (!org) throw new Error("Unauthorized");
+  const { organizationId } = await requireOrganizationAccess();
 
-  const settings = await settingsRepository.getByOrg(org.id);
+  const settings = await settingsRepository.getByOrg(organizationId);
   if (!settings) throw new Error("Settings not found");
 
   const currentPrefs = settings.recommendationPreferences as { dismissed?: string[], snoozed?: Record<string, string> } || {};
@@ -18,7 +17,7 @@ export async function skipRecommendation(recommendationId: string) {
     dismissed.push(recommendationId);
   }
 
-  await settingsRepository.update(org.id, {
+  await settingsRepository.update(organizationId, {
     recommendationPreferences: {
       ...currentPrefs,
       dismissed
@@ -30,10 +29,9 @@ export async function skipRecommendation(recommendationId: string) {
 }
 
 export async function snoozeRecommendation(recommendationId: string, days: number) {
-  const { org } = await checkUserOrganization();
-  if (!org) throw new Error("Unauthorized");
+  const { organizationId } = await requireOrganizationAccess();
 
-  const settings = await settingsRepository.getByOrg(org.id);
+  const settings = await settingsRepository.getByOrg(organizationId);
   if (!settings) throw new Error("Settings not found");
 
   const currentPrefs = settings.recommendationPreferences as { dismissed?: string[], snoozed?: Record<string, string> } || {};
@@ -44,7 +42,7 @@ export async function snoozeRecommendation(recommendationId: string, days: numbe
 
   snoozed[recommendationId] = snoozeUntil.toISOString();
 
-  await settingsRepository.update(org.id, {
+  await settingsRepository.update(organizationId, {
     recommendationPreferences: {
       ...currentPrefs,
       snoozed
@@ -54,3 +52,4 @@ export async function snoozeRecommendation(recommendationId: string, days: numbe
   revalidatePath("/dashboard");
   revalidatePath("/health");
 }
+

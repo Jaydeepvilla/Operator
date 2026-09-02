@@ -15,8 +15,11 @@ import {
 
 export const omnichannelRepository = {
   // --- Channels ---
-  async getChannelById(id: string) {
-    const [chan] = await db.select().from(communicationChannels).where(eq(communicationChannels.id, id));
+  async getChannelById(id: string, organizationId?: string) {
+    const conditions = organizationId
+      ? and(eq(communicationChannels.id, id), eq(communicationChannels.organizationId, organizationId))
+      : eq(communicationChannels.id, id);
+    const [chan] = await db.select().from(communicationChannels).where(conditions);
     return chan || null;
   },
 
@@ -43,11 +46,11 @@ export const omnichannelRepository = {
     return chan;
   },
 
-  async updateChannel(id: string, updates: Partial<typeof communicationChannels.$inferInsert>) {
+  async updateChannel(id: string, organizationId: string, updates: Partial<typeof communicationChannels.$inferInsert>) {
     const [chan] = await db
       .update(communicationChannels)
       .set({ ...updates, updatedAt: new Date() })
-      .where(eq(communicationChannels.id, id))
+      .where(and(eq(communicationChannels.id, id), eq(communicationChannels.organizationId, organizationId)))
       .returning();
     return chan;
   },
@@ -123,16 +126,19 @@ export const omnichannelRepository = {
       .orderBy(desc(inboxThreads.updatedAt));
   },
 
-  async getThreadById(id: string) {
-    const [thread] = await db.select().from(inboxThreads).where(eq(inboxThreads.id, id));
+  async getThreadById(id: string, organizationId?: string) {
+    const conditions = organizationId
+      ? and(eq(inboxThreads.id, id), eq(inboxThreads.organizationId, organizationId))
+      : eq(inboxThreads.id, id);
+    const [thread] = await db.select().from(inboxThreads).where(conditions);
     return thread || null;
   },
 
-  async updateThread(id: string, updates: Partial<typeof inboxThreads.$inferInsert>) {
+  async updateThread(id: string, organizationId: string, updates: Partial<typeof inboxThreads.$inferInsert>) {
     const [thread] = await db
       .update(inboxThreads)
       .set({ ...updates, updatedAt: new Date() })
-      .where(eq(inboxThreads.id, id))
+      .where(and(eq(inboxThreads.id, id), eq(inboxThreads.organizationId, organizationId)))
       .returning();
     return thread;
   },
@@ -159,8 +165,11 @@ export const omnichannelRepository = {
       .orderBy(desc(messageTemplates.createdAt));
   },
 
-  async getTemplateById(id: string) {
-    const [tpl] = await db.select().from(messageTemplates).where(eq(messageTemplates.id, id));
+  async getTemplateById(id: string, organizationId?: string) {
+    const conditions = organizationId
+      ? and(eq(messageTemplates.id, id), eq(messageTemplates.organizationId, organizationId))
+      : eq(messageTemplates.id, id);
+    const [tpl] = await db.select().from(messageTemplates).where(conditions);
     return tpl || null;
   },
 
@@ -169,17 +178,19 @@ export const omnichannelRepository = {
     return tpl;
   },
 
-  async updateTemplate(id: string, updates: Partial<typeof messageTemplates.$inferInsert>) {
+  async updateTemplate(id: string, organizationId: string, updates: Partial<typeof messageTemplates.$inferInsert>) {
     const [tpl] = await db
       .update(messageTemplates)
       .set({ ...updates, updatedAt: new Date() })
-      .where(eq(messageTemplates.id, id))
+      .where(and(eq(messageTemplates.id, id), eq(messageTemplates.organizationId, organizationId)))
       .returning();
     return tpl;
   },
 
-  async deleteTemplate(id: string) {
-    await db.delete(messageTemplates).where(eq(messageTemplates.id, id));
+  async deleteTemplate(id: string, organizationId: string) {
+    await db
+      .delete(messageTemplates)
+      .where(and(eq(messageTemplates.id, id), eq(messageTemplates.organizationId, organizationId)));
   },
 
   // --- Logs ---

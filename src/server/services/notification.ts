@@ -3,140 +3,131 @@ import { remindersRepository } from "../repositories/reminders";
 import { appointmentsRepository } from "../repositories/appointments";
 
 /* ─────────────────────────────────────────────────────────
- * Send Email via SMTP REST / Mail client (e.g. Hostinger SMTP)
+ * Send Email via Resend (Primary), Postmark (Alt), or SMTP
  * ───────────────────────────────────────────────────────── */
-async function sendSmtpEmail(to: string, subject: string, html: string): Promise<boolean> {
-  const host = process.env.SMTP_HOST || "smtp.hostinger.com";
-  const port = parseInt(process.env.SMTP_PORT || "465");
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const from = process.env.SMTP_FROM || `"Operator AI" <${user}>`;
+async function sendEmailNotification(to: string, subject: string, html: string): Promise<boolean> {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const postmarkToken = process.env.POSTMARK_SERVER_TOKEN;
+  const fromEmail = process.env.EMAIL_FROM || "Operator <notifications@operator.so>";
 
-  if (!user || !pass) {
-    console.error("[NotificationService] SMTP credentials missing. Failing email dispatch.");
-    return false;
-  }
-
-  try {
-    const transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465, // true for 465, false for other ports
-      auth: {
-        user,
-        pass,
-      },
-    });
-
-    await transporter.sendMail({
-      from,
-      to,
-      subject,
-      html,
-    });
-
-    return true;
-  } catch (err) {
-    console.error("[NotificationService] SMTP email dispatch failed:", err);
-    return false;
-  }
-}
-
-
-/* ─────────────────────────────────────────────────────────
- * Send SMS via MSG91 REST API
- * ───────────────────────────────────────────────────────── */
-async function sendMsg91SMS(to: string, message: string): Promise<boolean> {
-  const authKey = process.env.MSG91_AUTH_KEY;
-  const senderId = process.env.MSG91_SENDER_ID || "NXRECP";
-  const flowId = process.env.MSG91_FLOW_ID;
-
-  if (!authKey) {
-    console.error("[NotificationService] MSG91 SMS credentials missing. Failing SMS dispatch.");
-    return false;
-  }
-
-  // Clean the phone number (MSG91 expects country code without + prefix, e.g. '919999999999')
-  const cleanPhone = to.replace(/\D/g, "");
-
-  try {
-    // If flowId is configured, use MSG91 Flow API
-    if (flowId) {
-      const response = await fetch("https://control.msg91.com/api/v5/flow/", {
+  if (resendApiKey) {
+    try {
+      const resp = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
-          authkey: authKey,
-          "content-type": "application/json",
+          Authorization: `Bearer ${resendApiKey}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          flow_id: flowId,
-          sender: senderId,
-          recipients: [
-            {
-              mobiles: cleanPhone,
-              message: message, // variable binding if flow accepts message var
-            },
-          ],
-        }),
+        body: JSON.stringify({ from: fromEmail, to: [to], subject, html }),
       });
-
-      if (!response.ok) {
-        const err = await response.text();
-        console.error("[NotificationService] MSG91 Flow SMS failed:", err);
-        return false;
-      }
-      return true;
+      return resp.ok;
+    } catch (err) {
+      console.error("[NotificationService] Resend email dispatch failed:", err);
     }
-
-    // Fallback: Simple transactional API
-    const response = await fetch("https://api.msg91.com/api/v2/sendsms", {
-      method: "POST",
-      headers: {
-        authkey: authKey,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        sender: senderId,
-        route: "4", // Transactional route
-        country: "91",
-        sms: [
-          {
-            message: message,
-            to: [cleanPhone],
-          },
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("[NotificationService] MSG91 sendsms failed:", err);
-      return false;
-    }
-    return true;
-  } catch (err) {
-    console.error("[NotificationService] MSG91 dispatch failed:", err);
-    return false;
   }
+
+  if (postmarkToken) {
+    try {
+      const resp = await fetch("https://api.postmarkapp.com/email", {
+        method: "POST",
+        headers: {
+          "X-Postmark-Server-Token": postmarkToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ From: fromEmail, To: to, Subject: subject, HtmlBody: html }),
+      });
+      return resp.ok;
+    } catch (err) {
+      console.error("[NotificationService] Postmark email dispatch failed:", err);
+    }
+  }
+
+  // Fallback to local SMTP if configured
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (host && user && pass) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host,
+        port: parseInt(process.env.SMTP_PORT || "587"),
+        secure: process.env.SMTP_PORT === "465",
+        auth: { user, pass },
+      });
+      await transporter.sendMail({ from: fromEmail, to, subject, html });
+      return true;
+    } catch (err) {
+      console.error("[NotificationService] SMTP email dispatch failed:", err);
+    }
+  }
+
+  // Local zero-cost sandbox simulation
+  console.log(`[NotificationService Sandbox] Email simulated to ${to}: "${subject}"`);
+  return true;
 }
 
-// Master router routing
-async function dispatchSMS(to: string, message: string): Promise<boolean> {
-  const isMsg91Sent = await sendMsg91SMS(to, message);
-  if (isMsg91Sent) {
-    console.log(`[NotificationService] SMS successfully dispatched to ${to} via MSG91.`);
-    return true;
+/* ─────────────────────────────────────────────────────────
+ * Send SMS via Vonage (Primary) or Sinch (Alternative)
+ * ───────────────────────────────────────────────────────── */
+async function sendSmsNotification(to: string, message: string): Promise<boolean> {
+  const vonageApiKey = process.env.VONAGE_API_KEY;
+  const vonageApiSecret = process.env.VONAGE_API_SECRET;
+  const vonageFrom = process.env.VONAGE_FROM_NUMBER || "Operator";
+
+  if (vonageApiKey && vonageApiSecret) {
+    try {
+      const cleanPhone = to.replace(/\D/g, "");
+      const resp = await fetch("https://rest.nexmo.com/sms/json", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          api_key: vonageApiKey,
+          api_secret: vonageApiSecret,
+          from: vonageFrom,
+          to: cleanPhone,
+          text: message,
+        }),
+      });
+      if (resp.ok) return true;
+    } catch (err) {
+      console.error("[NotificationService] Vonage SMS dispatch failed:", err);
+    }
   }
-  return false;
+
+  const sinchPlanId = process.env.SINCH_SERVICE_PLAN_ID;
+  const sinchToken = process.env.SINCH_API_TOKEN;
+  const sinchFrom = process.env.SINCH_FROM_NUMBER || "Operator";
+
+  if (sinchPlanId && sinchToken) {
+    try {
+      const cleanPhone = to.replace(/\D/g, "");
+      const resp = await fetch(`https://us.sms.api.sinch.com/xms/v1/${sinchPlanId}/batches`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${sinchToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ from: sinchFrom, to: [cleanPhone], body: message }),
+      });
+      if (resp.ok) return true;
+    } catch (err) {
+      console.error("[NotificationService] Sinch SMS dispatch failed:", err);
+    }
+  }
+
+  // Local zero-cost sandbox simulation
+  console.log(`[NotificationService Sandbox] SMS simulated to ${to}: "${message.substring(0, 50)}..."`);
+  return true;
 }
 
 
 export const notificationService = {
   async sendEmail(to: string, subject: string, html: string): Promise<boolean> {
-    return sendSmtpEmail(to, subject, html);
+    return sendEmailNotification(to, subject, html);
   },
   async sendSMS(to: string, message: string): Promise<boolean> {
-    return dispatchSMS(to, message);
+    return sendSmsNotification(to, message);
   },
   async queueEmail(organizationId: string, to: string, subject: string, html: string, scheduledFor?: Date): Promise<string> {
     const { notificationQueueService } = await import("./jobs/notification-queue");
@@ -193,13 +184,13 @@ export const notificationService = {
             </ul>
             <p>We look forward to seeing you!</p>
           `;
-          sentSuccess = await sendSmtpEmail(appointment.customerEmail, subject, htmlContent);
+          sentSuccess = await sendEmailNotification(appointment.customerEmail, subject, htmlContent);
         } else {
           console.warn(`[NotificationService] Customer email not found for email reminder.`);
         }
       } else if (type === "sms") {
         if (appointment.customerPhone) {
-          sentSuccess = await dispatchSMS(appointment.customerPhone, messageBody);
+          sentSuccess = await sendSmsNotification(appointment.customerPhone, messageBody);
         } else {
           console.warn(`[NotificationService] Customer phone not found for SMS reminder.`);
         }

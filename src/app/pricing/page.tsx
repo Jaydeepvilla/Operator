@@ -11,6 +11,7 @@ import { Button } from"@/components/shared/button";
 import { SessionAwareCta } from "@/components/marketing/session-aware-cta";
 import { NativeTable } from "@/components/shared/native";
 import { cn } from "@/components/shared/utils";
+import { RazorpayCheckoutButton } from "@/components/billing/razorpay-checkout-button";
 
 const PLANS = [
  {
@@ -230,15 +231,32 @@ export default function PricingPage() {
  ))}
  </ul>
 
- <div className="space-y-space-3">
+ <div className="space-y-space-2.5">
  <Button
   asChild
   variant={plan.highlight ? "default" : "outline"}
   className="w-full"
 >
-  <Link href="/sign-up">Start Free Trial</Link>
+  <Link href="/sign-up">Start 14-Day Free Trial</Link>
 </Button>
- <p className="text-center text-caption text-muted-foreground">14-day free trial · No credit card</p>
+
+ <RazorpayCheckoutButton
+  amountInPaise={(yearly ? plan.yearlyPrice : plan.monthlyPrice) * 100}
+  planName={`${plan.name} Plan (${yearly ? "Annual" : "Monthly"})`}
+  description={`Instant subscription for ${plan.name} Plan`}
+  variant="ghost"
+  size="sm"
+  className="w-full text-xs text-muted-foreground hover:text-foreground border border-border/40 hover:border-primary/40 hover:bg-primary/5 transition-all"
+  onSuccess={(payment) => {
+    window.location.href = `/onboarding?plan=${plan.id}&payment_id=${payment.payment_id}`;
+  }}
+>
+  <span className="flex items-center justify-center gap-1.5 font-medium">
+    Pay ${(yearly ? plan.yearlyPrice : plan.monthlyPrice)} with Razorpay
+  </span>
+ </RazorpayCheckoutButton>
+
+ <p className="text-center text-caption text-muted-foreground text-[11px]">Instant activation · Cancel anytime</p>
  </div>
  </div>
  ))}

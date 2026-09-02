@@ -13,7 +13,10 @@ export async function GET(req: NextRequest) {
 
     // If ending impersonation session
     if (action === "end") {
-      const activeImpersonationToken = req.cookies.get("nexx_impersonate_token")?.value;
+      const activeImpersonationToken =
+        req.cookies.get("operator_impersonate_token")?.value ||
+        req.cookies.get("nexx_impersonate_token")?.value;
+
       if (activeImpersonationToken) {
         try {
           const payload = agencyImpersonation.verifyImpersonationToken(activeImpersonationToken);
@@ -28,7 +31,10 @@ export async function GET(req: NextRequest) {
       }
       const redirectResponse = NextResponse.redirect(new URL("/agency/clients", req.url));
       
-      // Clear cookies
+      // Clear canonical and legacy cookies
+      redirectResponse.cookies.set("operator_impersonate_org_id", "", { maxAge: 0, path: "/" });
+      redirectResponse.cookies.set("operator_impersonate_actor_id", "", { maxAge: 0, path: "/" });
+      redirectResponse.cookies.set("operator_impersonate_token", "", { maxAge: 0, path: "/" });
       redirectResponse.cookies.set("nexx_impersonate_org_id", "", { maxAge: 0, path: "/" });
       redirectResponse.cookies.set("nexx_impersonate_actor_id", "", { maxAge: 0, path: "/" });
       redirectResponse.cookies.set("nexx_impersonate_token", "", { maxAge: 0, path: "/" });
@@ -46,10 +52,9 @@ export async function GET(req: NextRequest) {
     const redirectResponse = NextResponse.redirect(new URL("/dashboard", req.url));
 
     // Store secure HTTP-only cookies
-    // Cookie expires when token expires
     const maxAge = Math.max(0, Math.floor((payload.expiresAt - Date.now()) / 1000));
 
-    redirectResponse.cookies.set("nexx_impersonate_org_id", payload.targetOrganizationId, {
+    redirectResponse.cookies.set("operator_impersonate_org_id", payload.targetOrganizationId, {
       path: "/",
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -57,7 +62,7 @@ export async function GET(req: NextRequest) {
       maxAge,
     });
 
-    redirectResponse.cookies.set("nexx_impersonate_actor_id", payload.actorUserId, {
+    redirectResponse.cookies.set("operator_impersonate_actor_id", payload.actorUserId, {
       path: "/",
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -65,7 +70,7 @@ export async function GET(req: NextRequest) {
       maxAge,
     });
 
-    redirectResponse.cookies.set("nexx_impersonate_token", token, {
+    redirectResponse.cookies.set("operator_impersonate_token", token, {
       path: "/",
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

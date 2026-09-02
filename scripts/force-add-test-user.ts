@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { db } from "../src/server/db";
-import { users, memberships } from "../src/server/db/schema";
+import { users, memberships, organizations } from "../src/server/db/schema";
 import { faker } from "@faker-js/faker";
 import { hashPassword } from "../src/lib/auth/password";
 
@@ -21,6 +21,17 @@ async function main() {
   });
 
   const orgId = "11111111-1111-1111-1111-111111111111";
+  await db.insert(organizations).values({
+    id: orgId,
+    name: "Demo Organization",
+    slug: "demo-organization",
+    industry: "Other",
+    email: "demo+clerk_test@example.com",
+    phone: "15552345678",
+    timezone: "America/New_York",
+    verificationStatus: "verified",
+  }).onConflictDoNothing();
+
   await db.insert(memberships).values({
     id: faker.string.uuid(),
     organizationId: orgId,

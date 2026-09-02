@@ -75,7 +75,7 @@ export function CrmIntelligenceCard({ quality }: CrmIntelligenceCardProps) {
         </div>
         
         <div className="mt-auto pt-space-4">
-          <Link href="/customers" passHref>
+          <Link href="/contacts" passHref>
             <Button variant="outline" className="w-full">Manage Customers</Button>
           </Link>
         </div>

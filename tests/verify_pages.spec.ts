@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Nexx Services Page Verification", () => {
+test.describe("Operator Page Verification", () => {
   const pages = [
     { name: "Homepage", path: "/" },
     { name: "Pricing", path: "/pricing" },
@@ -20,7 +20,7 @@ test.describe("Nexx Services Page Verification", () => {
       const status = response!.status();
       expect(status).toBeLessThan(400);
       
-      const screenshotPath = `C:/Users/Jaydeep Chandegara/.gemini/antigravity-ide/brain/cce60dbd-efa2-4e0f-a797-c11bc395c3ec/${page.name.toLowerCase()}_page.png`;
+      const screenshotPath = `./test-results/${page.name.toLowerCase()}_page.png`;
       await browserPage.screenshot({ path: screenshotPath, fullPage: true });
     });
   }

@@ -1,26 +1,17 @@
 "use server";
 
-import { auth } from "@/lib/auth/server";
+import { requireOrganizationAccess } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { organizationRepository } from "../repositories/organization";
 import { profileRepository } from "../repositories/profile";
-import { membershipRepository } from "../repositories/membership";
 import { syncService } from "../services/sync";
-
-async function getVerifiedOrgId() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  const memberships = await membershipRepository.getByUser(userId);
-  if (memberships.length === 0) throw new Error("No organization found");
-  return memberships[0].organizationId;
-}
 
 export async function getBusinessProfileAction() {
   try {
-    const orgId = await getVerifiedOrgId();
-    const org = await organizationRepository.getById(orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    const org = await organizationRepository.getById(organizationId);
     if (!org) throw new Error("Organization not found");
-    const profile = await profileRepository.getByOrg(orgId);
+    const profile = await profileRepository.getByOrg(organizationId);
 
     return {
       success: true,
@@ -47,10 +38,10 @@ export async function updateBusinessProfileAction(data: {
   socialLinks?: Record<string, string> | null;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     // 1. Update Organization Table Fields
-    await organizationRepository.update(orgId, {
+    await organizationRepository.update(organizationId, {
       name: data.name,
       website: data.website,
       email: data.email,
@@ -60,17 +51,17 @@ export async function updateBusinessProfileAction(data: {
     });
 
     // 2. Update/Create Business Profile Table Fields
-    const existing = await profileRepository.getByOrg(orgId);
+    const existing = await profileRepository.getByOrg(organizationId);
     if (!existing) {
       await profileRepository.create({
-        organizationId: orgId,
+        organizationId,
         description: data.description,
         googleBusinessUrl: data.googleBusinessUrl,
         reviewUrl: data.reviewUrl,
         socialLinks: data.socialLinks,
       });
     } else {
-      await profileRepository.update(orgId, {
+      await profileRepository.update(organizationId, {
         description: data.description,
         googleBusinessUrl: data.googleBusinessUrl,
         reviewUrl: data.reviewUrl,
@@ -79,10 +70,10 @@ export async function updateBusinessProfileAction(data: {
     }
 
     // 3. Sync profile update to Knowledge Center
-    const org = await organizationRepository.getById(orgId);
+    const org = await organizationRepository.getById(organizationId);
     if (org) {
       await syncService.syncBusinessProfile(
-        orgId,
+        organizationId,
         org.name,
         data.description || "",
         org.email,
@@ -99,3 +90,4 @@ export async function updateBusinessProfileAction(data: {
     return { success: false, error: error?.message || "Failed to update profile" };
   }
 }
+

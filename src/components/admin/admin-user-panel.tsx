@@ -36,6 +36,8 @@ import {
   resetUserPasswordAction,
   forceLogoutUserAction,
 } from "@/server/actions/admin";
+import { useToast } from "@/components/shared/toast";
+import { formatUserErrorMessage } from "@/lib/errors";
 
 import { getButtonClasses } from '@/design-system/button-tokens';
 
@@ -62,6 +64,7 @@ export function AdminUserPanel() {
 
   // Bulk actions loading
   const [actionLoadingId, setActionLoadingId] = React.useState<string | null>(null);
+  const toast = useToast();
 
   // Refresh user list
   const fetchUsers = React.useCallback(async () => {
@@ -78,13 +81,15 @@ export function AdminUserPanel() {
         setUsersList(res.users);
         setTotalPages(res.pagination?.totalPages || 1);
         setTotalCount(res.pagination?.totalCount || 0);
+      } else if (!res.success) {
+        toast.error("Failed to load users", formatUserErrorMessage(res.error));
       }
     } catch (e) {
-      console.error(e);
+      toast.error("Error", formatUserErrorMessage(e, "An unexpected error occurred loading users."));
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter, page]);
+  }, [search, statusFilter, page, toast]);
 
   // Load details
   const fetchDetail = React.useCallback(async (userId: string) => {
@@ -97,15 +102,15 @@ export function AdminUserPanel() {
       if (res.success && res.data) {
         setUserDetail(res.data);
       } else {
-        alert(res.error || "Failed to load user details");
+        toast.error("Failed to load user", formatUserErrorMessage(res.error));
         setSelectedUserId(null);
       }
     } catch (e) {
-      console.error(e);
+      toast.error("Error", formatUserErrorMessage(e, "Failed to retrieve user profile details."));
     } finally {
       setLoadingDetail(false);
     }
-  }, []);
+  }, [toast]);
 
   React.useEffect(() => {
     fetchUsers();
@@ -136,15 +141,16 @@ export function AdminUserPanel() {
         : await suspendUserAction(user.id);
 
       if (res.success) {
+        toast.success(isSuspended ? "User Activated" : "User Suspended", `Account status changed for ${user.email}.`);
         await fetchUsers();
         if (selectedUserId === user.id) {
           await fetchDetail(user.id);
         }
       } else {
-        alert(res.error || "Action failed");
+        toast.error("Action failed", formatUserErrorMessage(res.error));
       }
     } catch (e) {
-      console.error(e);
+      toast.error("Error", formatUserErrorMessage(e, "Failed to update user status."));
     } finally {
       setActionLoadingId(null);
     }
@@ -160,15 +166,16 @@ export function AdminUserPanel() {
         : await deleteUserAction(user.id);
 
       if (res.success) {
+        toast.success(isDeactivated ? "User Restored" : "User Deactivated", `Account status updated.`);
         await fetchUsers();
         if (selectedUserId === user.id) {
           await fetchDetail(user.id);
         }
       } else {
-        alert(res.error || "Action failed");
+        toast.error("Action failed", formatUserErrorMessage(res.error));
       }
     } catch (e) {
-      console.error(e);
+      toast.error("Error", formatUserErrorMessage(e, "Failed to change user deletion state."));
     } finally {
       setActionLoadingId(null);
     }
@@ -188,14 +195,19 @@ export function AdminUserPanel() {
       if (res.success) {
         setResetSuccess(true);
         setNewOverridePassword("");
+        toast.success("Password Reset", "Admin override password updated successfully.");
         setTimeout(() => setResetSuccess(false), 3000);
         // Refresh details for updated sessions
         await fetchDetail(selectedUserId);
       } else {
-        setResetError(res.error || "Failed to reset password");
+        const errorMsg = formatUserErrorMessage(res.error, "Failed to reset password");
+        setResetError(errorMsg);
+        toast.error("Password Reset Failed", errorMsg);
       }
     } catch (err: any) {
-      setResetError(err.message || "An unexpected error occurred");
+      const errorMsg = formatUserErrorMessage(err, "An unexpected error occurred");
+      setResetError(errorMsg);
+      toast.error("Password Reset Failed", errorMsg);
     } finally {
       setResettingPassword(false);
     }
@@ -207,15 +219,15 @@ export function AdminUserPanel() {
     try {
       const res = await forceLogoutUserAction(userId);
       if (res.success) {
-        alert("User has been logged out from all active sessions.");
+        toast.success("Sessions Terminated", "User has been logged out from all active devices.");
         if (selectedUserId === userId) {
           await fetchDetail(userId);
         }
       } else {
-        alert(res.error || "Failed to force logout user");
+        toast.error("Failed to force logout", formatUserErrorMessage(res.error));
       }
     } catch (e) {
-      console.error(e);
+      toast.error("Error", formatUserErrorMessage(e, "Failed to terminate active sessions."));
     }
   };
 

@@ -112,11 +112,17 @@ export function SetupWizard({ state }: { state: SetupState }) {
                       
                       <div className="shrink-0 flex flex-col items-end gap-space-2">
                         {!isCompleted && (
-                           <Link href={isLocked ? "#" : task.href} passHref>
-                             <Button disabled={isLocked} variant={isRecommended ? "default" : "secondary"}>
-                               Continue <ArrowRight className="ml-space-2 h-4 w-4" />
-                             </Button>
-                           </Link>
+                          isLocked ? (
+                            <Button disabled={true} variant="secondary">
+                              Locked <Lock className="ml-space-2 h-3.5 w-3.5" />
+                            </Button>
+                          ) : (
+                            <Link href={task.href} passHref>
+                              <Button variant={isRecommended ? "default" : "secondary"}>
+                                Continue <ArrowRight className="ml-space-2 h-4 w-4" />
+                              </Button>
+                            </Link>
+                          )
                         )}
                         {!isCompleted && !isLocked && (
                           <span className="text-caption text-muted-foreground flex items-center gap-space-1">

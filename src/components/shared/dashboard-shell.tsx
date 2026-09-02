@@ -16,6 +16,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/shared/sheet";
 import { SidebarNavGroup } from "@/components/shared/sidebar-nav";
 import { useSidebar } from "@/components/shared/sidebar-context";
 import { cn } from "@/components/shared/utils";
+import { LogoIcon } from "@/components/shared/logo";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { m, AnimatePresence } from "framer-motion";
 import { pageTransition } from "@/components/motion";
@@ -178,12 +179,12 @@ export function DashboardShell({
           <div
             onClick={collapsed ? toggleSidebar : undefined}
             className={cn(
-              "flex h-8 w-8 items-center justify-center radius-lg bg-[hsl(var(--primary)/0.10)] ring-1 ring-[hsl(var(--primary)/0.15)] shrink-0 transition-all duration-200",
-              collapsed && "cursor-pointer hover:bg-[hsl(var(--primary)/0.18)] hover:scale-105"
+              "flex h-8 w-8 items-center justify-center radius-lg shrink-0 transition-all duration-200",
+              collapsed && "cursor-pointer hover:scale-105"
             )}
             title={collapsed ? "Expand sidebar" : undefined} tabIndex={0} onKeyDown={() => {}}
           >
-            <Bot className="size-[18px] text-primary" />
+            <LogoIcon className="h-8 w-8" />
           </div>
           {!collapsed && (
             <div className="flex flex-col min-w-0 flex-1 animate-fade-in">

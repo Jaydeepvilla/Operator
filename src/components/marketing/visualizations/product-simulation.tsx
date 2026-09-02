@@ -60,39 +60,39 @@ const SIMULATION_SCRIPT = [
 function BrowserHeader() {
   return (
     <div className="flex items-center justify-between px-space-5 py-space-3.5 bg-[hsl(var(--background)/0.8)] border-b border-[hsl(var(--foreground)/0.1)] rounded-t-3xl">
- {/* Mac-like Window Controls */}
- <div className="flex items-center gap-space-2">
- <span className="h-3 w-3 rounded-full bg-[#ff5f56] opacity-80" />
- <span className="h-3 w-3 rounded-full bg-[#ffbd2e] opacity-80" />
- <span className="h-3 w-3 rounded-full bg-[#27c93f] opacity-80" />
- </div>
- {/* Address Bar */}
- <div className="flex-1 max-w-md mx-auto flex items-center justify-center">
- <Badge variant="soft" className="w-full">
- nexx-ai-widget.vercel.app
- </Badge>
- </div>
- {/* Balance spacer */}
- <div className="w-14 hidden sm:block" />
- </div>);
-
+      {/* Mac-like Window Controls */}
+      <div className="flex items-center gap-space-2">
+        <span className="h-3 w-3 rounded-full bg-[#ff5f56] opacity-80" />
+        <span className="h-3 w-3 rounded-full bg-[#ffbd2e] opacity-80" />
+        <span className="h-3 w-3 rounded-full bg-[#27c93f] opacity-80" />
+      </div>
+      {/* Address Bar */}
+      <div className="flex-1 max-w-md mx-auto flex items-center justify-center">
+        <Badge variant="soft" className="w-full">
+          operator-widget.vercel.app
+        </Badge>
+      </div>
+      {/* Balance spacer */}
+      <div className="w-14 hidden sm:block" />
+    </div>
+  );
 }
 
 function ChatPane({ chatLog, chatContainerRef }: {chatLog: ChatMessage[];chatContainerRef: React.RefObject<HTMLDivElement | null>;}) {
   return (
     <div className="bg-[hsl(var(--background)/0.8)] p-space-5 flex flex-col justify-between h-96 rounded-none lg:rounded-bl-3xl">
- {/* Pane Header */}
- <div className="flex items-center justify-between border-b border-[hsl(var(--foreground)/0.1)] pb-space-3 mb-space-3">
- <div className="flex items-center gap-space-2">
- <MessageSquare className="h-4 w-4 text-purple-500" />
- <span className="text-xs uppercase font-mono font-semibold tracking-wider text-[hsl(var(--foreground)/0.8)]">
- Live Customer Conversation
- </span>
- </div>
- <Badge variant="soft">
- Website Widget
- </Badge>
- </div>
+      {/* Pane Header */}
+      <div className="flex items-center justify-between border-b border-[hsl(var(--foreground)/0.1)] pb-space-3 mb-space-3">
+        <div className="flex items-center gap-space-2">
+          <MessageSquare className="h-4 w-4 text-purple-500" />
+          <span className="text-xs uppercase font-mono font-semibold tracking-wider text-[hsl(var(--foreground)/0.8)]">
+            Live Customer Conversation
+          </span>
+        </div>
+        <Badge variant="soft">
+          Website Widget
+        </Badge>
+      </div>
 
  {/* Conversation history list */}
  <ScrollArea

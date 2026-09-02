@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const twilioSignature = req.headers.get("x-twilio-signature") || "";
     const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN || "";
     if (twilioAuthToken) {
-      const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "receptionist.nexx.ai";
+      const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "app.operator.ai";
       const proto = req.headers.get("x-forwarded-proto") || "https";
       const fullUrl = `${proto}://${host}${new URL(req.url).pathname}${new URL(req.url).search}`;
       
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     if (!phoneLine) {
       console.warn(`[Voice Webhook Inbound] No phone configuration matches: ${recipientNumber}`);
       return new NextResponse(
-        `<Response><Say>Welcome to Nexx. This phone number is not yet configured on our dashboard. Goodbye.</Say><Hangup/></Response>`,
+        `<Response><Say>Welcome to Operator. This phone number is not yet configured on the dashboard. Goodbye.</Say><Hangup/></Response>`,
         { status: 200, headers: { "Content-Type": "text/xml" } }
       );
     }
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
           recipientNumber,
         });
 
-        const host = req.headers.get("host") || "receptionist.nexx.ai";
+        const host = req.headers.get("host") || "app.operator.ai";
         const protocol = host.includes("localhost") ? "ws" : "wss";
 
         // Twilio Media Streams Connect XML

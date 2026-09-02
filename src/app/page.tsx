@@ -1,10 +1,10 @@
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
 import Link from"next/link";
+import Image from "next/image";
 import { auth } from "@/lib/auth/server";
 import { MarketingNav } from"@/components/marketing/nav";
 import { MarketingFooter } from"@/components/marketing/footer";
 import { InteractiveArchitecture } from"@/components/marketing/interactive-architecture";
-import { DashboardPreview } from"@/components/marketing/visualizations/dashboard-preview";
 import { ProductSimulation } from"@/components/marketing/visualizations/product-simulation";
 import { InteractiveIndustryExplorer } from"@/components/marketing/visualizations/industry-explorer";
 import { ROISimulatorSection } from"@/components/marketing/visualizations/revenue-recovery-simulator";
@@ -172,28 +172,36 @@ export default async function HomePage() {
  <br className="hidden sm:inline"/>— 24/7, in under 2 seconds.
  Built for service businesses.
  </p>
- {/* CTAs */}
- <div className="flex flex-col sm:flex-row items-center justify-center gap-space-4 mb-space-12 w-full">
-  <SessionAwareCta
-    signedInText="Go to Dashboard"
-    signedOutText="Get started today"
-    size="lg"
-  />
- <Button asChild variant="outline" size="lg" className="cursor-pointer w-full sm:w-auto">
-   <Link href="/demo">
-     Learn more
-   </Link>
- </Button>
- </div>
- {/* Browser preview window — cropped, non-interactive */}
- <div className="relative w-full max-w-screen-xl mt-space-4">
- <div className="absolute -inset-space-10 mesh-glow opacity-[0.12] pointer-events-none z-0"/>
- <div className="relative z-10 radius-2xl overflow-hidden max-h-128 pointer-events-none select-none shadow-[0_20px_60px_-15px_hsl(var(--primary)/0.12)]">
- <DashboardPreview />
- </div>
- {/* Bottom fade */}
- <div className="absolute bottom-space-0 left-space-0 right-space-0 h-40 bg-gradient-to-t from-background via-background/80 to-transparent z-20 pointer-events-none" />
- </div>
+  {/* CTAs */}
+  <div className="flex flex-col sm:flex-row items-center justify-center gap-space-4 mb-space-12 w-full">
+    <SessionAwareCta
+      signedInText="Go to Dashboard"
+      signedOutText="Get started today"
+      size="lg"
+    />
+    <Button asChild variant="outline" size="lg" className="cursor-pointer w-full sm:w-auto">
+      <Link href="/demo">
+        Learn more
+      </Link>
+    </Button>
+  </div>
+
+  {/* Browser preview window — Real Dashboard Image */}
+  <div className="relative w-full max-w-screen-xl mt-space-6">
+    <div className="absolute -inset-space-8 mesh-glow opacity-[0.18] pointer-events-none z-0"/>
+    <div className="relative z-10 radius-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] border border-white/10 bg-[#0B0F19]">
+      <Image
+        src="/images/dashboard-hero.png"
+        alt="Operator AI Live Dashboard"
+        width={1366}
+        height={520}
+        unoptimized
+        priority
+        className="w-full h-auto object-contain rounded-2xl block"
+      />
+    </div>
+  </div>
+
  {/* Partner/Brand logos strip */}
  <div className="mt-space-16 border-t border-border-muted pt-space-10 text-center w-full max-w-4xl">
  <p className="text-caption text-muted-foreground uppercase tracking-widest mb-space-8 font-semibold opacity-85">

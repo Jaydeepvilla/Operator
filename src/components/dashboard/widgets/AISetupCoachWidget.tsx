@@ -7,6 +7,7 @@ import { SetupState } from "@/lib/setup-engine/types";
 import { RecommendationAction } from "@/lib/recommendation-engine/types";
 import { Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { APP_ROUTES } from "@/lib/constants/routes";
 
 interface AISetupCoachWidgetProps {
   action: RecommendationAction | null;
@@ -78,7 +79,7 @@ export function AISetupCoachWidget({ action }: AISetupCoachWidgetProps) {
             asChild
             className="flex-1 h-space-9 text-caption font-semibold bg-primary text-primary-foreground radius-full hover:bg-primary-light transition-all flex items-center justify-center gap-space-1.5 cursor-pointer"
           >
-            <Link href={action.primaryCtaHref || "#"}>
+            <Link href={action.primaryCtaHref || APP_ROUTES.setup}>
               <span>{action.primaryCtaText}</span>
               <ArrowRight className="w-space-3 h-space-3 shrink-0" />
             </Link>

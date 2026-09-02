@@ -1,45 +1,137 @@
-import { BillingProvider, InvoiceProvider, PaymentProvider, SubscriptionProvider } from "./types";
+import { 
+  BillingProvider, 
+  InvoiceProvider, 
+  PaymentProvider, 
+  SubscriptionProvider,
+  CheckoutSessionParams,
+  CheckoutSessionResult
+} from "./types";
 import { ProviderRegistry } from "./registry";
+import { 
+  requirePaymentProviderConfiguration, 
+  PaymentProviderError, 
+  PaymentConfigurationError,
+  generateCorrelationId 
+} from "../config";
 import Stripe from "stripe";
 
-let stripeClient: Stripe | null = null;
-function getStripeClient(): Stripe {
-  if (stripeClient) return stripeClient;
-  const apiKey = process.env.STRIPE_SECRET_KEY;
-  if (!apiKey) {
-    throw new Error("STRIPE_SECRET_KEY is not configured on the server.");
+const stripeClients = new Map<string, Stripe>();
+
+async function getStripeClient(organizationId?: string): Promise<Stripe> {
+  const config = await requirePaymentProviderConfiguration("stripe", organizationId);
+  const cacheKey = `${organizationId || "global"}_${config.secretKey?.slice(-8)}`;
+
+  if (stripeClients.has(cacheKey)) {
+    return stripeClients.get(cacheKey)!;
   }
-  stripeClient = new Stripe(apiKey, {
-    apiVersion: "2025-01-27-28827827827" as any,
+
+  const client = new Stripe(config.secretKey!, {
+    apiVersion: "2023-10-16" as any,
   });
-  return stripeClient;
+
+  stripeClients.set(cacheKey, client);
+  return client;
 }
 
 export class StripeProvider implements PaymentProvider, SubscriptionProvider, BillingProvider, InvoiceProvider {
 
-  // --- BillingProvider ---
-  async createCustomer(email: string, name?: string, metadata?: Record<string, string>): Promise<{ id: string }> {
-    const stripe = getStripeClient();
-    const customer = await stripe.customers.create({
-      email,
-      name,
-      metadata,
-    });
-    return { id: customer.id };
+  // --- CheckoutSession ---
+  async createCheckoutSession(params: CheckoutSessionParams): Promise<CheckoutSessionResult> {
+    const correlationId = generateCorrelationId();
+    try {
+      const stripe = await getStripeClient(params.organizationId);
+
+      const sessionPayload: Stripe.Checkout.SessionCreateParams = {
+        mode: params.mode || (params.priceId ? "subscription" : "payment"),
+        success_url: params.successUrl,
+        cancel_url: params.cancelUrl,
+        metadata: {
+          ...params.metadata,
+          correlationId,
+          organizationId: params.organizationId || "",
+        },
+      };
+
+      if (params.customerId) {
+        sessionPayload.customer = params.customerId;
+      } else if (params.customerEmail) {
+        sessionPayload.customer_email = params.customerEmail;
+      }
+
+      if (params.priceId) {
+        sessionPayload.line_items = [
+          {
+            price: params.priceId,
+            quantity: 1,
+          },
+        ];
+        if (params.mode === "subscription" && params.trialDays && params.trialDays > 0) {
+          sessionPayload.subscription_data = {
+            trial_period_days: params.trialDays,
+            metadata: { organizationId: params.organizationId || "" },
+          };
+        }
+      } else if (params.amount) {
+        sessionPayload.line_items = [
+          {
+            price_data: {
+              currency: params.currency || "usd",
+              product_data: {
+                name: "Platform Booking / Payment",
+              },
+              unit_amount: Math.round(params.amount * 100),
+            },
+            quantity: 1,
+          },
+        ];
+      }
+
+      const session = await stripe.checkout.sessions.create(sessionPayload);
+
+      return {
+        id: session.id,
+        url: session.url,
+        status: session.status || "open",
+      };
+    } catch (err) {
+      if (err instanceof PaymentConfigurationError) throw err;
+      console.error(`[Stripe Checkout Error] [${correlationId}]:`, err);
+      throw new PaymentProviderError("Failed to initialize Stripe checkout session.", {
+        correlationId,
+      });
+    }
   }
 
-  async updateCustomer(customerId: string, email: string, name?: string): Promise<void> {
-    const stripe = getStripeClient();
+  // --- BillingProvider ---
+  async createCustomer(email: string, name?: string, metadata?: Record<string, string>, organizationId?: string): Promise<{ id: string }> {
+    const correlationId = generateCorrelationId();
+    try {
+      const stripe = await getStripeClient(organizationId);
+      const customer = await stripe.customers.create({
+        email,
+        name,
+        metadata,
+      });
+      return { id: customer.id };
+    } catch (err) {
+      if (err instanceof PaymentConfigurationError) throw err;
+      console.error(`[Stripe CreateCustomer Error] [${correlationId}]:`, err);
+      throw new PaymentProviderError("Failed to create customer profile with payment provider.", { correlationId });
+    }
+  }
+
+  async updateCustomer(customerId: string, email: string, name?: string, organizationId?: string): Promise<void> {
+    const stripe = await getStripeClient(organizationId);
     await stripe.customers.update(customerId, { email, name });
   }
 
-  async deleteCustomer(customerId: string): Promise<void> {
-    const stripe = getStripeClient();
+  async deleteCustomer(customerId: string, organizationId?: string): Promise<void> {
+    const stripe = await getStripeClient(organizationId);
     await stripe.customers.del(customerId);
   }
 
-  async getPaymentMethods(customerId: string) {
-    const stripe = getStripeClient();
+  async getPaymentMethods(customerId: string, organizationId?: string) {
+    const stripe = await getStripeClient(organizationId);
     const paymentMethods = await stripe.paymentMethods.list({
       customer: customerId,
       type: "card",
@@ -58,8 +150,8 @@ export class StripeProvider implements PaymentProvider, SubscriptionProvider, Bi
     }));
   }
 
-  async setDefaultPaymentMethod(customerId: string, paymentMethodId: string): Promise<void> {
-    const stripe = getStripeClient();
+  async setDefaultPaymentMethod(customerId: string, paymentMethodId: string, organizationId?: string): Promise<void> {
+    const stripe = await getStripeClient(organizationId);
     await stripe.customers.update(customerId, {
       invoice_settings: {
         default_payment_method: paymentMethodId,
@@ -68,23 +160,29 @@ export class StripeProvider implements PaymentProvider, SubscriptionProvider, Bi
   }
 
   // --- PaymentProvider ---
-  async createPaymentIntent(amount: number, currency: string, customerId: string) {
-    const stripe = getStripeClient();
-    const intent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // convert to cents
-      currency,
-      customer: customerId,
-    });
+  async createPaymentIntent(amount: number, currency: string, customerId: string, organizationId?: string) {
+    const correlationId = generateCorrelationId();
+    try {
+      const stripe = await getStripeClient(organizationId);
+      const intent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100),
+        currency,
+        customer: customerId,
+      });
 
-    return {
-      id: intent.id,
-      clientSecret: intent.client_secret || "",
-      status: intent.status,
-    };
+      return {
+        id: intent.id,
+        clientSecret: intent.client_secret || "",
+        status: intent.status,
+      };
+    } catch (err) {
+      if (err instanceof PaymentConfigurationError) throw err;
+      throw new PaymentProviderError("Failed to create payment intent.", { correlationId });
+    }
   }
 
-  async capturePayment(paymentIntentId: string) {
-    const stripe = getStripeClient();
+  async capturePayment(paymentIntentId: string, organizationId?: string) {
+    const stripe = await getStripeClient(organizationId);
     const intent = await stripe.paymentIntents.capture(paymentIntentId);
     return {
       id: intent.id,
@@ -93,8 +191,8 @@ export class StripeProvider implements PaymentProvider, SubscriptionProvider, Bi
     };
   }
 
-  async refundPayment(paymentId: string, amount?: number, reason?: string) {
-    const stripe = getStripeClient();
+  async refundPayment(paymentId: string, amount?: number, reason?: string, organizationId?: string) {
+    const stripe = await getStripeClient(organizationId);
     const refund = await stripe.refunds.create({
       payment_intent: paymentId,
       amount: amount ? Math.round(amount * 100) : undefined,
@@ -112,33 +210,41 @@ export class StripeProvider implements PaymentProvider, SubscriptionProvider, Bi
     customerId: string,
     priceId: string,
     trialDays = 14,
-    couponCode?: string
+    couponCode?: string,
+    organizationId?: string
   ) {
-    const stripe = getStripeClient();
-    const subscription = (await stripe.subscriptions.create({
-      customer: customerId,
-      items: [{ price: priceId }],
-      trial_period_days: trialDays > 0 ? trialDays : undefined,
-      coupon: couponCode,
-      payment_behavior: "default_incomplete",
-      payment_settings: { save_default_payment_method: "on_subscription" },
-      expand: ["latest_invoice.payment_intent"],
-    } as any)) as any;
+    const correlationId = generateCorrelationId();
+    try {
+      const stripe = await getStripeClient(organizationId);
+      const subscription = (await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: priceId }],
+        trial_period_days: trialDays > 0 ? trialDays : undefined,
+        coupon: couponCode,
+        payment_behavior: "default_incomplete",
+        payment_settings: { save_default_payment_method: "on_subscription" },
+        expand: ["latest_invoice.payment_intent"],
+      } as any)) as any;
 
-    const latestInvoice = subscription.latest_invoice;
-    const paymentIntent = latestInvoice?.payment_intent;
+      const latestInvoice = subscription.latest_invoice;
+      const paymentIntent = latestInvoice?.payment_intent;
 
-    return {
-      id: subscription.id,
-      status: subscription.status,
-      clientSecret: paymentIntent?.client_secret || undefined,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-    };
+      return {
+        id: subscription.id,
+        status: subscription.status,
+        clientSecret: paymentIntent?.client_secret || undefined,
+        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      };
+    } catch (err) {
+      if (err instanceof PaymentConfigurationError) throw err;
+      console.error(`[Stripe CreateSubscription Error] [${correlationId}]:`, err);
+      throw new PaymentProviderError("Failed to initiate subscription with payment provider.", { correlationId });
+    }
   }
 
-  async updateSubscription(subscriptionId: string, priceId: string, prorate = true) {
-    const stripe = getStripeClient();
+  async updateSubscription(subscriptionId: string, priceId: string, prorate = true, organizationId?: string) {
+    const stripe = await getStripeClient(organizationId);
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
     const updated = await stripe.subscriptions.update(subscriptionId, {
       items: [
@@ -156,8 +262,8 @@ export class StripeProvider implements PaymentProvider, SubscriptionProvider, Bi
     };
   }
 
-  async cancelSubscription(subscriptionId: string, immediately = false) {
-    const stripe = getStripeClient();
+  async cancelSubscription(subscriptionId: string, immediately = false, organizationId?: string) {
+    const stripe = await getStripeClient(organizationId);
     let sub;
     if (immediately) {
       sub = await stripe.subscriptions.cancel(subscriptionId);
@@ -173,8 +279,8 @@ export class StripeProvider implements PaymentProvider, SubscriptionProvider, Bi
     };
   }
 
-  async pauseSubscription(subscriptionId: string) {
-    const stripe = getStripeClient();
+  async pauseSubscription(subscriptionId: string, organizationId?: string) {
+    const stripe = await getStripeClient(organizationId);
     const sub = await stripe.subscriptions.update(subscriptionId, {
       pause_collection: {
         behavior: "void",
@@ -187,8 +293,8 @@ export class StripeProvider implements PaymentProvider, SubscriptionProvider, Bi
     };
   }
 
-  async resumeSubscription(subscriptionId: string) {
-    const stripe = getStripeClient();
+  async resumeSubscription(subscriptionId: string, organizationId?: string) {
+    const stripe = await getStripeClient(organizationId);
     const sub = await stripe.subscriptions.update(subscriptionId, {
       pause_collection: null,
     });
@@ -203,10 +309,10 @@ export class StripeProvider implements PaymentProvider, SubscriptionProvider, Bi
   async createInvoice(
     customerId: string,
     items: Array<{ description: string; amount: number; quantity: number }>,
-    dueDate?: Date
+    dueDate?: Date,
+    organizationId?: string
   ) {
-    const stripe = getStripeClient();
-    // Create invoice items
+    const stripe = await getStripeClient(organizationId);
     for (const item of items) {
       await stripe.invoiceItems.create({
         customer: customerId,
@@ -216,14 +322,12 @@ export class StripeProvider implements PaymentProvider, SubscriptionProvider, Bi
       });
     }
 
-    // Create final invoice
     const invoice = await stripe.invoices.create({
       customer: customerId,
       due_date: dueDate ? Math.floor(dueDate.getTime() / 1000) : undefined,
       collection_method: dueDate ? "send_invoice" : "charge_automatically",
     });
 
-    // Finalize invoice so it gets invoice number & PDF URL
     const finalized = await stripe.invoices.finalizeInvoice(invoice.id);
 
     return {
@@ -234,13 +338,13 @@ export class StripeProvider implements PaymentProvider, SubscriptionProvider, Bi
     };
   }
 
-  async voidInvoice(invoiceId: string): Promise<void> {
-    const stripe = getStripeClient();
+  async voidInvoice(invoiceId: string, organizationId?: string): Promise<void> {
+    const stripe = await getStripeClient(organizationId);
     await stripe.invoices.voidInvoice(invoiceId);
   }
 
-  async createCreditNote(invoiceId: string, amount: number, reason?: string) {
-    const stripe = getStripeClient();
+  async createCreditNote(invoiceId: string, amount: number, reason?: string, organizationId?: string) {
+    const stripe = await getStripeClient(organizationId);
     const creditNote = await stripe.creditNotes.create({
       invoice: invoiceId,
       amount: Math.round(amount * 100),
@@ -253,7 +357,7 @@ export class StripeProvider implements PaymentProvider, SubscriptionProvider, Bi
   }
 }
 
-// Automatically register on load
+// Automatically register on load (safe lazy instance)
 const stripe = new StripeProvider();
 ProviderRegistry.registerPaymentProvider("stripe", stripe);
 ProviderRegistry.registerSubscriptionProvider("stripe", stripe);

@@ -29,7 +29,7 @@ export function getAutomationRecommendations(state: RecommendationState): Recomm
       title: "Enable Team Notifications",
       description: "Set up internal notifications so your staff receives an alert when the AI escalates a conversation.",
       primaryCtaText: "Configure Alerts",
-      primaryCtaHref: "/settings/notifications",
+      primaryCtaHref: "/settings/rules",
       estimatedTimeMinutes: 2,
       impact: "Medium",
       impactReason: "Ensures no customer inquiries slip through the cracks during an escalation.",

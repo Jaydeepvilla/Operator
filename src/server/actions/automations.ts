@@ -9,29 +9,26 @@ import { tagsRepository } from "@/server/repositories/tags";
 import { settingsRepository } from "@/server/repositories/settings";
 import { db } from "@/server/db";
 import { websiteImports, automationRules, automationRuleExecutions } from "@/server/db/schema";
-import { checkUserOrganization } from "@/server/actions/onboarding";
+import { requireOrganizationAccess } from "@/lib/auth/server";
 import { ruleEngine, RuleAction, RuleCondition } from "../services/automations/rule-engine";
 import { eq, and, desc } from "drizzle-orm";
-import { organizationRepository } from "@/server/repositories/organization";
 
 export async function generateDocumentAction(docType: string) {
-  const { hasOrg, org } = await checkUserOrganization();
-  if (!hasOrg || !org) throw new Error("Unauthorized");
+  const { organization } = await requireOrganizationAccess();
 
   const state = {
-    organization: org,
+    organization,
   };
 
   return await generateDocument(docType, state as any);
 }
 
 export async function publishDocumentAction(data: { title: string; content: string }) {
-  const { hasOrg, org } = await checkUserOrganization();
-  if (!hasOrg || !org) throw new Error("Unauthorized");
+  const { organizationId } = await requireOrganizationAccess();
 
   // Store in documents repository
   await documentsRepository.create({
-    organizationId: org.id,
+    organizationId,
     name: data.title,
     fileType: "text/markdown",
     status: "active",
@@ -42,25 +39,23 @@ export async function publishDocumentAction(data: { title: string; content: stri
   });
 
   revalidatePath("/dashboard");
-  revalidatePath("/knowledge");
+  revalidatePath("/kb");
   revalidatePath("/health");
   return { success: true };
 }
 
 export async function generateFaqAction() {
-  const { hasOrg, org } = await checkUserOrganization();
-  if (!hasOrg || !org) throw new Error("Unauthorized");
+  const { organization } = await requireOrganizationAccess();
 
   const state = {
-    organization: org,
+    organization,
   };
 
   return generateFaqPreview(state as any);
 }
 
 export async function publishFaqAction(data: { title: string; content: string }) {
-  const { hasOrg, org } = await checkUserOrganization();
-  if (!hasOrg || !org) throw new Error("Unauthorized");
+  const { organizationId } = await requireOrganizationAccess();
 
   // Basic parsing of Q: and A: from the markdown
   const lines = data.content.split('\n');
@@ -94,7 +89,7 @@ export async function publishFaqAction(data: { title: string; content: string })
   // Insert into faq repository
   for (const faq of faqsToInsert) {
     await faqRepository.create({
-      organizationId: org.id,
+      organizationId,
       question: faq.question,
       answer: faq.answer,
       category: faq.category,
@@ -103,29 +98,28 @@ export async function publishFaqAction(data: { title: string; content: string })
   }
 
   revalidatePath("/dashboard");
-  revalidatePath("/knowledge");
+  revalidatePath("/kb");
+  revalidatePath("/faqs");
   revalidatePath("/health");
   return { success: true };
 }
 
 export async function generateWebsiteAction() {
-  const { hasOrg, org } = await checkUserOrganization();
-  if (!hasOrg || !org) throw new Error("Unauthorized");
-  return generateWebsitePreview({ organization: org } as any);
+  const { organization } = await requireOrganizationAccess();
+  return generateWebsitePreview({ organization } as any);
 }
 
 export async function publishWebsiteAction(data: { title: string; content: string }) {
-  const { hasOrg, org } = await checkUserOrganization();
-  if (!hasOrg || !org) throw new Error("Unauthorized");
+  const { organizationId } = await requireOrganizationAccess();
   
-  // Create a dummy import job
+  // Create an import job
   await db.insert(websiteImports).values({
-    organizationId: org.id,
+    organizationId,
     url: data.title.replace('Importing ', ''),
     status: 'pending',
     pagesFound: 0,
     pagesScraped: 0,
-    sourceId: "00000000-0000-0000-0000-000000000000" // would normally link to a created source
+    sourceId: "00000000-0000-0000-0000-000000000000"
   });
 
   revalidatePath("/dashboard");
@@ -133,19 +127,17 @@ export async function publishWebsiteAction(data: { title: string; content: strin
 }
 
 export async function generateCategoryAction() {
-  const { hasOrg, org } = await checkUserOrganization();
-  if (!hasOrg || !org) throw new Error("Unauthorized");
-  return generateCategoryPreview({ organization: org } as any);
+  const { organization } = await requireOrganizationAccess();
+  return generateCategoryPreview({ organization } as any);
 }
 
 export async function publishCategoryAction(data: { title: string; content: string }) {
-  const { hasOrg, org } = await checkUserOrganization();
-  if (!hasOrg || !org) throw new Error("Unauthorized");
+  const { organizationId } = await requireOrganizationAccess();
   
   const categories = JSON.parse(data.content);
   for (const cat of categories) {
     await categoriesRepository.create({
-      organizationId: org.id,
+      organizationId,
       name: cat.name,
       slug: cat.slug,
       icon: cat.icon
@@ -156,19 +148,17 @@ export async function publishCategoryAction(data: { title: string; content: stri
 }
 
 export async function generateTagAction() {
-  const { hasOrg, org } = await checkUserOrganization();
-  if (!hasOrg || !org) throw new Error("Unauthorized");
-  return generateTagPreview({ organization: org } as any);
+  const { organization } = await requireOrganizationAccess();
+  return generateTagPreview({ organization } as any);
 }
 
 export async function publishTagAction(data: { title: string; content: string }) {
-  const { hasOrg, org } = await checkUserOrganization();
-  if (!hasOrg || !org) throw new Error("Unauthorized");
+  const { organizationId } = await requireOrganizationAccess();
   
   const tags = JSON.parse(data.content);
   for (const tag of tags) {
     await tagsRepository.create({
-      organizationId: org.id,
+      organizationId,
       name: tag.name,
       slug: tag.slug
     });
@@ -178,25 +168,23 @@ export async function publishTagAction(data: { title: string; content: string })
 }
 
 export async function generateHoursAction() {
-  const { hasOrg, org } = await checkUserOrganization();
-  if (!hasOrg || !org) throw new Error("Unauthorized");
-  return generateHoursPreview({ organization: org } as any);
+  const { organization } = await requireOrganizationAccess();
+  return generateHoursPreview({ organization } as any);
 }
 
 export async function publishHoursAction(data: { title: string; content: string }) {
-  const { hasOrg, org } = await checkUserOrganization();
-  if (!hasOrg || !org) throw new Error("Unauthorized");
+  const { organizationId } = await requireOrganizationAccess();
   
   const hours = JSON.parse(data.content);
   
-  const currentSettings = await settingsRepository.getByOrg(org.id);
+  const currentSettings = await settingsRepository.getByOrg(organizationId);
   if (currentSettings) {
-    await settingsRepository.update(org.id, {
+    await settingsRepository.update(organizationId, {
       businessHours: hours
     });
   } else {
     await settingsRepository.create({
-      organizationId: org.id,
+      organizationId,
       businessHours: hours,
       holidays: [],
       languages: ["en"],
@@ -219,19 +207,18 @@ export async function publishHoursAction(data: { title: string; content: string 
 
 export async function getCustomAutomationRulesAction() {
   try {
-    const { hasOrg, org } = await checkUserOrganization();
-    if (!hasOrg || !org) throw new Error("Unauthorized");
+    const { organizationId } = await requireOrganizationAccess();
 
     const rules = await db
       .select()
       .from(automationRules)
-      .where(eq(automationRules.organizationId, org.id))
+      .where(eq(automationRules.organizationId, organizationId))
       .orderBy(desc(automationRules.createdAt));
 
     const executions = await db
       .select()
       .from(automationRuleExecutions)
-      .where(eq(automationRuleExecutions.organizationId, org.id))
+      .where(eq(automationRuleExecutions.organizationId, organizationId))
       .orderBy(desc(automationRuleExecutions.executedAt))
       .limit(30);
 
@@ -253,8 +240,7 @@ export async function saveCustomAutomationRuleAction(input: {
   isActive?: boolean;
 }) {
   try {
-    const { hasOrg, org } = await checkUserOrganization();
-    if (!hasOrg || !org) throw new Error("Unauthorized");
+    const { organizationId } = await requireOrganizationAccess();
 
     if (!input.name || !input.triggerType || !input.actions || input.actions.length === 0) {
       return { success: false, error: "Name, Trigger, and at least one Action are required." };
@@ -273,7 +259,7 @@ export async function saveCustomAutomationRuleAction(input: {
           isActive: input.isActive ?? true,
           updatedAt: new Date(),
         })
-        .where(and(eq(automationRules.id, input.id), eq(automationRules.organizationId, org.id)))
+        .where(and(eq(automationRules.id, input.id), eq(automationRules.organizationId, organizationId)))
         .returning();
 
       revalidatePath("/automations");
@@ -282,7 +268,7 @@ export async function saveCustomAutomationRuleAction(input: {
       const [created] = await db
         .insert(automationRules)
         .values({
-          organizationId: org.id,
+          organizationId,
           name: input.name,
           description: input.description,
           triggerType: input.triggerType,
@@ -304,13 +290,12 @@ export async function saveCustomAutomationRuleAction(input: {
 
 export async function toggleCustomAutomationRuleAction(ruleId: string, isActive: boolean) {
   try {
-    const { hasOrg, org } = await checkUserOrganization();
-    if (!hasOrg || !org) throw new Error("Unauthorized");
+    const { organizationId } = await requireOrganizationAccess();
 
     await db
       .update(automationRules)
       .set({ isActive, updatedAt: new Date() })
-      .where(and(eq(automationRules.id, ruleId), eq(automationRules.organizationId, org.id)));
+      .where(and(eq(automationRules.id, ruleId), eq(automationRules.organizationId, organizationId)));
 
     revalidatePath("/automations");
     return { success: true };
@@ -322,12 +307,11 @@ export async function toggleCustomAutomationRuleAction(ruleId: string, isActive:
 
 export async function deleteCustomAutomationRuleAction(ruleId: string) {
   try {
-    const { hasOrg, org } = await checkUserOrganization();
-    if (!hasOrg || !org) throw new Error("Unauthorized");
+    const { organizationId } = await requireOrganizationAccess();
 
     await db
       .delete(automationRules)
-      .where(and(eq(automationRules.id, ruleId), eq(automationRules.organizationId, org.id)));
+      .where(and(eq(automationRules.id, ruleId), eq(automationRules.organizationId, organizationId)));
 
     revalidatePath("/automations");
     return { success: true };
@@ -339,13 +323,12 @@ export async function deleteCustomAutomationRuleAction(ruleId: string) {
 
 export async function testCustomAutomationRuleAction(ruleId: string, customPayload?: Record<string, any>) {
   try {
-    const { hasOrg, org } = await checkUserOrganization();
-    if (!hasOrg || !org) throw new Error("Unauthorized");
+    const { organizationId } = await requireOrganizationAccess();
 
     const [rule] = await db
       .select()
       .from(automationRules)
-      .where(and(eq(automationRules.id, ruleId), eq(automationRules.organizationId, org.id)))
+      .where(and(eq(automationRules.id, ruleId), eq(automationRules.organizationId, organizationId)))
       .limit(1);
 
     if (!rule) throw new Error("Automation rule not found");
@@ -359,7 +342,7 @@ export async function testCustomAutomationRuleAction(ruleId: string, customPaylo
       appointmentTime: new Date().toLocaleString(),
     };
 
-    const results = await ruleEngine.emitEvent(org.id, rule.triggerType, samplePayload);
+    const results = await ruleEngine.emitEvent(organizationId, rule.triggerType, samplePayload);
 
     revalidatePath("/automations");
     return { success: true, results };
@@ -368,4 +351,5 @@ export async function testCustomAutomationRuleAction(ruleId: string, customPaylo
     return { success: false, error: error?.message || "Test execution failed" };
   }
 }
+
 

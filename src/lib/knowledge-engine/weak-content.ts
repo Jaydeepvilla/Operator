@@ -14,7 +14,7 @@ export function getWeakContentRecommendations(state: RecommendationState): Recom
         title: `Improve Document: ${doc.title}`,
         description: `This document is flagged as low quality. ${analysis.issues[0]}`,
         primaryCtaText: "Enhance with AI",
-        primaryCtaHref: `/knowledge/documents`,
+        primaryCtaHref: "/kb",
         primaryCtaAction: `enhance_document_${doc.id}`,
         estimatedTimeMinutes: 2,
         impact: "Medium",

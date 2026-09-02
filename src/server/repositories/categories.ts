@@ -62,16 +62,18 @@ export const categoriesRepository = {
     return newItem;
   },
 
-  async update(id: string, item: Partial<NewKnowledgeCategory>) {
+  async update(id: string, organizationId: string, item: Partial<NewKnowledgeCategory>) {
     const [updated] = await db
       .update(knowledgeCategories)
       .set({ ...item, updatedAt: new Date() })
-      .where(eq(knowledgeCategories.id, id))
+      .where(and(eq(knowledgeCategories.id, id), eq(knowledgeCategories.organizationId, organizationId)))
       .returning();
     return updated;
   },
 
-  async delete(id: string) {
-    await db.delete(knowledgeCategories).where(eq(knowledgeCategories.id, id));
+  async delete(id: string, organizationId: string) {
+    await db
+      .delete(knowledgeCategories)
+      .where(and(eq(knowledgeCategories.id, id), eq(knowledgeCategories.organizationId, organizationId)));
   },
 };

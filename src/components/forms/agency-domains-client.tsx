@@ -17,10 +17,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/shared/dialog";
 import { Input } from "@/components/shared/input";
 import { Label } from "@/components/shared/label";
-import { addAgencyDomainAction, deleteAgencyDomainAction, verifyDomainSslAction } from "@/server/actions/agency";
+import { useToast } from "@/components/shared/toast";
+import { formatUserErrorMessage } from "@/lib/errors";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { NativeSelect, NativeTable } from "@/components/shared/native";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  addAgencyDomainAction,
+  deleteAgencyDomainAction,
+  verifyDomainSslAction,
+} from "@/server/actions/agency";
 
 interface DomainRecord {
   id: string;
@@ -35,6 +41,7 @@ export function AgencyDomainsClient({ initialDomains }: {initialDomains: any[];}
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [confirmDialogId, setConfirmDialogId] = useState<string | null>(null);
+  const toast = useToast();
 
   // New Domain form
   const [newDomainName, setNewDomainName] = useState("");
@@ -59,8 +66,11 @@ export function AgencyDomainsClient({ initialDomains }: {initialDomains: any[];}
         setDomains((prev) => [res.domain as unknown as DomainRecord, ...prev]);
         setNewDomainName("");
         setIsOpen(false);
+        toast.success("Domain Added", "Custom domain connected successfully.");
       } else {
-        setDialogError(res.error || "Failed to link domain.");
+        const errorMsg = formatUserErrorMessage(res.error, "Failed to link domain.");
+        setDialogError(errorMsg);
+        toast.error("Failed to link domain", errorMsg);
       }
     });
   };
@@ -80,22 +90,26 @@ export function AgencyDomainsClient({ initialDomains }: {initialDomains: any[];}
     const res = await deleteAgencyDomainAction(domainId);
     if (!res.success) {
       setDomains(originalList);
-      alert("Failed to delete domain: " + res.error);
+      toast.error("Failed to delete domain", formatUserErrorMessage(res.error));
+    } else {
+      toast.success("Domain Removed", "Custom domain has been unlinked.");
     }
   };
 
   const handleVerifySsl = async (domainId: string) => {
     // optimistic verification toggle
     setDomains((prev) =>
-    prev.map((d) => d.id === domainId ? { ...d, sslStatus: "active" } : d)
+      prev.map((d) => (d.id === domainId ? { ...d, sslStatus: "active" } : d))
     );
 
     const res = await verifyDomainSslAction(domainId);
     if (!res.success) {
       setDomains((prev) =>
-      prev.map((d) => d.id === domainId ? { ...d, sslStatus: "pending" } : d)
+        prev.map((d) => (d.id === domainId ? { ...d, sslStatus: "pending" } : d))
       );
-      alert("DNS verification check failed. Ensure the CNAME record is active: " + res.error);
+      toast.error("DNS Verification Failed", formatUserErrorMessage(res.error, "Ensure the CNAME record is active and points to your cluster."));
+    } else {
+      toast.success("SSL Verified", "DNS record active and SSL certificate is valid.");
     }
   };
 
@@ -191,17 +205,17 @@ export function AgencyDomainsClient({ initialDomains }: {initialDomains: any[];}
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Value:</span>
-                    <strong>cname.nexx.ai</strong>
+                    <strong>cname.operator.ai</strong>
                   </div>
                 </Badge>
               </div>
 
-              {dialogError &&
-              <div className="p-space-3 bg-destructive/10 text-destructive border border-error-500/20 text-caption radius-lg flex items-center gap-space-2">
+              {dialogError && (
+                <div className="p-space-3 bg-destructive/10 text-destructive border border-error-500/20 text-caption radius-lg flex items-center gap-space-2">
                   <AlertCircle className="h-4 w-4" />
                   <span>{dialogError}</span>
                 </div>
-              }
+              )}
             </div>
 
             <DialogFooter>
@@ -217,10 +231,11 @@ export function AgencyDomainsClient({ initialDomains }: {initialDomains: any[];}
 
       {/* Linked subdomains list */}
       <Card className="bg-card/30 border border-border/50 overflow-hidden">
-        {domains.length === 0 ?
-        <div className="py-space-16 text-center text-muted-foreground text-body-sm">
+        {domains.length === 0 ? (
+          <div className="py-space-16 text-center text-muted-foreground text-body-sm">
             No custom domains linked yet. Point your CNAME record to set up platform white-labeling.
-          </div> :
+          </div>
+        ) : (
 
         <ScrollArea className="" vertical={false}>
                               <NativeTable className="w-full text-left border-collapse text-body-sm">
@@ -265,7 +280,7 @@ export function AgencyDomainsClient({ initialDomains }: {initialDomains: any[];}
                                 </tbody>
                               </NativeTable>
                             </ScrollArea>
-        }
+        )}
       </Card>
 
       <ConfirmDialog

@@ -62,7 +62,7 @@ export const agencyRepository = {
         .insert(agencyBranding)
         .values({
           agencyId: newAgency.id,
-          platformName: "Nexx WhiteLabel Portal",
+          platformName: "Operator WhiteLabel Portal",
           primaryColor: "#3b82f6",
           secondaryColor: "#1e293b",
           typography: "Inter"
@@ -113,7 +113,7 @@ export const agencyRepository = {
         .values({
           ...data,
           agencyId,
-          platformName: data.platformName || "Nexx WhiteLabel",
+          platformName: data.platformName || "Operator WhiteLabel",
         } as typeof agencyBranding.$inferInsert)
         .returning();
       return inserted;

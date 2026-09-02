@@ -10,7 +10,7 @@ export function getImportDetection(state: RecommendationState): RecommendationAc
       title: "Import Existing Customers",
       description: "Your CRM has no customers. Importing your existing client list helps the AI personalize interactions immediately.",
       primaryCtaText: "Import CSV",
-      primaryCtaHref: "/crm/import",
+      primaryCtaHref: "/contacts",
       estimatedTimeMinutes: 5,
       impact: "High",
       impactReason: "Core requirement for outbound campaigns and personalized inbound routing.",

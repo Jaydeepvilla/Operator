@@ -16,7 +16,7 @@ export function getSegmentationRecommendations(state: RecommendationState): Reco
       title: "Segment Your Audience",
       description: "You have unsegmented customers. Segmenting by 'New', 'Active', or 'Churned' allows the AI to run targeted win-back campaigns.",
       primaryCtaText: "Auto-Segment",
-      primaryCtaHref: "/crm/segments",
+      primaryCtaHref: "/contacts",
       primaryCtaAction: "auto_create_segments",
       estimatedTimeMinutes: 2,
       impact: "Medium",

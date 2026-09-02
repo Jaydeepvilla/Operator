@@ -202,8 +202,8 @@ export default function ContactPage() {
                 <h3 className=" text-body-sm text-foreground mb-space-4">Other ways to reach us</h3>
                 <div className="space-y-space-3">
                   {[
-                    { icon: Mail, label: "Email", value: "hello@nexx.ai", href: "mailto:hello@nexx.ai" },
-                    { icon: Headphones, label: "Support Portal", value: "support.nexx.ai", href: "#" },
+                    { icon: Mail, label: "Email", value: "hello@operator.ai", href: "mailto:hello@operator.ai" },
+                    { icon: Headphones, label: "Support Portal", value: "support.operator.ai", href: "#" },
                     { icon: Globe, label: "Live Chat", value: "Available on all pages", href: "#" },
                   ].map((c) => (
                     <NativeA key={c.label} href={c.href} className="flex items-center gap-space-3 group">

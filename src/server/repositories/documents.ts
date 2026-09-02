@@ -56,16 +56,18 @@ export const documentsRepository = {
     return newItem;
   },
 
-  async update(id: string, item: Partial<NewKnowledgeDocument>) {
+  async update(id: string, organizationId: string, item: Partial<NewKnowledgeDocument>) {
     const [updated] = await db
       .update(knowledgeDocuments)
       .set({ ...item, updatedAt: new Date() })
-      .where(eq(knowledgeDocuments.id, id))
+      .where(and(eq(knowledgeDocuments.id, id), eq(knowledgeDocuments.organizationId, organizationId)))
       .returning();
     return updated;
   },
 
-  async delete(id: string) {
-    await db.delete(knowledgeDocuments).where(eq(knowledgeDocuments.id, id));
+  async delete(id: string, organizationId: string) {
+    await db
+      .delete(knowledgeDocuments)
+      .where(and(eq(knowledgeDocuments.id, id), eq(knowledgeDocuments.organizationId, organizationId)));
   },
 };

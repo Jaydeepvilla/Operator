@@ -3,7 +3,7 @@ import { aiReceptionistCore } from "../core";
 
 export const whatsappAdapter = {
   /**
-   * Transforms raw Meta Cloud API / MSG91 webhook payload into a canonical InboundMessage
+   * Transforms raw Meta Cloud API / Vonage WhatsApp webhook payload into a canonical InboundMessage
    */
   fromMetaWebhook(payload: {
     organizationId: string;

@@ -32,6 +32,8 @@ import {
 "@/components/shared/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/shared/dialog";
 import { saveVoiceSettingsAction, createRoutingRuleAction, updateRoutingRuleAction, deleteRoutingRuleAction } from "@/server/actions/voice";
+import { useToast } from "@/components/shared/toast";
+import { formatUserErrorMessage } from "@/lib/errors";
 import { cn } from "@/components/shared/utils";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { NativeTextarea, NativeTable } from "@/components/shared/native";
@@ -78,6 +80,7 @@ export function VoiceSettingsClient({
   const [isRuleDialogOpen, setIsRuleDialogOpen] = useState(false);
   const [settingsStatus, setSettingsStatus] = useState<{type: "success" | "error";text: string;} | null>(null);
   const [confirmDialogId, setConfirmDialogId] = useState<string | null>(null);
+  const toast = useToast();
 
   // Rule builder form state
   const [newRuleName, setNewRuleName] = useState("");
@@ -93,8 +96,11 @@ export function VoiceSettingsClient({
       const res = await saveVoiceSettingsAction(settings);
       if (res.success) {
         setSettingsStatus({ type: "success", text: "Settings saved successfully." });
+        toast.success("Voice Settings Saved", "AI voice and speech settings have been updated.");
       } else {
-        setSettingsStatus({ type: "error", text: res.error || "Save failed." });
+        const errorMsg = formatUserErrorMessage(res.error, "Save failed.");
+        setSettingsStatus({ type: "error", text: errorMsg });
+        toast.error("Failed to save settings", errorMsg);
       }
     });
   };
@@ -121,23 +127,28 @@ export function VoiceSettingsClient({
         setNewRuleTarget("");
         setNewRulePriority("0");
         setIsRuleDialogOpen(false);
+        toast.success("Routing Rule Created", `Rule "${newRuleName}" is now active.`);
       } else {
-        setRuleDialogError(res.error || "Failed to create rule.");
+        const errorMsg = formatUserErrorMessage(res.error, "Failed to create rule.");
+        setRuleDialogError(errorMsg);
+        toast.error("Failed to create rule", errorMsg);
       }
     });
   };
 
   const handleToggleRule = async (ruleId: string, currentActive: boolean) => {
     setRules((prev) =>
-    prev.map((r) => r.id === ruleId ? { ...r, isActive: !currentActive } : r)
+      prev.map((r) => r.id === ruleId ? { ...r, isActive: !currentActive } : r)
     );
 
     const res = await updateRoutingRuleAction(ruleId, { isActive: !currentActive });
     if (!res.success) {
       setRules((prev) =>
-      prev.map((r) => r.id === ruleId ? { ...r, isActive: currentActive } : r)
+        prev.map((r) => r.id === ruleId ? { ...r, isActive: currentActive } : r)
       );
-      alert("Failed to update rule status:" + res.error);
+      toast.error("Failed to update rule status", formatUserErrorMessage(res.error));
+    } else {
+      toast.success("Routing Rule Updated", !currentActive ? "Rule activated." : "Rule deactivated.");
     }
   };
 
@@ -156,7 +167,9 @@ export function VoiceSettingsClient({
     const res = await deleteRoutingRuleAction(ruleId);
     if (!res.success) {
       setRules(originalRules);
-      alert("Failed to delete rule: " + res.error);
+      toast.error("Failed to delete rule", formatUserErrorMessage(res.error));
+    } else {
+      toast.success("Routing Rule Deleted", "Rule removed from voice routing.");
     }
   };
 

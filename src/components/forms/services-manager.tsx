@@ -36,6 +36,8 @@ import {
  archiveServiceAction, 
  deleteServiceAction 
 } from"@/server/actions/services";
+import { useToast } from "@/components/shared/toast";
+import { formatUserErrorMessage } from "@/lib/errors";
 import { z } from"zod";
 import { cn } from"@/components/shared/utils";
 import { NativeButton, NativeTextarea } from "@/components/shared/native";
@@ -59,6 +61,7 @@ interface Service {
  duration: number;
  price: string;
  isActive: boolean;
+ isArchived?: boolean;
 }
 
 interface Category {
@@ -77,6 +80,7 @@ export function ServicesManager({ initialServices, categories }: ServicesManager
  const [editingService, setEditingService] = React.useState<Service | null>(null);
  const [isSubmitting, setIsSubmitting] = React.useState(false);
  const [actionError, setActionError] = React.useState<string | null>(null);
+ const toast = useToast();
 
  const {
  register,
@@ -145,11 +149,16 @@ export function ServicesManager({ initialServices, categories }: ServicesManager
  if (res.success) {
  setIsOpen(false);
  reset();
+ toast.success(editingService ? "Service Updated" : "Service Created", "Service catalog updated successfully.");
  } else {
- setActionError(res.error ||"Failed to save service");
+ const errorMsg = formatUserErrorMessage(res.error, "Failed to save service");
+ setActionError(errorMsg);
+ toast.error("Failed to save service", errorMsg);
  }
  } catch (err: any) {
- setActionError(err?.message ||"An unexpected error occurred");
+ const errorMsg = formatUserErrorMessage(err, "An unexpected error occurred");
+ setActionError(errorMsg);
+ toast.error("Failed to save service", errorMsg);
  } finally {
  setIsSubmitting(false);
  }
@@ -159,7 +168,9 @@ export function ServicesManager({ initialServices, categories }: ServicesManager
  if (confirm("Are you sure you want to archive this service?")) {
  const res = await archiveServiceAction(id);
  if (!res.success) {
- alert(res.error ||"Failed to archive service");
+ toast.error("Failed to archive service", formatUserErrorMessage(res.error));
+ } else {
+ toast.success("Service Archived", "The service has been archived.");
  }
  }
  };
@@ -168,7 +179,9 @@ export function ServicesManager({ initialServices, categories }: ServicesManager
  if (confirm("Are you sure you want to permanently delete this service?")) {
  const res = await deleteServiceAction(id);
  if (!res.success) {
- alert(res.error ||"Failed to delete service");
+ toast.error("Failed to delete service", formatUserErrorMessage(res.error));
+ } else {
+ toast.success("Service Deleted", "The service has been permanently removed.");
  }
  }
  };

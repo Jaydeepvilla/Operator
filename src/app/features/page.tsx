@@ -452,7 +452,7 @@ export default function FeaturesPage() {
  </div>
  <p className="text-body-sm font-semibold text-foreground mb-space-1">SMS Confirmed</p>
  <p className="text-caption text-muted-foreground leading-relaxed bg-[hsl(var(--foreground)/0.02)] p-space-3 rounded-lg border border-[hsl(var(--foreground)/0.04)] font-mono">
- "Bright Smile: Your chipped tooth cleaning with Dr. Mitchell is confirmed for tomorrow at 10:00 AM. Click here to confirm insurance copy details: link.nexx.ai/c/283"
+ "Bright Smile: Your chipped tooth cleaning with Dr. Mitchell is confirmed for tomorrow at 10:00 AM. Click here to confirm insurance copy details: link.operator.ai/c/283"
  </p>
  </div>
  )}
@@ -945,7 +945,7 @@ export default function FeaturesPage() {
  <span className="text-caption font-mono text-primary font-semibold">&lt; 80ms</span>
  </div>
  <p className="text-caption text-muted-foreground mt-space-1.5 leading-relaxed">
- Connects call audio bridge directly to Nexx AI cores with high-fidelity duplex transmission pathways.
+ Connects call audio bridge directly to Operator AI cores with high-fidelity duplex transmission pathways.
  </p>
  </div>
 

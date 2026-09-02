@@ -17,6 +17,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/shared/dialog";
 import { Input } from "@/components/shared/input";
 import { Label } from "@/components/shared/label";
+import { useToast } from "@/components/shared/toast";
+import { formatUserErrorMessage } from "@/lib/errors";
 import { inviteTeamMemberAction, removeTeamMemberAction } from "@/server/actions/agency";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { NativeSelect, NativeTable } from "@/components/shared/native";
@@ -53,6 +55,7 @@ export function AgencyTeamClient({
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [confirmDialogId, setConfirmDialogId] = useState<string | null>(null);
+  const toast = useToast();
 
   // Invite form state
   const [inviteEmail, setInviteEmail] = useState("");
@@ -76,8 +79,11 @@ export function AgencyTeamClient({
         setInvitations((prev) => [res.invitation as unknown as Invitation, ...prev]);
         setInviteEmail("");
         setIsOpen(false);
+        toast.success("Invitation Sent", `An invite has been dispatched to ${inviteEmail.trim()}.`);
       } else {
-        setDialogError(res.error || "Failed to submit invitation.");
+        const errorMsg = formatUserErrorMessage(res.error, "Failed to submit invitation.");
+        setDialogError(errorMsg);
+        toast.error("Failed to invite member", errorMsg);
       }
     });
   };
@@ -97,7 +103,9 @@ export function AgencyTeamClient({
     const res = await removeTeamMemberAction(memberId);
     if (!res.success) {
       setMembers(originalMembers);
-      alert("Failed to remove member: " + res.error);
+      toast.error("Failed to remove member", formatUserErrorMessage(res.error));
+    } else {
+      toast.success("Member Removed", "The user has been removed from your team.");
     }
   };
 

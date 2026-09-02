@@ -240,7 +240,7 @@ export default function TemplatesPage() {
                         >
                           <option value="all">All Channels</option>
                           <option value="whatsapp">WhatsApp Business</option>
-                          <option value="sms">SMS / MSG91</option>
+                          <option value="sms">SMS / Vonage</option>
                           <option value="email">Email Client</option>
                         </select>
                       </div>

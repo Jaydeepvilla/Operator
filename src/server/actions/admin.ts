@@ -33,45 +33,21 @@ import { analyzePasswordStrength } from "@/lib/auth/security-checks";
 import { auditService } from "../services/audit";
 import { financialMetricsService } from "../services/billing/financial-metrics";
 import { notificationService } from "../services/notification";
+import { requireOrganizationAccess, requireAdminAccess } from "@/lib/auth/server";
 
 /**
  * Helper to fetch verified organization ID for the authenticated user
  */
 async function getVerifiedOrgId() {
-  const { userId, orgId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  if (orgId) return orgId;
-  const userMemberships = await membershipRepository.getByUser(userId);
-  if (userMemberships.length === 0) throw new Error("No organization found");
-  return userMemberships[0].organizationId;
+  const { organizationId } = await requireOrganizationAccess();
+  return organizationId;
 }
 
 /**
  * Helper to assert that the logged-in user is an Administrator or Owner.
  */
 async function assertAdmin() {
-  const { userId, orgId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const orgToVerify = orgId || (await getVerifiedOrgId());
-
-  const [member] = await db
-    .select()
-    .from(memberships)
-    .where(
-      and(
-        eq(memberships.userId, userId),
-        eq(memberships.organizationId, orgToVerify),
-        or(eq(memberships.role, "admin"), eq(memberships.role, "owner"))
-      )
-    )
-    .limit(1);
-
-  if (!member) {
-    throw new Error("Forbidden: Administrator access required");
-  }
-
-  return { userId, organizationId: member.organizationId };
+  return await requireAdminAccess();
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────

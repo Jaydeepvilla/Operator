@@ -1,16 +1,9 @@
 "use server";
 
-import { auth } from "@/lib/auth/server";
-import { membershipRepository } from "../repositories/membership";
+import { requireOrganizationAccess } from "@/lib/auth/server";
 import { availabilityService } from "../services/availability";
-
-async function getVerifiedOrgId() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  const memberships = await membershipRepository.getByUser(userId);
-  if (memberships.length === 0) throw new Error("No organization found");
-  return memberships[0].organizationId;
-}
+import { organizationRepository } from "../repositories/organization";
+import { parseNaturalDateTime } from "@/lib/date";
 
 export async function getAvailableSlotsAction(data: {
   serviceId: string;
@@ -18,16 +11,24 @@ export async function getAvailableSlotsAction(data: {
   staffMemberId?: string;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
     
     if (!data.serviceId || !data.dateStr) {
       throw new Error("Service ID and target date are required.");
     }
 
+    const org = await organizationRepository.getById(organizationId);
+    const timezone = org?.timezone || "UTC";
+
+    const parseResult = parseNaturalDateTime(data.dateStr, { timezone });
+    if (!parseResult.success) {
+      throw new Error(parseResult.reason || `Invalid date: "${data.dateStr}"`);
+    }
+
     const slots = await availabilityService.getAvailableSlots(
-      orgId,
+      organizationId,
       data.serviceId,
-      data.dateStr,
+      parseResult.isoDate,
       data.staffMemberId
     );
 
@@ -42,3 +43,4 @@ export async function getAvailableSlotsAction(data: {
     };
   }
 }
+

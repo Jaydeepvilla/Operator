@@ -19,7 +19,7 @@ const PIPELINE: PipelineStep[] = [
     subtitle: "Low-latency SIP stream",
     metric: "< 80ms",
     metricLabel: "audio stream latency",
-    desc: "A client dials your number. Twilio connects the call directly to Nexx's low-latency audio stream, maintaining a crystal clear bidirectional voice bridge.",
+    desc: "A client dials your number. Twilio connects the call directly to Operator's low-latency audio stream, maintaining a crystal clear bidirectional voice bridge.",
     icon: <Mic className="h-4 w-4" />,
     glowColor: "rgba(6, 182, 212, 0.4)" // Cyan
   },

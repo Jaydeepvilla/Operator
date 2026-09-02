@@ -25,13 +25,15 @@ import {
  TrendingUp,
  Inbox,
  Sparkles,
-} from"lucide-react";
-import { Button } from"@/components/shared/button";
-import { Input } from"@/components/shared/input";
-import { Label } from"@/components/shared/label";
-import { cn } from"@/components/shared/utils";
-import { updateVoicemailStatusAction } from"@/server/actions/voice";
-import { AreaChartCard, LineChartCard } from"@/components/charts";
+} from "lucide-react";
+import { Button } from "@/components/shared/button";
+import { Input } from "@/components/shared/input";
+import { Label } from "@/components/shared/label";
+import { cn } from "@/components/shared/utils";
+import { useToast } from "@/components/shared/toast";
+import { formatUserErrorMessage } from "@/lib/errors";
+import { updateVoicemailStatusAction } from "@/server/actions/voice";
+import { AreaChartCard, LineChartCard } from "@/components/charts";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CallSession {
@@ -73,6 +75,7 @@ export function VoiceCockpitClient({
 
  const [activePlayVoicemailId, setActivePlayVoicemailId] = useState<string | null>(null);
  const [isPending, startTransition] = useTransition();
+ const toast = useToast();
 
  // Outbound Dial form state
  const [outboundTo, setOutboundTo] = useState("");
@@ -110,7 +113,9 @@ export function VoiceCockpitClient({
  setVoicemails(prev =>
  prev.map(v => v.id === voicemailId ? { ...v, callbackStatus: currentStatus } : v)
  );
- alert("Failed to update status:"+ res.error);
+ toast.error("Failed to update status", formatUserErrorMessage(res.error));
+ } else {
+ toast.success("Voicemail Status Updated", `Marked as ${nextStatus === "called" ? "callback completed" : "pending callback"}.`);
  }
  });
  };
@@ -125,7 +130,7 @@ export function VoiceCockpitClient({
 
  const handleTriggerCampaign = async () => {
  if (!outboundTo.trim()) {
- alert("Please enter a destination phone number.");
+ toast.error("Invalid Phone Number", "Please enter a destination phone number.");
  return;
  }
  setOutboundStatus("initiating");
@@ -133,6 +138,7 @@ export function VoiceCockpitClient({
  setTimeout(() => {
  setOutboundStatus("success");
  setOutboundTo("");
+ toast.success("Call Initiated", `Outbound test call triggered to ${outboundTo.trim()}.`);
  setTimeout(() => setOutboundStatus(null), 3000);
  }, 1500);
  };

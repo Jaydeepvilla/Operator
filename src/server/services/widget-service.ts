@@ -93,9 +93,11 @@ export const widgetService = {
       const txtRecords = await dns.promises.resolveTxt(cleanDomain);
       const flatRecords = txtRecords.flat();
       const token = domainRecord.verificationToken;
-
       const isVerified = flatRecords.some(
-        (record) => record === token || record === `nexx-verification=${token}`
+        (record) =>
+          record === token ||
+          record === `operator-verify=${token}` ||
+          record === `nexx-verification=${token}`
       );
 
       if (isVerified) {
@@ -104,7 +106,7 @@ export const widgetService = {
       } else {
         return { 
           success: false, 
-          message: `TXT verification record not found. Expected record: "nexx-verification=${token}"` 
+          message: `TXT verification record not found. Expected record: "operator-verify=${token}"` 
         };
       }
     } catch (error: any) {

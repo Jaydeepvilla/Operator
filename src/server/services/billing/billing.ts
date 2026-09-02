@@ -6,8 +6,10 @@ import {
   usageCounters, 
   usageRecords, 
   featureEntitlements, 
-  plans 
 } from "../../db/schema";
+import { entitlementService, FeatureKey, MetricKey } from "./entitlement-service";
+
+export { entitlementService };
 
 export const billingService = {
   /**

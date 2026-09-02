@@ -18,7 +18,7 @@ export function detectCriticalIssues(state: BusinessState): CriticalIssue[] {
       "Customers cannot book appointments because the AI does not know when you are open.",
       2,
       "Set Business Hours",
-      "/settings/business"
+      "/settings"
     );
   }
 
@@ -76,7 +76,7 @@ export function detectCriticalIssues(state: BusinessState): CriticalIssue[] {
       "The AI knows nothing about your business and will hallucinate answers.",
       10,
       "Add Knowledge",
-      "/knowledge"
+      "/kb"
     );
   }
 

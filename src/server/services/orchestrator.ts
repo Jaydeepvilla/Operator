@@ -2,6 +2,8 @@ import { conversationsRepository } from "../repositories/conversations";
 import { messagesRepository } from "../repositories/messages";
 import { sessionsRepository } from "../repositories/sessions";
 import { leadsRepository } from "../repositories/leads";
+import { appointmentsRepository } from "../repositories/appointments";
+import { servicesRepository } from "../repositories/services";
 import { intentService } from "./intent";
 import { ragService } from "./rag";
 import { qualificationService } from "./qualification";
@@ -13,11 +15,16 @@ import { llmRegistry } from "./llm";
 import { db } from "../db";
 import { 
   conversationEvents, 
+  conversations,
   services, 
   staffMembers, 
   serviceAssignments, 
   appointments 
 } from "../db/schema";
+import { organizationRepository } from "../repositories/organization";
+import { parseNaturalDateTime, DateParseResult } from "../../lib/date";
+import { identityResolverService } from "./identity";
+import { crmDeduplicationService } from "./crm/deduplication";
 import { bookingService } from "./booking";
 import { availabilityService } from "./availability";
 import { eq, and, desc } from "drizzle-orm";
@@ -63,36 +70,10 @@ function parseSlotSelection(message: string, suggestedSlots: any[]) {
 }
 
 /**
- * Parses the intended appointment date from the user's natural-language message.
- * Understands: "today", "tomorrow", day names ("monday", "tuesday"), and falls back to tomorrow.
+ * Parses the intended appointment date using the canonical natural-language parser.
  */
-function parseDateFromMessage(message: string): Date {
-  const lower = message.toLowerCase();
-  const now = new Date();
-
-  if (lower.includes("today")) {
-    return now;
-  }
-
-  const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  for (let i = 0; i < dayNames.length; i++) {
-    if (lower.includes(dayNames[i])) {
-      const targetDay = i;
-      const currentDay = now.getDay();
-      let daysAhead = targetDay - currentDay;
-      if (daysAhead <= 0) daysAhead += 7; // next occurrence
-      const result = new Date(now);
-      result.setDate(result.getDate() + daysAhead);
-      result.setHours(0, 0, 0, 0);
-      return result;
-    }
-  }
-
-  // Default: tomorrow
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
-  return tomorrow;
+function parseDateFromMessage(message: string, timezone = "UTC", now = new Date()): DateParseResult {
+  return parseNaturalDateTime(message, { timezone, now });
 }
 
 export const orchestratorService = {
@@ -104,6 +85,10 @@ export const orchestratorService = {
     isEscalated: boolean;
   }> {
     const { organizationId, userMessage, metadata = {} } = input;
+
+    // Fetch organization timezone
+    const org = await organizationRepository.getById(organizationId);
+    const timezone = org?.timezone || "UTC";
 
     // 1. Resolve or Create Conversation
     const conversationId = input.conversationId;
@@ -140,7 +125,7 @@ export const orchestratorService = {
       activeConversationId = conversationId!;
     }
 
-    const leadProfileId = conversation.leadProfileId!;
+    let leadProfileId = conversation.leadProfileId!;
 
     // 2. Fetch or Create Session Context State
     let session = await sessionsRepository.findByConversation(activeConversationId);
@@ -219,21 +204,29 @@ export const orchestratorService = {
 
     // --- INTERCEPT APPOINTMENT RESCHEDULING FLOW ---
     if (intentResult.intent === "reschedule" || sessionState.reschedulingFlow) {
-      sessionState.reschedulingFlow = sessionState.reschedulingFlow || { stage: "collecting_time" };
-      
-      const activeApts = await db
-        .select()
-        .from(appointments)
-        .where(
-          and(
-            eq(appointments.organizationId, organizationId),
-            eq(appointments.leadProfileId, leadProfileId),
-            eq(appointments.status, "confirmed")
+      if (!sessionState.reschedulingFlow) {
+        const activeApts = await db
+          .select()
+          .from(appointments)
+          .where(
+            and(
+              eq(appointments.organizationId, organizationId),
+              eq(appointments.leadProfileId, leadProfileId),
+              eq(appointments.status, "confirmed")
+            )
           )
-        )
-        .orderBy(desc(appointments.startTime));
+          .orderBy(desc(appointments.startTime));
 
-      const activeApt = activeApts[0];
+        if (activeApts.length > 0) {
+          sessionState.reschedulingFlow = {
+            appointmentId: activeApts[0].id,
+            stage: "collecting_time",
+          };
+        }
+      }
+
+      const activeAptId = sessionState.reschedulingFlow?.appointmentId;
+      const activeApt = activeAptId ? await appointmentsRepository.findById(activeAptId).then(r => r?.appointment) : null;
 
       if (!activeApt) {
         sessionState.reschedulingFlow = null;
@@ -251,10 +244,31 @@ export const orchestratorService = {
       }
 
       if (sessionState.reschedulingFlow.stage === "collecting_time") {
-        // Parse date from user message (flexible — not hardcoded to tomorrow)
-        const targetDate = parseDateFromMessage(userMessage);
-        const dateStr = targetDate.toISOString().split("T")[0];
-        const dateLabel = targetDate.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+        const parseResult = parseDateFromMessage(userMessage, timezone);
+
+        if (!parseResult.success) {
+          let responseText = "Could you please specify which date and time you would like to reschedule to (e.g. 'tomorrow', 'next Friday at 2 PM', or 'August 20')?";
+          if (parseResult.code === "INVALID_DATE" || parseResult.code === "INVALID_TIME") {
+            responseText = "That date doesn't exist on the calendar. Could you please specify a valid date (like 'tomorrow' or 'next Friday')?";
+          } else if (parseResult.suggestedClarification) {
+            responseText = parseResult.suggestedClarification;
+          }
+
+          await messagesRepository.create({
+            organizationId,
+            conversationId: activeConversationId,
+            sender: "assistant",
+            content: responseText,
+            intentDetected: "reschedule",
+            confidenceScore: "0.95",
+          });
+          await sessionsRepository.upsert({ organizationId, conversationId: activeConversationId, state: sessionState });
+          return { conversationId: activeConversationId, assistantMessage: responseText, citations: [], intent: "reschedule", isEscalated: false };
+        }
+
+        const targetDate = parseResult.date;
+        const dateStr = parseResult.isoDate;
+        const dateLabel = parseResult.interpretation;
         
         const openSlots = await availabilityService.getAvailableSlots(
           organizationId,
@@ -293,7 +307,7 @@ export const orchestratorService = {
             const listStr = openSlots.slice(0, 3).map((s) => s.startTime).join(", ");
             responseText += `Here are available times for ${dateLabel}: ${listStr}. Do any of these work?`;
           } else {
-            responseText += "We have no open slots for tomorrow. Let me notify our support staff to contact you directly.";
+            responseText += `We have no open slots for ${dateLabel}. Let me notify our support staff to contact you directly.`;
             sessionState.reschedulingFlow = null;
             await escalationService.triggerEscalation(organizationId, activeConversationId, "unknown_info", "No slots for reschedule");
           }
@@ -355,31 +369,54 @@ export const orchestratorService = {
 
     // --- INTERCEPT APPOINTMENT BOOKING STATE MACHINE FLOW ---
     if (intentResult.intent === "booking" || sessionState.bookingFlow) {
-      sessionState.bookingFlow = sessionState.bookingFlow || { stage: "collecting_service" };
-      const currentStage = sessionState.bookingFlow.stage;
-
-      // Stage: Collecting Service
-      if (currentStage === "collecting_service") {
-        const activeServices = await db
-          .select()
-          .from(services)
-          .where(and(eq(services.organizationId, organizationId), eq(services.isActive, true)));
-
-        // Look for service mention keyword
-        const matched = activeServices.find(
-          (s) => userMessage.toLowerCase().includes(s.name.toLowerCase()) ||
-                 userMessage.toLowerCase().includes(s.description?.toLowerCase() || "")
+      if (!sessionState.bookingFlow) {
+        const allServices = await servicesRepository.list(organizationId);
+        const matchingService = allServices.find((s) =>
+          userMessage.toLowerCase().includes(s.name.toLowerCase())
         );
 
-        if (matched) {
-          sessionState.bookingFlow.serviceId = matched.id;
-          sessionState.bookingFlow.serviceName = matched.name;
+        if (matchingService) {
+          sessionState.bookingFlow = {
+            serviceId: matchingService.id,
+            serviceName: matchingService.name,
+            stage: "collecting_time",
+          };
+        } else if (allServices.length > 0) {
+          // Default to first service if they asked to book generally
+          sessionState.bookingFlow = {
+            serviceId: allServices[0].id,
+            serviceName: allServices[0].name,
+            stage: "collecting_service",
+          };
+        }
+      }
+
+      // Stage: Collecting Service
+      if (sessionState.bookingFlow.stage === "collecting_service") {
+        const allServices = await servicesRepository.list(organizationId);
+        const matching = allServices.find((s) =>
+          userMessage.toLowerCase().includes(s.name.toLowerCase())
+        );
+
+        if (matching) {
+          sessionState.bookingFlow.serviceId = matching.id;
+          sessionState.bookingFlow.serviceName = matching.name;
           sessionState.bookingFlow.stage = "collecting_time";
-          // Fall through to collecting_time logic immediately
+
+          const responseText = `Great! I'd be happy to schedule your ${matching.name}. What day and time works best for you?`;
+          await messagesRepository.create({
+            organizationId,
+            conversationId: activeConversationId,
+            sender: "assistant",
+            content: responseText,
+            intentDetected: "booking",
+            confidenceScore: "0.95",
+          });
+          await sessionsRepository.upsert({ organizationId, conversationId: activeConversationId, state: sessionState });
+          return { conversationId: activeConversationId, assistantMessage: responseText, citations: [], intent: "booking", isEscalated: false };
         } else {
-          const listStr = activeServices.map((s) => s.name).join(", ");
-          const responseText = `I would be glad to help you book an appointment. Which of our services would you like to book? We offer: ${listStr}.`;
-          
+          const serviceList = allServices.map((s) => s.name).join(", ");
+          const responseText = `We offer the following services: ${serviceList}. Which one would you like to schedule?`;
           await messagesRepository.create({
             organizationId,
             conversationId: activeConversationId,
@@ -397,10 +434,33 @@ export const orchestratorService = {
       if (sessionState.bookingFlow.stage === "collecting_time") {
         const serviceId = sessionState.bookingFlow.serviceId;
         
-        // Parse date from user message — flexible, not hardcoded to tomorrow
-        const targetDate = parseDateFromMessage(userMessage);
-        const dateStr = targetDate.toISOString().split("T")[0];
-        const dateLabel = targetDate.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+        const parseResult = parseDateFromMessage(userMessage, timezone);
+
+        if (!parseResult.success) {
+          let responseText = "Could you please specify which day and time you'd like to book (e.g. 'tomorrow', 'next Friday', or 'August 20')?";
+          if (parseResult.code === "INVALID_DATE" || parseResult.code === "INVALID_TIME") {
+            responseText = "That date doesn't exist on the calendar. Could you please specify a valid date (like 'tomorrow' or 'next Friday')?";
+          } else if (parseResult.suggestedClarification) {
+            responseText = parseResult.suggestedClarification;
+          }
+
+          await messagesRepository.create({
+            organizationId,
+            conversationId: activeConversationId,
+            sender: "assistant",
+            content: responseText,
+            intentDetected: "booking",
+            confidenceScore: "0.95",
+          });
+          await sessionsRepository.upsert({ organizationId, conversationId: activeConversationId, state: sessionState });
+          return { conversationId: activeConversationId, assistantMessage: responseText, citations: [], intent: "booking", isEscalated: false };
+        }
+
+        const targetDate = parseResult.date;
+        const dateStr = parseResult.isoDate;
+        const dateLabel = parseResult.interpretation;
+        sessionState.bookingFlow.targetDate = dateStr;
+        sessionState.bookingFlow.dateLabel = dateLabel;
 
         const openSlots = await availabilityService.getAvailableSlots(
           organizationId,
@@ -443,7 +503,7 @@ export const orchestratorService = {
             return { conversationId: activeConversationId, assistantMessage: responseText, citations: [], intent: "booking", isEscalated: false };
           } else if (!profile.phone) {
             sessionState.bookingFlow.stage = "collecting_phone";
-            const responseText = "Got it. And what is your phone number for appointment reminders?";
+            const responseText = `Great! What is the best phone number to reach you at?`;
             await messagesRepository.create({
               organizationId,
               conversationId: activeConversationId,
@@ -466,7 +526,7 @@ export const orchestratorService = {
             const listStr = openSlots.slice(0, 3).map((s) => s.startTime).join(", ");
             responseText += `We have openings for ${dateLabel} at: ${listStr}. Do any of these work for you?`;
           } else {
-            responseText += "We have no open slots for tomorrow. I will escalate this to our team so they can book you manually.";
+            responseText += `We have no open slots for ${dateLabel}. I will escalate this to our team so they can book you manually.`;
             sessionState.bookingFlow = null;
             await escalationService.triggerEscalation(organizationId, activeConversationId, "unknown_info", "No slots available");
           }
@@ -505,7 +565,7 @@ export const orchestratorService = {
           return { conversationId: activeConversationId, assistantMessage: responseText, citations: [], intent: "booking", isEscalated: false };
         } else if (!profile.phone) {
           sessionState.bookingFlow.stage = "collecting_phone";
-          const responseText = `Got it. And what is your phone number?`;
+          const responseText = `Got it! Lastly, what is your phone number for SMS reminders?`;
           await messagesRepository.create({
             organizationId,
             conversationId: activeConversationId,
@@ -529,7 +589,7 @@ export const orchestratorService = {
         const profile = await leadsRepository.findProfileById(leadProfileId);
         if (!profile?.phone) {
           sessionState.bookingFlow.stage = "collecting_phone";
-          const responseText = `Thanks. And what is your phone number?`;
+          const responseText = `Got it! Lastly, what is your phone number for SMS reminders?`;
           await messagesRepository.create({
             organizationId,
             conversationId: activeConversationId,
@@ -547,7 +607,29 @@ export const orchestratorService = {
 
       // Stage: Collecting Phone
       if (sessionState.bookingFlow.stage === "collecting_phone") {
-        await leadsRepository.updateProfile(leadProfileId, { phone: userMessage });
+        const currentProf = await leadsRepository.findProfileById(leadProfileId);
+        const resolved = await identityResolverService.resolveCustomerIdentity({
+          organizationId,
+          phone: userMessage,
+          name: currentProf?.name || sessionState.contactInfo.name,
+          email: currentProf?.email || sessionState.contactInfo.email,
+          channel: "widget",
+        });
+
+        if (resolved.leadProfileId !== leadProfileId) {
+          // Re-parent conversation to existing canonical lead profile
+          await db
+            .update(conversations)
+            .set({ leadProfileId: resolved.leadProfileId })
+            .where(eq(conversations.id, activeConversationId));
+
+          // Merge ephemeral lead into resolved profile
+          if (leadProfileId) {
+            await crmDeduplicationService.mergeProfiles(organizationId, resolved.leadProfileId, [leadProfileId]);
+          }
+          leadProfileId = resolved.leadProfileId;
+        }
+
         sessionState.contactInfo.phone = userMessage;
         sessionState.bookingFlow.stage = "confirming";
       }
@@ -558,10 +640,11 @@ export const orchestratorService = {
         const serviceId = sessionState.bookingFlow.serviceId;
         const profile = await leadsRepository.findProfileById(leadProfileId);
 
-        // Use stored slot date if available, else fall back to tomorrow
+        // Use stored slot date if available, else parse from session
         const targetDate = sessionState.bookingFlow.targetDate
           ? new Date(sessionState.bookingFlow.targetDate)
-          : parseDateFromMessage(userMessage);
+          : new Date();
+        const dateLabel = sessionState.bookingFlow.dateLabel || targetDate.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
         const [sh, sm] = slot.startTime.split(":").map(Number);
         const start = new Date(targetDate);
         start.setHours(sh, sm, 0, 0);
@@ -579,7 +662,7 @@ export const orchestratorService = {
 
         sessionState.bookingFlow = null;
 
-        const responseText = `Wonderful! I have booked your appointment for tomorrow at ${slot.startTime} with ${slot.staffName}. A confirmation has been sent to your email. We look forward to seeing you!`;
+        const responseText = `Wonderful! I have booked your appointment for ${dateLabel} at ${slot.startTime} with ${slot.staffName}. A confirmation has been sent to your email. We look forward to seeing you!`;
         
         await messagesRepository.create({
           organizationId,

@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const twilioSignature = req.headers.get("x-twilio-signature") || "";
     const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN || "";
     if (twilioAuthToken) {
-      const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "receptionist.nexx.ai";
+      const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "app.operator.ai";
       const proto = req.headers.get("x-forwarded-proto") || "https";
       const fullUrl = `${proto}://${host}${new URL(req.url).pathname}${new URL(req.url).search}`;
 

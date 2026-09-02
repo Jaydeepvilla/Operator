@@ -22,6 +22,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/shared/dialog";
 import { Input } from "@/components/shared/input";
 import { Label } from "@/components/shared/label";
+import { useToast } from "@/components/shared/toast";
+import { formatUserErrorMessage } from "@/lib/errors";
 import { createClientWorkspaceAction, updateClientStatusAction, triggerImpersonateAction } from "@/server/actions/agency";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { NativeSelect } from "@/components/shared/native";
@@ -50,6 +52,7 @@ export function AgencyClientsClient({ initialClients }: { initialClients: any[] 
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [confirmDialogId, setConfirmDialogId] = useState<string | null>(null);
+  const toast = useToast();
 
   // Create Client Form state
   const [clientName, setClientName] = useState("");
@@ -82,6 +85,7 @@ export function AgencyClientsClient({ initialClients }: { initialClients: any[] 
 
       if (res.success && res.result) {
         setStatusMessage({ type: "success", text: "Successfully provisioned client workspace!" });
+        toast.success("Workspace Provisioned", `Client workspace "${clientName}" created successfully.`);
         
         // Fetch updated list mapping client structure
         const newClient: Client = {
@@ -114,7 +118,9 @@ export function AgencyClientsClient({ initialClients }: { initialClients: any[] 
           setStatusMessage(null);
         }, 1500);
       } else {
-        setStatusMessage({ type: "error", text: res.error || "Provisioning failed." });
+        const errorMsg = formatUserErrorMessage(res.error, "Provisioning failed.");
+        setStatusMessage({ type: "error", text: errorMsg });
+        toast.error("Provisioning Failed", errorMsg);
       }
     });
   };
@@ -132,7 +138,9 @@ export function AgencyClientsClient({ initialClients }: { initialClients: any[] 
         setClients(prev =>
           prev.map(c => c.id === clientId ? { ...c, status: currentStatus } : c)
         );
-        alert("Failed to update status: " + res.error);
+        toast.error("Failed to update status", formatUserErrorMessage(res.error));
+      } else {
+        toast.success("Status Updated", `Client workspace is now ${nextStatus}.`);
       }
     });
   };
@@ -156,7 +164,9 @@ export function AgencyClientsClient({ initialClients }: { initialClients: any[] 
         setClients(prev =>
           prev.map(c => c.id === clientId ? { ...c, status: "active" } : c)
         );
-        alert("Failed to archive client: " + res.error);
+        toast.error("Failed to archive client", formatUserErrorMessage(res.error));
+      } else {
+        toast.success("Client Archived", "The client workspace has been archived.");
       }
     });
   };
@@ -168,12 +178,11 @@ export function AgencyClientsClient({ initialClients }: { initialClients: any[] 
       if (res.success && res.redirectUrl) {
         window.location.href = res.redirectUrl;
       } else {
-        alert("Impersonate trigger failed: " + res.error);
+        toast.error("Impersonation Failed", formatUserErrorMessage(res.error, "Unable to switch into client workspace."));
         setActiveImpersonationId(null);
       }
     } catch (e) {
-      console.error(e);
-      alert("Impersonation error occurred.");
+      toast.error("Impersonation Error", formatUserErrorMessage(e, "An unexpected error occurred while starting impersonation."));
       setActiveImpersonationId(null);
     }
   };
@@ -196,119 +205,124 @@ export function AgencyClientsClient({ initialClients }: { initialClients: any[] 
             placeholder="Search business name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-space-8"
+            className="pl-space-9 text-body-sm"
           />
         </div>
 
-        <div className="flex items-center gap-space-4">
+        <div className="flex items-center gap-space-3">
           <NativeSelect
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-9 radius-md border border-input bg-transparent px-space-3 text-body-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring text-foreground"
+            className="w-36 text-caption"
           >
             <option value="all">All Statuses</option>
-            <option value="active">Active Workspaces</option>
-            <option value="suspended">Suspended Workspaces</option>
-            <option value="archived">Archived Workspaces</option>
+            <option value="active">Active Only</option>
+            <option value="suspended">Suspended</option>
+            <option value="archived">Archived</option>
           </NativeSelect>
 
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <Button className="text-primary-foreground px-space-4 py-space-2">
+              <Button size="sm" className="gap-space-1.5 shadow-xs">
                 <Plus className="h-4 w-4" />
-                Add Client Workspace
+                Add Client
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md bg-card border-border/80">
+            <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-title-lg ">Deploy New Client Workspace</DialogTitle>
+                <DialogTitle>Provision Client Workspace</DialogTitle>
                 <DialogDescription>
-                  Provision an isolated multi-tenant tenant environment and assign default billing limits.
+                  Create an isolated tenant workspace managed under your agency parent license.
                 </DialogDescription>
               </DialogHeader>
 
               <div className="space-y-space-4 py-space-3">
-                <div className="space-y-space-2">
-                  <Label className="text-body-sm ">Business Name</Label>
-                  <Input 
-                    placeholder="e.g. Apex Dental Center" 
+                {statusMessage && (
+                  <div className={`p-space-3 radius-md text-caption border ${
+                    statusMessage.type === "success" 
+                      ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" 
+                      : "bg-destructive/10 border-destructive/20 text-destructive"
+                  }`}>
+                    {statusMessage.text}
+                  </div>
+                )}
+
+                <div className="space-y-space-1.5">
+                  <Label htmlFor="clientName">Business / Brand Name *</Label>
+                  <Input
+                    id="clientName"
+                    placeholder="e.g. Apex Health Clinic"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-space-4">
-                  <div className="space-y-space-2">
-                    <Label className="text-body-sm ">Contact Email</Label>
-                    <Input 
-                      placeholder="owner@client.com" 
+                <div className="grid grid-cols-2 gap-space-3">
+                  <div className="space-y-space-1.5">
+                    <Label htmlFor="clientEmail">Contact Email</Label>
+                    <Input
+                      id="clientEmail"
+                      type="email"
+                      placeholder="admin@client.com"
                       value={clientEmail}
                       onChange={(e) => setClientEmail(e.target.value)}
                     />
                   </div>
-
-                  <div className="space-y-space-2">
-                    <Label className="text-body-sm ">Contact Phone</Label>
-                    <Input 
-                      placeholder="+15551234567" 
+                  <div className="space-y-space-1.5">
+                    <Label htmlFor="clientPhone">Phone Number</Label>
+                    <Input
+                      id="clientPhone"
+                      placeholder="+1 (555) 000-0000"
                       value={clientPhone}
                       onChange={(e) => setClientPhone(e.target.value)}
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-space-4">
-                  <div className="space-y-space-2">
-                    <Label className="text-body-sm ">Industry Verticals</Label>
+                <div className="grid grid-cols-2 gap-space-3">
+                  <div className="space-y-space-1.5">
+                    <Label htmlFor="clientIndustry">Industry Vertical</Label>
                     <NativeSelect
+                      id="clientIndustry"
                       value={clientIndustry}
                       onChange={(e) => setClientIndustry(e.target.value)}
-                      className="w-full h-9 radius-md border border-input bg-transparent px-space-3 text-body-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring text-foreground"
+                      className="text-body-sm"
                     >
                       <option value="Dental Clinic">Dental Clinic</option>
-                      <option value="Medical Clinic">Medical Clinic</option>
-                      <option value="Salon">Beauty Salon</option>
-                      <option value="Spa">Wellness Spa</option>
-                      <option value="Law Firm">Law Firm</option>
-                      <option value="Consultant">Consultant Desk</option>
-                      <option value="Real Estate">Real Estate Agency</option>
-                      <option value="Gym">Gym & Fitness Center</option>
+                      <option value="Medical Practice">Medical Practice</option>
+                      <option value="Legal Services">Legal Services</option>
+                      <option value="Real Estate">Real Estate</option>
+                      <option value="Hospitality">Hospitality</option>
+                      <option value="Home Services">Home Services</option>
+                      <option value="Automotive">Automotive</option>
+                      <option value="Other">Other Vertical</option>
                     </NativeSelect>
                   </div>
-
-                  <div className="space-y-space-2">
-                    <Label className="text-body-sm ">Timezone</Label>
+                  <div className="space-y-space-1.5">
+                    <Label htmlFor="clientTimezone">Timezone</Label>
                     <NativeSelect
+                      id="clientTimezone"
                       value={clientTimezone}
                       onChange={(e) => setClientTimezone(e.target.value)}
-                      className="w-full h-9 radius-md border border-input bg-transparent px-space-3 text-body-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring text-foreground"
+                      className="text-body-sm"
                     >
-                      <option value="America/New_York">Eastern Time (ET)</option>
-                      <option value="America/Chicago">Central Time (CT)</option>
-                      <option value="America/Denver">Mountain Time (MT)</option>
-                      <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                      <option value="UTC">Coordinated Universal Time (UTC)</option>
+                      <option value="America/New_York">Eastern Time (US)</option>
+                      <option value="America/Chicago">Central Time (US)</option>
+                      <option value="America/Denver">Mountain Time (US)</option>
+                      <option value="America/Los_Angeles">Pacific Time (US)</option>
+                      <option value="Europe/London">London (GMT/BST)</option>
+                      <option value="Asia/Dubai">Dubai (GST)</option>
                     </NativeSelect>
                   </div>
                 </div>
-
-                {statusMessage && (
-                  <div className={`p-space-3 radius-lg flex items-start gap-space-2 text-caption ${
-                    statusMessage.type === "success" 
-                      ? "bg-success-500/10 text-success border border-success-500/20" 
-                      : "bg-destructive/10 text-destructive border border-error-500/20"
-                  }`}>
-                    {statusMessage.type === "error" ? <AlertCircle className="h-4 w-4 shrink-0 mt-space-1" /> : <Check className="h-4 w-4 shrink-0 mt-space-1" />}
-                    <span>{statusMessage.text}</span>
-                  </div>
-                )}
               </div>
 
               <DialogFooter>
-                <Button variant="ghost" onClick={() => { setIsOpen(false); setStatusMessage(null); }}>Cancel</Button>
-                <Button onClick={handleCreateClient} disabled={isPending} className="text-primary-foreground">
-                  {isPending ? <RefreshCw className="h-4 w-4 animate-spin mr-space-2" /> : null}
-                  Provision Tenant
+                <Button variant="outline" onClick={() => setIsOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleCreateClient} disabled={isPending}>
+                  {isPending ? "Provisioning..." : "Provision Client"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -316,112 +330,116 @@ export function AgencyClientsClient({ initialClients }: { initialClients: any[] 
         </div>
       </div>
 
-      {/* Clients Display Grid */}
-      {filteredClients.length === 0 ? (
-        <Card className="border border-dashed border-border/60 bg-card/10 py-space-16 text-center flex flex-col items-center justify-center">
-          <div className="h-12 w-12 radius-md bg-primary/10 flex items-center justify-center mb-space-4 text-primary">
-            <Building className="h-6 w-6" />
-          </div>
-          <CardTitle className="text-title-lg ">No Client Workspaces Mapped</CardTitle>
-          <CardDescription className="text-body-sm mt-space-1 max-w-sm">
-            Deploy your first client workspace to start reselling Operator AI under your white-labeled agency brand.
-          </CardDescription>
-        </Card>
-      ) : (
-        <div className="grid gap-space-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredClients.map((client) => {
-            const workspace = client.workspaces[0];
-            const org = workspace?.organization;
+      {/* Clients Grid */}
+      <div className="grid gap-space-4 sm:grid-cols-2 lg:grid-cols-3">
+        {filteredClients.map((client) => {
+          const workspace = client.workspaces[0]?.organization;
+          const isArchived = client.status === "archived";
+          const isSuspended = client.status === "suspended";
 
-            return (
-              <Card key={client.id} className={`bg-card/45 backdrop-blur-md border hover:border-border/80 transition-all flex flex-col justify-between ${
-                client.status === "suspended" ? "border-error-500/20 bg-destructive/5" : "border-border/50"
-              }`}>
-                <CardHeader className="pb-space-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex h-10 w-10 items-center justify-center radius-lg bg-primary/10 text-primary">
+          return (
+            <Card key={client.id} className="relative flex flex-col justify-between overflow-hidden border-border/60 hover:border-border transition-all">
+              <CardHeader className="pb-space-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-space-3">
+                    <div className="flex h-10 w-10 items-center justify-center radius-lg bg-primary/10 text-primary border border-primary/20">
                       <Building className="h-5 w-5" />
                     </div>
-                    <div className="flex items-center gap-space-2">
-                      <span className={`inline-flex items-center px-space-2 py-space-1 radius-md text-caption  uppercase tracking-wider ${
-                        client.status === "active"
-                          ? "bg-success-500/10 text-success-500 border border-success-500/25"
-                          : client.status === "suspended"
-                          ? "bg-destructive/10 text-error-500 border border-error-500/25"
-                          : "bg-muted text-muted-foreground border border-border/20"
-                      }`}>
-                        {client.status}
-                      </span>
+                    <div>
+                      <CardTitle className="text-body-md font-semibold">{client.name}</CardTitle>
+                      <CardDescription className="text-caption truncate max-w-[180px]">
+                        {client.email || "No contact email"}
+                      </CardDescription>
                     </div>
                   </div>
-                  <div className="mt-space-3">
-                    <CardTitle className="text-body-md  truncate">{client.name}</CardTitle>
-                    <CardDescription className="text-caption truncate">{client.email || "No contact email"}</CardDescription>
-                  </div>
-                </CardHeader>
 
-                <CardContent className="py-space-2 text-caption text-muted-foreground space-y-space-2 border-t border-border/10 pt-space-3">
-                  <div className="flex justify-between">
-                    <span>Vertical Sector:</span>
-                    <span className=" text-foreground">{org?.industry || "Dental Clinic"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Timezone Mapping:</span>
-                    <span className="font-mono text-caption text-foreground">{org?.timezone || "America/New_York"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Workspace Slug:</span>
-                    <span className="font-mono text-caption text-primary truncate max-w-32">{org?.slug || "—"}</span>
-                  </div>
-                </CardContent>
+                  <span className={`inline-flex items-center gap-space-1 radius-full px-space-2.5 py-0.5 text-caption font-medium border ${
+                    client.status === "active"
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                      : isSuspended
+                      ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                      : "bg-muted text-muted-foreground border-border"
+                  }`}>
+                    <span className={`h-1.5 w-1.5 radius-full ${
+                      client.status === "active" ? "bg-emerald-500" : isSuspended ? "bg-amber-500" : "bg-muted-foreground"
+                    }`} />
+                    {client.status.toUpperCase()}
+                  </span>
+                </div>
+              </CardHeader>
 
-                <CardFooter className="pt-space-3 pb-space-4 border-t border-border/10 flex items-center justify-between gap-space-2">
-                  {/* Access button */}
-                  <Button size="sm" onClick={() => handleImpersonate(client.id)}
-                    disabled={client.status !== "active" || activeImpersonationId === client.id}
-                    className="flex-1 gap-space-2 cursor-pointer bg-primary text-primary-foreground text-caption"
+              <CardContent className="space-y-space-3 text-body-sm">
+                <div className="bg-muted/40 p-space-3 radius-md space-y-space-1.5 text-caption">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Tenant Slug:</span>
+                    <span className="font-mono text-foreground">{workspace?.slug || "pending"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Industry:</span>
+                    <span className="text-foreground">{workspace?.industry || "Custom"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Timezone:</span>
+                    <span className="text-foreground truncate max-w-[140px]">{workspace?.timezone || "UTC"}</span>
+                  </div>
+                </div>
+              </CardContent>
+
+              <CardFooter className="pt-space-2 border-t border-border/40 flex items-center justify-between gap-space-2 bg-card/40">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1 gap-space-1.5 text-caption"
+                  onClick={() => handleImpersonate(client.id)}
+                  disabled={activeImpersonationId === client.id || isArchived || isSuspended}
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  {activeImpersonationId === client.id ? "Entering..." : "Access Tenant"}
+                </Button>
+
+                <div className="flex items-center gap-space-1">
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    title={isSuspended ? "Unsuspend Client" : "Suspend Client"}
+                    onClick={() => handleToggleStatus(client.id, client.status)}
+                    disabled={isArchived || isPending}
                   >
-                    {activeImpersonationId === client.id ? (
-                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <UserCheck className="h-3.5 w-3.5" />
-                    )}
-                    Impersonate
+                    <Power className={`h-4 w-4 ${isSuspended ? "text-emerald-500" : "text-amber-500"}`} />
                   </Button>
 
-                  {/* Actions dropdown simulated */}
-                  <div className="flex gap-space-1">
-                    <Button size="sm" variant="ghost" onClick={() => handleToggleStatus(client.id, client.status)}
-                      className={`h-8 w-8 p-space-0 cursor-pointer ${
-                        client.status === "active" ? "text-destructive hover:bg-destructive/10" : "text-success hover:bg-success-500/10"
-                      }`}
-                      title={client.status === "active" ? "Suspend Workspace" : "Activate Workspace"}
-                    >
-                      <Power className="h-4 w-4" />
-                    </Button>
-                    
-                    <Button size="sm" variant="ghost" onClick={() => handleArchive(client.id)}
-                      disabled={client.status === "archived"}
-                      className="h-8 w-8 p-space-0 text-muted-foreground hover:text-foreground hover:bg-accent/40 cursor-pointer"
-                      title="Archive Workspace"
-                    >
-                      <Archive className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardFooter>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    title="Archive Client Workspace"
+                    onClick={() => handleArchive(client.id)}
+                    disabled={isArchived || isPending}
+                  >
+                    <Archive className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
+          );
+        })}
+
+        {filteredClients.length === 0 && (
+          <div className="col-span-full py-space-12 text-center text-muted-foreground bg-card/20 radius-xl border border-dashed border-border/80">
+            <Building className="mx-auto h-8 w-8 text-muted-foreground/40 mb-space-2" />
+            <p className="font-medium text-body-sm">No client workspaces match the filter.</p>
+            <p className="text-caption mt-0.5">Provision a new client tenant or adjust your search filter above.</p>
+          </div>
+        )}
+      </div>
 
       <ConfirmDialog
         open={!!confirmDialogId}
         onOpenChange={(open) => !open && setConfirmDialogId(null)}
-        title="Archive Client"
-        description="Are you sure you want to archive this client? The tenant will be marked archived."
+        title="Archive Client Workspace"
+        description="Are you sure you want to archive this client? The tenant will be locked and active AI receptionists stopped."
+        confirmText="Archive Client"
+        isDestructive={true}
         onConfirm={handleConfirmArchive}
-        confirmText="Archive"
       />
     </div>
   );

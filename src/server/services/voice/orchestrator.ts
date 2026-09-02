@@ -5,12 +5,14 @@ import {
   callTranscripts, 
   callSummaries,
   conversations, 
-  conversationMessages 
+  conversationMessages,
+  organizations,
 } from "../../db/schema";
 import { eq, and, asc } from "drizzle-orm";
 import { orchestratorService } from "../orchestrator";
 import { VoiceProviderRegistry } from "./types";
 import { llmRegistry } from "../llm";
+import { sanitizeVoiceResponse } from "../../../lib/voice/sanitizer";
 
 import "./deepgram";
 import "./elevenlabs";
@@ -111,6 +113,11 @@ export const voiceOrchestrator = {
         return { textResponse: content };
       }
 
+      // Fetch organization name for context-aware sanitization
+      const org = await db.query.organizations.findFirst({
+        where: eq(organizations.id, organizationId),
+      });
+
       // If user speech, trigger central Operator AI orchestrator to get reply
       const aiResponse = await orchestratorService.processMessage({
         organizationId,
@@ -119,12 +126,18 @@ export const voiceOrchestrator = {
         metadata: { callSessionId: sessionId }
       });
 
+      // Apply defensive voice response sanitization before sending to TTS
+      const { sanitizedText: responseText } = sanitizeVoiceResponse(
+        aiResponse.assistantMessage,
+        { businessName: org?.name }
+      );
+
       // Synthesize audio reply via TextToSpeech Provider
       const tts = VoiceProviderRegistry.getTTS("tts-elevenlabs");
       let audioBuffer: Buffer | undefined = undefined;
 
       if (tts) {
-        const synth = await tts.synthesizeText(aiResponse.assistantMessage);
+        const synth = await tts.synthesizeText(responseText);
         audioBuffer = synth.audioBuffer;
       }
 
@@ -133,7 +146,7 @@ export const voiceOrchestrator = {
         organizationId,
         sessionId,
         speaker: "agent",
-        content: aiResponse.assistantMessage,
+        content: responseText,
         confidence: "1.0",
         relativeStartTime: 0,
         relativeEndTime: 0
@@ -143,7 +156,7 @@ export const voiceOrchestrator = {
         organizationId,
         conversationId,
         sender: "assistant",
-        content: aiResponse.assistantMessage,
+        content: responseText,
         confidenceScore: "1.0"
       });
 
@@ -151,12 +164,12 @@ export const voiceOrchestrator = {
         organizationId,
         sessionId,
         eventType: "text-to-speech",
-        payload: { response: aiResponse.assistantMessage }
+        payload: { response: responseText }
       });
 
       return {
         audioBuffer,
-        textResponse: aiResponse.assistantMessage
+        textResponse: responseText
       };
 
     } catch (e) {

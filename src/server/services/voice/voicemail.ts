@@ -3,6 +3,7 @@ import { voicemailMessages, callSessions, leadProfiles, callEvents } from "../..
 import { eq, and } from "drizzle-orm";
 import { VoiceProviderRegistry } from "./types";
 import { llmRegistry } from "../llm";
+import { identityResolverService } from "../identity";
 
 export const voicemailProcessor = {
   /**
@@ -95,34 +96,24 @@ export const voicemailProcessor = {
         })
         .where(eq(voicemailMessages.id, voicemail.id));
 
-      // 5. Update or Create Lead Profile
-      if (callerNumber !== "unknown") {
-        const existingLead = await db.query.leadProfiles.findFirst({
-          where: and(
-            eq(leadProfiles.organizationId, organizationId),
-            eq(leadProfiles.phone, callerNumber)
-          ),
+      // 5. Update or Create Lead Profile via Canonical Identity Resolver
+      if (callerNumber && callerNumber !== "unknown") {
+        const { leadProfileId, profile } = await identityResolverService.resolveCustomerIdentity({
+          organizationId,
+          channel: "voice",
+          channelUserId: callerNumber,
+          phone: callerNumber,
+          name: `Voicemail Caller (${callerNumber.slice(-4)})`,
         });
 
-        if (existingLead) {
-          await db
-            .update(leadProfiles)
-            .set({
-              notes: `${existingLead.notes || ""}\n\n[Voicemail Callback Request]: ${summaryText}`,
-              status: "New",
-              updatedAt: new Date(),
-            })
-            .where(eq(leadProfiles.id, existingLead.id));
-        } else {
-          await db.insert(leadProfiles).values({
-            organizationId,
-            name: `Voicemail Caller (${callerNumber.slice(-4)})`,
-            phone: callerNumber,
+        await db
+          .update(leadProfiles)
+          .set({
+            notes: `${profile.notes || ""}\n\n[Voicemail Callback Request]: ${summaryText}\nTranscript: ${transcriptText}`.trim(),
             status: "New",
-            notes: `[Voicemail Callback Request]: ${summaryText}\nTranscript: ${transcriptText}`,
-            leadScore: 10,
-          });
-        }
+            updatedAt: new Date(),
+          })
+          .where(eq(leadProfiles.id, leadProfileId));
       }
 
       return {

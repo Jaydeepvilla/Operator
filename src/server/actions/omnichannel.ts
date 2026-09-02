@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth/server";
+import { requireOrganizationAccess, assertResourceOwnership } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { db } from "../db";
 import { 
@@ -16,29 +16,19 @@ import {
   staffMembers
 } from "../db/schema";
 import { eq, and, desc, asc } from "drizzle-orm";
-import { membershipRepository } from "../repositories/membership";
 import { omnichannelRepository } from "../repositories/omnichannel";
 import { omnichannelRouter } from "../services/omnichannel/router";
 import { orchestratorService } from "../services/orchestrator";
-
-async function getVerifiedOrgId() {
-  const { userId, orgId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  if (orgId) return orgId;
-  const memberships = await membershipRepository.getByUser(userId);
-  if (memberships.length === 0) throw new Error("No organization found");
-  return memberships[0].organizationId;
-}
 
 // --- Inbox Thread Actions ---
 
 export async function getInboxThreadsAction() {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
     
     // Fetch threads
     const threads = await db.query.inboxThreads.findMany({
-      where: eq(inboxThreads.organizationId, orgId),
+      where: eq(inboxThreads.organizationId, organizationId),
       orderBy: [desc(inboxThreads.updatedAt)],
       with: {
         channel: true,
@@ -59,11 +49,11 @@ export async function getInboxThreadsAction() {
 
 export async function getThreadMessagesAction(conversationId: string) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     const messages = await db.query.channelMessages.findMany({
       where: and(
-        eq(channelMessages.organizationId, orgId),
+        eq(channelMessages.organizationId, organizationId),
         eq(channelMessages.conversationId, conversationId)
       ),
       orderBy: [asc(channelMessages.createdAt)]
@@ -83,10 +73,11 @@ export async function sendStaffReplyAction(options: {
   content: string;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(inboxThreads, options.threadId, organizationId, "Inbox thread");
 
     await omnichannelRouter.sendOutgoingMessage({
-      organizationId: orgId,
+      organizationId,
       channelId: options.channelId,
       conversationId: options.conversationId,
       recipientId: options.recipientId,
@@ -102,7 +93,7 @@ export async function sendStaffReplyAction(options: {
         aiAutonomy: "paused", 
         updatedAt: new Date() 
       })
-      .where(eq(inboxThreads.id, options.threadId));
+      .where(and(eq(inboxThreads.id, options.threadId), eq(inboxThreads.organizationId, organizationId)));
 
     revalidatePath("/inbox");
     return { success: true };
@@ -116,12 +107,12 @@ export async function sendStaffReplyAction(options: {
  */
 export async function toggleThreadAiAutonomyAction(threadId: string, status: "active" | "paused") {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     const [updated] = await db
       .update(inboxThreads)
       .set({ aiAutonomy: status, updatedAt: new Date() })
-      .where(and(eq(inboxThreads.id, threadId), eq(inboxThreads.organizationId, orgId)))
+      .where(and(eq(inboxThreads.id, threadId), eq(inboxThreads.organizationId, organizationId)))
       .returning();
 
     revalidatePath("/inbox");
@@ -139,10 +130,11 @@ export async function generateDraftAiReplyAction(options: {
   userMessage?: string;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(conversations, options.conversationId, organizationId, "Conversation");
 
     const result = await orchestratorService.processMessage({
-      organizationId: orgId,
+      organizationId,
       conversationId: options.conversationId,
       userMessage: options.userMessage || "How can I help you?",
       metadata: { isDraftAssistant: true },
@@ -162,12 +154,12 @@ export async function generateDraftAiReplyAction(options: {
 
 export async function assignThreadAction(threadId: string, staffId: string | null) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     await db
       .update(inboxThreads)
       .set({ assignedStaffId: staffId, updatedAt: new Date() })
-      .where(and(eq(inboxThreads.id, threadId), eq(inboxThreads.organizationId, orgId)));
+      .where(and(eq(inboxThreads.id, threadId), eq(inboxThreads.organizationId, organizationId)));
 
     revalidatePath("/inbox");
     return { success: true };
@@ -178,12 +170,12 @@ export async function assignThreadAction(threadId: string, staffId: string | nul
 
 export async function updateThreadStatusAction(threadId: string, status: "open" | "closed" | "snoozed") {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     await db
       .update(inboxThreads)
       .set({ status, updatedAt: new Date() })
-      .where(and(eq(inboxThreads.id, threadId), eq(inboxThreads.organizationId, orgId)));
+      .where(and(eq(inboxThreads.id, threadId), eq(inboxThreads.organizationId, organizationId)));
 
     revalidatePath("/inbox");
     return { success: true };
@@ -196,10 +188,10 @@ export async function updateThreadStatusAction(threadId: string, status: "open" 
 
 export async function getChannelsAction() {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     const channels = await db.query.communicationChannels.findMany({
-      where: eq(communicationChannels.organizationId, orgId),
+      where: eq(communicationChannels.organizationId, organizationId),
       with: {
         connections: true,
         settings: true
@@ -219,11 +211,11 @@ export async function connectChannelAction(options: {
   metadata: Record<string, any>;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     // Create channel
     const channel = await omnichannelRepository.createChannel({
-      organizationId: orgId,
+      organizationId,
       type: options.type,
       name: options.name,
       status: "active"
@@ -231,7 +223,7 @@ export async function connectChannelAction(options: {
 
     // Save credentials
     await omnichannelRepository.saveConnection({
-      organizationId: orgId,
+      organizationId,
       channelId: channel.id,
       externalId: options.credentials.phoneId || options.credentials.accountSid || options.credentials.user || "ext-id",
       credentials: options.credentials,
@@ -254,9 +246,9 @@ export async function saveChannelSettingsAction(options: {
   businessHoursOnly: boolean;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
-    await omnichannelRepository.updateSettings(orgId, options.channelId, {
+    await omnichannelRepository.updateSettings(organizationId, options.channelId, {
       aiEnabled: options.aiEnabled,
       aiTone: options.aiTone,
       responseDelaySeconds: options.responseDelaySeconds,
@@ -274,8 +266,8 @@ export async function saveChannelSettingsAction(options: {
 
 export async function getTemplatesAction() {
   try {
-    const orgId = await getVerifiedOrgId();
-    const templates = await omnichannelRepository.listTemplates(orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    const templates = await omnichannelRepository.listTemplates(organizationId);
     return { success: true, templates };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to list templates" };
@@ -292,10 +284,11 @@ export async function saveTemplateAction(options: {
   variables: string[];
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     if (options.id) {
-      await omnichannelRepository.updateTemplate(options.id, {
+      await assertResourceOwnership(messageTemplates, options.id, organizationId, "Message template");
+      await omnichannelRepository.updateTemplate(options.id, organizationId, {
         name: options.name,
         category: options.category,
         channelType: options.channelType,
@@ -305,7 +298,7 @@ export async function saveTemplateAction(options: {
       });
     } else {
       await omnichannelRepository.createTemplate({
-        organizationId: orgId,
+        organizationId,
         name: options.name,
         category: options.category,
         channelType: options.channelType,
@@ -325,8 +318,9 @@ export async function saveTemplateAction(options: {
 
 export async function deleteTemplateAction(id: string) {
   try {
-    await getVerifiedOrgId(); // secure verification check
-    await omnichannelRepository.deleteTemplate(id);
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(messageTemplates, id, organizationId, "Message template");
+    await omnichannelRepository.deleteTemplate(id, organizationId);
     revalidatePath("/templates");
     return { success: true };
   } catch (error: any) {
@@ -338,9 +332,9 @@ export async function deleteTemplateAction(id: string) {
 
 export async function getContactsAction() {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
     const contacts = await db.query.leadProfiles.findMany({
-      where: eq(leadProfiles.organizationId, orgId),
+      where: eq(leadProfiles.organizationId, organizationId),
       orderBy: [desc(leadProfiles.createdAt)]
     });
     return { success: true, contacts };
@@ -360,7 +354,8 @@ export async function updateContactAction(options: {
   lifetimeValue?: number;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(leadProfiles, options.id, organizationId, "Contact profile");
 
     await db
       .update(leadProfiles)
@@ -368,7 +363,7 @@ export async function updateContactAction(options: {
         ...options,
         updatedAt: new Date()
       })
-      .where(and(eq(leadProfiles.id, options.id), eq(leadProfiles.organizationId, orgId)));
+      .where(and(eq(leadProfiles.id, options.id), eq(leadProfiles.organizationId, organizationId)));
 
     revalidatePath("/contacts");
     return { success: true };
@@ -381,22 +376,22 @@ export async function updateContactAction(options: {
 
 export async function getOmnichannelAnalyticsAction() {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     const [sentMsgs, receivedMsgs, channels] = await Promise.all([
       db.query.channelMessages.findMany({
         where: and(
-          eq(channelMessages.organizationId, orgId),
+          eq(channelMessages.organizationId, organizationId),
           eq(channelMessages.direction, "outgoing")
         )
       }),
       db.query.channelMessages.findMany({
         where: and(
-          eq(channelMessages.organizationId, orgId),
+          eq(channelMessages.organizationId, organizationId),
           eq(channelMessages.direction, "incoming")
         )
       }),
-      omnichannelRepository.listChannels(orgId)
+      omnichannelRepository.listChannels(organizationId)
     ]);
 
     const sentCount = sentMsgs.length;
@@ -443,12 +438,13 @@ export async function getOmnichannelAnalyticsAction() {
 
 export async function getStaffMembersAction() {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
     const staff = await db.query.staffMembers.findMany({
-      where: eq(staffMembers.organizationId, orgId),
+      where: eq(staffMembers.organizationId, organizationId),
     });
     return { success: true, staff: staff.map(s => ({ id: s.id, name: s.name })) };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to fetch staff members" };
   }
 }
+

@@ -1,27 +1,26 @@
 "use server";
 
-import { auth } from "@/lib/auth/server";
+import { requireOrganizationAccess } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { settingsRepository } from "../repositories/settings";
-import { membershipRepository } from "../repositories/membership";
 import { DEFAULT_BUSINESS_HOURS } from "@/lib/constants/templates";
-
-async function getVerifiedOrgId() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  const memberships = await membershipRepository.getByUser(userId);
-  if (memberships.length === 0) throw new Error("No organization found");
-  return memberships[0].organizationId;
-}
+import { db } from "../db";
+import { 
+  countries as countriesTable, 
+  languages as languagesTable, 
+  currencies as currenciesTable, 
+  businessLocalization as businessLocalizationTable 
+} from "../db/schema";
+import { eq, and } from "drizzle-orm";
 
 export async function getBusinessSettingsAction() {
   try {
-    const orgId = await getVerifiedOrgId();
-    let settings = await settingsRepository.getByOrg(orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    let settings = await settingsRepository.getByOrg(organizationId);
     if (!settings) {
       // Seed default empty settings
       settings = await settingsRepository.create({
-        organizationId: orgId,
+        organizationId,
         businessHours: DEFAULT_BUSINESS_HOURS,
         holidays: [],
         languages: ["en"],
@@ -42,8 +41,8 @@ export async function saveBusinessHoursAction(
   holidays: string[]
 ) {
   try {
-    const orgId = await getVerifiedOrgId();
-    await settingsRepository.update(orgId, { businessHours, holidays });
+    const { organizationId } = await requireOrganizationAccess();
+    await settingsRepository.update(organizationId, { businessHours, holidays });
     revalidatePath("/settings");
     revalidatePath("/dashboard");
     return { success: true };
@@ -59,8 +58,8 @@ export async function saveGeneralSettingsAction(data: {
   leadAssignmentRules: Record<string, any>;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
-    await settingsRepository.update(orgId, data);
+    const { organizationId } = await requireOrganizationAccess();
+    await settingsRepository.update(organizationId, data);
     revalidatePath("/settings");
     return { success: true };
   } catch (error: any) {
@@ -70,10 +69,10 @@ export async function saveGeneralSettingsAction(data: {
 
 export async function triggerWebsiteImportAction(url: string) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     // Store URL and set status to imported to indicate success
-    await settingsRepository.update(orgId, {
+    await settingsRepository.update(organizationId, {
       websiteImportUrl: url,
       websiteImportStatus: "imported", // Successful website import status
     });
@@ -88,11 +87,11 @@ export async function triggerWebsiteImportAction(url: string) {
 
 export async function saveEscalationRulesAction(rules: Record<string, any>) {
   try {
-    const orgId = await getVerifiedOrgId();
-    const settings = await settingsRepository.getByOrg(orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    const settings = await settingsRepository.getByOrg(organizationId);
     const existingNotificationPrefs = (settings?.notificationPreferences as Record<string, any>) || {};
 
-    await settingsRepository.update(orgId, {
+    await settingsRepository.update(organizationId, {
       notificationPreferences: {
         ...existingNotificationPrefs,
         humanEscalationRules: rules,
@@ -108,8 +107,8 @@ export async function saveEscalationRulesAction(rules: Record<string, any>) {
 
 export async function saveBookingPreferencesAction(bookingPreferences: Record<string, any>) {
   try {
-    const orgId = await getVerifiedOrgId();
-    await settingsRepository.update(orgId, { bookingPreferences });
+    const { organizationId } = await requireOrganizationAccess();
+    await settingsRepository.update(organizationId, { bookingPreferences });
     revalidatePath("/settings/booking");
     revalidatePath("/settings");
     revalidatePath("/dashboard");
@@ -121,18 +120,9 @@ export async function saveBookingPreferencesAction(bookingPreferences: Record<st
 
 // ── Global Localization & Regionalization Settings Actions ──
 
-import { db } from "../db";
-import { 
-  countries as countriesTable, 
-  languages as languagesTable, 
-  currencies as currenciesTable, 
-  businessLocalization as businessLocalizationTable 
-} from "../db/schema";
-import { eq } from "drizzle-orm";
-
 export async function getLocalizationMetadataAction() {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     const [countryList, langList, curList] = await Promise.all([
       db.select().from(countriesTable),
@@ -141,7 +131,7 @@ export async function getLocalizationMetadataAction() {
     ]);
 
     let businessSettings = await db.query.businessLocalization.findFirst({
-      where: eq(businessLocalizationTable.organizationId, orgId),
+      where: eq(businessLocalizationTable.organizationId, organizationId),
     });
 
     if (!businessSettings) {
@@ -149,7 +139,7 @@ export async function getLocalizationMetadataAction() {
       const [newSettings] = await db
         .insert(businessLocalizationTable)
         .values({
-          organizationId: orgId,
+          organizationId,
           countryCode: "US",
           primaryLanguage: "en",
           currencyCode: "USD",
@@ -186,10 +176,10 @@ export async function updateBusinessLocalizationAction(data: {
   measurementUnit: string;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     const existing = await db.query.businessLocalization.findFirst({
-      where: eq(businessLocalizationTable.organizationId, orgId),
+      where: eq(businessLocalizationTable.organizationId, organizationId),
     });
 
     if (existing) {
@@ -198,12 +188,12 @@ export async function updateBusinessLocalizationAction(data: {
         .set({
           ...data,
         })
-        .where(eq(businessLocalizationTable.id, existing.id));
+        .where(and(eq(businessLocalizationTable.id, existing.id), eq(businessLocalizationTable.organizationId, organizationId)));
     } else {
       await db
         .insert(businessLocalizationTable)
         .values({
-          organizationId: orgId,
+          organizationId,
           ...data,
         });
     }
@@ -215,4 +205,5 @@ export async function updateBusinessLocalizationAction(data: {
     return { success: false, error: error?.message || "Failed to update localization settings" };
   }
 }
+
 

@@ -44,4 +44,6 @@ next-env.d.ts
 .agent/
 .agents/
 .cursor/
+reports/
+*.rej
 

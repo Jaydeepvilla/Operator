@@ -1,31 +1,22 @@
 "use server";
 
-import { auth } from "@/lib/auth/server";
+import { requireOrganizationAccess, assertResourceOwnership, AuthorizationError } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { db } from "../db";
-import { staffMembers, serviceAssignments, staffSchedules, staffAvailability } from "../db/schema";
-import { membershipRepository } from "../repositories/membership";
+import { staffMembers, serviceAssignments, staffSchedules, staffAvailability, services } from "../db/schema";
 import { staffRepository } from "../repositories/staff";
-
-async function getVerifiedOrgId() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  const memberships = await membershipRepository.getByUser(userId);
-  if (memberships.length === 0) throw new Error("No organization found");
-  return memberships[0].organizationId;
-}
 
 export async function getStaffListAction() {
   try {
-    const orgId = await getVerifiedOrgId();
-    const list = await staffRepository.list(orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    const list = await staffRepository.list(organizationId);
     
     // Enrich with schedules & assignments summary
     const enrichedList = await Promise.all(
       list.map(async (staff) => {
-        const schedules = await staffRepository.getSchedules(staff.id);
-        const assignments = await staffRepository.listAssignments(staff.id);
+        const schedules = await staffRepository.getSchedules(staff.id, organizationId);
+        const assignments = await staffRepository.listAssignments(staff.id, organizationId);
         return {
           ...staff,
           schedules,
@@ -42,18 +33,13 @@ export async function getStaffListAction() {
 
 export async function getStaffDetailsAction(staffId: string) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
     
-    const [staff] = await db
-      .select()
-      .from(staffMembers)
-      .where(and(eq(staffMembers.id, staffId), eq(staffMembers.organizationId, orgId)));
-      
-    if (!staff) throw new Error("Staff member not found");
+    const staff = await assertResourceOwnership(staffMembers, staffId, organizationId, "Staff member");
 
-    const schedules = await staffRepository.getSchedules(staffId);
-    const exceptions = await staffRepository.getAvailabilityExceptions(staffId);
-    const assignments = await staffRepository.listAssignments(staffId);
+    const schedules = await staffRepository.getSchedules(staffId, organizationId);
+    const exceptions = await staffRepository.getAvailabilityExceptions(staffId, organizationId);
+    const assignments = await staffRepository.listAssignments(staffId, organizationId);
 
     return {
       success: true,
@@ -75,14 +61,18 @@ export async function createStaffAction(data: {
   bufferTime?: number;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
+
+    if (!data.name?.trim()) {
+      throw new Error("Staff name is required");
+    }
 
     const staff = await staffRepository.create({
-      organizationId: orgId,
-      name: data.name,
-      role: data.role,
-      email: data.email,
-      phone: data.phone,
+      organizationId,
+      name: data.name.trim(),
+      role: data.role?.trim() || "Staff Member",
+      email: data.email?.trim() || null,
+      phone: data.phone?.trim() || null,
       bufferTime: data.bufferTime ?? 0,
       isActive: true,
     });
@@ -90,7 +80,7 @@ export async function createStaffAction(data: {
     // Seed empty default schedules (Monday-Friday 9am-5pm)
     for (let day = 1; day <= 5; day++) {
       await staffRepository.saveSchedule({
-        organizationId: orgId,
+        organizationId,
         staffMemberId: staff.id,
         dayOfWeek: day,
         shifts: [{ start: "09:00", end: "17:00" }],
@@ -116,15 +106,16 @@ export async function updateStaffAction(
   }
 ) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(staffMembers, id, organizationId, "Staff member");
 
-    const [existing] = await db
-      .select()
-      .from(staffMembers)
-      .where(and(eq(staffMembers.id, id), eq(staffMembers.organizationId, orgId)));
-    if (!existing) throw new Error("Staff member not found");
-
-    const updated = await staffRepository.update(id, updates);
+    const updated = await staffRepository.update(id, organizationId, {
+      ...updates,
+      name: updates.name?.trim(),
+      role: updates.role?.trim(),
+      email: updates.email?.trim() || null,
+      phone: updates.phone?.trim() || null,
+    });
 
     revalidatePath("/staff");
     return { success: true, staff: updated };
@@ -135,15 +126,10 @@ export async function updateStaffAction(
 
 export async function deleteStaffAction(id: string) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(staffMembers, id, organizationId, "Staff member");
 
-    const [existing] = await db
-      .select()
-      .from(staffMembers)
-      .where(and(eq(staffMembers.id, id), eq(staffMembers.organizationId, orgId)));
-    if (!existing) throw new Error("Staff member not found");
-
-    await staffRepository.delete(id);
+    await staffRepository.delete(id, organizationId);
 
     revalidatePath("/staff");
     return { success: true };
@@ -157,16 +143,11 @@ export async function saveStaffScheduleAction(
   schedule: { dayOfWeek: number; shifts: Array<{ start: string; end: string }> }
 ) {
   try {
-    const orgId = await getVerifiedOrgId();
-
-    const [staff] = await db
-      .select()
-      .from(staffMembers)
-      .where(and(eq(staffMembers.id, staffId), eq(staffMembers.organizationId, orgId)));
-    if (!staff) throw new Error("Staff member not found");
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(staffMembers, staffId, organizationId, "Staff member");
 
     await staffRepository.saveSchedule({
-      organizationId: orgId,
+      organizationId,
       staffMemberId: staffId,
       dayOfWeek: schedule.dayOfWeek,
       shifts: schedule.shifts,
@@ -187,16 +168,11 @@ export async function saveAvailabilityExceptionAction(data: {
   reason?: string | null;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
-
-    const [staff] = await db
-      .select()
-      .from(staffMembers)
-      .where(and(eq(staffMembers.id, data.staffMemberId), eq(staffMembers.organizationId, orgId)));
-    if (!staff) throw new Error("Staff member not found");
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(staffMembers, data.staffMemberId, organizationId, "Staff member");
 
     await staffRepository.saveAvailabilityException({
-      organizationId: orgId,
+      organizationId,
       staffMemberId: data.staffMemberId,
       exceptionDate: data.exceptionDate,
       isAvailable: data.isAvailable,
@@ -213,15 +189,10 @@ export async function saveAvailabilityExceptionAction(data: {
 
 export async function deleteAvailabilityExceptionAction(id: string) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(staffAvailability, id, organizationId, "Availability exception");
 
-    const [existing] = await db
-      .select()
-      .from(staffAvailability)
-      .where(and(eq(staffAvailability.id, id), eq(staffAvailability.organizationId, orgId)));
-    if (!existing) throw new Error("Holiday exception override not found");
-
-    await staffRepository.deleteAvailabilityException(id);
+    await staffRepository.deleteAvailabilityException(id, organizationId);
 
     revalidatePath("/staff");
     return { success: true };
@@ -232,22 +203,29 @@ export async function deleteAvailabilityExceptionAction(id: string) {
 
 export async function updateStaffAssignmentsAction(staffId: string, serviceIds: string[]) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(staffMembers, staffId, organizationId, "Staff member");
 
-    const [staff] = await db
-      .select()
-      .from(staffMembers)
-      .where(and(eq(staffMembers.id, staffId), eq(staffMembers.organizationId, orgId)));
-    if (!staff) throw new Error("Staff member not found");
+    // Cross-tenant relationship validation: Verify that all assigned services belong to the same organization
+    if (serviceIds.length > 0) {
+      const validServices = await db
+        .select({ id: services.id })
+        .from(services)
+        .where(and(eq(services.organizationId, organizationId), inArray(services.id, serviceIds)));
 
-    // Clean existing service assignments
+      if (validServices.length !== serviceIds.length) {
+        throw new AuthorizationError("One or more assigned services do not belong to your organization.");
+      }
+    }
+
+    // Clean existing service assignments for this staff in this organization
     await db
       .delete(serviceAssignments)
-      .where(eq(serviceAssignments.staffMemberId, staffId));
+      .where(and(eq(serviceAssignments.staffMemberId, staffId), eq(serviceAssignments.organizationId, organizationId)));
 
-    // Create new ones
+    // Create verified assignments
     for (const serviceId of serviceIds) {
-      await staffRepository.assignService(orgId, staffId, serviceId);
+      await staffRepository.assignService(organizationId, staffId, serviceId);
     }
 
     revalidatePath("/staff");
@@ -256,3 +234,4 @@ export async function updateStaffAssignmentsAction(staffId: string, serviceIds: 
     return { success: false, error: error?.message || "Failed to update assignments" };
   }
 }
+

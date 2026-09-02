@@ -19,6 +19,8 @@ import { Input } from "@/components/shared/input";
 import { Label } from "@/components/shared/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/shared/dialog";
 import { purchasePhoneNumberAction, toggleRecordingAction } from "@/server/actions/voice";
+import { useToast } from "@/components/shared/toast";
+import { formatUserErrorMessage } from "@/lib/errors";
 import { cn } from "@/components/shared/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -36,6 +38,7 @@ export function PhoneNumbersClient({ initialNumbers }: {initialNumbers: any[];})
  const [numbers, setNumbers] = useState<PhoneNumber[]>(initialNumbers as PhoneNumber[]);
  const [isOpen, setIsOpen] = useState(false);
  const [isPending, startTransition] = useTransition();
+ const toast = useToast();
 
  // Search/purchase state
  const [searchQuery, setSearchQuery] = useState("");
@@ -78,12 +81,15 @@ export function PhoneNumbersClient({ initialNumbers }: {initialNumbers: any[];})
  setNumbers((prev) => [res.number as unknown as PhoneNumber, ...prev]);
  setLineName("");
  setSelectedNumber("");
+ toast.success("Phone Line Connected", `Number ${selectedNumber} is now active.`);
  setTimeout(() => {
  setIsOpen(false);
  setStatusMessage(null);
  }, 1500);
  } else {
- setStatusMessage({ type: "error", text: res.error || "Purchase failed." });
+ const errorMsg = formatUserErrorMessage(res.error, "Purchase failed.");
+ setStatusMessage({ type: "error", text: errorMsg });
+ toast.error("Failed to connect phone line", errorMsg);
  }
  });
  };
@@ -100,7 +106,9 @@ export function PhoneNumbersClient({ initialNumbers }: {initialNumbers: any[];})
  setNumbers((prev) =>
  prev.map((n) => n.id === numId ? { ...n, isRecordingEnabled: currentEnabled } : n)
  );
- alert("Failed to update call recording status:" + res.error);
+ toast.error("Failed to update recording status", formatUserErrorMessage(res.error));
+ } else {
+ toast.success("Recording Setting Updated", !currentEnabled ? "Call recording enabled." : "Call recording disabled.");
  }
  };
 

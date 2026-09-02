@@ -1,44 +1,19 @@
 "use server";
 
-import { auth } from "@/lib/auth/server";
+import { requireOrganizationAccess, assertResourceOwnership } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { servicesRepository, NewService } from "../repositories/services";
-import { membershipRepository } from "../repositories/membership";
 import { syncService } from "../services/sync";
 import { db } from "../db";
-import { services } from "../db/schema";
+import { services, serviceCategories } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { verificationEngine } from "../services/verification/engine";
 
-async function getVerifiedOrgId() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  const memberships = await membershipRepository.getByUser(userId);
-  if (memberships.length === 0) throw new Error("No organization found");
-  return memberships[0].organizationId;
-}
-
-/**
- * IDOR guard: verifies the service belongs to the caller's org.
- */
-async function assertServiceOwnership(orgId: string, serviceId: string) {
-  const [service] = await db
-    .select({ id: services.id, organizationId: services.organizationId })
-    .from(services)
-    .where(and(eq(services.id, serviceId), eq(services.organizationId, orgId)))
-    .limit(1);
-
-  if (!service) {
-    throw new Error("Service not found or access denied");
-  }
-  return service;
-}
-
 export async function getServicesAction() {
   try {
-    const orgId = await getVerifiedOrgId();
-    const list = await servicesRepository.list(orgId);
-    const categories = await servicesRepository.listCategories(orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    const list = await servicesRepository.list(organizationId);
+    const categories = await servicesRepository.listCategories(organizationId);
     return { success: true, services: list, categories };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to load services" };
@@ -53,7 +28,7 @@ export async function createServiceAction(data: {
   price: string;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     // Input validation
     if (!data.name?.trim() || data.name.length > 200) {
@@ -68,17 +43,17 @@ export async function createServiceAction(data: {
     }
 
     // 1. Get or create category
-    let category = await servicesRepository.getCategoryByName(orgId, data.categoryName);
+    let category = await servicesRepository.getCategoryByName(organizationId, data.categoryName);
     if (!category && data.categoryName.trim()) {
       category = await servicesRepository.createCategory({
-        organizationId: orgId,
+        organizationId,
         name: data.categoryName.trim(),
       });
     }
 
     // 2. Insert Service record
     const service = await servicesRepository.create({
-      organizationId: orgId,
+      organizationId,
       categoryId: category?.id || null,
       name: data.name.trim(),
       description: data.description?.trim() || "",
@@ -88,7 +63,7 @@ export async function createServiceAction(data: {
     });
 
     await syncService.syncServiceItem(
-      orgId,
+      organizationId,
       service.id,
       service.name,
       service.description || "",
@@ -97,7 +72,7 @@ export async function createServiceAction(data: {
       service.isActive
     );
 
-    await verificationEngine.invalidateScenarios(orgId, ["pricing_hours"]);
+    await verificationEngine.invalidateScenarios(organizationId, ["pricing_hours"]);
 
     revalidatePath("/services");
     revalidatePath("/dashboard");
@@ -119,9 +94,9 @@ export async function updateServiceAction(
   }
 ) {
   try {
-    const orgId = await getVerifiedOrgId();
-    // IDOR guard
-    await assertServiceOwnership(orgId, id);
+    const { organizationId } = await requireOrganizationAccess();
+    // IDOR guard: assert service belongs to tenant
+    await assertResourceOwnership(services, id, organizationId, "Service");
 
     if (!data.name?.trim() || data.name.length > 200) {
       throw new Error("Service name is required and must be under 200 characters");
@@ -131,16 +106,16 @@ export async function updateServiceAction(
     }
 
     // 1. Get or create category
-    let category = await servicesRepository.getCategoryByName(orgId, data.categoryName);
+    let category = await servicesRepository.getCategoryByName(organizationId, data.categoryName);
     if (!category && data.categoryName.trim()) {
       category = await servicesRepository.createCategory({
-        organizationId: orgId,
+        organizationId,
         name: data.categoryName.trim(),
       });
     }
 
-    // 2. Update service
-    const updated = await servicesRepository.update(id, {
+    // 2. Update service atomically
+    const updated = await servicesRepository.update(id, organizationId, {
       name: data.name.trim(),
       categoryId: category?.id || null,
       description: data.description?.trim() || "",
@@ -151,7 +126,7 @@ export async function updateServiceAction(
 
     if (updated) {
       await syncService.syncServiceItem(
-        orgId,
+        organizationId,
         updated.id,
         updated.name,
         updated.description || "",
@@ -161,7 +136,7 @@ export async function updateServiceAction(
       );
     }
 
-    await verificationEngine.invalidateScenarios(orgId, ["pricing_hours"]);
+    await verificationEngine.invalidateScenarios(organizationId, ["pricing_hours"]);
 
     revalidatePath("/services");
     return { success: true };
@@ -172,14 +147,14 @@ export async function updateServiceAction(
 
 export async function archiveServiceAction(id: string) {
   try {
-    const orgId = await getVerifiedOrgId();
-    // IDOR guard
-    await assertServiceOwnership(orgId, id);
+    const { organizationId } = await requireOrganizationAccess();
+    // IDOR guard: assert service belongs to tenant
+    const service = await assertResourceOwnership(services, id, organizationId, "Service");
 
-    const updated = await servicesRepository.update(id, { isArchived: true });
+    const updated = await servicesRepository.update(id, organizationId, { isArchived: true });
     if (updated) {
       await syncService.syncServiceItem(
-        orgId,
+        organizationId,
         updated.id,
         updated.name,
         updated.description || "",
@@ -190,7 +165,7 @@ export async function archiveServiceAction(id: string) {
       );
     }
 
-    await verificationEngine.invalidateScenarios(orgId, ["pricing_hours"]);
+    await verificationEngine.invalidateScenarios(organizationId, ["pricing_hours"]);
     revalidatePath("/services");
     revalidatePath("/dashboard");
     return { success: true };
@@ -201,21 +176,24 @@ export async function archiveServiceAction(id: string) {
 
 export async function deleteServiceAction(id: string) {
   try {
-    const orgId = await getVerifiedOrgId();
-    // IDOR guard
-    const service = await assertServiceOwnership(orgId, id);
+    const { organizationId } = await requireOrganizationAccess();
+    // IDOR guard: assert service belongs to tenant
+    const service = await assertResourceOwnership(services, id, organizationId, "Service");
 
-    const [fullService] = await db.select().from(services).where(eq(services.id, id)).limit(1);
-    if (fullService) {
-      await servicesRepository.delete(id);
+    const [deleted] = await db
+      .delete(services)
+      .where(and(eq(services.id, id), eq(services.organizationId, organizationId)))
+      .returning();
+
+    if (deleted) {
       await syncService.syncServiceItem(
-        orgId,
-        fullService.id,
-        fullService.name,
-        fullService.description || "",
-        fullService.duration,
-        fullService.price,
-        fullService.isActive,
+        organizationId,
+        deleted.id,
+        deleted.name,
+        deleted.description || "",
+        deleted.duration,
+        deleted.price,
+        deleted.isActive,
         true
       );
     }
@@ -226,3 +204,4 @@ export async function deleteServiceAction(id: string) {
     return { success: false, error: error?.message || "Failed to delete service" };
   }
 }
+

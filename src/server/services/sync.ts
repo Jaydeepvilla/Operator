@@ -41,7 +41,7 @@ export const syncService = {
         if (existingDoc) {
           // Clean chunks and delete document
           await chunksRepository.deleteByDocument(existingDoc.id);
-          await documentsRepository.delete(existingDoc.id);
+          await documentsRepository.delete(existingDoc.id, organizationId);
         }
         return;
       }
@@ -50,7 +50,7 @@ export const syncService = {
       let documentId: string;
 
       if (existingDoc) {
-        await documentsRepository.update(existingDoc.id, {
+        await documentsRepository.update(existingDoc.id, organizationId, {
           status: "completed",
           metadata: { faqId, updatedAt: new Date().toISOString() },
         });
@@ -107,7 +107,7 @@ export const syncService = {
       if (isDeleted || !isActive) {
         if (existingDoc) {
           await chunksRepository.deleteByDocument(existingDoc.id);
-          await documentsRepository.delete(existingDoc.id);
+          await documentsRepository.delete(existingDoc.id, organizationId);
         }
         return;
       }
@@ -116,7 +116,7 @@ export const syncService = {
       let documentId: string;
 
       if (existingDoc) {
-        await documentsRepository.update(existingDoc.id, {
+        await documentsRepository.update(existingDoc.id, organizationId, {
           status: "completed",
           metadata: { serviceId, updatedAt: new Date().toISOString() },
         });
@@ -178,7 +178,7 @@ Physical Address: ${address || "Not provided"}`;
       let documentId: string;
 
       if (existingDoc) {
-        await documentsRepository.update(existingDoc.id, {
+        await documentsRepository.update(existingDoc.id, organizationId, {
           status: "completed",
           metadata: { profile: true, updatedAt: new Date().toISOString() },
         });
@@ -224,7 +224,7 @@ Physical Address: ${address || "Not provided"}`;
       if (questions.length === 0) {
         if (existingDoc) {
           await chunksRepository.deleteByDocument(existingDoc.id);
-          await documentsRepository.delete(existingDoc.id);
+          await documentsRepository.delete(existingDoc.id, organizationId);
         }
         return;
       }
@@ -238,7 +238,7 @@ Physical Address: ${address || "Not provided"}`;
       let documentId: string;
 
       if (existingDoc) {
-        await documentsRepository.update(existingDoc.id, {
+        await documentsRepository.update(existingDoc.id, organizationId, {
           status: "completed",
           metadata: { flows: true, updatedAt: new Date().toISOString() },
         });

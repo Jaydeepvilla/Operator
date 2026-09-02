@@ -1,22 +1,16 @@
 "use server";
 
-import { auth } from "@/lib/auth/server";
+import { requireOrganizationAccess } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { crmDeduplicationService } from "../services/crm/deduplication";
-
-async function getVerifiedOrgContext() {
-  const { userId, orgId } = await auth();
-  if (!userId || !orgId) throw new Error("Unauthorized");
-  return { userId, orgId };
-}
 
 /**
  * Retrieves duplicate lead profile candidates in the organization.
  */
 export async function getDuplicateCandidatesAction() {
   try {
-    const { orgId } = await getVerifiedOrgContext();
-    const candidates = await crmDeduplicationService.findDuplicateCandidates(orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    const candidates = await crmDeduplicationService.findDuplicateCandidates(organizationId);
     return { success: true, candidates };
   } catch (error: any) {
     console.error("getDuplicateCandidatesAction error:", error);
@@ -29,9 +23,9 @@ export async function getDuplicateCandidatesAction() {
  */
 export async function mergeContactsAction(targetProfileId: string, sourceProfileIds: string[]) {
   try {
-    const { userId, orgId } = await getVerifiedOrgContext();
+    const { userId, organizationId } = await requireOrganizationAccess();
     const result = await crmDeduplicationService.mergeProfiles(
-      orgId,
+      organizationId,
       targetProfileId,
       sourceProfileIds,
       userId

@@ -32,6 +32,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from"@/components/shared/input";
 import { Label } from"@/components/shared/label";
 import { PageTitle } from"@/components/shared/page-title";
+import { useToast } from "@/components/shared/toast";
+import { formatUserErrorMessage } from "@/lib/errors";
 import { cn } from"@/components/shared/utils";
 import { AreaChartCard } from"@/components/charts";
 import { NativeSelect } from "@/components/shared/native";
@@ -42,6 +44,7 @@ export default function WidgetSettingsPage() {
  const [isSaving, setIsSaving] = useState(false);
  const [saveSuccess, setSaveSuccess] = useState(false);
  const [errorMsg, setErrorMsg] = useState("");
+ const toast = useToast();
  
  const [activeTab, setActiveTab] = useState<"install"|"branding"|"appearance"|"triggers"|"analytics">("install");
  
@@ -180,28 +183,33 @@ export default function WidgetSettingsPage() {
  setAddingDomain(false);
  };
 
- const handleDeleteDomain = async (id: string) => {
- const confirm = window.confirm("Are you sure you want to delete this domain whitelist?");
- if (!confirm) return;
- const res = await deleteDomainAction(id);
- if (res.success) {
- loadData();
- } else {
- setErrorMsg(res.error ||"Failed to remove domain.");
- }
- };
+  const handleDeleteDomain = async (id: string) => {
+    const confirm = window.confirm("Are you sure you want to delete this domain whitelist?");
+    if (!confirm) return;
+    const res = await deleteDomainAction(id);
+    if (res.success) {
+      toast.success("Domain Removed", "Domain whitelist entry deleted.");
+      loadData();
+    } else {
+      const msg = formatUserErrorMessage(res.error, "Failed to remove domain.");
+      setErrorMsg(msg);
+      toast.error("Failed to remove domain", msg);
+    }
+  };
 
- const handleVerifyDomain = async (id: string) => {
- setVerifyingId(id);
- const res = await verifyDomainAction(id);
- if (res.success) {
- alert(res.message);
- loadData();
- } else {
- setErrorMsg(res.error ||"Verification check failed.");
- }
- setVerifyingId(null);
- };
+  const handleVerifyDomain = async (id: string) => {
+    setVerifyingId(id);
+    const res = await verifyDomainAction(id);
+    if (res.success) {
+      toast.success("Domain Verified", res.message || "Domain is active and verified.");
+      loadData();
+    } else {
+      const msg = formatUserErrorMessage(res.error, "Verification check failed.");
+      setErrorMsg(msg);
+      toast.error("Verification Failed", msg);
+    }
+    setVerifyingId(null);
+  };
 
  const copySnippet = () => {
  const snippet =`<script src="${window.location.origin}/widget.js"data-org-id="${orgId}"></script>`;
@@ -238,7 +246,7 @@ export default function WidgetSettingsPage() {
  };
 
  const handleResetTheme = async () => {
- const confirm = window.confirm("Are you sure you want to reset your widget appearance to Nexx brand defaults?");
+ const confirm = window.confirm("Are you sure you want to reset your widget appearance to Operator brand defaults?");
  if (!confirm) return;
  setIsSaving(true);
  const res = await resetThemeToBrandAction();

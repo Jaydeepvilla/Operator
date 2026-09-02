@@ -128,7 +128,7 @@ export default function TermsPage() {
                 <p><strong className="text-foreground">Price Changes:</strong> We may change subscription prices with 30 days notice. Existing annual subscriptions will honor the current price until renewal.</p>
                 <p><strong className="text-foreground">Payment Failure:</strong> If payment fails, we will notify you and provide a 7-day grace period to update payment information. After the grace period, the account may be suspended.</p>
                 <p><strong className="text-foreground">Cancellation:</strong> You may cancel your subscription at any time. Cancellation takes effect at the end of the current billing period. You will retain access until the period ends.</p>
-                <p><strong className="text-foreground">Refunds:</strong> We offer refunds within 14 days of initial payment for new subscribers who are not satisfied with the service. Contact support@nexx.ai. Annual plan refunds are prorated after 14 days.</p>
+                <p><strong className="text-foreground">Refunds:</strong> We offer refunds within 14 days of initial payment for new subscribers who are not satisfied with the service. Contact support@operator.ai. Annual plan refunds are prorated after 14 days.</p>
               </Section>
 
               <Section id="intellectual-property" title="7. Intellectual Property">
@@ -140,7 +140,7 @@ export default function TermsPage() {
               <Section id="data" title="8. Data & Privacy">
                 <p>Your use of the Service is also governed by our <Link href="/privacy" className="text-primary hover:text-primary/80 transition-colors">Privacy Policy</Link>, which is incorporated into these Terms.</p>
                 <p><strong className="text-foreground">Data Ownership:</strong> You own your business data and your customers' data. We process this data only as directed by your use of the Service and as described in our Privacy Policy.</p>
-                <p><strong className="text-foreground">Data Processing Agreement:</strong> For customers subject to GDPR, we offer a Data Processing Agreement (DPA). Contact privacy@nexx.ai to request a DPA.</p>
+                <p><strong className="text-foreground">Data Processing Agreement:</strong> For customers subject to GDPR, we offer a Data Processing Agreement (DPA). Contact privacy@operator.ai to request a DPA.</p>
                 <p><strong className="text-foreground">Data Security:</strong> We implement and maintain appropriate technical and organizational measures to protect your data. See our <Link href="/security" className="text-primary hover:text-primary/80 transition-colors">Security Trust Center</Link> for details.</p>
               </Section>
 
@@ -203,8 +203,8 @@ export default function TermsPage() {
               <Section id="contact-terms" title="17. Contact">
                 <p>For questions about these Terms, contact us at:</p>
                 <div className="radius-xl border border-border/40 bg-card/30 p-space-5 mt-space-3 space-y-space-2">
-                  <p><strong className="text-foreground">Legal inquiries:</strong> legal@nexx.ai</p>
-                  <p><strong className="text-foreground">General support:</strong> support@nexx.ai</p>
+                  <p><strong className="text-foreground">Legal inquiries:</strong> legal@operator.ai</p>
+                  <p><strong className="text-foreground">General support:</strong> support@operator.ai</p>
                   <p><strong className="text-foreground">Response time:</strong> Within 5 business days</p>
                 </div>
               </Section>

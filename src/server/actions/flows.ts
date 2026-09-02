@@ -1,23 +1,14 @@
 "use server";
 
-import { auth } from "@/lib/auth/server";
+import { requireOrganizationAccess } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { flowsRepository } from "../repositories/flows";
-import { membershipRepository } from "../repositories/membership";
 import { syncService } from "../services/sync";
-
-async function getVerifiedOrgId() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  const memberships = await membershipRepository.getByUser(userId);
-  if (memberships.length === 0) throw new Error("No organization found");
-  return memberships[0].organizationId;
-}
 
 export async function getFlowQuestionsAction() {
   try {
-    const orgId = await getVerifiedOrgId();
-    const list = await flowsRepository.list(orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    const list = await flowsRepository.list(organizationId);
     return { success: true, questions: list };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to load qualification flow" };
@@ -31,11 +22,11 @@ export async function createFlowQuestionAction(data: {
   isRequired: boolean;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
-    const current = await flowsRepository.list(orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    const current = await flowsRepository.list(organizationId);
 
     await flowsRepository.create({
-      organizationId: orgId,
+      organizationId,
       question: data.question,
       answerType: data.answerType,
       options: data.options || [],
@@ -43,8 +34,8 @@ export async function createFlowQuestionAction(data: {
       order: current.length,
     });
 
-    const updatedList = await flowsRepository.list(orgId);
-    await syncService.syncQualificationFlows(orgId, updatedList);
+    const updatedList = await flowsRepository.list(organizationId);
+    await syncService.syncQualificationFlows(organizationId, updatedList);
 
     revalidatePath("/flows");
     revalidatePath("/dashboard");
@@ -64,16 +55,16 @@ export async function updateFlowQuestionAction(
   }
 ) {
   try {
-    const orgId = await getVerifiedOrgId();
-    await flowsRepository.update(id, orgId, {
+    const { organizationId } = await requireOrganizationAccess();
+    await flowsRepository.update(id, organizationId, {
       question: data.question,
       answerType: data.answerType,
       options: data.options || [],
       isRequired: data.isRequired,
     });
 
-    const updatedList = await flowsRepository.list(orgId);
-    await syncService.syncQualificationFlows(orgId, updatedList);
+    const updatedList = await flowsRepository.list(organizationId);
+    await syncService.syncQualificationFlows(organizationId, updatedList);
 
     revalidatePath("/flows");
     return { success: true };
@@ -84,17 +75,17 @@ export async function updateFlowQuestionAction(
 
 export async function deleteFlowQuestionAction(id: string) {
   try {
-    const orgId = await getVerifiedOrgId();
-    await flowsRepository.delete(id, orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    await flowsRepository.delete(id, organizationId);
 
     // Reorder remaining questions to fill gaps
-    const remaining = await flowsRepository.list(orgId);
+    const remaining = await flowsRepository.list(organizationId);
     for (let i = 0; i < remaining.length; i++) {
-      await flowsRepository.update(remaining[i].id, orgId, { order: i });
+      await flowsRepository.update(remaining[i].id, organizationId, { order: i });
     }
 
-    const updatedList = await flowsRepository.list(orgId);
-    await syncService.syncQualificationFlows(orgId, updatedList);
+    const updatedList = await flowsRepository.list(organizationId);
+    await syncService.syncQualificationFlows(organizationId, updatedList);
 
     revalidatePath("/flows");
     revalidatePath("/dashboard");
@@ -106,15 +97,16 @@ export async function deleteFlowQuestionAction(id: string) {
 
 export async function updateFlowQuestionsOrderAction(questionsList: { id: string; order: number }[]) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
     for (const q of questionsList) {
-      await flowsRepository.update(q.id, orgId, { order: q.order });
+      await flowsRepository.update(q.id, organizationId, { order: q.order });
     }
-    const updatedList = await flowsRepository.list(orgId);
-    await syncService.syncQualificationFlows(orgId, updatedList);
+    const updatedList = await flowsRepository.list(organizationId);
+    await syncService.syncQualificationFlows(organizationId, updatedList);
     revalidatePath("/flows");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to update question order" };
   }
 }
+

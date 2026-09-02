@@ -7,8 +7,9 @@ import { providerRegistry } from "./calendar-provider";
 import { availabilityService } from "./availability";
 import { ruleEngine } from "./automations/rule-engine";
 import { notificationService } from "./notification";
+import { identityResolverService } from "./identity";
 import { db } from "../db";
-import { services, appointmentEvents, organizations, appointments, appointmentWaitlist } from "../db/schema";
+import { services, staffMembers, appointmentEvents, organizations, appointments, appointmentWaitlist } from "../db/schema";
 import { eq, and, lt, gt, notInArray, sql, asc, desc } from "drizzle-orm";
 
 export interface CreateBookingInput {
@@ -33,12 +34,19 @@ export const bookingService = {
     if (!org) throw new Error("Organization not found");
     const timezone = org.timezone || "UTC";
 
-    // 1. Fetch Service duration
+    // 1. Fetch Service duration & verify tenant isolation
     const [service] = await db
       .select()
       .from(services)
       .where(and(eq(services.id, serviceId), eq(services.organizationId, organizationId)));
-    if (!service) throw new Error("Service not found");
+    if (!service) throw new Error("Service not found or unauthorized");
+
+    // 1b. Verify Staff Member belongs to organization
+    const [staff] = await db
+      .select()
+      .from(staffMembers)
+      .where(and(eq(staffMembers.id, staffMemberId), eq(staffMembers.organizationId, organizationId)));
+    if (!staff) throw new Error("Staff member not found or unauthorized");
 
     const endTime = new Date(startTime.getTime() + service.duration * 60 * 1000);
 
@@ -103,10 +111,23 @@ export const bookingService = {
         throw new Error(`Concurrency Conflict: This slot has just been booked by another customer. Please choose another time.`);
       }
 
+      // Resolve or link canonical CRM customer identity
+      let targetLeadProfileId = input.leadProfileId;
+      if (!targetLeadProfileId && (input.customerPhone || input.customerEmail)) {
+        const resolved = await identityResolverService.resolveCustomerIdentity({
+          organizationId,
+          phone: input.customerPhone,
+          email: input.customerEmail,
+          name: input.customerName,
+          channel: "appointment",
+        });
+        targetLeadProfileId = resolved.leadProfileId;
+      }
+
       // Insert Appointment atomically in DB
       return await appointmentsRepository.create({
         organizationId,
-        leadProfileId: input.leadProfileId,
+        leadProfileId: targetLeadProfileId || input.leadProfileId,
         serviceId,
         staffMemberId,
         status: "confirmed",
@@ -502,6 +523,19 @@ export const bookingService = {
     preferredDate: Date;
     leadProfileId?: string | null;
   }) {
+    // Validate cross-tenant ownership
+    const [service] = await db
+      .select()
+      .from(services)
+      .where(and(eq(services.id, input.serviceId), eq(services.organizationId, input.organizationId)));
+    if (!service) throw new Error("Service not found or unauthorized");
+
+    const [staff] = await db
+      .select()
+      .from(staffMembers)
+      .where(and(eq(staffMembers.id, input.staffMemberId), eq(staffMembers.organizationId, input.organizationId)));
+    if (!staff) throw new Error("Staff member not found or unauthorized");
+
     const [entry] = await db
       .insert(appointmentWaitlist)
       .values({

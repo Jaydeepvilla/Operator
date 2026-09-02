@@ -74,7 +74,7 @@ export default function PrivacyPage() {
             {/* Content */}
             <div className="lg:col-span-8">
               <Section id="overview" title="Overview">
-                <p>Operator Technologies (&quot;Operator&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) operates the Operatorplatform at nexx.ai. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.</p>
+                <p>Operator Technologies (&quot;Operator&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) operates the Operator platform at operator.ai. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.</p>
                 <p>By using our service, you agree to the collection and use of information in accordance with this policy. If you are using our service on behalf of a business or organization, you represent that you are authorized to agree to this policy on their behalf.</p>
                 <p>This policy applies to: (a) business customers who purchase Operator subscriptions; (b) end users who interact with Operator AI instances deployed by our business customers; and (c) visitors to our marketing website.</p>
               </Section>
@@ -128,20 +128,15 @@ export default function PrivacyPage() {
               </Section>
 
               <Section id="retention" title="Data Retention">
-                <p>We retain your data for as long as your account is active or as needed to provide services. Specifically:</p>
-                <ul className="list-disc list-inside space-y-space-2 pl-space-2">
-                  <li><strong className="text-foreground">Account data:</strong> Retained while your account is active, plus 30 days after account deletion for recovery purposes</li>
-                  <li><strong className="text-foreground">Conversation data:</strong> Retained for the period specified in your plan (90 days for Starter, 1 year for Professional+)</li>
-                  <li><strong className="text-foreground">Billing records:</strong> Retained for 7 years as required by financial regulations</li>
-                  <li><strong className="text-foreground">Audit logs:</strong> Retained for 12 months minimum</li>
-                  <li><strong className="text-foreground">Backups:</strong> Retained for 30 days (Enterprise: 1 year)</li>
-                </ul>
-                <p>When you delete your account, we delete your personal data within 30 days, except where we are legally required to retain certain records.</p>
+                <p><strong className="text-foreground">Active Accounts:</strong> We retain your account information, configuration data, and conversation history for as long as your account is active.</p>
+                <p><strong className="text-foreground">Cancelled Accounts:</strong> Upon account cancellation, data is retained for 30 days to allow for account recovery, then permanently deleted. You may request immediate deletion upon cancellation.</p>
+                <p><strong className="text-foreground">Call Recordings:</strong> Voice call audio recordings are retained for 90 days by default (configurable down to 7 days in settings) and automatically purged thereafter. Text transcripts are retained with conversation history.</p>
+                <p><strong className="text-foreground">Legal Retention:</strong> We may retain certain financial and transactional records for up to 7 years to comply with tax and accounting requirements.</p>
               </Section>
 
-              <Section id="rights" title="Your Rights">
-                <p>Depending on your location, you may have the following rights regarding your personal information:</p>
-                <ul className="list-disc list-inside space-y-space-2 pl-space-2">
+              <Section id="rights" title="Your Privacy Rights">
+                <p>Depending on your location, you have the right to:</p>
+                <ul className="list-disc list-inside space-y-space-1 pl-space-2">
                   <li><strong className="text-foreground">Access:</strong> Request a copy of the personal information we hold about you</li>
                   <li><strong className="text-foreground">Correction:</strong> Request correction of inaccurate or incomplete information</li>
                   <li><strong className="text-foreground">Erasure:</strong> Request deletion of your personal information (right to be forgotten)</li>
@@ -149,7 +144,7 @@ export default function PrivacyPage() {
                   <li><strong className="text-foreground">Objection:</strong> Object to processing of your data for certain purposes</li>
                   <li><strong className="text-foreground">Withdrawal:</strong> Withdraw consent where processing is based on consent</li>
                 </ul>
-                <p>To exercise any of these rights, contact us at privacy@nexx.ai. We will respond within 30 days. For EU/UK residents, we comply with GDPR requirements. For California residents, we comply with CCPA requirements.</p>
+                <p>To exercise any of these rights, contact us at privacy@operator.ai. We will respond within 30 days. For EU/UK residents, we comply with GDPR requirements. For California residents, we comply with CCPA requirements.</p>
               </Section>
 
               <Section id="cookies" title="Cookies">
@@ -161,7 +156,7 @@ export default function PrivacyPage() {
               </Section>
 
               <Section id="children" title="Children's Privacy">
-                <p>Our service is not directed to children under 16 years of age. We do not knowingly collect personal information from children under 16. If you become aware that a child under 16 has provided us with personal information, please contact us at privacy@nexx.ai and we will take steps to delete that information.</p>
+                <p>Our service is not directed to children under 16 years of age. We do not knowingly collect personal information from children under 16. If you become aware that a child under 16 has provided us with personal information, please contact us at privacy@operator.ai and we will take steps to delete that information.</p>
               </Section>
 
               <Section id="transfers" title="International Data Transfers">
@@ -172,7 +167,7 @@ export default function PrivacyPage() {
               <Section id="contact" title="Contact Us">
                 <p>If you have questions about this Privacy Policy or our privacy practices, contact us at:</p>
                 <div className="radius-lg border border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.02)] p-space-5 space-y-space-2 mt-space-3">
-                  <p><strong className="text-foreground">Email:</strong> privacy@nexx.ai</p>
+                  <p><strong className="text-foreground">Email:</strong> privacy@operator.ai</p>
                   <p><strong className="text-foreground">Subject line:</strong> Privacy Inquiry — [your name]</p>
                   <p><strong className="text-foreground">Response time:</strong> Within 5 business days</p>
                   <p className="pt-space-3 border-t border-[hsl(var(--foreground)/0.06)] text-caption">For GDPR-specific requests, use the subject line &quot;GDPR Request&quot;. For data deletion requests, use &quot;Data Deletion Request&quot; along with your account email address.</p>

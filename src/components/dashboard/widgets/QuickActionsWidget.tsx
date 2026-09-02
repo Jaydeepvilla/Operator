@@ -15,11 +15,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { APP_ROUTES } from "@/lib/constants/routes";
+
 const QUICK_ACTIONS = [
   {
     label: "New Appointment",
     description: "Book manually",
-    href: "/appointments",
+    href: APP_ROUTES.appointments,
     icon: CalendarPlus,
     gradient: "from-violet-500/20 to-primary/10",
     iconBg: "bg-primary/10 text-primary",
@@ -30,7 +32,7 @@ const QUICK_ACTIONS = [
   {
     label: "Add Customer",
     description: "Save a lead",
-    href: "/contacts",
+    href: APP_ROUTES.contacts,
     icon: UserPlus,
     gradient: "from-emerald-500/15 to-emerald-400/5",
     iconBg: "bg-[hsl(var(--state-success-bg))] text-[hsl(var(--state-success-text))]",
@@ -41,7 +43,7 @@ const QUICK_ACTIONS = [
   {
     label: "Import Knowledge",
     description: "Train AI on site/doc",
-    href: "/kb",
+    href: APP_ROUTES.kb,
     icon: BrainCircuit,
     gradient: "from-violet-500/15 to-fuchsia-500/5",
     iconBg: "bg-primary/10 text-primary",
@@ -52,7 +54,7 @@ const QUICK_ACTIONS = [
   {
     label: "AI Settings",
     description: "Tune prompts & tone",
-    href: "/settings",
+    href: APP_ROUTES.settingsAi,
     icon: Settings2,
     gradient: "from-slate-500/10 to-slate-400/5",
     iconBg: "bg-[hsl(var(--foreground)/0.06)] text-muted-foreground",
@@ -63,7 +65,7 @@ const QUICK_ACTIONS = [
   {
     label: "Connect Channels",
     description: "WhatsApp, Phone",
-    href: "/channels",
+    href: APP_ROUTES.channels,
     icon: Share2,
     gradient: "from-amber-500/15 to-orange-400/5",
     iconBg: "bg-[hsl(var(--state-warning-bg))] text-[hsl(var(--state-warning-text))]",
@@ -74,7 +76,7 @@ const QUICK_ACTIONS = [
   {
     label: "Automations",
     description: "Set triggers & hooks",
-    href: "/automations",
+    href: APP_ROUTES.automations,
     icon: Tv,
     gradient: "from-sky-500/15 to-cyan-400/5",
     iconBg: "bg-[hsl(var(--state-info-bg))] text-[hsl(var(--state-info-text))]",

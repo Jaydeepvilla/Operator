@@ -91,7 +91,13 @@ export function BusinessSettingsForm({ settings, bookingRules }: BusinessSetting
 
   // Booking Rules Local State
   const [rules, setRules] = React.useState({
-    cancellationLeadTime: bookingRules?.cancellationLeadTime ?? 24
+    minLeadTime: bookingRules?.minLeadTime ?? 2,
+    maxLookahead: bookingRules?.maxLookahead ?? 30,
+    defaultBufferBefore: bookingRules?.defaultBufferBefore ?? 0,
+    defaultBufferAfter: bookingRules?.defaultBufferAfter ?? 0,
+    allowRescheduling: bookingRules?.allowRescheduling ?? true,
+    allowCancellation: bookingRules?.allowCancellation ?? true,
+    cancellationLeadTime: bookingRules?.cancellationLeadTime ?? 24,
   });
 
   const handleHourChange = (day: string, field: "open" | "close", value: string) => {
@@ -694,7 +700,7 @@ export function BusinessSettingsForm({ settings, bookingRules }: BusinessSetting
           </div>
         </div>
       </form>
-      )}
+      }
     </div>
   );
 }

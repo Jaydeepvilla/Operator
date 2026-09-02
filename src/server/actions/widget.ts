@@ -1,35 +1,26 @@
 "use server";
 
-import { auth } from "@/lib/auth/server";
+import { requireOrganizationAccess } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { db } from "../db";
 import { widgetDomains } from "../db/schema";
 import { eq, and } from "drizzle-orm";
-import { membershipRepository } from "../repositories/membership";
 import { widgetRepository } from "../repositories/widget";
 import { widgetService } from "../services/widget-service";
 
-async function getVerifiedOrgId() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  const memberships = await membershipRepository.getByUser(userId);
-  if (memberships.length === 0) throw new Error("No organization found");
-  return memberships[0].organizationId;
-}
-
 export async function getWidgetSettingsAction() {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
     
     const [config, theme, branding, launcher, customization, domains, installations, analytics] = await Promise.all([
-      widgetRepository.getConfigs(orgId),
-      widgetRepository.getTheme(orgId),
-      widgetRepository.getBranding(orgId),
-      widgetRepository.getLauncher(orgId),
-      widgetRepository.getCustomization(orgId),
-      widgetRepository.listDomains(orgId),
-      widgetRepository.listInstallations(orgId),
-      widgetRepository.getAnalytics(orgId)
+      widgetRepository.getConfigs(organizationId),
+      widgetRepository.getTheme(organizationId),
+      widgetRepository.getBranding(organizationId),
+      widgetRepository.getLauncher(organizationId),
+      widgetRepository.getCustomization(organizationId),
+      widgetRepository.listDomains(organizationId),
+      widgetRepository.listInstallations(organizationId),
+      widgetRepository.getAnalytics(organizationId)
     ]);
 
     return {
@@ -58,22 +49,22 @@ export async function saveWidgetSettingsAction(data: {
   customization?: any;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
 
     if (data.enabled !== undefined) {
-      await widgetRepository.updateConfigs(orgId, data.enabled);
+      await widgetRepository.updateConfigs(organizationId, data.enabled);
     }
     if (data.theme) {
-      await widgetRepository.updateTheme(orgId, data.theme);
+      await widgetRepository.updateTheme(organizationId, data.theme);
     }
     if (data.branding) {
-      await widgetRepository.updateBranding(orgId, data.branding);
+      await widgetRepository.updateBranding(organizationId, data.branding);
     }
     if (data.launcher) {
-      await widgetRepository.updateLauncher(orgId, data.launcher);
+      await widgetRepository.updateLauncher(organizationId, data.launcher);
     }
     if (data.customization) {
-      await widgetRepository.updateCustomization(orgId, data.customization);
+      await widgetRepository.updateCustomization(organizationId, data.customization);
     }
 
     revalidatePath("/widget");
@@ -85,7 +76,7 @@ export async function saveWidgetSettingsAction(data: {
 
 export async function addDomainAction(domainName: string) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
     
     if (!domainName || !domainName.trim()) {
       throw new Error("Domain name cannot be empty");
@@ -97,10 +88,10 @@ export async function addDomainAction(domainName: string) {
       .replace(/\/$/, "")
       .trim();
 
-    const verificationToken = "nexx-verification-" + Math.random().toString(36).substring(2, 10);
+    const verificationToken = "operator-verify-" + Math.random().toString(36).substring(2, 10);
 
     const domain = await widgetRepository.createDomain({
-      organizationId: orgId,
+      organizationId,
       domain: cleaned,
       verificationToken
     });
@@ -114,8 +105,8 @@ export async function addDomainAction(domainName: string) {
 
 export async function deleteDomainAction(domainId: string) {
   try {
-    const orgId = await getVerifiedOrgId();
-    await widgetRepository.deleteDomain(orgId, domainId);
+    const { organizationId } = await requireOrganizationAccess();
+    await widgetRepository.deleteDomain(organizationId, domainId);
     revalidatePath("/widget");
     return { success: true };
   } catch (error: any) {
@@ -125,10 +116,10 @@ export async function deleteDomainAction(domainId: string) {
 
 export async function verifyDomainAction(domainId: string) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
     
     // Perform ownership verification check
-    const result = await widgetService.verifyDomainOwnership(orgId, domainId);
+    const result = await widgetService.verifyDomainOwnership(organizationId, domainId);
     
     revalidatePath("/widget");
     return { success: true, verified: result.success, message: result.message };
@@ -139,7 +130,7 @@ export async function verifyDomainAction(domainId: string) {
 
 export async function resetThemeToBrandAction() {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
     
     const brandTheme = {
       themeMode: "light",
@@ -150,7 +141,7 @@ export async function resetThemeToBrandAction() {
       borderRadius: "0.75rem"
     };
     
-    await widgetRepository.updateTheme(orgId, brandTheme);
+    await widgetRepository.updateTheme(organizationId, brandTheme);
     
     revalidatePath("/widget");
     return { success: true, theme: brandTheme };

@@ -7,7 +7,7 @@ export function checkRefundPolicy(state: RecommendationState): RecommendationAct
   const preferences = settings.bookingPreferences || {};
 
   const hasRefundPolicy = documents.some(
-    doc => doc.name.toLowerCase().includes("refund") || doc.name.toLowerCase().includes("cancellation")
+    doc => (doc.name || doc.title || "").toLowerCase().includes("refund") || (doc.name || doc.title || "").toLowerCase().includes("cancellation")
   );
 
   // If deposits are enabled or payments are taken online, a refund policy is critical
@@ -17,7 +17,7 @@ export function checkRefundPolicy(state: RecommendationState): RecommendationAct
       title: "Add a Refund & Cancellation Policy",
       description: "Since you collect deposits, having a clear refund and cancellation policy reduces payment disputes and chargebacks.",
       primaryCtaText: "Generate With AI",
-      primaryCtaHref: "/knowledge/generate?type=refund_policy",
+      primaryCtaHref: "/kb?action=generate&type=refund_policy",
       estimatedTimeMinutes: 5,
       impact: "High",
       impactReason: "Mitigates chargebacks and sets clear expectations.",

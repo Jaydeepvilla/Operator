@@ -250,23 +250,19 @@ Organizations are created during onboarding. One organization can have multiple 
 
 ## External service dependencies
 
-| Service | Used for | Required |
-|---|---|---|
-| PostgreSQL | Primary database | Yes |
-| OpenAI | LLM completions | One of these |
-| Google Gemini | LLM completions | One of these |
-| Google OAuth + Calendar API | Calendar sync | No |
-| Vapi AI | Voice calls | No |
-| Twilio | SMS, voice | No |
-| Deepgram | Speech-to-text | No |
-| ElevenLabs | Text-to-speech | No |
-| Stripe | Billing (Western markets) | No |
-| Razorpay | Billing (Indian market) | No |
-| LemonSqueezy | Billing | No |
-| Paddle | Billing | No |
-| PayPal | Billing | No |
-| SMTP (Hostinger) | Transactional email | No |
-| MSG91 | SMS (Indian market) | No |
+| Service | Capability | Status | Target Market / Role |
+|---|---|---|---|
+| PostgreSQL | Primary database | Active | Core database (149 tables) |
+| OpenAI / Gemini | LLM Orchestration & Prompting | Active | Conversational AI core |
+| Stripe | SaaS Billing & Subscriptions | Active | Primary US & EU payments |
+| Vonage | Voice Telephony & SMS | Active | Primary US & EU Voice & SMS gateway |
+| Sinch | Voice Telephony & SMS | Optional | Fallback US & EU carrier integration |
+| Meta Cloud API | WhatsApp Business | Active | Primary WhatsApp conversational intake |
+| Resend | Transactional Email | Active | Primary modern email dispatch |
+| Postmark | Transactional Email | Optional | High-deliverability alternative |
+| Google Calendar | Two-way Calendar Sync | Active | Primary staff calendar integration |
+| Microsoft Graph | Outlook / 365 Calendar | Active | Enterprise calendar sync |
+| Cal.com | Booking Engine | Active | Self-hosted & cloud booking engine |
 
 ---
 

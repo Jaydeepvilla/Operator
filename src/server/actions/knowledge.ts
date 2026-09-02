@@ -13,17 +13,17 @@ import { faqRepository } from "../repositories/faq";
 import { servicesRepository } from "../repositories/services";
 import { membershipRepository } from "../repositories/membership";
 import { chunkingService } from "../services/chunking";
+import { WebsiteCrawler } from "../services/crawler/crawler";
+import { WebsiteIngestionPipeline } from "../services/crawler/ingestion";
 import { db } from "../db";
 import { faqItems, services, knowledgeDocuments, knowledgeCategories, knowledgeChunks } from "../db/schema";
 import { eq, and, ilike, or, like, inArray } from "drizzle-orm";
 
+import { requireOrganizationAccess, assertResourceOwnership } from "@/lib/auth/server";
+
 async function getVerifiedOrgId() {
-  const { userId, orgId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  if (orgId) return orgId;
-  const memberships = await membershipRepository.getByUser(userId);
-  if (memberships.length === 0) throw new Error("No organization found");
-  return memberships[0].organizationId;
+  const { organizationId } = await requireOrganizationAccess();
+  return organizationId;
 }
 
 /** IDOR guard: ensures a knowledge document belongs to the caller's org */
@@ -166,7 +166,7 @@ export async function updateKnowledgeCategoryAction(
       throw new Error("A category with this name already exists");
     }
 
-    await categoriesRepository.update(id, {
+    await categoriesRepository.update(id, orgId, {
       name: nameTrimmed,
       slug,
       description: data.description?.trim() || null,
@@ -195,7 +195,7 @@ export async function deleteKnowledgeCategoryAction(id: string) {
     const orgId = await getVerifiedOrgId();
     // IDOR guard
     await assertCategoryOwnership(orgId, id);
-    await categoriesRepository.delete(id);
+    await categoriesRepository.delete(id, orgId);
     revalidatePath("/kb");
     return { success: true };
   } catch (error: any) {
@@ -209,7 +209,7 @@ export async function archiveKnowledgeCategoryAction(id: string, isArchived: boo
     const { userId } = await auth();
     // IDOR guard
     await assertCategoryOwnership(orgId, id);
-    await categoriesRepository.update(id, { 
+    await categoriesRepository.update(id, orgId, { 
       isArchived,
       updatedById: userId
     });
@@ -319,7 +319,7 @@ export async function uploadKnowledgeDocumentAction(data: {
       duration,
     });
 
-    await documentsRepository.update(document.id, { status: "completed" });
+    await documentsRepository.update(document.id, orgId, { status: "completed" });
 
     revalidatePath("/kb");
     return { success: true };
@@ -349,7 +349,7 @@ export async function updateKnowledgeDocumentContentAction(data: {
     const newVersion = ((currentMetadata.version as number) || 1) + 1;
 
     // 1. Update Document Record with new revision & metadata
-    await documentsRepository.update(data.documentId, {
+    await documentsRepository.update(data.documentId, orgId, {
       name: data.name ? data.name.trim() : doc.name,
       fileSize: Buffer.byteLength(data.content, "utf8"),
       categoryId: data.categoryId !== undefined ? data.categoryId : doc.categoryId,
@@ -381,7 +381,7 @@ export async function updateKnowledgeDocumentContentAction(data: {
     }
 
     // 4. Mark completed
-    await documentsRepository.update(data.documentId, { status: "completed" });
+    await documentsRepository.update(data.documentId, orgId, { status: "completed" });
 
     revalidatePath("/kb");
     return { success: true, version: newVersion, chunksCount: chunks.length };
@@ -399,7 +399,7 @@ export async function renameKnowledgeDocumentAction(id: string, name: string) {
     if (!name?.trim() || name.length > 300) {
       throw new Error("Document name must be between 1 and 300 characters");
     }
-    await documentsRepository.update(id, { name: name.trim() });
+    await documentsRepository.update(id, orgId, { name: name.trim() });
     revalidatePath("/kb");
     return { success: true };
   } catch (error: any) {
@@ -412,7 +412,7 @@ export async function archiveKnowledgeDocumentAction(id: string, isArchived: boo
     const orgId = await getVerifiedOrgId();
     // IDOR guard
     await assertDocumentOwnership(orgId, id);
-    await documentsRepository.update(id, { isArchived });
+    await documentsRepository.update(id, orgId, { isArchived });
     revalidatePath("/kb");
     return { success: true };
   } catch (error: any) {
@@ -425,7 +425,7 @@ export async function deleteKnowledgeDocumentAction(id: string) {
     const orgId = await getVerifiedOrgId();
     // IDOR guard
     await assertDocumentOwnership(orgId, id);
-    await documentsRepository.delete(id);
+    await documentsRepository.delete(id, orgId);
     revalidatePath("/kb");
     return { success: true };
   } catch (error: any) {
@@ -434,7 +434,8 @@ export async function deleteKnowledgeDocumentAction(id: string) {
 }
 
 // ==========================================
-// 3. WEBSITE IMPORT ACTIONS
+// ==========================================
+// 3. WEBSITE IMPORT ACTIONS (REAL PRODUCTION PIPELINE)
 // ==========================================
 
 export async function getWebsiteImportsAction() {
@@ -492,68 +493,48 @@ export async function discoverWebsitePagesAction(data: {
       });
     }
 
-    // List of virtual pages available on a salon website
-    const allDiscoveredPages = [
-      { name: "Home Page", path: "/", wordCount: 180, category: "Services & Pricing" },
-      { name: "Services & Pricing Menu", path: "/services", wordCount: 345, category: "Services & Pricing" },
-      { name: "Cancellation & Booking Policies", path: "/policies", wordCount: 420, category: "Booking Policies" },
-      { name: "Stylist Bios & Staff Team", path: "/stylists", wordCount: 280, category: "Stylists & Team" },
-      { name: "Location, Hours & Parking", path: "/contact", wordCount: 190, category: "Salon Information & Hours" },
-      { name: "Retail Products Catalog", path: "/products", wordCount: 310, category: "Retail & Products" },
-      { name: "Memberships & Promos", path: "/memberships", wordCount: 250, category: "Promotions & Memberships" },
-      { name: "Hair Care Styling Blog", path: "/blog/trends", wordCount: 550, category: "Services & Pricing" },
-      { name: "Dynamic Booking Portal", path: "/booking/widget", wordCount: 15, category: "" },
-      { name: "Customer Gallery & Portfolio", path: "/gallery", wordCount: 8, category: "" },
-    ];
-
-    // Filter pages based on include / exclude paths
-    const finalDiscovered = allDiscoveredPages.map(page => {
-      let isExcluded = false;
-
-      // Exclude paths match check
-      for (const exPath of data.config.excludePaths) {
-        if (exPath && page.path.startsWith(exPath)) {
-          isExcluded = true;
-          break;
-        }
-      }
-
-      // Include paths check (if set, page must match at least one)
-      const activeIncludes = data.config.includePaths.filter(Boolean);
-      if (activeIncludes.length > 0 && !isExcluded) {
-        let matchesInclude = false;
-        for (const incPath of activeIncludes) {
-          if (page.path.startsWith(incPath)) {
-            matchesInclude = true;
-            break;
-          }
-        }
-        if (!matchesInclude) {
-          isExcluded = true;
-        }
-      }
-
-      return {
-        title: page.name,
-        url: `${data.url.replace(/\/$/, "")}${page.path}`,
-        path: page.path,
-        wordCount: page.wordCount,
-        estimatedChunks: Math.ceil(page.wordCount / 150),
-        suggestedCategory: page.category || null,
-        status: isExcluded ? "excluded" : "pending",
-      };
+    // 2. Run real web crawler
+    const crawlResult = await WebsiteCrawler.crawl(data.url, {
+      maxDepth: data.config.maxDepth,
+      maxPages: data.config.maxPages,
+      includeSubdomains: data.config.includeSubdomains,
+      followExternalLinks: data.config.followExternalLinks,
+      ignoreQueryParams: data.config.ignoreQueryParams,
+      includePaths: data.config.includePaths,
+      excludePaths: data.config.excludePaths,
     });
 
-    // Create import record in database
+    const finalDiscovered = crawlResult.pages.map(page => ({
+      title: page.title,
+      url: page.url,
+      path: page.path,
+      wordCount: page.wordCount,
+      estimatedChunks: page.estimatedChunks,
+      suggestedCategory: page.suggestedCategory,
+      tags: page.tags,
+      status: page.status,
+      content: page.content,
+      contentHash: page.contentHash,
+      error: page.error,
+    }));
+
+    // 3. Create real import record in database
     const importRun = await importsRepository.create({
       organizationId: orgId,
       sourceId: source.id,
       url: data.url,
       status: "discovery",
       pagesFound: finalDiscovered.length,
-      pagesScraped: finalDiscovered.filter(p => p.status !== "excluded").length,
+      pagesScraped: finalDiscovered.filter(p => p.status === "pending" || p.status === "crawled").length,
       metadata: {
         config: data.config,
+        crawlStats: {
+          pagesDiscovered: crawlResult.pagesDiscovered,
+          pagesCrawled: crawlResult.pagesCrawled,
+          pagesSucceeded: crawlResult.pagesSucceeded,
+          pagesFailed: crawlResult.pagesFailed,
+          durationMs: crawlResult.durationMs,
+        },
         discoveredPages: finalDiscovered,
       },
     });
@@ -561,168 +542,32 @@ export async function discoverWebsitePagesAction(data: {
     revalidatePath("/kb");
     return { success: true, importId: importRun.id, discoveredPages: finalDiscovered };
   } catch (error: any) {
+    console.error("[Crawler Action Error]:", error);
     return { success: false, error: error?.message || "Failed to crawl page content" };
   }
 }
 
 export async function executeWebsiteIngestionAction(data: {
   importId: string;
-  selectedPages: { title: string; url: string; path: string; wordCount: number; suggestedCategory: string }[];
+  selectedPages: { title: string; url: string; path: string; wordCount: number; suggestedCategory: string; content?: string }[];
   duplicateHandling: string;
 }) {
   try {
     const orgId = await getVerifiedOrgId();
     const importRecord = await importsRepository.getById(data.importId);
-    if (!importRecord) {
-      throw new Error("Import run record not found");
+    if (!importRecord || importRecord.organizationId !== orgId) {
+      throw new Error("Import run record not found or access denied");
     }
 
-    // 1. Get or create website source
-    let source = await sourcesRepository.getByType(orgId, "website");
-    if (!source) {
-      source = await sourcesRepository.create({
-        organizationId: orgId,
-        name: "Website Crawls",
-        type: "website",
-        isActive: true,
-      });
-    }
-
-    // Update status to processing
-    await importsRepository.update(data.importId, {
-      status: "processing",
-      metadata: {
-        ...(importRecord.metadata as Record<string, any>),
-        stage: "Discovering pages",
-        progress: 10,
-        startTime: Date.now(),
-      }
+    // Launch the real asynchronous ingestion pipeline
+    WebsiteIngestionPipeline.runIngestion(
+      orgId,
+      data.importId,
+      data.selectedPages,
+      data.duplicateHandling
+    ).catch(err => {
+      console.error("[Website Ingestion Pipeline Failure]:", err);
     });
-
-    // Run the background ingestion loop (asynchronously)
-    setTimeout(async () => {
-      const stages = [
-        { name: "Cleaning Scraped HTML", progress: 30 },
-        { name: "Removing Navigation Boilerplate", progress: 50 },
-        { name: "Extracting Clean Content", progress: 70 },
-        { name: "Generating AI Suggestions", progress: 85 },
-        { name: "Chunking & RAG Indexing", progress: 95 }
-      ];
-
-      try {
-        const categoriesList = await categoriesRepository.list(orgId);
-
-        // Cycle through progress stages
-        for (const stg of stages) {
-          await new Promise(resolve => setTimeout(resolve, 800)); // premium speed simulation
-          await importsRepository.update(data.importId, {
-            metadata: {
-              ...(importRecord.metadata as Record<string, any>),
-              stage: stg.name,
-              progress: stg.progress,
-            }
-          });
-        }
-
-        // Standard content generators for the document bodies
-        const pageContentMap: Record<string, string> = {
-          "/": "Glow & Grace Salon delivers luxury styling and premium coloring care. Meet our professional team and schedule your balayage or precision cut at our Center City location. We validation 3 hours garage parking.",
-          "/services": "Signature Cuts starting at $75. Signature Blowouts start at $45. deep conditioning masks are $30 add-on. Keratin treatments start at $250.",
-          "/policies": "Cancel or reschedule at least 24 hours prior to avoid a 50% late cancellation fee. No-shows are subject to 100% service fee.",
-          "/stylists": "Elena Rostova specializes in French balayage and tape-in extensions. Sarah Jenkins is our certified curly hair specialist. Marcus Thorne specializes in men's precision grooming and fades.",
-          "/contact": "Address: 123 Beauty Lane, Suite A. Open Tuesday to Friday 9AM-8PM, Sunday 10AM-4PM. Phone: (555) 123-4567.",
-          "/products": "We carry luxury brands Oribe, Kerastase, and Olaplex. Items can be returned unopened within 14 days of purchase.",
-          "/memberships": "Monthly Glow Signature Membership ($99) includes 2 blowouts, 15% discount on styling/color, 10% discount on retail products, and birthday perks.",
-          "/blog/trends": "Dimensional blondes and textured curl shags are trending this summer. Talk to Sarah or Elena for a custom consultation.",
-          "/booking/widget": "Dynamic booking panel container. Please fill out your details to select your stylist and preferred booking slot.",
-          "/gallery": "Visual portfolio gallery. Includes photos of custom highlights, balayage blends, updo hairstyles, and precision bob haircuts.",
-        };
-
-        // Create the actual documents & chunks in DB
-        let importedCount = 0;
-        let skippedCount = 0;
-        let failedCount = 0;
-        const failedPagesList: string[] = [];
-
-        for (const page of data.selectedPages) {
-          const content = pageContentMap[page.path] || `Ingested page details for path ${page.path}. Content is extracted, parsed, and embedded for search.`;
-          
-          // Duplicate check
-          if (data.duplicateHandling === "skip") {
-            const existing = await documentsRepository.list(orgId);
-            const isDuplicate = existing.some(d => d.name.includes(page.title) || (d.metadata as any)?.url?.includes(page.url));
-            if (isDuplicate) {
-              skippedCount++;
-              continue;
-            }
-          }
-
-          // Fetch category id from name
-          const matchedCategory = categoriesList.find(c => c.name === page.suggestedCategory);
-          const categoryId = matchedCategory?.id || null;
-
-          const doc = await documentsRepository.create({
-            organizationId: orgId,
-            sourceId: source.id,
-            categoryId,
-            name: `${page.title} (Web)`,
-            fileType: "website",
-            status: "completed",
-            metadata: {
-              url: page.url,
-              summary: content.slice(0, 100) + "...",
-              tags: ["website", "ingested"],
-              priority: "medium",
-              visibility: "public"
-            }
-          });
-
-          // Generate chunks
-          const chunks = chunkingService.splitText(content);
-          const chunkPayload = chunks.map((chunk) => ({
-            organizationId: orgId,
-            documentId: doc.id,
-            content: chunk.content,
-            chunkIndex: chunk.chunkIndex,
-            tokenCount: chunk.tokenCount,
-            metadata: { url: page.url },
-          }));
-
-          if (chunkPayload.length > 0) {
-            await chunksRepository.createMany(chunkPayload);
-          }
-          importedCount++;
-        }
-
-        // Finalize completed status
-        const startTime = (importRecord.metadata as any)?.startTime || Date.now();
-        const durationMs = Date.now() - startTime;
-
-        await importsRepository.update(data.importId, {
-          status: "completed",
-          pagesScraped: importedCount,
-          metadata: {
-            ...(importRecord.metadata as Record<string, any>),
-            stage: "Completed Ingestion",
-            progress: 100,
-            durationMs,
-            stats: {
-              imported: importedCount,
-              skipped: skippedCount,
-              failed: failedCount,
-              failedPagesList,
-            }
-          }
-        });
-
-      } catch (err: any) {
-        console.error("Execute Ingestion Background Job failed:", err);
-        await importsRepository.update(data.importId, {
-          status: "failed",
-          errorMessage: err?.message || "Ingestion pipeline encountered a fatal error.",
-        });
-      }
-    }, 1000);
 
     revalidatePath("/kb");
     return { success: true };
@@ -733,9 +578,10 @@ export async function executeWebsiteIngestionAction(data: {
 
 export async function getImportStatusAction(importId: string) {
   try {
+    const orgId = await getVerifiedOrgId();
     const importRecord = await importsRepository.getById(importId);
-    if (!importRecord) {
-      return { success: false, error: "Import record not found" };
+    if (!importRecord || importRecord.organizationId !== orgId) {
+      return { success: false, error: "Import record not found or access denied" };
     }
     return { success: true, import: importRecord };
   } catch (error: any) {

@@ -645,6 +645,8 @@ export const leadProfiles = pgTable("lead_profiles", {
   name: text("name"),
   email: text("email"),
   phone: text("phone"),
+  normalizedPhone: text("normalized_phone"),
+  normalizedEmail: text("normalized_email"),
   status: text("status").default("New").notNull(), // 'New', 'Qualified', 'Hot', 'Booked', 'Escalated', 'Closed'
   leadScore: integer("lead_score").default(0).notNull(),
   summary: text("summary"),
@@ -654,7 +656,9 @@ export const leadProfiles = pgTable("lead_profiles", {
   conversationCount: integer("conversation_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  uniqueIndex("lead_profiles_org_norm_phone_idx").on(table.organizationId, table.normalizedPhone),
+]);
 
 export const leadAnswers = pgTable("lead_answers", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -1624,12 +1628,15 @@ export const contactChannels = pgTable("contact_channels", {
   contactId: uuid("contact_id")
     .references(() => leadProfiles.id, { onDelete: "cascade" })
     .notNull(),
-  channelType: text("channel_type").notNull(), // 'whatsapp', 'sms', 'email', 'instagram', 'facebook'
+  channelType: text("channel_type").notNull(), // 'whatsapp', 'sms', 'email', 'instagram', 'facebook', 'voice', 'widget'
   channelUserId: text("channel_user_id").notNull(), // external scope id e.g. sender phone, email address, IG username
+  normalizedIdentifier: text("normalized_identifier"),
   value: text("value").notNull(), // readable handle/value
   isVerified: boolean("is_verified").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  uniqueIndex("contact_channels_org_type_user_idx").on(table.organizationId, table.channelType, table.channelUserId),
+]);
 
 export const channelSettings = pgTable("channel_settings", {
   id: uuid("id").defaultRandom().primaryKey(),

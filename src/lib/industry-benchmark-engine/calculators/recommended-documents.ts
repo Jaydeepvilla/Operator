@@ -33,7 +33,7 @@ export const compareDocumentsAndPolicies = (state: BusinessState, template: Indu
         confidence: 85,
       confidenceReason: "Data check",
         primaryCtaText: "Generate with AI",
-        primaryCtaHref: `/knowledge?action=generate&topic=${encodeURIComponent(doc.name)}`
+        primaryCtaHref: `/kb?action=generate&topic=${encodeURIComponent(doc.name)}`
       });
     }
   });

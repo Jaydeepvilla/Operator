@@ -40,6 +40,7 @@ import {
  ChevronRight,
  ShieldCheck,
  FileJson,
+ Phone,
  Key
 } from "lucide-react";
 
@@ -97,9 +98,9 @@ const LOGOS = {
  calendly: (
  <img src={calendlyIcon.src || calendlyIcon} alt="Calendly" className="h-8 w-auto object-contain max-w-full" />
  ),
- msg91: (
- <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-orange-600/10 border border-orange-500/20 text-orange-500">
- <MessageSquare className="h-4.5 w-4.5" />
+ vonage: (
+ <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-blue-600/10 border border-blue-500/20 text-blue-500">
+ <Phone className="h-4.5 w-4.5" />
  </div>
  ),
  openai: (
@@ -160,16 +161,16 @@ const INTEGRATIONS: Integration[] = [
  capabilities: "Initiates post-call check-ins and qualification forms directly over WhatsApp messages."
  },
  {
-  id: "msg91",
-  name: "MSG91 SMS",
+  id: "vonage",
+  name: "Vonage Communications",
   category: "Communication",
   status: "live",
-  logo: LOGOS.msg91,
-  desc: "Send and receive SMS messages. Enterprise-grade SMS delivery flow APIs.",
-  features: ["OTP authentication", "Template-based flow SMS", "High throughput routing", "Real-time delivery status reports"],
+  logo: LOGOS.vonage,
+  desc: "Send and receive US/EU SMS messages and voice calls via enterprise Vonage APIs.",
+  features: ["Two-way SMS", "Inbound voice routing", "High throughput US/EU carrier paths", "Real-time delivery status"],
   difficulty: "1-Click",
   popularity: "Core",
-  capabilities: "Triggers notifications and check-ins via the premium MSG91 routing framework."
+  capabilities: "Triggers automated appointment reminders and two-way client conversations over Vonage carrier networks."
   },
  {
  id: "stripe",
@@ -392,13 +393,13 @@ const WORKFLOW_STEPS = [
  }
  },
  {
- id: "msg91",
- title: "MSG91 SMS",
+ id: "vonage",
+ title: "Vonage SMS",
  desc: "Sends SMS reminder",
- logo: LOGOS.msg91,
+ logo: LOGOS.vonage,
  isBrand: true,
- color: "bg-orange-500/10 text-orange-500",
- glowColor: "shadow-orange-500/20",
+ color: "bg-blue-500/10 text-blue-500",
+ glowColor: "shadow-blue-500/20",
  payload: {
  event: "sms.dispatched",
  to: "+15550199",
@@ -484,7 +485,7 @@ export default function IntegrationsPage() {
  { id: "hubspot", label: "HubSpot", logo: LOGOS.hubspot, angle: 197 },
  { id: "meta", label: "Meta", logo: LOGOS.meta, angle: 230 },
  { id: "calendly", label: "Calendly", logo: LOGOS.calendly, angle: 263 },
- { id: "msg91", label: "MSG91", logo: LOGOS.msg91, angle: 296 },
+ { id: "vonage", label: "Vonage", logo: LOGOS.vonage, angle: 296 },
  { id: "openai", label: "OpenAI", logo: LOGOS.openai, angle: 329 }
  ];
 

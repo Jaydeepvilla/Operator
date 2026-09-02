@@ -25,17 +25,19 @@ export const faqRepository = {
     return newItem;
   },
 
-  async update(id: string, item: Partial<NewFaqItem>) {
+  async update(id: string, organizationId: string, item: Partial<NewFaqItem>) {
     const [updated] = await db
       .update(faqItems)
       .set({ ...item, updatedAt: new Date() })
-      .where(eq(faqItems.id, id))
+      .where(and(eq(faqItems.id, id), eq(faqItems.organizationId, organizationId)))
       .returning();
     return updated;
   },
 
-  async delete(id: string) {
-    await db.delete(faqItems).where(eq(faqItems.id, id));
+  async delete(id: string, organizationId: string) {
+    await db
+      .delete(faqItems)
+      .where(and(eq(faqItems.id, id), eq(faqItems.organizationId, organizationId)));
   },
 
   async deleteMany(ids: string[], organizationId: string) {

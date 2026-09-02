@@ -1,12 +1,10 @@
-import { eq, and, like } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "../db";
-import { retrievalService } from "./vector";
+import { retrievalService, SearchMatch } from "./vector";
 import {
   businessProfiles,
   services,
   faqItems,
-  knowledgeChunks,
-  knowledgeDocuments,
 } from "../db/schema";
 
 export interface Citation {
@@ -19,6 +17,16 @@ export interface Citation {
 export interface RAGContext {
   contextText: string;
   citations: Citation[];
+  matches?: SearchMatch[];
+}
+
+function isOverviewOrBookingQuery(query: string): boolean {
+  const q = query.toLowerCase().trim();
+  if (q.length === 0) return true;
+  return (
+    /^(hi|hello|hey|greetings|good\s+(morning|afternoon|evening)|help|start|menu)\b/i.test(q) ||
+    /(services?|offer|pricing|cost|prices?|appointment|book|schedule|consultation|hours|location|about|contact)/i.test(q)
+  );
 }
 
 export const ragService = {
@@ -27,6 +35,7 @@ export const ragService = {
     const contextParts: string[] = [];
 
     const lowercaseQuery = query.toLowerCase();
+    const isGeneral = isOverviewOrBookingQuery(query);
 
     let profile: any = null;
     let allServices: any[] = [];
@@ -43,7 +52,7 @@ export const ragService = {
       console.warn("[RAGService] DB fallback for business profile:", e.message);
     }
 
-    if (profile && profile.description) {
+    if (profile && profile.description && isGeneral) {
       citations.push({
         type: "profile",
         id: profile.id,
@@ -69,28 +78,20 @@ export const ragService = {
       console.warn("[RAGService] DB fallback for services:", e.message);
     }
 
-    if (allServices.length === 0) {
-      allServices = [
-        {
-          id: "svc_default",
-          name: "General Consultation",
-          description: "Standard service consultation and business appointment",
-          duration: 30,
-          price: "75.00",
-          isActive: true,
-          isArchived: false,
-        },
-      ];
-    }
-
-    // Filter services that match the query keyword or if query is general, include top 3
+    // Match services against query
     const matchedServices = allServices.filter(
       (s) =>
         lowercaseQuery.includes(s.name.toLowerCase()) ||
         (s.description && lowercaseQuery.includes(s.description.toLowerCase()))
     );
 
-    const servicesToInclude = matchedServices.length > 0 ? matchedServices : allServices.slice(0, 3);
+    // Only include fallback services if query is a general overview/booking inquiry
+    const servicesToInclude =
+      matchedServices.length > 0
+        ? matchedServices
+        : isGeneral
+        ? allServices.slice(0, 3)
+        : [];
 
     if (servicesToInclude.length > 0) {
       const servicesText = servicesToInclude
@@ -125,7 +126,13 @@ export const ragService = {
         lowercaseQuery.includes(f.answer.toLowerCase())
     );
 
-    const faqsToInclude = matchedFaqs.length > 0 ? matchedFaqs : allFaqs.slice(0, 3);
+    // Only include fallback FAQs if query is a general overview inquiry
+    const faqsToInclude =
+      matchedFaqs.length > 0
+        ? matchedFaqs
+        : isGeneral
+        ? allFaqs.slice(0, 3)
+        : [];
 
     if (faqsToInclude.length > 0) {
       const faqsText = faqsToInclude.map((f) => `Q: ${f.question}\nA: ${f.answer}`).join("\n\n");
@@ -142,14 +149,15 @@ export const ragService = {
       contextParts.push(`Frequently Asked Questions (FAQs):\n${faqsText}`);
     }
 
-    // 4. Fetch Knowledge Chunks (pgvector similarity search)
+    // 4. Fetch Knowledge Chunks (Real vector search + relevance gating + deterministic lexical fallback)
+    let retrievedMatches: SearchMatch[] = [];
     try {
-      const matches = await retrievalService.retrieveRelevantChunks(organizationId, query, 5);
+      retrievedMatches = await retrievalService.retrieveRelevantChunks(organizationId, query, 5);
 
-      if (matches.length > 0) {
-        const chunksText = matches
+      if (retrievedMatches.length > 0) {
+        const chunksText = retrievedMatches
           .map((m) => {
-            const docName = m.metadata?.documentName || "Reference Document";
+            const docName = m.metadata?.documentName || m.metadata?.title || "Reference Document";
             
             citations.push({
               type: "document",
@@ -169,8 +177,9 @@ export const ragService = {
     }
 
     return {
-      contextText: contextParts.join("\n\n---\n\n"),
+      contextText: contextParts.length > 0 ? contextParts.join("\n\n---\n\n") : "No relevant knowledge-base context found.",
       citations,
+      matches: retrievedMatches,
     };
   },
 };

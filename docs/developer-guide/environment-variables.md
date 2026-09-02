@@ -302,43 +302,60 @@ Default: Constructed from `SMTP_USER` if not set: `"Operator AI" <${SMTP_USER}>`
 
 ---
 
-## SMS (MSG91)
+## SMS & Voice (Vonage — Primary)
 
-### `MSG91_AUTH_KEY`
-
-**Required for MSG91 SMS.** Auth key from [msg91.com](https://msg91.com).
+### `VONAGE_API_KEY`
+**Required for Vonage SMS & Voice.** API Key from developer.vonage.com.
 
 ```
-MSG91_AUTH_KEY="..."
+VONAGE_API_KEY="..."
 ```
 
-Read by: `src/server/services/notification.ts`  
-Only required if using MSG91 as the SMS provider instead of Twilio.
+### `VONAGE_API_SECRET`
+**Required for Vonage SMS & Voice.** API Secret from developer.vonage.com.
+
+```
+VONAGE_API_SECRET="..."
+```
+
+### `VONAGE_FROM_NUMBER`
+**Optional.** Dedicated outbound virtual phone number or registered alphanumeric Sender ID. Default: `Operator`.
 
 ---
 
-### `MSG91_SENDER_ID`
+## SMS & Voice (Sinch — Alternative)
 
-**Optional.** Sender ID for MSG91 SMS.
+### `SINCH_SERVICE_PLAN_ID`
+**Required for Sinch SMS.** Service Plan ID from dashboard.sinch.com.
 
 ```
-MSG91_SENDER_ID="NXRECP"
+SINCH_SERVICE_PLAN_ID="..."
 ```
 
-Read by: `src/server/services/notification.ts`  
-Default: `NXRECP`
+### `SINCH_API_TOKEN`
+**Required for Sinch SMS.** API Token from dashboard.sinch.com.
+
+```
+SINCH_API_TOKEN="..."
+```
 
 ---
 
-### `MSG91_FLOW_ID`
+## Transactional Email (Resend & Postmark)
 
-**Required for MSG91 template SMS.** Template flow ID.
+### `RESEND_API_KEY`
+**Required for Resend Email.** API key from resend.com.
 
 ```
-MSG91_FLOW_ID="..."
+RESEND_API_KEY="re_..."
 ```
 
-Read by: `src/server/services/notification.ts`
+### `POSTMARK_SERVER_TOKEN`
+**Alternative for Postmark Email.** Server token from postmarkapp.com.
+
+```
+POSTMARK_SERVER_TOKEN="..."
+```
 
 ---
 
@@ -357,54 +374,38 @@ What happens if missing: The cron endpoint allows unauthenticated requests (the 
 
 ---
 
-## Agency / Internal
+## Payments & Subscriptions (Razorpay — Primary)
 
-### `IMPERSONATION_SECRET`
-
-**Required if using agency impersonation.** Secret token used to authenticate agency-level user impersonation requests.
+### `RAZORPAY_KEY_ID`
+**Required for payments & subscriptions in India & globally.** Key ID from dashboard.razorpay.com.
 
 ```
-IMPERSONATION_SECRET="nexx-secret-impersonation-token-key-2026"
+RAZORPAY_KEY_ID="rzp_test_..."
 ```
 
-Read by: `src/server/services/agency/impersonation.ts`  
-**Warning:** This has a hardcoded default value. Override it in production with a strong secret.
+### `RAZORPAY_KEY_SECRET`
+**Required for payment verification & subscription management.** Key Secret from dashboard.razorpay.com.
+
+```
+RAZORPAY_KEY_SECRET="..."
+```
+
+### `RAZORPAY_WEBHOOK_SECRET`
+**Required for webhook verification.** Webhook secret configured for `/api/webhooks/billing/razorpay`.
+
+```
+RAZORPAY_WEBHOOK_SECRET="..."
+```
 
 ---
 
-## What NOT to configure
+## What NOT to configure (Decommissioned Integrations)
 
-The `.env.example` contains legacy Clerk environment variables:
-
-```
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-CLERK_SECRET_KEY
-NEXT_PUBLIC_CLERK_SIGN_IN_URL
-NEXT_PUBLIC_CLERK_SIGN_UP_URL
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
-```
-
-**These are not used.** The auth system is fully custom (`src/lib/auth/`). Configuring Clerk keys will have no effect.
-
----
-
-## Minimal development `.env`
-
-For running the UI with real AI responses:
-
-```env
-DATABASE_URL="postgres://postgres:postgres@localhost:5432/operator_dev"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-OPENAI_API_KEY="sk-proj-..."
-```
-
-For running with the mock LLM (no API keys needed — UI development only):
-
-```env
-DATABASE_URL="postgres://postgres:postgres@localhost:5432/operator_dev"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-```
+The following integrations have been decommissioned and are not required:
+- **Google OAuth / Google Calendar** (Auth is direct email/password and session-based; scheduling is native built-in)
+- **Microsoft Graph / Office 365 Calendar**
+- **Stripe** (Replaced by Razorpay for seamless domestic & international payments)
+- **Clerk** (Replaced by custom session engine)
 
 ---
 
@@ -412,13 +413,14 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
 Before deploying:
 
-- [ ] `DATABASE_URL` points to the production database
+- [ ] `DATABASE_URL` points to the production PostgreSQL database
 - [ ] `NEXT_PUBLIC_APP_URL` is the production domain
 - [ ] `OPENAI_API_KEY` or `GEMINI_API_KEY` is set
-- [ ] `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` configured with the production redirect URI
-- [ ] `STRIPE_SECRET_KEY` is the live key (not test)
-- [ ] `STRIPE_WEBHOOK_SECRET` is set for the production webhook endpoint
-- [ ] `CRON_SECRET` is a strong random value
-- [ ] `IMPERSONATION_SECRET` is overridden from the hardcoded default
-- [ ] No Clerk keys configured (they are not used)
+- [ ] `RAZORPAY_KEY_ID` + `RAZORPAY_KEY_SECRET` are set (Live or Test mode)
+- [ ] `RAZORPAY_WEBHOOK_SECRET` is configured for the `/api/webhooks/billing/razorpay` endpoint
+- [ ] `VONAGE_API_KEY` + `VONAGE_API_SECRET` are configured
+- [ ] `RESEND_API_KEY` + `EMAIL_FROM` are configured with verified domain
+- [ ] `META_PHONE_NUMBER_ID` + `META_ACCESS_TOKEN` are set for WhatsApp
+- [ ] `CRON_SECRET` and `IMPERSONATION_SECRET` are set with strong tokens
 - [ ] `.env` is excluded from git (`git status` should not show it)
+

@@ -1,26 +1,17 @@
 "use server";
 
-import { auth } from "@/lib/auth/server";
+import { requireOrganizationAccess, assertResourceOwnership } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { voiceRepository } from "../repositories/voice";
-import { membershipRepository } from "../repositories/membership";
 import { db } from "../db";
-import { voicePrompts } from "../db/schema";
+import { voicePrompts, phoneNumbers, callSessions, voicemailMessages, callRoutingRules } from "../db/schema";
 import { eq, and } from "drizzle-orm";
-
-async function getVerifiedOrgId() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  const memberships = await membershipRepository.getByUser(userId);
-  if (memberships.length === 0) throw new Error("No organization found");
-  return memberships[0].organizationId;
-}
 
 // --- Phone Numbers ---
 export async function getPhoneNumbersAction() {
   try {
-    const orgId = await getVerifiedOrgId();
-    const numbers = await voiceRepository.getPhoneNumbers(orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    const numbers = await voiceRepository.getPhoneNumbers(organizationId);
     return { success: true, numbers };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to load phone numbers" };
@@ -29,8 +20,8 @@ export async function getPhoneNumbersAction() {
 
 export async function purchasePhoneNumberAction(data: { name: string; phoneNumber: string }) {
   try {
-    const orgId = await getVerifiedOrgId();
-    const number = await voiceRepository.registerPhoneNumber(orgId, {
+    const { organizationId } = await requireOrganizationAccess();
+    const number = await voiceRepository.registerPhoneNumber(organizationId, {
       phoneNumber: data.phoneNumber,
       name: data.name,
       type: "purchased",
@@ -44,7 +35,9 @@ export async function purchasePhoneNumberAction(data: { name: string; phoneNumbe
 
 export async function toggleRecordingAction(phoneNumberId: string, isEnabled: boolean) {
   try {
-    await voiceRepository.updatePhoneNumberRecording(phoneNumberId, isEnabled);
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(phoneNumbers, phoneNumberId, organizationId, "Phone number");
+    await voiceRepository.updatePhoneNumberRecording(phoneNumberId, organizationId, isEnabled);
     revalidatePath("/voice");
     return { success: true };
   } catch (error: any) {
@@ -55,8 +48,8 @@ export async function toggleRecordingAction(phoneNumberId: string, isEnabled: bo
 // --- Call Sessions ---
 export async function getCallSessionsAction(limit = 50, offset = 0) {
   try {
-    const orgId = await getVerifiedOrgId();
-    const sessions = await voiceRepository.getCallSessions(orgId, limit, offset);
+    const { organizationId } = await requireOrganizationAccess();
+    const sessions = await voiceRepository.getCallSessions(organizationId, limit, offset);
     return { success: true, sessions };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to load call sessions" };
@@ -65,7 +58,9 @@ export async function getCallSessionsAction(limit = 50, offset = 0) {
 
 export async function getCallSessionDetailsAction(sessionId: string) {
   try {
-    const session = await voiceRepository.getCallSessionDetails(sessionId);
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(callSessions, sessionId, organizationId, "Call session");
+    const session = await voiceRepository.getCallSessionDetails(sessionId, organizationId);
     return { success: true, session };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to load call session details" };
@@ -75,8 +70,8 @@ export async function getCallSessionDetailsAction(sessionId: string) {
 // --- Voicemails ---
 export async function getVoicemailMessagesAction() {
   try {
-    const orgId = await getVerifiedOrgId();
-    const voicemails = await voiceRepository.getVoicemails(orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    const voicemails = await voiceRepository.getVoicemails(organizationId);
     return { success: true, voicemails };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to load voicemail messages" };
@@ -85,7 +80,9 @@ export async function getVoicemailMessagesAction() {
 
 export async function updateVoicemailStatusAction(voicemailId: string, status: "pending" | "called" | "no-action") {
   try {
-    await voiceRepository.updateVoicemailStatus(voicemailId, status);
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(voicemailMessages, voicemailId, organizationId, "Voicemail");
+    await voiceRepository.updateVoicemailStatus(voicemailId, organizationId, status);
     revalidatePath("/voice/dashboard");
     return { success: true };
   } catch (error: any) {
@@ -96,10 +93,10 @@ export async function updateVoicemailStatusAction(voicemailId: string, status: "
 // --- Voice Settings ---
 export async function getVoiceSettingsAction() {
   try {
-    const orgId = await getVerifiedOrgId();
-    let settings = await voiceRepository.getVoiceSettings(orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    let settings = await voiceRepository.getVoiceSettings(organizationId);
     if (!settings) {
-      settings = await voiceRepository.upsertVoiceSettings(orgId, {
+      settings = await voiceRepository.upsertVoiceSettings(organizationId, {
         voiceName: "Rachel",
         speakingSpeed: "1.0",
         greetingMessage: "Hello! Thank you for calling. How can I help you today?",
@@ -122,8 +119,8 @@ export async function saveVoiceSettingsAction(data: {
   voicemailActive: boolean;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
-    await voiceRepository.upsertVoiceSettings(orgId, data);
+    const { organizationId } = await requireOrganizationAccess();
+    await voiceRepository.upsertVoiceSettings(organizationId, data);
     revalidatePath("/voice/settings");
     return { success: true };
   } catch (error: any) {
@@ -134,8 +131,8 @@ export async function saveVoiceSettingsAction(data: {
 // --- Call Routing Rules ---
 export async function getRoutingRulesAction() {
   try {
-    const orgId = await getVerifiedOrgId();
-    const rules = await voiceRepository.getRoutingRules(orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    const rules = await voiceRepository.getRoutingRules(organizationId);
     return { success: true, rules };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to load call routing rules" };
@@ -151,8 +148,8 @@ export async function createRoutingRuleAction(data: {
   isActive?: boolean;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
-    const rule = await voiceRepository.createRoutingRule(orgId, data);
+    const { organizationId } = await requireOrganizationAccess();
+    const rule = await voiceRepository.createRoutingRule(organizationId, data);
     revalidatePath("/voice/settings");
     return { success: true, rule };
   } catch (error: any) {
@@ -169,7 +166,9 @@ export async function updateRoutingRuleAction(ruleId: string, data: {
   isActive?: boolean;
 }) {
   try {
-    await voiceRepository.updateRoutingRule(ruleId, data);
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(callRoutingRules, ruleId, organizationId, "Routing rule");
+    await voiceRepository.updateRoutingRule(ruleId, organizationId, data);
     revalidatePath("/voice/settings");
     return { success: true };
   } catch (error: any) {
@@ -179,7 +178,9 @@ export async function updateRoutingRuleAction(ruleId: string, data: {
 
 export async function deleteRoutingRuleAction(ruleId: string) {
   try {
-    await voiceRepository.deleteRoutingRule(ruleId);
+    const { organizationId } = await requireOrganizationAccess();
+    await assertResourceOwnership(callRoutingRules, ruleId, organizationId, "Routing rule");
+    await voiceRepository.deleteRoutingRule(ruleId, organizationId);
     revalidatePath("/voice/settings");
     return { success: true };
   } catch (error: any) {
@@ -190,8 +191,8 @@ export async function deleteRoutingRuleAction(ruleId: string) {
 // --- Analytics ---
 export async function getVoiceAnalyticsAction() {
   try {
-    const orgId = await getVerifiedOrgId();
-    const analytics = await voiceRepository.getAnalytics(orgId);
+    const { organizationId } = await requireOrganizationAccess();
+    const analytics = await voiceRepository.getAnalytics(organizationId);
     return { success: true, analytics };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to load voice analytics" };
@@ -201,11 +202,11 @@ export async function getVoiceAnalyticsAction() {
 // --- Voice Prompts / System Instructions ---
 export async function getVoicePromptAction() {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
     const [prompt] = await db
       .select()
       .from(voicePrompts)
-      .where(and(eq(voicePrompts.organizationId, orgId), eq(voicePrompts.isActive, true)));
+      .where(and(eq(voicePrompts.organizationId, organizationId), eq(voicePrompts.isActive, true)));
     return { success: true, prompt: prompt || null };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to load custom prompt" };
@@ -214,18 +215,18 @@ export async function getVoicePromptAction() {
 
 export async function saveVoicePromptAction(promptText: string) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const { organizationId } = await requireOrganizationAccess();
     // 1. Deactivate existing active prompts for this org
     await db
       .update(voicePrompts)
       .set({ isActive: false })
-      .where(eq(voicePrompts.organizationId, orgId));
+      .where(eq(voicePrompts.organizationId, organizationId));
 
     // 2. Insert new prompt
     const [inserted] = await db
       .insert(voicePrompts)
       .values({
-        organizationId: orgId,
+        organizationId,
         name: "Custom Guidelines",
         promptText,
         isActive: true,
@@ -238,3 +239,4 @@ export async function saveVoicePromptAction(promptText: string) {
     return { success: false, error: error?.message || "Failed to save custom prompt" };
   }
 }
+

@@ -130,9 +130,9 @@ function getModuleHref(module: string): string {
     booking: "/settings/booking",
     knowledge: "/kb",
     crm: "/contacts",
-    ai: "/settings",
+    ai: "/settings/ai",
     automation: "/automations",
-    website: "/settings",
+    website: "/kb",
     billing: "/billing",
     staff: "/staff",
     channels: "/channels",
@@ -147,7 +147,7 @@ function getAreaHref(area: string): string {
     services: "/services",
     staff: "/staff",
     documents: "/kb",
-    integrations: "/settings",
+    integrations: "/channels",
   };
   return map[area] || "/settings";
 }

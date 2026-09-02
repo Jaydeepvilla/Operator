@@ -16,7 +16,7 @@ export function getMissingGuides(state: RecommendationState): RecommendationActi
           title: `Add Guide for ${service.name}`,
           description: `The AI does not have detailed preparation or aftercare instructions for ${service.name}.`,
           primaryCtaText: "Generate Guide",
-          primaryCtaHref: "/knowledge/documents",
+          primaryCtaHref: "/kb",
           primaryCtaAction: `generate_guide_${service.id}`,
           estimatedTimeMinutes: 3,
           impact: "Medium",

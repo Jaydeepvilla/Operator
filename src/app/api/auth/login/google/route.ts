@@ -1,55 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import crypto from "crypto";
-import { getGoogleOAuthConfig } from "@/lib/auth/google-config";
-
-function getAppUrl(request: NextRequest): string {
-  const envUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  if (envUrl && (envUrl.startsWith("http://") || envUrl.startsWith("https://"))) {
-    return envUrl.replace(/\/$/, "");
-  }
-  const proto = request.headers.get("x-forwarded-proto") || (request.nextUrl.protocol ? request.nextUrl.protocol.replace(":", "") : "https");
-  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || request.nextUrl.host || "operator-azure.vercel.app";
-  return `${proto}://${host}`;
-}
 
 export async function GET(request: NextRequest) {
-  try {
-    const { clientId } = getGoogleOAuthConfig();
-
-    if (!clientId) {
-      console.error("[OAuth] Missing GOOGLE_CLIENT_ID configuration.");
-      return NextResponse.json({ error: "Google OAuth is not configured on the server." }, { status: 500 });
-    }
-
-    const appUrl = getAppUrl(request);
-    const redirectUri = `${appUrl}/api/auth/callback/google`;
-
-    // 1. Generate a secure random CSRF token
-    const state = crypto.randomBytes(32).toString("hex");
-
-    // 2. Set state cookie for callback verification
-    const cookieStore = await cookies();
-    cookieStore.set("oauth_state", state, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 600, // 10 minutes
-      path: "/",
-    });
-
-    // 3. Construct OAuth URL
-    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(
-      clientId
-    )}&redirect_uri=${encodeURIComponent(
-      redirectUri
-    )}&response_type=code&scope=openid%20email%20profile&state=${encodeURIComponent(
-      state
-    )}&access_type=offline&prompt=consent`;
-
-    return NextResponse.redirect(googleAuthUrl);
-  } catch (error) {
-    console.error("[OAuth] Google login initiation error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
+  // Google OAuth has been disabled per configuration. Redirect to standard sign-in.
+  return NextResponse.redirect(new URL("/sign-in", request.url));
 }

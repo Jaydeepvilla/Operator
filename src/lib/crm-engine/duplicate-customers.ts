@@ -16,7 +16,7 @@ export function getDuplicateCustomers(state: RecommendationState): Recommendatio
       title: `Merge ${duplicates.length} Duplicate Customers`,
       description: "We found records that appear to be the same person. Merging them gives the AI a complete history of the customer.",
       primaryCtaText: "Review Duplicates",
-      primaryCtaHref: "/crm/contacts/duplicates",
+      primaryCtaHref: "/contacts",
       estimatedTimeMinutes: 3,
       impact: "Medium",
       impactReason: "Prevents fragmented conversation histories.",

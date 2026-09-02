@@ -25,7 +25,7 @@ export function getMissingPolicies(state: RecommendationState): RecommendationAc
         title: `Add ${policy.key}`,
         description: `Your AI needs a ${policy.key} to accurately handle customer disputes and expectations.`,
         primaryCtaText: "Generate with AI",
-        primaryCtaHref: "/knowledge/documents",
+        primaryCtaHref: "/kb",
         primaryCtaAction: `generate_${policy.id}`,
         estimatedTimeMinutes: 2,
         impact: "Medium",

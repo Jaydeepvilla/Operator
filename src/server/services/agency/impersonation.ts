@@ -2,9 +2,17 @@ import crypto from "crypto";
 import { db } from "../../db";
 import { agencyAuditLogs } from "../../db/schema";
 
-const IMPERSONATION_SECRET = process.env.IMPERSONATION_SECRET || "nexx-secret-impersonation-token-key-2026";
-// Guarantee 32-byte key using SHA-256 hash
-const KEY = crypto.createHash("sha256").update(IMPERSONATION_SECRET).digest();
+function getImpersonationKey(): Buffer {
+  const secret = process.env.IMPERSONATION_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("[Agency Impersonation] Fatal: IMPERSONATION_SECRET environment variable is required in production.");
+    }
+    return crypto.createHash("sha256").update("operator-dev-impersonation-secret-key-2026").digest();
+  }
+  return crypto.createHash("sha256").update(secret).digest();
+}
+
 const IV_LENGTH = 16;
 
 export interface ImpersonationPayload {
@@ -33,8 +41,9 @@ export const agencyImpersonation = {
         expiresAt: Date.now() + 15 * 60 * 1000, // 15 minutes expiration
       };
 
+      const key = getImpersonationKey();
       const iv = crypto.randomBytes(IV_LENGTH);
-      const cipher = crypto.createCipheriv("aes-256-cbc", KEY, iv);
+      const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
       let encrypted = cipher.update(JSON.stringify(payload), "utf8", "hex");
       encrypted += cipher.final("hex");
 
@@ -68,8 +77,9 @@ export const agencyImpersonation = {
         throw new Error("Invalid token format");
       }
 
+      const key = getImpersonationKey();
       const iv = Buffer.from(ivHex, "hex");
-      const decipher = crypto.createDecipheriv("aes-256-cbc", KEY, iv);
+      const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
       let decrypted = decipher.update(encryptedHex, "hex", "utf8");
       decrypted += decipher.final("utf8");
 

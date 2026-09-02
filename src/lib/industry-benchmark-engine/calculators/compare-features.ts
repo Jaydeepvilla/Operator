@@ -30,7 +30,7 @@ export const compareServicesFeatures = (state: BusinessState, template: Industry
         confidence: 90,
       confidenceReason: "Data check",
         primaryCtaText: "Add Service",
-      primaryCtaHref: "/services/new"
+        primaryCtaHref: "/services"
       });
     }
   });

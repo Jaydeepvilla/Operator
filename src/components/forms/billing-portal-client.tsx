@@ -18,6 +18,7 @@ import { Button } from "@/components/shared/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/shared/card";
 import { upgradeSubscriptionAction, cancelSubscriptionAction } from "@/server/actions/billing";
 import { PaymentProvidersClient } from "./payment-providers-client";
+import { RazorpayCheckoutButton } from "@/components/billing/razorpay-checkout-button";
 
 interface BillingPortalClientProps {
   initialSubscription: any;
@@ -106,7 +107,13 @@ export function BillingPortalClient({
         setStatusMessage({ type: "success", text: `Plan successfully updated to ${planId.toUpperCase()}!` });
         setSubscription({ ...subscription, planId, status: "active" });
       } else {
-        setStatusMessage({ type: "error", text: res.error || "Failed to update plan." });
+        const errPayload = res as { message?: string; error?: string; correlationId?: string };
+        const errorText = errPayload.message || errPayload.error || "Online checkout is temporarily unavailable. Please try again later.";
+        const refText = errPayload.correlationId ? ` (Reference: ${errPayload.correlationId})` : "";
+        setStatusMessage({ 
+          type: "error", 
+          text: `${errorText}${refText}` 
+        });
       }
     });
   };
@@ -121,7 +128,13 @@ export function BillingPortalClient({
         setStatusMessage({ type: "success", text: "Subscription cancelled successfully." });
         setSubscription({ ...subscription, planId: "free", status: "canceled" });
       } else {
-        setStatusMessage({ type: "error", text: res.error || "Failed to cancel subscription." });
+        const errPayload = res as { message?: string; error?: string; correlationId?: string };
+        const errorText = errPayload.message || errPayload.error || "Failed to cancel subscription.";
+        const refText = errPayload.correlationId ? ` (Reference: ${errPayload.correlationId})` : "";
+        setStatusMessage({ 
+          type: "error", 
+          text: `${errorText}${refText}` 
+        });
       }
     });
   };
@@ -248,16 +261,49 @@ export function BillingPortalClient({
                       </ul>
                     </CardContent>
                   </div>
-                  <CardFooter className="pt-space-6 border-t border-border/10">
-                    <Button
-                      variant={isActive ? "outline" : "default"}
-                      disabled={isActive || isPending}
-                      onClick={() => handleUpgrade(tier.id)}
-                      className="w-full  text-caption cursor-pointer"
-                    >
-                      {isPending ? <RefreshCw className="h-3.5 w-3.5 animate-spin mr-space-2" /> : null}
-                      {isActive ? "Current Plan" : `Select ${tier.name}`}
-                    </Button>
+                  <CardFooter className="pt-space-6 border-t border-border/10 flex flex-col gap-2">
+                    {isActive ? (
+                      <Button variant="outline" disabled className="w-full text-caption">
+                        Current Plan
+                      </Button>
+                    ) : tier.id === "free" ? (
+                      <Button
+                        variant="outline"
+                        disabled={isPending}
+                        onClick={() => handleUpgrade(tier.id)}
+                        className="w-full text-caption cursor-pointer"
+                      >
+                        {isPending ? <RefreshCw className="h-3.5 w-3.5 animate-spin mr-space-2" /> : null}
+                        Select {tier.name}
+                      </Button>
+                    ) : (
+                      <RazorpayCheckoutButton
+                        amountInPaise={tier.id === "pro" ? 14900 : 29900}
+                        planName={tier.name}
+                        description={`Upgrade to ${tier.name}`}
+                        prefill={{
+                          email: initialAccount?.email || "",
+                          name: initialAccount?.name || "Workspace Admin",
+                        }}
+                        onSuccess={async (payment) => {
+                          setStatusMessage({
+                            type: "success",
+                            text: `Payment verified (${payment.payment_id})! Upgrading your plan to ${tier.name}...`,
+                          });
+                          await handleUpgrade(tier.id);
+                        }}
+                        onError={(err) => {
+                          setStatusMessage({
+                            type: "error",
+                            text: err?.message || "Razorpay checkout was cancelled or failed.",
+                          });
+                        }}
+                        className="w-full text-caption cursor-pointer"
+                      >
+                        <CreditCard className="h-3.5 w-3.5 mr-space-2 text-primary" />
+                        Upgrade with Razorpay
+                      </RazorpayCheckoutButton>
+                    )}
                   </CardFooter>
                 </Card>
               );

@@ -63,6 +63,8 @@ import {
  searchKnowledgeAction,
  analyzeKnowledgeContentAction
 } from"@/server/actions/knowledge";
+import { useToast } from "@/components/shared/toast";
+import { formatUserErrorMessage } from "@/lib/errors";
 import { NativeTable, NativeInput, NativeButton, NativeTextarea } from "@/components/shared/native";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -90,6 +92,7 @@ export function KnowledgeCenterClient({
 }: KnowledgeCenterClientProps) {
  const router = useRouter();
  const [activeTab, setActiveTab] = React.useState<string>("overview");
+ const toast = useToast();
  
  // States
  const [categories, setCategories] = React.useState(initialCategories);
@@ -222,39 +225,41 @@ export function KnowledgeCenterClient({
  });
  }
 
- if (res.success) {
- setIsCategoryOpen(false);
- setCategoryName("");
- setCategoryDesc("");
- setEditingCategory(null);
- router.refresh();
- } else {
- alert(res.error ||"Failed to save category");
- }
- } catch (err: any) {
- alert(err?.message ||"An error occurred");
- } finally {
- setIsCategorySubmitting(false);
- }
- };
+      if (res.success) {
+        setIsCategoryOpen(false);
+        setCategoryName("");
+        setCategoryDesc("");
+        setEditingCategory(null);
+        toast.success(editingCategory ? "Category Updated" : "Category Created", "Knowledge category saved.");
+        router.refresh();
+      } else {
+        toast.error("Failed to save category", formatUserErrorMessage(res.error));
+      }
+    } catch (err: any) {
+      toast.error("Error", formatUserErrorMessage(err, "An error occurred while saving category."));
+    } finally {
+      setIsCategorySubmitting(false);
+    }
+  };
 
- const handleEditCategory = (cat: any) => {
- setEditingCategory(cat);
- setCategoryName(cat.name);
- setCategoryDesc(cat.description ||"");
- setIsCategoryOpen(true);
- };
+  const handleEditCategory = (cat: any) => {
+    setEditingCategory(cat);
+    setCategoryName(cat.name);
+    setCategoryDesc(cat.description || "");
+    setIsCategoryOpen(true);
+  };
 
- const handleDeleteCategory = async (id: string) => {
- if (confirm("Are you sure you want to delete this category?")) {
- const res = await deleteKnowledgeCategoryAction(id);
- if (res.success) {
- router.refresh();
- } else {
- alert(res.error ||"Failed to delete category");
- }
- }
- };
+  const handleDeleteCategory = async (id: string) => {
+    if (confirm("Are you sure you want to delete this category?")) {
+      const res = await deleteKnowledgeCategoryAction(id);
+      if (res.success) {
+        toast.success("Category Deleted", "Category removed from knowledge base.");
+        router.refresh();
+      } else {
+        toast.error("Failed to delete category", formatUserErrorMessage(res.error));
+      }
+    }
+  };
 
  const handleFile = (file: File) => {
  setUploadError(null);
@@ -362,47 +367,50 @@ export function KnowledgeCenterClient({
  }
  };
 
- const handleRenameDocument = async (e: React.FormEvent) => {
- e.preventDefault();
- if (!newDocName.trim() || !renamingDoc) return;
- setIsRenameSubmitting(true);
+  const handleRenameDocument = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newDocName.trim() || !renamingDoc) return;
+    setIsRenameSubmitting(true);
 
- try {
- const res = await renameKnowledgeDocumentAction(renamingDoc.id, newDocName);
- if (res.success) {
- setIsRenameOpen(false);
- setNewDocName("");
- setRenamingDoc(null);
- router.refresh();
- } else {
- alert(res.error ||"Failed to rename document");
- }
- } catch (err: any) {
- alert(err?.message ||"An error occurred");
- } finally {
- setIsRenameSubmitting(false);
- }
- };
+    try {
+      const res = await renameKnowledgeDocumentAction(renamingDoc.id, newDocName);
+      if (res.success) {
+        setIsRenameOpen(false);
+        setNewDocName("");
+        setRenamingDoc(null);
+        toast.success("Document Renamed", `Document renamed to "${newDocName}".`);
+        router.refresh();
+      } else {
+        toast.error("Failed to rename document", formatUserErrorMessage(res.error));
+      }
+    } catch (err: any) {
+      toast.error("Error", formatUserErrorMessage(err, "An error occurred while renaming document."));
+    } finally {
+      setIsRenameSubmitting(false);
+    }
+  };
 
- const handleArchiveToggle = async (doc: any) => {
- const res = await archiveKnowledgeDocumentAction(doc.id, !doc.isArchived);
- if (res.success) {
- router.refresh();
- } else {
- alert(res.error ||"Failed to update archive status");
- }
- };
+  const handleArchiveToggle = async (doc: any) => {
+    const res = await archiveKnowledgeDocumentAction(doc.id, !doc.isArchived);
+    if (res.success) {
+      toast.success(doc.isArchived ? "Document Restored" : "Document Archived", doc.isArchived ? "Document restored from archive." : "Document moved to archive.");
+      router.refresh();
+    } else {
+      toast.error("Failed to update archive status", formatUserErrorMessage(res.error));
+    }
+  };
 
- const handleDeleteDocument = async (id: string) => {
- if (confirm("Are you sure you want to permanently delete this document and all associated chunks?")) {
- const res = await deleteKnowledgeDocumentAction(id);
- if (res.success) {
- router.refresh();
- } else {
- alert(res.error ||"Failed to delete document");
- }
- }
- };
+  const handleDeleteDocument = async (id: string) => {
+    if (confirm("Are you sure you want to permanently delete this document and all associated chunks?")) {
+      const res = await deleteKnowledgeDocumentAction(id);
+      if (res.success) {
+        toast.success("Document Deleted", "Document and associated vectors deleted.");
+        router.refresh();
+      } else {
+        toast.error("Failed to delete document", formatUserErrorMessage(res.error));
+      }
+    }
+  };
 
  const loadHistory = async () => {
  try {
@@ -447,83 +455,89 @@ export function KnowledgeCenterClient({
  }
  });
 
- if (res.success && res.discoveredPages && res.importId) {
- setDiscoveredPages(res.discoveredPages);
- setCurrentImportId(res.importId);
- // Pre-select pages that are not excluded
- const preselected = res.discoveredPages
- .filter(p => p.status === "pending")
- .map(p => p.url);
- setSelectedPagesToImport(preselected);
- setIsPreviewOpen(true);
- } else {
- alert(res.error || "Failed to trigger crawler");
- }
- } catch (err: any) {
- alert(err?.message || "An error occurred");
- } finally {
- setIsScraperSubmitting(false);
- }
- };
+    if (res.success && res.discoveredPages && res.importId) {
+      setDiscoveredPages(res.discoveredPages);
+      setCurrentImportId(res.importId);
+      // Pre-select pages that are not excluded
+      const preselected = res.discoveredPages
+        .filter(p => p.status === "pending")
+        .map(p => p.url);
+      setSelectedPagesToImport(preselected);
+      setIsPreviewOpen(true);
+      toast.success("Crawler Finished", `Discovered ${res.discoveredPages.length} pages.`);
+    } else {
+      toast.error("Failed to trigger crawler", formatUserErrorMessage(res.error));
+    }
+  } catch (err: any) {
+    toast.error("Error", formatUserErrorMessage(err, "An error occurred starting website crawler."));
+  } finally {
+    setIsScraperSubmitting(false);
+  }
+};
 
- const handleExecuteIngestion = async () => {
- if (!currentImportId) return;
+const handleExecuteIngestion = async () => {
+  if (!currentImportId) return;
 
- const selectedData = discoveredPages.filter(p => selectedPagesToImport.includes(p.url));
- if (selectedData.length === 0) {
- alert("Please select at least one page to import.");
- return;
- }
+  const selectedData = discoveredPages.filter(p => selectedPagesToImport.includes(p.url));
+  if (selectedData.length === 0) {
+    toast.error("Selection Required", "Please select at least one page to import.");
+    return;
+  }
 
- setIsPreviewOpen(false);
- setIsProgressOpen(true);
- setProgressStage("Discovering pages");
- setProgressValue(10);
+  setIsPreviewOpen(false);
+  setIsProgressOpen(true);
+  setProgressStage("Discovering pages");
+  setProgressValue(10);
 
- try {
- const res = await executeWebsiteIngestionAction({
- importId: currentImportId,
- selectedPages: selectedData,
- duplicateHandling,
- });
+  try {
+    const res = await executeWebsiteIngestionAction({
+      importId: currentImportId,
+      selectedPages: selectedData,
+      duplicateHandling,
+    });
 
- if (res.success) {
- let attempts = 0;
- const interval = setInterval(async () => {
- attempts++;
- const statusRes = await getImportStatusAction(currentImportId);
- if (statusRes.success && statusRes.import) {
- const record = statusRes.import;
- const meta = (record.metadata || {}) as Record<string, any>;
+    if (res.success) {
+      let attempts = 0;
+      const interval = setInterval(async () => {
+        attempts++;
+        const statusRes = await getImportStatusAction(currentImportId);
+        if (statusRes.success && statusRes.import) {
+          const record = statusRes.import;
+          const meta = (record.metadata || {}) as Record<string, any>;
 
- setProgressStage(meta.stage || record.status);
- setProgressValue(meta.progress || 0);
+          setProgressStage(meta.stage || record.status);
+          setProgressValue(meta.progress || 0);
 
- if (record.status === "completed" || record.status === "failed") {
- clearInterval(interval);
- setTimeout(() => {
- setIsProgressOpen(false);
- router.refresh();
- loadHistory();
- }, 1500);
- }
- }
+          if (record.status === "completed" || record.status === "failed") {
+            clearInterval(interval);
+            if (record.status === "completed") {
+              toast.success("Ingestion Completed", "Website pages successfully imported to knowledge base.");
+            } else {
+              toast.error("Ingestion Incomplete", "Some pages could not be processed. Check import history.");
+            }
+            setTimeout(() => {
+              setIsProgressOpen(false);
+              router.refresh();
+              loadHistory();
+            }, 1500);
+          }
+        }
 
- if (attempts > 60) {
- clearInterval(interval);
- setIsProgressOpen(false);
- alert("Ingestion timed out on the server.");
- }
- }, 1000);
- } else {
- setIsProgressOpen(false);
- alert(res.error || "Failed to start website page ingestion");
- }
- } catch (err: any) {
- setIsProgressOpen(false);
- alert(err?.message || "An error occurred starting ingestion");
- }
- };
+        if (attempts > 60) {
+          clearInterval(interval);
+          setIsProgressOpen(false);
+          toast.error("Ingestion Timed Out", "Server background ingestion timed out. Please check import history.");
+        }
+      }, 1000);
+    } else {
+      setIsProgressOpen(false);
+      toast.error("Failed to start ingestion", formatUserErrorMessage(res.error));
+    }
+  } catch (err: any) {
+    setIsProgressOpen(false);
+    toast.error("Ingestion Error", formatUserErrorMessage(err, "An error occurred starting website ingestion."));
+  }
+};
 
  const handleSearch = async (query: string) => {
  setSearchQuery(query);
@@ -2248,15 +2262,16 @@ export function KnowledgeCenterClient({
  <Button
  variant="ghost"
  onClick={async () => {
- if (confirm(`Remove page "${page.title}" from the Knowledge Base?`)) {
- const res = await deleteKnowledgeDocumentAction(matchingDoc.id);
- if (res.success) {
- router.refresh();
- setDocuments((prev: any[]) => prev.filter((d: any) => d.id !== matchingDoc.id));
- } else {
- alert(res.error || "Failed to remove page");
- }
- }
+                        if (confirm(`Remove page "${page.title}" from the Knowledge Base?`)) {
+                          const res = await deleteKnowledgeDocumentAction(matchingDoc.id);
+                          if (res.success) {
+                            toast.success("Page Removed", `"${page.title}" removed from knowledge base.`);
+                            router.refresh();
+                            setDocuments((prev: any[]) => prev.filter((d: any) => d.id !== matchingDoc.id));
+                          } else {
+                            toast.error("Failed to remove page", formatUserErrorMessage(res.error));
+                          }
+                        }
  }}
  className="h-7 w-7 p-space-0 radius-md border border-rose-500/15 bg-rose-500/5 flex items-center justify-center text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 cursor-pointer ml-auto"
  title="Remove from Knowledge Base"
