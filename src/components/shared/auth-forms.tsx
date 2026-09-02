@@ -226,7 +226,7 @@ export function SignInForm() {
   const toast = useToast();
 
   const handleGoogleClick = () => {
-    window.location.href = "/api/auth/login/google";
+    window.location.href = "/api/auth/login/google?intent=login";
   };
 
   const handleAppleClick = () => {
@@ -456,7 +456,7 @@ export function SignUpForm() {
   const toast = useToast();
 
   const handleGoogleClick = () => {
-    window.location.href = "/api/auth/login/google";
+    window.location.href = "/api/auth/login/google?intent=signup";
   };
 
   const handleAppleClick = () => {
@@ -578,7 +578,9 @@ export function SignUpForm() {
           const devParams = result.devToken ? `&devToken=${result.devToken}` : "";
           window.location.href = `/verify-email?email=${encodeURIComponent(email)}${devParams}`;
         } else {
-          window.location.href = "/login-success?mode=signup&redirect=/onboarding&firstTime=true";
+          const destination = result.destination || "/onboarding";
+          const isFirstTime = !result.isCompleted;
+          window.location.href = `/login-success?mode=signup&redirect=${encodeURIComponent(destination)}&firstTime=${isFirstTime}`;
         }
       } else {
         setErrorMsg(result.error || "Failed to create account.");

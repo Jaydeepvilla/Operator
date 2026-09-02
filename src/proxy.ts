@@ -22,6 +22,10 @@ const PUBLIC_PATHS = [
   "/forgot-password",
   "/reset-password",
   "/verify-email",
+  "/email-sent",
+  "/email-verified",
+  "/session-expired",
+  "/account-locked",
   "/api/health",
   // Auth API routes used before login (e.g. email availability check during sign-up,
   // session lookup for the client AuthProvider, and the logout endpoint)
@@ -29,6 +33,8 @@ const PUBLIC_PATHS = [
   "/api/auth/me",
   "/api/auth/logout",
 ];
+
+const AUTH_PAGES = ["/sign-in", "/sign-up"];
 
 function isPublicRoute(pathname: string): boolean {
   // Always pass through: static assets, auth APIs, webhooks, widget, Next.js internals
@@ -50,20 +56,32 @@ function isPublicRoute(pathname: string): boolean {
   });
 }
 
+function isAuthPage(pathname: string): boolean {
+  return AUTH_PAGES.some((route) => pathname === route || pathname.startsWith(route + "/"));
+}
+
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const sessionToken = request.cookies.get("session_token")?.value;
+  const hasSession = !!sessionToken;
 
   // Bypass public routes
   if (isPublicRoute(pathname)) {
+    // If authenticated user visits sign-in/sign-up, redirect to dashboard
+    // (dashboard layout will further redirect to /onboarding if needed)
+    if (hasSession && isAuthPage(pathname)) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
     return NextResponse.next();
   }
 
   // Protect private routes
-  const sessionToken = request.cookies.get("session_token")?.value;
   if (!sessionToken) {
     const signInUrl = new URL("/sign-in", request.url);
     // Remember the page they tried to access
-    signInUrl.searchParams.set("redirect", pathname);
+    if (pathname !== "/dashboard") {
+      signInUrl.searchParams.set("redirect", pathname);
+    }
     return NextResponse.redirect(signInUrl);
   }
 

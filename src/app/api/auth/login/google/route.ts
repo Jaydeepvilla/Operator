@@ -25,9 +25,19 @@ export async function GET(request: NextRequest) {
   googleAuthUrl.searchParams.set("prompt", "select_account");
 
   const intendedRedirect = request.nextUrl.searchParams.get("redirect");
+  const intent = request.nextUrl.searchParams.get("intent") || "login"; // "login" | "signup"
 
   const response = NextResponse.redirect(googleAuthUrl.toString());
   response.cookies.set("google_oauth_state", state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 15,
+  });
+
+  // Store the user's intent (login vs signup) for the callback to read
+  response.cookies.set("google_oauth_intent", intent, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

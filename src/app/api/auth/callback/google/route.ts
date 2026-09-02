@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const error = searchParams.get("error");
   const intendedRedirect = searchParams.get("redirect") || request.cookies.get("intended_redirect")?.value;
+  const oauthIntent = request.cookies.get("google_oauth_intent")?.value || "login"; // "login" | "signup"
 
   if (error || !code) {
     return NextResponse.redirect(
@@ -127,10 +128,23 @@ export async function GET(request: NextRequest) {
     const refreshExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     // 6. Direct to Login-Success Transition Screen with Cookies
+    // Determine UX mode:
+    //   - New user → "signup" (welcome + onboarding)
+    //   - Existing user who came through signup → "account_exists" (explain + continue)
+    //   - Existing user who came through login → "signin" (welcome back)
+    let uiMode: string;
+    if (identity.isNewUser) {
+      uiMode = "signup";
+    } else if (oauthIntent === "signup") {
+      uiMode = "account_exists";
+    } else {
+      uiMode = "signin";
+    }
+
     const successUrl = new URL("/login-success", request.url);
     successUrl.searchParams.set("redirect", destination);
     successUrl.searchParams.set("firstTime", String(identity.isNewUser));
-    successUrl.searchParams.set("mode", identity.isNewUser ? "signup" : "signin");
+    successUrl.searchParams.set("mode", uiMode);
 
     const response = NextResponse.redirect(successUrl);
 
@@ -163,6 +177,7 @@ export async function GET(request: NextRequest) {
     }
 
     response.cookies.delete("google_oauth_state");
+    response.cookies.delete("google_oauth_intent");
     response.cookies.delete("intended_redirect");
     return response;
   } catch (err: any) {

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, ArrowRight, Sparkles, Building2 } from "lucide-react";
+import { CheckCircle2, ArrowRight, Sparkles, Building2, AlertTriangle, UserCheck } from "lucide-react";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { AuthHeader } from "@/components/shared/auth-forms";
 import { Button } from "@/components/shared/button";
@@ -13,13 +13,17 @@ function LoginSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTarget = searchParams.get("redirect") || "/onboarding";
-  const mode = searchParams.get("mode") || "signin";
+  const mode = searchParams.get("mode") || "signin"; // "signin" | "signup" | "account_exists"
   const isFirstTime = searchParams.get("firstTime") !== "false" || mode === "signup";
+  const isAccountExists = mode === "account_exists";
   
   const [secondsLeft, setSecondsLeft] = React.useState(4);
   const [progress, setProgress] = React.useState(0);
 
   React.useEffect(() => {
+    // account_exists mode: do NOT auto-redirect — require user acknowledgment
+    if (isAccountExists) return;
+
     // Smooth progress bar update
     const startTime = Date.now();
     const duration = 4000; // 4 seconds
@@ -40,13 +44,82 @@ function LoginSuccessContent() {
     }, 50);
 
     return () => clearInterval(progressInterval);
-  }, [redirectTarget, router]);
+  }, [redirectTarget, router, isAccountExists]);
 
   const handleImmediateNavigate = () => {
     router.push(redirectTarget);
     router.refresh();
   };
 
+  // ─── Account Already Exists UX (BUG #2 FIX) ─────────────────────────────
+  if (isAccountExists) {
+    return (
+      <div className="space-y-space-8 animate-fade-up">
+        <AuthHeader
+          heading="Account Already Exists"
+          subheading="This Google account is already associated with an Operator workspace."
+        />
+
+        <div className="space-y-space-6">
+          {/* Info Badge */}
+          <div className="flex justify-center">
+            <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/20 shadow-lg shadow-amber-500/5">
+              <UserCheck className="h-10 w-10 text-amber-500 animate-scale-in" aria-hidden="true" />
+            </div>
+          </div>
+
+          {/* Explanation Card */}
+          <div className="glass-panel radius-xl p-space-6 space-y-space-4 text-center border border-border/60 bg-bg-layer-1/80 backdrop-blur-md">
+            <div className="flex items-center justify-center gap-2 text-amber-600 dark:text-amber-400 font-semibold text-sm">
+              <AlertTriangle className="h-4 w-4" />
+              <span>Existing Account Detected</span>
+            </div>
+
+            <p className="text-body-sm text-foreground/75 leading-relaxed">
+              You clicked <strong>Sign Up</strong>, but an Operator account already exists with this Google identity. 
+              No duplicate account was created. You can continue directly to your existing workspace.
+            </p>
+
+            <div className="pt-2 px-4">
+              <div className="flex items-center gap-3 text-left text-xs text-foreground/50">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                <span>Identity verified — no duplicate account created</span>
+              </div>
+              <div className="flex items-center gap-3 text-left text-xs text-foreground/50 mt-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                <span>Your existing workspace and data are intact</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <Button
+              type="button"
+              onClick={handleImmediateNavigate}
+              shape="pill"
+              size="lg"
+              className="w-full gap-2 shadow-md shadow-primary/10"
+            >
+              <span>Continue to Your Account</span>
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+            <p className="text-center text-caption text-foreground/40">
+              Need a different account?{" "}
+              <Link
+                href="/sign-up"
+                className="font-semibold text-primary hover:underline hover:opacity-80 transition-opacity"
+              >
+                Use a different email
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Normal Signup / Signin UX ───────────────────────────────────────────
   const isSignup = mode === "signup";
 
   return (

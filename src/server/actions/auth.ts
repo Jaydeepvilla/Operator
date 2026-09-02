@@ -248,8 +248,39 @@ export async function registerAction(input: any) {
     // 6. If SMTP is not configured, auto-verify and create session directly
     const isDirectAuth = !process.env.SMTP_USER;
     if (isDirectAuth) {
-      await db.update(users).set({ isVerified: true }).where(eq(users.id, userId));
+      // Auto-verify + create placeholder workspace atomically
+      await db.transaction(async (tx) => {
+        await tx.update(users).set({ isVerified: true }).where(eq(users.id, userId));
+        
+        // Create placeholder workspace (matching identity.ts pattern)
+        const orgSlug = (firstName || "my-business").toLowerCase().replace(/[^a-z0-9]/g, "") + "-" + Math.floor(1000 + Math.random() * 9000);
+        const [org] = await tx
+          .insert(organizations)
+          .values({
+            name: `${firstName}'s Workspace`,
+            slug: orgSlug,
+            industry: "general",
+            timezone: "UTC",
+            verificationStatus: "unverified",
+            onboardingStatus: "not_started",
+            onboardingStep: "url",
+            onboardingData: {},
+          })
+          .returning();
+
+        await tx
+          .insert(memberships)
+          .values({
+            userId,
+            organizationId: org.id,
+            role: "owner",
+          });
+      });
+
       await createSession(userId, userAgent, ipAddress, true);
+
+      // Use authoritative routing instead of hardcoded redirect
+      const resolution = await resolveUserDestination(userId);
 
       await auditService.log({
         userId,
@@ -263,6 +294,8 @@ export async function registerAction(input: any) {
       return {
         success: true,
         requiresVerification: false,
+        destination: resolution.destination,
+        isCompleted: resolution.hasVerifiedOrg,
       };
     }
 

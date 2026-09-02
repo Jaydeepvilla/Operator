@@ -23,9 +23,14 @@ export default async function DashboardLayout({
     redirect("/sign-in");
   }
 
-  const { hasOrg, org } = await checkUserOrganization();
+  const { hasOrg, org, isCompleted } = await checkUserOrganization();
 
   if (!hasOrg || !org) {
+    redirect("/onboarding");
+  }
+
+  // BUG #1 FIX: Workspace exists but onboarding not completed → redirect back to onboarding
+  if (!isCompleted) {
     redirect("/onboarding");
   }
   let subscription: any = null;
