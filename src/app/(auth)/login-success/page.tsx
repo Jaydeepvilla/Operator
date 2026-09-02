@@ -13,7 +13,8 @@ function LoginSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTarget = searchParams.get("redirect") || "/onboarding";
-  const isFirstTime = searchParams.get("firstTime") !== "false";
+  const mode = searchParams.get("mode") || "signin";
+  const isFirstTime = searchParams.get("firstTime") !== "false" || mode === "signup";
   
   const [secondsLeft, setSecondsLeft] = React.useState(4);
   const [progress, setProgress] = React.useState(0);
@@ -46,11 +47,17 @@ function LoginSuccessContent() {
     router.refresh();
   };
 
+  const isSignup = mode === "signup";
+
   return (
     <div className="space-y-space-8 animate-fade-up">
       <AuthHeader
-        heading="Login Successful! 🎉"
-        subheading="Your session has been verified and activated."
+        heading={isSignup ? "Account Created! 🎉" : "Login Successful! 🎉"}
+        subheading={
+          isSignup
+            ? "Your Operator account is created and ready for onboarding."
+            : "Your session has been verified and activated."
+        }
       />
 
       <div className="space-y-space-6">

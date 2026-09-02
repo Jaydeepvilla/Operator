@@ -576,7 +576,7 @@ export function SignUpForm() {
           const devParams = result.devToken ? `&devToken=${result.devToken}` : "";
           window.location.href = `/verify-email?email=${encodeURIComponent(email)}${devParams}`;
         } else {
-          window.location.href = "/onboarding";
+          window.location.href = "/login-success?mode=signup&redirect=/onboarding&firstTime=true";
         }
       } else {
         setErrorMsg(result.error || "Failed to create account.");
