@@ -133,87 +133,92 @@ export default async function HomePage() {
  {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  SECTION 1: HERO — Emotional hook + trust metrics + CTA
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
- <section
- id="hero"
- className="relative overflow-hidden gradient-hero pt-space-28 pb-space-20 md:pt-space-32 md:pb-space-24"
- >
+  <section
+    id="hero"
+    className="relative overflow-hidden gradient-hero pt-space-12 pb-space-12 md:pt-space-16 md:pb-space-16"
+  >
 <ScrollReveal stagger>
 
- {/* Dotted grid background */}
- <div className="absolute inset-space-0 dot-grid opacity-10 pointer-events-none"/>
- {/* Radial glow */}
- <div className="absolute top-space-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-screen bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.12),transparent_70%)] pointer-events-none"/>
- <div className="relative mx-auto max-w-screen-xl px-space-6 flex flex-col items-center mt-space-16">
- {/* Announcement pill */}
- <div className="flex justify-center mb-space-8">
- <Link
- href="/changelog"
- className="inline-flex items-center gap-space-3 radius-full border border-border-muted bg-bg-layer-2/60 p-space-1 pr-space-4 hover:border-foreground/20 hover:bg-bg-layer-2 transition-all group"
- >
- <span className="inline-flex items-center gap-space-1.5 bg-primary/10 text-primary px-space-3 py-space-1 radius-full text-caption font-normal">
- <Sparkles className="h-3 w-3 shrink-0"/> New Updates
- </span>
- <span className="text-caption text-muted-foreground font-medium flex items-center gap-space-1">
- Discover what is fresh in version 2.1
- <ChevronRight className="h-3 w-3 text-muted-foreground/60 group-hover:translate-x-0.5 transition-transform"/>
- </span>
- </Link>
- </div>
- {/* Headline — Emotional, memorable, simple */}
- <h1 className="text-center text-display-xl md:text-display-2xl tracking-tight leading-display text-foreground mb-space-6 font-semibold max-w-2xl">
- <span className="block">Never Miss Another</span>
- <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary to-[hsl(280_75%_55%)]">
- Customer.
- </span>
- </h1>
- {/* Subtitle */}
- <p className="mx-auto max-w-2xl text-center text-body-lg text-muted-foreground leading-relaxed mb-space-10">
- Operator answers every call, books every appointment, and
- qualifies every lead
- <br className="hidden sm:inline"/>— 24/7, in under 2 seconds.
- Built for service businesses.
- </p>
-  {/* CTAs */}
-  <div className="flex flex-col sm:flex-row items-center justify-center gap-space-4 mb-space-12 w-full">
-    <SessionAwareCta
-      signedInText="Go to Dashboard"
-      signedOutText="Get started today"
-      size="lg"
-    />
-    <Button asChild variant="outline" size="lg" className="cursor-pointer w-full sm:w-auto">
-      <Link href="/demo">
-        Learn more
-      </Link>
-    </Button>
+  {/* Dotted grid background */}
+  <div className="absolute inset-space-0 dot-grid opacity-10 pointer-events-none"/>
+  {/* Radial glow */}
+  <div className="absolute top-space-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-screen bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.12),transparent_70%)] pointer-events-none"/>
+  <div className="relative mx-auto max-w-screen-xl px-space-6 flex flex-col items-center mt-space-6">
+  {/* Announcement pill */}
+  <div className="flex justify-center mb-space-5">
+  <Link
+  href="/changelog"
+  className="inline-flex items-center gap-space-3 radius-full border border-border-muted bg-bg-layer-2/60 p-space-1 pr-space-4 hover:border-foreground/20 hover:bg-bg-layer-2 transition-all group"
+  >
+  <span className="inline-flex items-center gap-space-1.5 bg-primary/10 text-primary px-space-3 py-space-1 radius-full text-caption font-normal">
+  <Sparkles className="h-3 w-3 shrink-0"/> New Updates
+  </span>
+  <span className="text-caption text-muted-foreground font-medium flex items-center gap-space-1">
+  Discover what is fresh in version 2.1
+  <ChevronRight className="h-3 w-3 text-muted-foreground/60 group-hover:translate-x-0.5 transition-transform"/>
+  </span>
+  </Link>
   </div>
+  {/* Headline — Emotional, memorable, simple */}
+  <h1 className="text-center text-display-lg md:text-display-xl tracking-tight leading-display text-foreground mb-space-4 font-semibold max-w-2xl">
+  <span className="block">Never Miss Another</span>
+  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary to-[hsl(280_75%_55%)]">
+  Customer.
+  </span>
+  </h1>
+  {/* Subtitle */}
+  <p className="mx-auto max-w-2xl text-center text-body-md text-muted-foreground leading-relaxed mb-space-6">
+  Operator answers every call, books every appointment, and
+  qualifies every lead
+  <br className="hidden sm:inline"/>— 24/7, in under 2 seconds.
+  Built for service businesses.
+  </p>
+   {/* CTAs */}
+   <div className="flex flex-col sm:flex-row items-center justify-center gap-space-4 mb-space-8 w-full">
+     <SessionAwareCta
+       signedInText="Go to Dashboard"
+       signedOutText="Get started today"
+       size="lg"
+     />
+     <Button asChild variant="outline" size="lg" className="cursor-pointer w-full sm:w-auto">
+       <Link href="/demo">
+         Learn more
+       </Link>
+     </Button>
+   </div>
 
-  {/* Interactive Live Operator Cockpit */}
-  <div className="relative w-full max-w-screen-xl mt-space-6">
-    <div className="absolute -inset-space-8 mesh-glow opacity-[0.25] pointer-events-none z-0" />
-    <div className="relative z-10 radius-2xl overflow-hidden shadow-[0_25px_70px_-15px_rgba(0,0,0,0.9)] border border-white/10 bg-[#0B0F19]">
+  {/* Interactive Live Operator Cockpit — Viewport-Touching Bottom-Faded Frame */}
+  <div className="relative w-full max-w-screen-xl mt-space-4">
+    <div className="absolute -inset-space-8 mesh-glow opacity-10 dark:opacity-25 pointer-events-none z-0" />
+    <div className="relative z-10 radius-t-2xl rounded-b-none overflow-hidden shadow-2xl dark:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.8)] border-t border-x border-b-0 border-border bg-card max-h-[460px] md:max-h-[490px] flex flex-col [mask-image:linear-gradient(to_bottom,black_65%,transparent_100%)]">
       {/* Top Browser / App Window Chrome */}
-      <div className="flex items-center justify-between px-space-5 py-space-3 bg-white/[0.04] border-b border-white/10 backdrop-blur-md">
+      <div className="flex items-center justify-between px-space-4 py-space-2.5 bg-muted/40 dark:bg-card/70 border-b border-border backdrop-blur-md shrink-0">
         <div className="flex items-center gap-space-2">
-          <div className="h-3 w-3 rounded-full bg-[#FF5F56]/80 border border-[#E0443E]/60" />
-          <div className="h-3 w-3 rounded-full bg-[#FFBD2E]/80 border border-[#DEA123]/60" />
-          <div className="h-3 w-3 rounded-full bg-[#27C93F]/80 border border-[#1AAB29]/60" />
+          <div className="h-2.5 w-2.5 rounded-full bg-[#FF5F56]/80 border border-[#E0443E]/60" />
+          <div className="h-2.5 w-2.5 rounded-full bg-[#FFBD2E]/80 border border-[#DEA123]/60" />
+          <div className="h-2.5 w-2.5 rounded-full bg-[#27C93F]/80 border border-[#1AAB29]/60" />
         </div>
-        <div className="flex items-center gap-space-2 bg-black/40 border border-white/10 px-space-4 py-space-1 radius-full text-caption font-mono text-muted-foreground/80">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span>app.operator.ai/live-cockpit</span>
+        <div className="flex items-center gap-space-2 bg-background/80 border border-border px-space-3 py-0.5 radius-full text-caption font-mono text-muted-foreground">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-xs">app.operator.ai/live-cockpit</span>
         </div>
-        <div className="flex items-center gap-space-2 text-caption text-emerald-400 font-mono text-xs hidden sm:flex">
+        <div className="flex items-center gap-space-2 text-caption text-emerald-600 dark:text-emerald-400 font-mono text-xs hidden sm:flex">
           <span>⚡ Latency: 420ms</span>
-          <span className="text-white/20">|</span>
+          <span className="opacity-30">|</span>
           <span>100% Uptime</span>
         </div>
       </div>
-      <DashboardPreview />
+      
+      {/* Viewport Cropped Container with bottom fade overlay */}
+      <div className="relative flex-1 overflow-hidden">
+        <DashboardPreview />
+        <div className="absolute inset-x-0 bottom-0 h-32 md:h-40 bg-gradient-to-t from-background via-background/70 to-transparent pointer-events-none z-30" />
+      </div>
     </div>
   </div>
 
  {/* Partner/Brand logos strip */}
- <div className="mt-space-16 border-t border-border-muted pt-space-10 text-center w-full max-w-4xl">
+ <div className="mt-space-8 md:mt-space-10 pt-space-4 text-center w-full max-w-4xl">
  <p className="text-caption text-muted-foreground uppercase tracking-widest mb-space-8 font-semibold opacity-85">
  Trusted by 500+ clinics, salons, law firms, and service brands
  </p>

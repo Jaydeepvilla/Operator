@@ -1,6 +1,7 @@
-"use client";import { Badge } from "@/components/shared/badge";
-
+"use client";
+import { Badge } from "@/components/shared/badge";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
@@ -198,8 +199,17 @@ export default function DemoPage() {
               <div className="p-space-5 space-y-space-4">
                   {(CONVERSATIONS[activeTab as keyof typeof CONVERSATIONS] as any[]).map((msg, i) =>
                 <div key={i} className={`flex gap-space-2 max-w-11/12 ${msg.from === "user" ? "ml-auto flex-row-reverse" : "mr-auto"}`}>
-                      <div className={`h-7 w-7 shrink-0 radius-full flex items-center justify-center text-caption border ${msg.from === "bot" ? "bg-primary/10 text-primary border-primary/20" : "bg-secondary text-foreground border-[hsl(var(--foreground)/0.06)]"}`}>
-                        {msg.from === "bot" ? <Bot className="h-3.5 w-3.5" /> : "Y"}
+                      <div className={`h-7 w-7 shrink-0 radius-full flex items-center justify-center text-caption overflow-hidden border ${msg.from === "bot" ? "p-0.5 border-primary/20" : "bg-secondary text-foreground border-[hsl(var(--foreground)/0.06)]"}`}>
+                        {msg.from === "bot" ? (
+                          <Image
+                            src="/logo.png"
+                            alt="Operator AI"
+                            width={24}
+                            height={24}
+                            unoptimized
+                            className="h-full w-full object-contain"
+                          />
+                        ) : "Y"}
                       </div>
                       <div className={`radius-xl px-space-4 py-space-2 text-caption leading-relaxed whitespace-pre-line ${msg.from === "bot" ? "bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.06)] text-foreground" : "bg-primary text-primary-foreground"}`}>
                         {msg.text}

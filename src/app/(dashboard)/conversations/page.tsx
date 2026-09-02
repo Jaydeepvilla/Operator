@@ -1,5 +1,6 @@
-"use client";import { Badge } from "@/components/shared/badge";
-
+"use client";
+import { Badge } from "@/components/shared/badge";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import {
  getConversationsAction,
@@ -330,8 +331,15 @@ export default function ConversationsPage() {
  <div key={msg.id} className={cn("flex flex-col", isUser ? "items-end" : "items-start")}>
  <div className="flex gap-space-2.5 max-w-5/6">
  {!isUser &&
- <div className="h-7.5 w-7.5 radius-full bg-[hsl(var(--primary)/0.08)] border border-[hsl(var(--primary)/0.12)] text-primary flex items-center justify-center shrink-0 select-none">
- <Bot className="h-3.5 w-3.5" />
+ <div className="h-7.5 w-7.5 radius-full p-0.5 border border-primary/20 flex items-center justify-center shrink-0 select-none overflow-hidden bg-background">
+ <Image
+ src="/logo.png"
+ alt="Operator AI"
+ width={28}
+ height={28}
+ unoptimized
+ className="w-full h-full object-contain"
+ />
  </div>
  }
  <div className="space-y-space-1">

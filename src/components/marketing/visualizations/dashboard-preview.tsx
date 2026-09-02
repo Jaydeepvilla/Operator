@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import {
   Phone,
   MessageSquare,
@@ -262,7 +263,7 @@ export function DashboardPreview() {
         { speaker: "user", text: "3:00 PM is perfect." },
         {
           speaker: "ai",
-          text: "Perfect. The package is $240 and requires prepayment to secure. Can I text a secure Stripe link to your mobile?",
+          text: "Perfect. The package is $240 and requires prepayment to secure. Can I text a secure Razorpay link to your mobile?",
         },
         { speaker: "user", text: "Yes, send it over." },
         {
@@ -285,7 +286,7 @@ export function DashboardPreview() {
         },
         {
           title: "Payment Triggered",
-          desc: "Generated Stripe payment link",
+          desc: "Generated Razorpay payment link",
           icon: <Globe className="h-3.5 w-3.5" />,
           active: true,
         },
@@ -297,7 +298,7 @@ export function DashboardPreview() {
         },
       ],
       integrations: [
-        { name: "Stripe", status: "Invoice Created", synced: true },
+        { name: "Razorpay", status: "Invoice Created", synced: true },
         { name: "Mindbody Sync", status: "Held Slot (Hold)", synced: true },
         { name: "Twilio SMS", status: "Sent Link", synced: true },
       ],
@@ -450,8 +451,15 @@ export function DashboardPreview() {
           <div>
             {/* Org Picker / Brand Header */}
             <div className="flex items-center gap-space-3 px-space-2 py-space-2 mb-space-8 justify-center xl:justify-start">
-              <div className="h-10 w-10 radius-xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-primary-foreground font-semibold shrink-0 border border-white/20">
-                <Sparkles className="h-5 w-5 fill-white/20" />
+              <div className="h-10 w-10 radius-xl flex items-center justify-center shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="Operator AI"
+                  width={40}
+                  height={40}
+                  unoptimized
+                  className="w-full h-full object-contain drop-shadow-sm"
+                />
               </div>
               <div className="xl:flex flex-col min-w-0 hidden">
                 <span className="text-body-sm font-semibold tracking-tight text-foreground flex items-center gap-space-1.5 truncate">

@@ -1,6 +1,7 @@
-"use client";import { Badge } from "@/components/shared/badge";
-
+"use client";
+import { Badge } from "@/components/shared/badge";
 import React, { useState } from "react";
+import Image from "next/image";
 import { Brain, Globe, Network, Check, Shield, Zap, RefreshCw, Layers } from "lucide-react";
 import { Button } from "@/components/shared/button";
 
@@ -244,49 +245,27 @@ const INTEGRATIONS: Record<string, IntegrationData> = {
     impact: "Cuts down customer booking friction, increasing appointment conversion rates by 22%.",
     useCase: "A salon client changes their hair styling appointment slot directly using a self-serve Calendly link."
   },
-  Stripe: {
-    key: "Stripe",
-    name: "Stripe Billing Gateway",
+  Razorpay: {
+    key: "Razorpay",
+    name: "Razorpay Payments & Invoicing",
     role: "Payments Core",
-    desc: "Collects credit card inputs mid-conversation, authorizes consultation deposits, and registers paid receipts securely.",
-    logo: StripeLogo,
-    color: "text-primary",
-    colorBorder: "border-primary/20 hover:border-primary/50",
-    colorBg: "bg-primary/5",
+    desc: "Collects UPI, Credit Cards, Net Banking, and instant payment links directly inside voice calls and WhatsApp chats.",
+    logo: RazorpayLogo,
+    color: "text-blue-500",
+    colorBorder: "border-blue-500/20 hover:border-blue-500/50",
+    colorBg: "bg-blue-500/5",
     x: 97,
     y: 224,
     outlets: ["CRM"],
-    pathTrace: ["Card Input", "Stripe PCI-Vault", "Deposit Authorized", "CRM Ledger Updated"],
-    capabilities: [
-    "PCI-compliant mid-call credit card intake",
-    "Dynamic Deposit Authorization holds",
-    "Recurring Subscription Tokenization"],
-
-    benefits: "Secures financial commitments before blocking staff hours, reducing cancellations.",
-    impact: "Reduces appointment no-show rates by 88% through automated deposit holds.",
-    useCase: "A law firm client authorizes a $100 case review retainer deposit over WhatsApp conversation."
-  },
-  Razorpay: {
-    key: "Razorpay",
-    name: "Razorpay Payments (India)",
-    role: "UPI & NetBanking Gateway",
-    desc: "Fully compliant Indian billing processor, enabling secure deposit collections via UPI, NetBanking, and credit/debit card streams.",
-    logo: RazorpayLogo,
-    color: "text-primary-500",
-    colorBorder: "border-primary-500/20 hover:border-primary-500/50",
-    colorBg: "bg-primary-500/5",
-    x: 90,
-    y: 180,
-    outlets: ["CRM"],
     pathTrace: ["Payment Prompt", "Razorpay API Checkout", "UPI / QR Code Scan", "CRM ledger verified"],
     capabilities: [
-    "Native India UPI & NetBanking integrations",
-    "Instant checkout link generation and SMS dispatch",
-    "RBI-compliant security tokenization protocols"],
+    "Native UPI & QR Code fast checkout",
+    "Instant dynamic payment link dispatch via WhatsApp/SMS",
+    "Webhook payment verification and automatic invoicing"],
 
-    benefits: "Provides native Indian payment pathways, avoiding Stripe constraints for local merchant accounts.",
-    impact: "Improves transaction success rates in India by 45% using native UPI/QR checkout blocks.",
-    useCase: "A dental clinic in Mumbai charges a diagnostic token fee via automated UPI checkout before scheduling."
+    benefits: "Enables instant booking deposit collection and reduces no-shows to near zero with seamless automated payment capture.",
+    impact: "Captures 98%+ on-time booking deposits and automates complete billing reconciliations.",
+    useCase: "A client books an appointment and immediately receives an automated Razorpay UPI link on WhatsApp to secure their slot."
   },
   Identity: {
     key: "Identity",
@@ -749,11 +728,17 @@ export function EcosystemViewer() {
  {/* Rotating accent border */}
  <div className="absolute w-20 h-20 radius-md border border-dashed border-primary/20 animate-spin [animation-duration:16s] pointer-events-none" />
 
- <div className="relative radius-md border border-primary/30 bg-neutral-900/90 backdrop-blur-md text-center transition-all duration-base w-20 h-20 flex flex-col justify-center items-center ">
- <div className="absolute inset-space-0 radius-md bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.12),transparent_70%)] pointer-events-none" />
- <Brain className="h-5 w-5 text-primary animate-pulse" />
- <span className="text-caption uppercase tracking-widest text-primary mt-space-1 relative z-10 font-semibold">Operator Core</span>
- </div>
+  <div className="relative radius-full border border-primary/30 bg-card/90 backdrop-blur-md text-center transition-all duration-base w-20 h-20 flex flex-col justify-center items-center shadow-xl p-2 select-none overflow-hidden">
+  <div className="absolute inset-space-0 radius-full bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.15),transparent_70%)] pointer-events-none" />
+  <Image
+    src="/logo.png"
+    alt="Operator AI Core"
+    width={64}
+    height={64}
+    unoptimized
+    className="w-full h-full object-contain relative z-10 drop-shadow-md"
+  />
+  </div>
  </div>
  </div>
 

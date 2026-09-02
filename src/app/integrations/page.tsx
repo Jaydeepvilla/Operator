@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 import { Button } from "@/components/shared/button";
@@ -173,17 +174,17 @@ const INTEGRATIONS: Integration[] = [
   capabilities: "Triggers automated appointment reminders and two-way client conversations over Vonage carrier networks."
   },
  {
- id: "stripe",
- name: "Stripe",
- category: "Payments",
- status: "live",
- logo: LOGOS.stripe,
- desc: "Collect deposits, handle booking fees, and trigger invoices directly inside the voice or chat widget.",
- features: ["Direct deposit logic", "In-call credit card processing", "Automatic invoicing", "No-show penalty locks"],
- difficulty: "1-Click",
- popularity: "Core",
- capabilities: "Validates card holds in real-time before finalizing appointment holds on the schedule."
- },
+  id: "razorpay",
+  name: "Razorpay",
+  category: "Payments",
+  status: "live",
+  logo: LOGOS.razorpay,
+  desc: "Collect UPI, Credit Cards, Net Banking, and automatic payment links directly inside voice calls and WhatsApp conversations.",
+  features: ["Instant UPI & QR Payments", "WhatsApp Payment Links", "Automatic Invoicing & Order APIs", "Zero-failure webhook sync"],
+  difficulty: "1-Click",
+  popularity: "Core",
+  capabilities: "Validates booking deposits and dispatches instant Razorpay payment links to secure appointment holds in real-time."
+  },
  {
  id: "slack",
  name: "Slack",
@@ -479,7 +480,7 @@ export default function IntegrationsPage() {
  { id: "google-calendar", label: "Google", logo: LOGOS.googleCalendar, angle: 0 },
  { id: "outlook", label: "Outlook", logo: LOGOS.outlook, angle: 32 },
  { id: "whatsapp", label: "WhatsApp", logo: LOGOS.whatsapp, angle: 65 },
- { id: "stripe", label: "Stripe", logo: LOGOS.stripe, angle: 98 },
+ { id: "razorpay", label: "Razorpay", logo: LOGOS.razorpay, angle: 98 },
  { id: "zoom", label: "Zoom", logo: LOGOS.zoom, angle: 131 },
  { id: "slack", label: "Slack", logo: LOGOS.slack, angle: 164 },
  { id: "hubspot", label: "HubSpot", logo: LOGOS.hubspot, angle: 197 },
@@ -526,43 +527,53 @@ export default function IntegrationsPage() {
  {/* Left Side: Circular Node Graph (column-span 7) */}
  <div className="lg:col-span-7 relative flex items-center justify-center min-h-[380px] md:min-h-[460px]">
  <div className="relative aspect-square w-full max-w-[360px] md:max-w-[420px] flex items-center justify-center overflow-visible select-none">
- {/* Glowing lines representation from nodes to center */}
- <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100">
- <defs>
- <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
- <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
- <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
- </linearGradient>
- </defs>
- {visualNodes.map((node) => {
- const rad = (node.angle * Math.PI) / 180;
- const startX = 50 + Math.cos(rad) * 36;
- const startY = 50 + Math.sin(rad) * 36;
- const isHovered = activeVisualId === node.id;
- return (
- <path
- key={node.id}
- d={`M ${startX} ${startY} L 50 50`}
- stroke={isHovered ? "hsl(var(--primary))" : "hsl(var(--foreground)/0.08)"}
- strokeWidth={isHovered ? "0.6" : "0.3"}
- strokeDasharray={isHovered ? "2 1" : "none"}
- className="transition-all duration-300"
- />
- );
- })}
- </svg>
+  {/* Glowing lines representation from nodes to center */}
+  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100">
+  <defs>
+  <linearGradient id="activeLineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="1" />
+  <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.4" />
+  </linearGradient>
+  </defs>
+  {visualNodes.map((node) => {
+  const rad = (node.angle * Math.PI) / 180;
+  const startX = 50 + Math.cos(rad) * 36;
+  const startY = 50 + Math.sin(rad) * 36;
+  const isHovered = activeVisualId === node.id;
+  return (
+  <path
+  key={node.id}
+  d={`M ${startX} ${startY} L 50 50`}
+  stroke={isHovered ? "url(#activeLineGrad)" : "hsl(var(--foreground)/0.08)"}
+  strokeWidth={isHovered ? "0.9" : "0.3"}
+  strokeDasharray={isHovered ? "2 1" : "none"}
+  className="transition-all duration-300"
+  />
+  );
+  })}
+  </svg>
 
- {/* Center Core: Operator */}
- <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
- <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full bg-black text-background shadow-lg border border-[hsl(var(--foreground)/0.08)] p-space-4.5 md:p-space-5.5">
- <div className="absolute -inset-space-1.5 rounded-full bg-primary/20 animate-ping duration-1000" />
- <div className="absolute -inset-space-3 rounded-full bg-primary/10 animate-pulse" />
- {LOGOS.operator("w-full h-full text-background")}
- </div>
- </div>
+  {/* Center Core: Operator 3D Logo */}
+  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
+  <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full bg-card shadow-2xl border border-primary/30 p-2 select-none group">
+  <div className="absolute -inset-1.5 rounded-full bg-primary/20 animate-ping duration-1000 pointer-events-none" />
+  <div className="absolute -inset-3 rounded-full bg-primary/10 animate-pulse pointer-events-none" />
+  <div className="relative w-full h-full rounded-full overflow-hidden flex items-center justify-center">
+  <Image
+    src="/logo.png"
+    alt="Operator AI Core"
+    width={72}
+    height={72}
+    unoptimized
+    priority
+    className="w-full h-full object-contain drop-shadow-md transition-transform duration-500 group-hover:scale-110"
+  />
+  </div>
+  </div>
+  </div>
 
- {/* Orbital Integration Nodes */}
- {visualNodes.map((node) => {
+  {/* Orbital Integration Nodes */}
+  {visualNodes.map((node) => {
  const rad = (node.angle * Math.PI) / 180;
  const xPos = 50 + Math.cos(rad) * 36;
  const yPos = 50 + Math.sin(rad) * 36;

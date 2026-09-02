@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Stethoscope, Scissors, Scale, Home, Dumbbell, Sparkles, Bot, User, Zap, AlertTriangle, TrendingUp } from "lucide-react";
+import Image from "next/image";
+import { Stethoscope, Scissors, Scale, Home, Dumbbell, Sparkles, User, Zap, AlertTriangle, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/shared/badge";
 import { NativeButton } from "@/components/shared/native";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -336,12 +337,23 @@ export function InteractiveIndustryExplorer() {
                                         >
                                           {/* Avatar */}
                                           <div className={[
-                                            "flex items-center justify-center h-7 w-7 radius-lg shrink-0 mt-space-0.5",
+                                            "flex items-center justify-center h-7 w-7 radius-lg shrink-0 mt-space-0.5 overflow-hidden",
                                             isAI
-                                              ? "bg-gradient-to-br from-primary to-[hsl(280_75%_55%)] text-white"
+                                              ? "p-0.5"
                                               : "bg-[hsl(var(--foreground)/0.06)] text-muted-foreground"
                                           ].join(" ")}>
-                                            {isAI ? <Bot className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
+                                            {isAI ? (
+                                              <Image
+                                                src="/logo.png"
+                                                alt="Operator AI"
+                                                width={28}
+                                                height={28}
+                                                unoptimized
+                                                className="w-full h-full object-contain"
+                                              />
+                                            ) : (
+                                              <User className="h-3.5 w-3.5" />
+                                            )}
                                           </div>
 
                                           {/* Bubble */}
@@ -363,12 +375,23 @@ export function InteractiveIndustryExplorer() {
                                       return (
                                         <div className={`flex gap-space-2.5 ie-msg-enter ${nextIsAI ? "flex-row-reverse" : ""}`}>
                                           <div className={[
-                                            "flex items-center justify-center h-7 w-7 radius-lg shrink-0",
+                                            "flex items-center justify-center h-7 w-7 radius-lg shrink-0 overflow-hidden",
                                             nextIsAI
-                                              ? "bg-gradient-to-br from-primary to-[hsl(280_75%_55%)] text-white"
+                                              ? "p-0.5"
                                               : "bg-[hsl(var(--foreground)/0.06)] text-muted-foreground"
                                           ].join(" ")}>
-                                            {nextIsAI ? <Bot className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
+                                            {nextIsAI ? (
+                                              <Image
+                                                src="/logo.png"
+                                                alt="Operator AI"
+                                                width={28}
+                                                height={28}
+                                                unoptimized
+                                                className="w-full h-full object-contain"
+                                              />
+                                            ) : (
+                                              <User className="h-3.5 w-3.5" />
+                                            )}
                                           </div>
                                           <div className="flex items-center gap-space-1.5 px-space-4 py-space-3 radius-xl bg-[hsl(var(--foreground)/0.04)] border border-[hsl(var(--foreground)/0.06)]">
                                             <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 ie-typing-dot" />
@@ -385,8 +408,15 @@ export function InteractiveIndustryExplorer() {
               <span className="text-caption font-mono text-muted-foreground/40 tracking-wider uppercase">
                 Powered by Operator AI
               </span>
-              <span className="flex items-center gap-space-1.5 text-caption font-mono text-primary/60 font-semibold tracking-wider uppercase">
-                <Sparkles className="h-3 w-3" />
+              <span className="flex items-center gap-space-1.5 text-caption font-mono text-primary font-semibold tracking-wider uppercase">
+                <Image
+                  src="/logo.png"
+                  alt="Operator AI"
+                  width={14}
+                  height={14}
+                  unoptimized
+                  className="h-3.5 w-3.5 object-contain"
+                />
                 System Active
               </span>
             </div>
