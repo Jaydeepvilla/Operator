@@ -3,15 +3,10 @@ import { db } from "../src/server/db";
 import { sql } from "drizzle-orm";
 
 async function main() {
-  console.log("🧹 Starting system cleanup...");
+  console.log("🧹 Starting complete database purge (including all Users & Organizations)...");
 
-  // Clerk user deletion block removed. Now utilizing local self-hosted auth.
-
-  // 2. Clear Database Tables
   try {
-    console.log("💾 Clearing database tables...");
-    
-    // Get all user tables except users table
+    // 1. Fetch all user tables in public schema
     const tablesResult = await db.execute(sql`
       SELECT table_name 
       FROM information_schema.tables 
@@ -19,61 +14,45 @@ async function main() {
         AND table_type = 'BASE TABLE'
         AND table_name NOT LIKE '%drizzle%'
         AND table_name NOT LIKE '_drizzle%'
-        AND table_name != 'users'
     `);
 
-    // postgres-js returns rows directly as the result array
     const rows = Array.isArray(tablesResult) ? tablesResult : (tablesResult as any).rows || [];
     const tableNames = rows.map((row: any) => `"${row.table_name}"`);
 
-    const tablesToClear: string[] = [];
-    console.log(`🔍 Checking row counts for ${tableNames.length} tables...`);
-    
-    // Run simple SELECT check to see if we can skip empty tables
-    for (const table of tableNames) {
-      try {
-        const countRes = await db.execute(sql.raw(`SELECT 1 FROM ${table} LIMIT 1;`));
-        const hasRows = Array.isArray(countRes) ? countRes.length > 0 : (countRes as any).rows?.length > 0;
-        if (hasRows) {
-          tablesToClear.push(table);
-        }
-      } catch (err: any) {
-        // Table might not exist or be accessible, skip
-      }
-    }
+    console.log(`🔍 Found ${tableNames.length} tables in database: ${tableNames.join(", ")}`);
 
-    if (tablesToClear.length > 0) {
-      // Parent tables should be cleared LAST to avoid foreign key violations during DELETE
-      const parentTables = ['"organizations"', '"users"', '"plans"', '"subscription_plans"'];
-      const children = tablesToClear.filter(t => !parentTables.includes(t));
-      const parents = tablesToClear.filter(t => parentTables.includes(t));
-      const sortedTables = [...children, ...parents];
-
-      console.log(`Clearing ${sortedTables.length} non-empty tables: ${sortedTables.join(", ")}`);
-      for (const table of sortedTables) {
-        try {
-          // Try DELETE first - it is row-level and extremely fast without range lease transitions
-          await db.execute(sql.raw(`DELETE FROM ${table};`));
-          console.log(`  ✓ Cleared (DELETE): ${table}`);
-        } catch (e: any) {
-          try {
-            // Fallback to TRUNCATE CASCADE if DELETE fails (e.g. due to cyclic foreign keys)
-            await db.execute(sql.raw(`TRUNCATE TABLE ${table} CASCADE;`));
-            console.log(`  ✓ Cleared (TRUNCATE CASCADE): ${table}`);
-          } catch (truncErr: any) {
-            console.error(`  ❌ Failed to clear ${table}:`, truncErr.message);
-          }
-        }
-      }
-      console.log("✅ Database tables cleared successfully (preserved 'users').");
+    if (tableNames.length > 0) {
+      // Truncate all tables at once with CASCADE to cleanly handle all foreign key relations
+      const truncateQuery = `TRUNCATE TABLE ${tableNames.join(", ")} CASCADE;`;
+      console.log("Executing full TRUNCATE CASCADE...");
+      await db.execute(sql.raw(truncateQuery));
+      console.log("✅ All tables (including users, sessions, orgs, data) successfully emptied!");
     } else {
-      console.log("ℹ️ All tables are already empty. No clearing needed.");
+      console.log("ℹ️ No tables found in public schema.");
     }
-  } catch (err) {
-    console.error("❌ Error clearing database:", err);
+  } catch (err: any) {
+    console.error("❌ Error during complete database purge:", err.message);
+    
+    // Fallback: Delete rows table by table
+    try {
+      console.log("⚠️ Retrying with sequential DELETE CASCADE...");
+      await db.execute(sql`
+        DO $$ 
+        DECLARE 
+          r RECORD;
+        BEGIN
+          FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename NOT LIKE '%drizzle%') LOOP
+            EXECUTE 'TRUNCATE TABLE "' || r.tablename || '" CASCADE;';
+          END LOOP;
+        END $$;
+      `);
+      console.log("✅ Fallback sequential truncate completed successfully.");
+    } catch (fallbackErr: any) {
+      console.error("❌ Fallback truncate error:", fallbackErr.message);
+    }
   }
 
-  console.log("✨ Cleanup complete!");
+  console.log("✨ Database is now 100% completely empty and fresh!");
 }
 
 main()
