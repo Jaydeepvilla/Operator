@@ -1,4 +1,5 @@
 import * as React from "react";
+import Link from "next/link";
 import { AuthFooter } from "./auth-footer";
 import { Logo } from "@/components/shared/logo";
 
@@ -53,10 +54,16 @@ export function AuthLayout({ children }: AuthLayoutProps) {
 
       {/* Pinned brand logo — top-left */}
       <div className="absolute top-8 left-10 z-20">
-        <Logo
-          iconClassName="text-primary h-6 w-6"
-          className="gap-2 text-foreground font-black text-lg"
-        />
+        <Link
+          href="/"
+          aria-label="Return to Operator homepage"
+          className="group inline-flex items-center transition-all duration-200 hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-lg"
+        >
+          <Logo
+            iconClassName="text-primary h-6 w-6 transition-transform duration-200 group-hover:scale-105"
+            className="gap-2 text-foreground font-black text-lg"
+          />
+        </Link>
       </div>
 
       {/* Form — full width, centered horizontally + vertically */}
