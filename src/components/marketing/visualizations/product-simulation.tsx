@@ -1,345 +1,596 @@
-"use client";import { Badge } from "@/components/shared/badge";
+"use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { MessageSquare, Calendar, Bell, Shield } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import {
+  MessageSquare,
+  Calendar as CalendarIcon,
+  Bell,
+  Shield,
+  Sparkles,
+  CheckCircle2,
+  Lock,
+  RotateCcw,
+  Bot,
+  User,
+  Clock,
+  ArrowUpRight,
+  Activity,
+  Check,
+  Zap,
+  Globe,
+} from "lucide-react";
 
 interface ChatMessage {
+  id: string;
   sender: "customer" | "ai";
   text: string;
+  timestamp: string;
   isTyping?: boolean;
 }
 
+interface SimulationPhase {
+  phaseKey: "receiving" | "checking" | "options" | "selecting" | "booked" | "email" | "done";
+  progress: number;
+  label: string;
+  step: string;
+  calendarStatus: "available" | "checking" | "booked";
+  calendarSlot: string;
+  callCount: number;
+  hasNotification: boolean;
+}
+
+const PHASE_MAP: Record<string, SimulationPhase> = {
+  idle: {
+    phaseKey: "receiving",
+    progress: 10,
+    label: "Standby / Awaiting Inquiry",
+    step: "Listening on Web & Telephony channels",
+    calendarStatus: "available",
+    calendarSlot: "Friday 2:00 PM • Open",
+    callCount: 46,
+    hasNotification: false,
+  },
+  receiving: {
+    phaseKey: "receiving",
+    progress: 25,
+    label: "Intent Recognition Active",
+    step: "Parsing legal intake & time preference",
+    calendarStatus: "available",
+    calendarSlot: "Friday 2:00 PM • Open",
+    callCount: 46,
+    hasNotification: false,
+  },
+  checking: {
+    phaseKey: "checking",
+    progress: 45,
+    label: "Real-time CalDAV Query",
+    step: "Querying Google Workspace & Outlook sync",
+    calendarStatus: "checking",
+    calendarSlot: "Checking availability...",
+    callCount: 46,
+    hasNotification: false,
+  },
+  options: {
+    phaseKey: "options",
+    progress: 60,
+    label: "Slot Selection Proposed",
+    step: "Dispatched 2 available windows to caller",
+    calendarStatus: "available",
+    calendarSlot: "2 Slots Available: 2:00 PM, 4:30 PM",
+    callCount: 46,
+    hasNotification: false,
+  },
+  selecting: {
+    phaseKey: "selecting",
+    progress: 75,
+    label: "Holding 2:00 PM Slot",
+    step: "Applying temporary 10-minute hold lock",
+    calendarStatus: "checking",
+    calendarSlot: "Holding 2:00 PM slot...",
+    callCount: 46,
+    hasNotification: false,
+  },
+  booked: {
+    phaseKey: "booked",
+    progress: 90,
+    label: "Event Created & Synced",
+    step: "Google Calendar webhook confirmed",
+    calendarStatus: "booked",
+    calendarSlot: "Confirmed • Friday 2:00 PM",
+    callCount: 47,
+    hasNotification: true,
+  },
+  email: {
+    phaseKey: "email",
+    progress: 95,
+    label: "CRM Contact Enrichment",
+    step: "Generating lead card for intake attorney",
+    calendarStatus: "booked",
+    calendarSlot: "Confirmed • Friday 2:00 PM",
+    callCount: 47,
+    hasNotification: true,
+  },
+  done: {
+    phaseKey: "done",
+    progress: 100,
+    label: "Workflow Completed (Sync Safe)",
+    step: "Calendar invite, SMS & CRM intake locked",
+    calendarStatus: "booked",
+    calendarSlot: "Booked (Mark B. • 2:00 PM)",
+    callCount: 47,
+    hasNotification: true,
+  },
+};
+
 const SIMULATION_SCRIPT = [
-{
-  sender: "customer" as const,
-  text: "Hi, I need to book a case evaluation consultation for tomorrow afternoon if possible.",
-  delay: 1500,
-  phase: "receiving"
-},
-{
-  sender: "ai" as const,
-  text: "Hello! Let me check our calendar availability for a consultation tomorrow afternoon...",
-  delay: 2000,
-  phase: "checking"
-},
-{
-  sender: "ai" as const,
-  text: "I have a consultation slot open tomorrow at 2:00 PM or 4:30 PM. Which one would you prefer?",
-  delay: 1800,
-  phase: "options"
-},
-{
-  sender: "customer" as const,
-  text: "2:00 PM works great. Can you sync this to my calendar?",
-  delay: 1500,
-  phase: "selecting"
-},
-{
-  sender: "ai" as const,
-  text: "Perfect! I've booked your consultation for tomorrow at 2:00 PM and synced it. Please provide your email for confirmation.",
-  delay: 2000,
-  phase: "booked"
-},
-{
-  sender: "customer" as const,
-  text: "Sure, it is mark.b@example.com.",
-  delay: 1200,
-  phase: "email"
-},
-{
-  sender: "ai" as const,
-  text: "Got it! Your confirmation email and calendar invite have been sent. I have also qualified your case details for the intake team.",
-  delay: 1800,
-  phase: "done"
-}];
+  {
+    sender: "customer" as const,
+    text: "Hi, I need to book a case evaluation consultation for tomorrow afternoon if possible.",
+    delay: 1200,
+    phase: "receiving",
+    time: "2:01 PM",
+  },
+  {
+    sender: "ai" as const,
+    text: "Hello! Let me check our calendar availability for a consultation tomorrow afternoon...",
+    delay: 1800,
+    phase: "checking",
+    time: "2:01 PM",
+  },
+  {
+    sender: "ai" as const,
+    text: "I have a consultation slot open tomorrow at 2:00 PM or 4:30 PM. Which one would you prefer?",
+    delay: 1700,
+    phase: "options",
+    time: "2:02 PM",
+  },
+  {
+    sender: "customer" as const,
+    text: "2:00 PM works great. Can you sync this to my calendar?",
+    delay: 1400,
+    phase: "selecting",
+    time: "2:02 PM",
+  },
+  {
+    sender: "ai" as const,
+    text: "Perfect! I've booked your consultation for tomorrow at 2:00 PM and synced it. Please provide your email for confirmation.",
+    delay: 1800,
+    phase: "booked",
+    time: "2:03 PM",
+  },
+  {
+    sender: "customer" as const,
+    text: "Sure, it is mark.b@example.com.",
+    delay: 1100,
+    phase: "email",
+    time: "2:03 PM",
+  },
+  {
+    sender: "ai" as const,
+    text: "Got it! Your confirmation email and calendar invite have been sent. I have also qualified your case details for the intake team.",
+    delay: 1800,
+    phase: "done",
+    time: "2:04 PM",
+  },
+];
 
-
-// --- Subcomponents for Encapsulation ---
-
-function BrowserHeader() {
+/* ─── Chrome Browser Window Header ─── */
+function BrowserHeader({ onReset, isRunning }: { onReset: () => void; isRunning: boolean }) {
   return (
-    <div className="flex items-center justify-between px-space-5 py-space-3.5 bg-[hsl(var(--background)/0.8)] border-b border-[hsl(var(--foreground)/0.1)] rounded-t-3xl">
-      {/* Mac-like Window Controls */}
-      <div className="flex items-center gap-space-2">
-        <span className="h-3 w-3 rounded-full bg-[#ff5f56] opacity-80" />
-        <span className="h-3 w-3 rounded-full bg-[#ffbd2e] opacity-80" />
-        <span className="h-3 w-3 rounded-full bg-[#27c93f] opacity-80" />
+    <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-card/90 dark:bg-zinc-900/90 border-b border-border/50 backdrop-blur-md">
+      {/* macOS Traffic Lights */}
+      <div className="flex items-center gap-2">
+        <span className="h-3 w-3 rounded-full bg-[#ff5f56] shadow-inner ring-1 ring-black/10" />
+        <span className="h-3 w-3 rounded-full bg-[#ffbd2e] shadow-inner ring-1 ring-black/10" />
+        <span className="h-3 w-3 rounded-full bg-[#27c93f] shadow-inner ring-1 ring-black/10" />
+        
+        {/* Mock Tab */}
+        <div className="hidden sm:flex items-center gap-2 ml-4 px-3 py-1 rounded-lg bg-background/80 dark:bg-zinc-800/80 border border-border/40 text-xs text-foreground/80 font-medium">
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          <span>Operator Live Demo</span>
+        </div>
       </div>
-      {/* Address Bar */}
-      <div className="flex-1 max-w-md mx-auto flex items-center justify-center">
-        <Badge variant="soft" className="w-full">
-          operator-widget.vercel.app
-        </Badge>
+
+      {/* Modern Address Bar */}
+      <div className="flex-1 max-w-xs sm:max-w-md mx-3 sm:mx-6">
+        <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-full bg-background/60 dark:bg-zinc-950/60 border border-border/50 shadow-inner text-xs font-mono text-muted-foreground">
+          <Lock className="h-3 w-3 text-emerald-500" />
+          <span className="text-foreground/90 font-medium">operator.ai</span>
+          <span className="text-muted-foreground/60 hidden sm:inline">/live-demo/receptionist</span>
+        </div>
       </div>
-      {/* Balance spacer */}
-      <div className="w-14 hidden sm:block" />
+
+      {/* Reset & Status Controls */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onReset}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted transition-colors border border-border/40 cursor-pointer"
+          title="Replay simulation"
+        >
+          <RotateCcw className="h-3 w-3" />
+          <span className="hidden md:inline">Replay</span>
+        </button>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span className="hidden sm:inline">Live Engine</span>
+        </div>
+      </div>
     </div>
   );
 }
 
-function ChatPane({ chatLog, chatContainerRef }: {chatLog: ChatMessage[];chatContainerRef: React.RefObject<HTMLDivElement | null>;}) {
+/* ─── Left Pane: Conversational Chat Studio ─── */
+function ChatPane({
+  chatLog,
+  chatContainerRef,
+}: {
+  chatLog: ChatMessage[];
+  chatContainerRef: React.RefObject<HTMLDivElement | null>;
+}) {
   return (
-    <div className="bg-[hsl(var(--background)/0.8)] p-space-5 flex flex-col justify-between h-96 rounded-none lg:rounded-bl-3xl">
+    <div className="flex flex-col justify-between h-[480px] bg-background/95 dark:bg-zinc-950/95 p-5 sm:p-6 relative">
       {/* Pane Header */}
-      <div className="flex items-center justify-between border-b border-[hsl(var(--foreground)/0.1)] pb-space-3 mb-space-3">
-        <div className="flex items-center gap-space-2">
-          <MessageSquare className="h-4 w-4 text-purple-500" />
-          <span className="text-xs uppercase font-mono font-semibold tracking-wider text-[hsl(var(--foreground)/0.8)]">
-            Live Customer Conversation
-          </span>
+      <div className="flex items-center justify-between pb-3.5 border-b border-border/50">
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-sm shadow-indigo-500/25 ring-1 ring-white/20">
+            <Bot className="h-4 w-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-foreground tracking-tight">Operator AI Receptionist</span>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-primary/10 text-primary uppercase tracking-wide">
+                Autonomous
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">Session #4819 • Lead Intake & Booking</p>
+          </div>
         </div>
-        <Badge variant="soft">
-          Website Widget
-        </Badge>
+        <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground font-mono bg-muted/40 px-2.5 py-1 rounded-md border border-border/40">
+          <Activity className="h-3 w-3 text-emerald-500 animate-pulse" />
+          <span>380ms Latency</span>
+        </div>
       </div>
 
- {/* Conversation history list */}
- <ScrollArea
-                  ref={chatContainerRef}
-                  role="log"
-                  aria-live="polite"
-                  className="flex-1 space-y-space-3 pr-space-1 text-body-sm leading-relaxed" horizontal={false}>
-                  
-           {chatLog.length === 0 ?
-                  <div className="h-full flex items-center justify-center text-[hsl(var(--foreground)/0.5)] text-center p-space-4 font-medium animate-pulse">
-           Waiting for incoming client inquiry...
-           </div> :
+      {/* Conversation Thread with Gradient Fade Mask */}
+      <div
+        ref={chatContainerRef}
+        role="log"
+        aria-live="polite"
+        className="flex-1 overflow-y-auto py-4 space-y-4 pr-1.5 [mask-image:linear-gradient(to_bottom,transparent_0%,black_24px,black_100%)] scroll-smooth"
+      >
+        {chatLog.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-center p-6 space-y-2">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary animate-pulse">
+              <MessageSquare className="h-5 w-5" />
+            </div>
+            <p className="text-sm font-medium">Connecting to customer line...</p>
+            <p className="text-xs text-muted-foreground/70">Simulating incoming consultation inquiry</p>
+          </div>
+        ) : (
+          chatLog.map((turn) => {
+            const isAI = turn.sender === "ai";
+            return (
+              <div
+                key={turn.id}
+                className={`flex gap-3 items-end transition-all duration-300 ${
+                  isAI ? "justify-end" : "justify-start"
+                }`}
+              >
+                {!isAI && (
+                  <div className="h-7 w-7 rounded-full bg-muted border border-border/60 flex items-center justify-center text-foreground font-semibold text-xs shrink-0 shadow-xs">
+                    MB
+                  </div>
+                )}
 
-                  chatLog.map((turn, i) =>
-                  <div
-                    key={i}
-                    className={`flex flex-col max-w-4/5 ${
-                    turn.sender === "customer" ?
-                    "mr-auto items-start animate-fade-in" :
-                    "ml-auto items-end"}`
-                    }>
-                    
-           <div
-                      className={`rounded-2xl px-space-4 py-space-2 ${
-                      turn.sender === "customer" ?
-                      "bg-card border border-[hsl(var(--foreground)/0.1)] text-foreground rounded-tl-none" :
-                      turn.isTyping ?
-                      "bg-purple-500/10 border border-purple-500/20 text-purple-500 animate-pulse rounded-tr-none" :
-                      "bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-tr-none font-medium"}`
-                      }>
-                      
-           {turn.text}
-           </div>
-           </div>
-                  )
-                  }
-           </ScrollArea>
+                <div className={`flex flex-col max-w-[85%] sm:max-w-[78%] ${isAI ? "items-end" : "items-start"}`}>
+                  <div className="flex items-center gap-1.5 mb-1 px-1">
+                    <span className="text-[11px] font-medium text-muted-foreground">
+                      {isAI ? "Operator Concierge" : "Mark B."}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground/50 font-mono">{turn.timestamp}</span>
+                  </div>
 
- {/* Pane Footer */}
- <div className="border-t border-[hsl(var(--foreground)/0.1)] pt-space-3 text-caption font-mono font-semibold text-[hsl(var(--foreground)/0.5)] flex items-center justify-between">
- <span>Powered by Operator Brain</span>
- <span className="flex items-center gap-space-1.5 text-purple-500">
- <span className="relative flex h-2 w-2">
- <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
- <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
- </span>
- AI Active
- </span>
- </div>
- </div>);
+                  {turn.isTyping ? (
+                    <div className="rounded-2xl rounded-tr-xs px-4 py-3 bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-300 shadow-sm flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="h-2 w-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="h-2 w-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
+                  ) : (
+                    <div
+                      className={`rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm transition-all duration-200 ${
+                        isAI
+                          ? "bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700 text-white rounded-tr-xs shadow-purple-500/15 ring-1 ring-white/20 font-normal"
+                          : "bg-card dark:bg-zinc-900 border border-border/80 text-foreground rounded-tl-xs"
+                      }`}
+                    >
+                      {turn.text}
+                    </div>
+                  )}
+                </div>
 
+                {isAI && (
+                  <div className="h-7 w-7 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs shrink-0 shadow-sm ring-1 ring-white/20">
+                    <Sparkles className="h-3.5 w-3.5" />
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Pane Footer */}
+      <div className="pt-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-0.5 h-3">
+            <span className="w-0.5 h-3 bg-primary animate-[pulse_1s_ease-in-out_infinite]" />
+            <span className="w-0.5 h-2 bg-primary/70 animate-[pulse_1.2s_ease-in-out_infinite]" />
+            <span className="w-0.5 h-3.5 bg-primary animate-[pulse_0.8s_ease-in-out_infinite]" />
+            <span className="w-0.5 h-1.5 bg-primary/60 animate-[pulse_1.1s_ease-in-out_infinite]" />
+          </div>
+          <span className="font-medium text-foreground/80">Voice AI + Chat Channel</span>
+        </div>
+        <span className="font-mono text-[11px] text-muted-foreground/80">Zero Human Hand-off Required</span>
+      </div>
+    </div>
+  );
 }
 
-function MetricsPane({ dbState }: {dbState: any;}) {
+/* ─── Right Pane: Live Calendar & CRM Engine ─── */
+function MetricsPane({ phase }: { phase: SimulationPhase }) {
   return (
-    <div className="bg-[hsl(var(--foreground)/0.03)] p-space-5 flex flex-col justify-between h-96 border-t lg:border-t-space-0 lg:border-l border-[hsl(var(--foreground)/0.1)] rounded-b-3xl lg:rounded-bl-none lg:rounded-br-3xl">
- {/* Pane Header */}
- <div className="flex items-center justify-between border-b border-[hsl(var(--foreground)/0.1)] pb-space-3 mb-space-3">
- <div className="flex items-center gap-space-2">
- <Calendar className="h-4 w-4 text-purple-500" />
- <span className="text-xs uppercase font-mono font-semibold tracking-wider text-[hsl(var(--foreground)/0.8)]">
- Live Calendar & CRM State
- </span>
- </div>
- <div className="relative cursor-pointer hover:opacity-85 transition-opacity">
- <Bell className={`h-4 w-4 text-[hsl(var(--foreground)/0.6)] ${dbState.notification ? "animate-[bounce_1s_infinite]" : ""}`} />
- {dbState.notification &&
-          <span className="absolute -top-space-0.5 -right-space-0.5 h-2 w-2 rounded-full bg-emerald-500 " />
-          }
- </div>
- </div>
+    <div className="flex flex-col justify-between h-[480px] bg-muted/30 dark:bg-zinc-900/40 p-5 sm:p-6 border-t lg:border-t-0 lg:border-l border-border/50 backdrop-blur-md">
+      {/* Pane Header */}
+      <div className="flex items-center justify-between pb-3.5 border-b border-border/50">
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400 shadow-xs">
+            <CalendarIcon className="h-4 w-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-foreground tracking-tight">Real-time State & CRM</span>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono">
+                Sync Active
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">Autonomous Calendar Engine</p>
+          </div>
+        </div>
 
- {/* Sync status cards */}
- <div className="flex-1 space-y-space-4 pt-space-2">
- {/* System Phase Indicator */}
- <div className="rounded-2xl border border-[hsl(var(--foreground)/0.1)] bg-[hsl(var(--background))] p-space-4 flex justify-between items-center">
- <div className="flex flex-col gap-space-1.5">
- <span className="text-caption uppercase tracking-widest font-mono font-semibold text-[hsl(var(--foreground)/0.5)] leading-none">
- AI Processing State
- </span>
- <p className="text-body-sm font-semibold tracking-tight text-[hsl(var(--foreground))] capitalize transition-all duration-300">
- {dbState.activePhase}
- </p>
- </div>
- <span className="h-2 w-2 rounded-full bg-purple-500 animate-pulse " />
- </div>
+        {/* Bell with Ping */}
+        <div className="relative p-1.5 rounded-lg bg-background/80 dark:bg-zinc-800/80 border border-border/40 shadow-xs">
+          <Bell
+            className={`h-4 w-4 text-muted-foreground transition-transform ${
+              phase.hasNotification ? "text-purple-500 animate-[bounce_1s_infinite]" : ""
+            }`}
+          />
+          {phase.hasNotification && (
+            <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background animate-pulse" />
+          )}
+        </div>
+      </div>
 
- {/* Simulated Calendar Sync Card */}
- <div className="rounded-2xl border border-[hsl(var(--foreground)/0.1)] bg-[hsl(var(--background))] p-space-4 space-y-space-3">
- <span className="text-caption uppercase tracking-widest font-mono font-semibold text-[hsl(var(--foreground)/0.55)] leading-none">
- Google Calendar Sync
- </span>
- <div className="flex justify-between items-center text-body-sm leading-none">
- <span className="text-[hsl(var(--foreground)/0.6)] font-medium">Friday 2:00 PM Slot:</span>
- <span className={`px-space-3 py-space-1 rounded-full text-caption font-mono font-normal tracking-wider border transition-all duration-300 ${
-            dbState.calendarStatus === "Available" ?
-            "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" :
-            dbState.calendarStatus.startsWith("Booked") ?
-            "text-purple-500 bg-purple-500/10 border-purple-500/20 " :
-            "text-blue-500 bg-blue-500/10 border-blue-500/20 animate-pulse"}`
-            }>
- {dbState.calendarStatus}
- </span>
- </div>
- </div>
+      {/* Cards Stack */}
+      <div className="space-y-3.5 my-auto py-2">
+        {/* Card 1: AI Workflow Processing Stage */}
+        <div className="rounded-2xl border border-border/60 bg-background/90 dark:bg-zinc-950/80 p-4 shadow-sm space-y-2.5 transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+              <span className="text-xs font-semibold text-foreground uppercase tracking-wider font-mono">
+                AI Workflow Execution
+              </span>
+            </div>
+            <span className="text-xs font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+              {phase.progress}%
+            </span>
+          </div>
 
- {/* Metrics Counters */}
- <div className="grid grid-cols-2 gap-space-4">
- <div className="rounded-2xl border border-[hsl(var(--foreground)/0.1)] bg-[hsl(var(--background))] p-space-4">
- <span className="text-caption uppercase tracking-widest font-mono font-semibold text-[hsl(var(--foreground)/0.5)] leading-none">
- Calls Captured
- </span>
- <p className="text-heading-md font-semibold tracking-tight text-[hsl(var(--foreground))] mt-space-1 font-mono transition-all duration-500">
- {dbState.callCount}
- </p>
- </div>
+          <div>
+            <h4 className="text-sm font-semibold text-foreground tracking-tight">{phase.label}</h4>
+            <p className="text-xs text-muted-foreground mt-0.5">{phase.step}</p>
+          </div>
 
- <div className="rounded-2xl border border-[hsl(var(--foreground)/0.1)] bg-[hsl(var(--background))] p-space-4">
- <span className="text-caption uppercase tracking-widest font-mono font-semibold text-[hsl(var(--foreground)/0.5)] leading-none">
- Database Health
- </span>
- <p className="text-heading-md font-semibold tracking-tight text-emerald-500 mt-space-1 font-mono">
- 100%
- </p>
- </div>
- </div>
- </div>
+          {/* Smooth Progress Bar */}
+          <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${phase.progress}%` }}
+            />
+          </div>
+        </div>
 
- {/* Pane Footer */}
- <div className="border-t border-[hsl(var(--foreground)/0.1)] pt-space-3 text-caption font-mono font-semibold text-[hsl(var(--foreground)/0.5)] flex items-center justify-between">
- <span className="flex items-center gap-space-1">
- <Shield className="h-3.5 w-3.5 text-purple-500" /> Data Isolated (SOC2 Secure)
- </span>
- <span>Update interval: Real-time</span>
- </div>
- </div>);
+        {/* Card 2: Simulated Google Calendar & CalDAV Card */}
+        <div className="rounded-2xl border border-border/60 bg-background/90 dark:bg-zinc-950/80 p-4 shadow-sm space-y-3 transition-all duration-300">
+          <div className="flex items-center justify-between border-b border-border/40 pb-2">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-5 rounded bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                <CalendarIcon className="h-3 w-3" />
+              </div>
+              <span className="text-xs font-medium text-foreground">Google Calendar Sync</span>
+            </div>
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium transition-all duration-300 ${
+                phase.calendarStatus === "booked"
+                  ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-semibold"
+                  : phase.calendarStatus === "checking"
+                  ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 animate-pulse"
+                  : "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20"
+              }`}
+            >
+              {phase.calendarStatus === "booked" ? "✓ Confirmed & Locked" : phase.calendarStatus === "checking" ? "Checking Slot..." : "Live Slot Available"}
+            </span>
+          </div>
 
+          <div className="flex items-center justify-between text-xs">
+            <div className="space-y-0.5">
+              <p className="font-medium text-foreground text-sm">Consultation - Mark B.</p>
+              <p className="text-muted-foreground flex items-center gap-1">
+                <Clock className="h-3 w-3" /> Tomorrow, Friday • 2:00 PM – 2:45 PM
+              </p>
+            </div>
+            <div className="text-right font-mono text-[11px] text-muted-foreground">
+              <span>{phase.calendarSlot}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Metrics Counters */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-border/60 bg-background/90 dark:bg-zinc-950/80 p-3.5 shadow-sm">
+            <span className="text-[11px] uppercase tracking-wider font-mono font-medium text-muted-foreground">
+              Calls Handled Today
+            </span>
+            <div className="flex items-baseline justify-between mt-1">
+              <p className="text-2xl font-bold font-mono text-foreground tracking-tight transition-all duration-300">
+                {phase.callCount}
+              </p>
+              <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                +14% today
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border/60 bg-background/90 dark:bg-zinc-950/80 p-3.5 shadow-sm">
+            <span className="text-[11px] uppercase tracking-wider font-mono font-medium text-muted-foreground">
+              Intake Precision
+            </span>
+            <div className="flex items-baseline justify-between mt-1">
+              <p className="text-2xl font-bold font-mono text-emerald-500 tracking-tight">
+                99.8%
+              </p>
+              <span className="text-[11px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                Zero Misses
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Pane Footer */}
+      <div className="pt-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground font-mono">
+        <span className="flex items-center gap-1.5">
+          <Shield className="h-3.5 w-3.5 text-primary" />
+          <span>SOC2 Type II • HIPAA Safe</span>
+        </span>
+        <span className="text-muted-foreground/70">Sync: Real-time</span>
+      </div>
+    </div>
+  );
 }
 
 export function ProductSimulation() {
   const [chatLog, setChatLog] = useState<ChatMessage[]>([]);
-  const [dbState, setDbState] = useState({
-    calendarStatus: "Available",
-    callCount: 46,
-    notification: false,
-    activePhase: "idle"
-  });
+  const [currentPhase, setCurrentPhase] = useState<SimulationPhase>(PHASE_MAP.idle);
   const [simStep, setSimStep] = useState(0);
+  const [isRunning, setIsRunning] = useState(true);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const updateDatabaseState = React.useCallback((phase: string) => {
-    switch (phase) {
-      case "receiving":
-        setDbState((prev) => ({ ...prev, activePhase: "Intake Request Recieved" }));
-        break;
-      case "checking":
-        setDbState((prev) => ({ ...prev, activePhase: "Searching Calendar slots...", calendarStatus: "Checking availability..." }));
-        break;
-      case "options":
-        setDbState((prev) => ({ ...prev, activePhase: "Displaying Consultation Options", calendarStatus: "Slots Found: 2:00 PM, 4:30 PM" }));
-        break;
-      case "selecting":
-        setDbState((prev) => ({ ...prev, activePhase: "Slot Selected (2:00 PM)" }));
-        break;
-      case "booked":
-        setDbState((prev) => ({
-          ...prev,
-          activePhase: "Syncing Google Calendar...",
-          calendarStatus: "Booked (Mark B. - 2:00 PM)",
-          callCount: 47,
-          notification: true
-        }));
-        break;
-      case "email":
-        setDbState((prev) => ({ ...prev, activePhase: "Adding Email contact card" }));
-        break;
-      case "done":
-        setDbState((prev) => ({ ...prev, activePhase: "Operation Completed (Sync Safe)" }));
-        break;
-      default:
-        break;
-    }
+  const resetSimulation = useCallback(() => {
+    setChatLog([]);
+    setCurrentPhase(PHASE_MAP.idle);
+    setSimStep(0);
+    setIsRunning(true);
   }, []);
 
+  // Auto-scroll chat smoothly
   useEffect(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     }
   }, [chatLog]);
 
+  // Simulation execution loop
   useEffect(() => {
+    if (!isRunning) return;
+
     if (simStep >= SIMULATION_SCRIPT.length) {
-      // Reset simulation loop after 10 seconds of idle
-      const timer = setTimeout(() => {
-        setChatLog([]);
-        setDbState({
-          calendarStatus: "Available",
-          callCount: 46,
-          notification: false,
-          activePhase: "idle"
-        });
-        setSimStep(0);
-      }, 10000);
-      return () => clearTimeout(timer);
+      // Loop after completion with graceful delay
+      const loopTimer = setTimeout(() => {
+        resetSimulation();
+      }, 9000);
+      return () => clearTimeout(loopTimer);
     }
 
     const scriptItem = SIMULATION_SCRIPT[simStep];
 
     const timer = setTimeout(() => {
-      // If AI message, show typing state first
       if (scriptItem.sender === "ai") {
-        setChatLog((prev) => [...prev, { sender: "ai", text: "...", isTyping: true }]);
+        const typingId = `typing-${Date.now()}`;
+        setChatLog((prev) => [
+          ...prev,
+          {
+            id: typingId,
+            sender: "ai",
+            text: "...",
+            timestamp: scriptItem.time,
+            isTyping: true,
+          },
+        ]);
 
-        setTimeout(() => {
+        const aiResponseTimer = setTimeout(() => {
           setChatLog((prev) => {
             const list = [...prev];
-            list[list.length - 1] = { sender: "ai", text: scriptItem.text };
+            const lastIdx = list.length - 1;
+            if (lastIdx >= 0) {
+              list[lastIdx] = {
+                id: `ai-${Date.now()}`,
+                sender: "ai",
+                text: scriptItem.text,
+                timestamp: scriptItem.time,
+              };
+            }
             return list;
           });
-          updateDatabaseState(scriptItem.phase);
+
+          const newPhase = PHASE_MAP[scriptItem.phase] || PHASE_MAP.idle;
+          setCurrentPhase(newPhase);
           setSimStep((prev) => prev + 1);
-        }, 1000);
+        }, 900);
+
+        return () => clearTimeout(aiResponseTimer);
       } else {
-        setChatLog((prev) => [...prev, { sender: "customer", text: scriptItem.text }]);
-        updateDatabaseState(scriptItem.phase);
+        setChatLog((prev) => [
+          ...prev,
+          {
+            id: `user-${Date.now()}`,
+            sender: "customer",
+            text: scriptItem.text,
+            timestamp: scriptItem.time,
+          },
+        ]);
+
+        const newPhase = PHASE_MAP[scriptItem.phase] || PHASE_MAP.idle;
+        setCurrentPhase(newPhase);
         setSimStep((prev) => prev + 1);
       }
     }, scriptItem.delay);
 
     return () => clearTimeout(timer);
-  }, [simStep, updateDatabaseState]);
+  }, [simStep, isRunning, resetSimulation]);
 
   return (
     <div className="relative mx-auto max-w-5xl w-full">
- {/* Glow highlight frame borders */}
- <div className="absolute -inset-px rounded-3xl bg-gradient-to-b from-[hsl(var(--foreground)/0.06)] to-transparent pointer-events-none" />
+      {/* Radiant Background Aura / Glow */}
+      <div className="absolute -inset-1 sm:-inset-2 rounded-[2.5rem] bg-gradient-to-r from-indigo-500/20 via-purple-500/15 to-pink-500/20 blur-2xl opacity-60 dark:opacity-40 pointer-events-none -z-10" />
 
- {/* ── Browser Window Shell Container ── */}
- <div className="relative rounded-3xl border border-zinc-200/80 bg-[hsl(var(--background))] overflow-hidden mb-space-6">
- <BrowserHeader />
+      {/* ── Browser Window Shell Container ── */}
+      <div className="relative rounded-3xl border border-border/70 dark:border-white/10 bg-card/90 dark:bg-zinc-900/90 shadow-[0_20px_70px_-15px_rgba(99,102,241,0.18),0_0_1px_1px_rgba(0,0,0,0.06)] dark:shadow-[0_25px_80px_-20px_rgba(99,102,241,0.3),0_0_0_1px_rgba(255,255,255,0.08)] overflow-hidden backdrop-blur-xl">
+        <BrowserHeader onReset={resetSimulation} isRunning={isRunning} />
 
- {/* ── Two-pane grid layout inside browser window ── */}
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-[hsl(var(--foreground)/0.1)] rounded-b-3xl">
- <ChatPane chatLog={chatLog} chatContainerRef={chatContainerRef} />
- <MetricsPane dbState={dbState} />
- </div>
- </div>
- </div>);
-
+        {/* ── Two-pane grid layout inside browser window ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border/60">
+          <ChatPane chatLog={chatLog} chatContainerRef={chatContainerRef} />
+          <MetricsPane phase={currentPhase} />
+        </div>
+      </div>
+    </div>
+  );
 }
