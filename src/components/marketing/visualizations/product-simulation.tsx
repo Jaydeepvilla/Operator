@@ -177,7 +177,7 @@ const SIMULATION_SCRIPT = [
 /* ─── Chrome Browser Window Header ─── */
 function BrowserHeader({ onReset, isRunning }: { onReset: () => void; isRunning: boolean }) {
   return (
-    <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-card/90 dark:bg-zinc-900/90 border-b border-border/50 backdrop-blur-md">
+    <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-white dark:bg-zinc-900 border-b border-slate-200/80 dark:border-zinc-800">
       {/* macOS Traffic Lights */}
       <div className="flex items-center gap-2">
         <span className="h-3 w-3 rounded-full bg-[#ff5f56] shadow-inner ring-1 ring-black/10" />
@@ -185,7 +185,7 @@ function BrowserHeader({ onReset, isRunning }: { onReset: () => void; isRunning:
         <span className="h-3 w-3 rounded-full bg-[#27c93f] shadow-inner ring-1 ring-black/10" />
         
         {/* Mock Tab */}
-        <div className="hidden sm:flex items-center gap-2 ml-4 px-3 py-1 rounded-lg bg-background/80 dark:bg-zinc-800/80 border border-border/40 text-xs text-foreground/80 font-medium">
+        <div className="hidden sm:flex items-center gap-2 ml-4 px-3 py-1 rounded-lg bg-slate-100/80 dark:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-700/60 text-xs text-foreground/80 font-medium">
           <Sparkles className="h-3.5 w-3.5 text-primary" />
           <span>Operator Live Demo</span>
         </div>
@@ -193,10 +193,9 @@ function BrowserHeader({ onReset, isRunning }: { onReset: () => void; isRunning:
 
       {/* Modern Address Bar */}
       <div className="flex-1 max-w-xs sm:max-w-md mx-3 sm:mx-6">
-        <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-full bg-background/60 dark:bg-zinc-950/60 border border-border/50 shadow-inner text-xs font-mono text-muted-foreground">
+        <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-full bg-slate-100/80 dark:bg-zinc-950 border border-slate-200/80 dark:border-zinc-800 text-xs font-mono text-muted-foreground">
           <Lock className="h-3 w-3 text-emerald-500" />
-          <span className="text-foreground/90 font-medium">operator.ai</span>
-          <span className="text-muted-foreground/60 hidden sm:inline">/live-demo/receptionist</span>
+          <span className="text-foreground/90 font-medium">operator-widget.vercel.app</span>
         </div>
       </div>
 
@@ -231,9 +230,9 @@ function ChatPane({
   chatContainerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   return (
-    <div className="flex flex-col justify-between h-[480px] bg-background/95 dark:bg-zinc-950/95 p-5 sm:p-6 relative">
+    <div className="flex flex-col justify-between h-[480px] bg-white dark:bg-zinc-950 p-5 sm:p-6 relative">
       {/* Pane Header */}
-      <div className="flex items-center justify-between pb-3.5 border-b border-border/50">
+      <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/80 dark:border-zinc-800">
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-sm shadow-indigo-500/25 ring-1 ring-white/20">
             <Bot className="h-4 w-4" />
@@ -248,7 +247,7 @@ function ChatPane({
             <p className="text-xs text-muted-foreground">Session #4819 • Lead Intake & Booking</p>
           </div>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground font-mono bg-muted/40 px-2.5 py-1 rounded-md border border-border/40">
+        <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground font-mono bg-slate-50 dark:bg-zinc-900 px-2.5 py-1 rounded-md border border-slate-200/80 dark:border-zinc-800">
           <Activity className="h-3 w-3 text-emerald-500 animate-pulse" />
           <span>380ms Latency</span>
         </div>
@@ -343,9 +342,9 @@ function ChatPane({
 /* ─── Right Pane: Live Calendar & CRM Engine ─── */
 function MetricsPane({ phase }: { phase: SimulationPhase }) {
   return (
-    <div className="flex flex-col justify-between h-[480px] bg-muted/30 dark:bg-zinc-900/40 p-5 sm:p-6 border-t lg:border-t-0 lg:border-l border-border/50 backdrop-blur-md">
+    <div className="flex flex-col justify-between h-[480px] bg-white dark:bg-zinc-950 p-5 sm:p-6 border-t lg:border-t-0 lg:border-l border-slate-200/80 dark:border-zinc-800">
       {/* Pane Header */}
-      <div className="flex items-center justify-between pb-3.5 border-b border-border/50">
+      <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/80 dark:border-zinc-800">
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400 shadow-xs">
             <CalendarIcon className="h-4 w-4" />
@@ -362,7 +361,7 @@ function MetricsPane({ phase }: { phase: SimulationPhase }) {
         </div>
 
         {/* Bell with Ping */}
-        <div className="relative p-1.5 rounded-lg bg-background/80 dark:bg-zinc-800/80 border border-border/40 shadow-xs">
+        <div className="relative p-1.5 rounded-lg bg-slate-50 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-xs">
           <Bell
             className={`h-4 w-4 text-muted-foreground transition-transform ${
               phase.hasNotification ? "text-purple-500 animate-[bounce_1s_infinite]" : ""
@@ -377,7 +376,7 @@ function MetricsPane({ phase }: { phase: SimulationPhase }) {
       {/* Cards Stack */}
       <div className="space-y-3.5 my-auto py-2">
         {/* Card 1: AI Workflow Processing Stage */}
-        <div className="rounded-2xl border border-border/60 bg-background/90 dark:bg-zinc-950/80 p-4 shadow-sm space-y-2.5 transition-all duration-300">
+        <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 p-4 shadow-xs space-y-2.5 transition-all duration-300">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
@@ -396,7 +395,7 @@ function MetricsPane({ phase }: { phase: SimulationPhase }) {
           </div>
 
           {/* Smooth Progress Bar */}
-          <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-slate-200/80 dark:bg-zinc-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${phase.progress}%` }}
@@ -405,8 +404,8 @@ function MetricsPane({ phase }: { phase: SimulationPhase }) {
         </div>
 
         {/* Card 2: Simulated Google Calendar & CalDAV Card */}
-        <div className="rounded-2xl border border-border/60 bg-background/90 dark:bg-zinc-950/80 p-4 shadow-sm space-y-3 transition-all duration-300">
-          <div className="flex items-center justify-between border-b border-border/40 pb-2">
+        <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 p-4 shadow-xs space-y-3 transition-all duration-300">
+          <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-zinc-800 pb-2">
             <div className="flex items-center gap-2">
               <div className="h-5 w-5 rounded bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
                 <CalendarIcon className="h-3 w-3" />
@@ -441,7 +440,7 @@ function MetricsPane({ phase }: { phase: SimulationPhase }) {
 
         {/* Card 3: Metrics Counters */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-border/60 bg-background/90 dark:bg-zinc-950/80 p-3.5 shadow-sm">
+          <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 p-3.5 shadow-xs">
             <span className="text-[11px] uppercase tracking-wider font-mono font-medium text-muted-foreground">
               Calls Handled Today
             </span>
@@ -455,7 +454,7 @@ function MetricsPane({ phase }: { phase: SimulationPhase }) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border/60 bg-background/90 dark:bg-zinc-950/80 p-3.5 shadow-sm">
+          <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 p-3.5 shadow-xs">
             <span className="text-[11px] uppercase tracking-wider font-mono font-medium text-muted-foreground">
               Intake Precision
             </span>
@@ -472,7 +471,7 @@ function MetricsPane({ phase }: { phase: SimulationPhase }) {
       </div>
 
       {/* Pane Footer */}
-      <div className="pt-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground font-mono">
+      <div className="pt-3 border-t border-slate-200/80 dark:border-zinc-800 flex items-center justify-between text-xs text-muted-foreground font-mono">
         <span className="flex items-center gap-1.5">
           <Shield className="h-3.5 w-3.5 text-primary" />
           <span>SOC2 Type II • HIPAA Safe</span>
@@ -579,14 +578,14 @@ export function ProductSimulation() {
   return (
     <div className="relative mx-auto max-w-5xl w-full">
       {/* Radiant Background Aura / Glow */}
-      <div className="absolute -inset-1 sm:-inset-2 rounded-[2.5rem] bg-gradient-to-r from-indigo-500/20 via-purple-500/15 to-pink-500/20 blur-2xl opacity-60 dark:opacity-40 pointer-events-none -z-10" />
+      <div className="absolute -inset-1 sm:-inset-2 rounded-[2.5rem] bg-gradient-to-r from-indigo-500/15 via-purple-500/10 to-pink-500/15 blur-2xl opacity-50 dark:opacity-30 pointer-events-none -z-10" />
 
       {/* ── Browser Window Shell Container ── */}
-      <div className="relative rounded-3xl border border-border/70 dark:border-white/10 bg-card/90 dark:bg-zinc-900/90 shadow-[0_20px_70px_-15px_rgba(99,102,241,0.18),0_0_1px_1px_rgba(0,0,0,0.06)] dark:shadow-[0_25px_80px_-20px_rgba(99,102,241,0.3),0_0_0_1px_rgba(255,255,255,0.08)] overflow-hidden backdrop-blur-xl">
+      <div className="relative rounded-3xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-[0_20px_70px_-15px_rgba(99,102,241,0.12),0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden">
         <BrowserHeader onReset={resetSimulation} isRunning={isRunning} />
 
         {/* ── Two-pane grid layout inside browser window ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border/60">
+        <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-200/80 dark:divide-zinc-800 bg-white dark:bg-zinc-950">
           <ChatPane chatLog={chatLog} chatContainerRef={chatContainerRef} />
           <MetricsPane phase={currentPhase} />
         </div>
