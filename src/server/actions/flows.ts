@@ -4,6 +4,7 @@ import { requireOrganizationAccess } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { flowsRepository } from "../repositories/flows";
 import { syncService } from "../services/sync";
+import { settingsRepository } from "../repositories/settings";
 
 export async function getFlowQuestionsAction() {
   try {
@@ -36,6 +37,25 @@ export async function createFlowQuestionAction(data: {
 
     const updatedList = await flowsRepository.list(organizationId);
     await syncService.syncQualificationFlows(organizationId, updatedList);
+
+    // Auto-mark flows setup task completed
+    try {
+      const settings = await settingsRepository.getByOrg(organizationId);
+      if (settings) {
+        const currentBp = (settings.bookingPreferences as Record<string, any>) || {};
+        const confirmed: string[] = Array.isArray(currentBp.confirmedTasks) ? [...currentBp.confirmedTasks] : [];
+        if (!confirmed.includes("flows")) confirmed.push("flows");
+        const uncompleted = Array.isArray(currentBp.uncompletedTasks) ? currentBp.uncompletedTasks.filter((t: string) => t !== "flows") : [];
+        await settingsRepository.update(organizationId, {
+          bookingPreferences: {
+            ...currentBp,
+            flowsConfigured: true,
+            confirmedTasks: confirmed,
+            uncompletedTasks: uncompleted,
+          },
+        });
+      }
+    } catch (e) {}
 
     revalidatePath("/flows");
     revalidatePath("/dashboard");

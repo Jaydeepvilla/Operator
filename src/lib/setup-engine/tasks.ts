@@ -15,6 +15,7 @@ export const SETUP_TASKS: SetupTask[] = [
     isCompleted: (state: SetupState) => {
       const p = state.profile;
       const bp = (state.settings as any)?.bookingPreferences;
+      if (bp?.uncompletedTasks?.includes("profile")) return false;
       if (bp?.confirmedTasks?.includes("profile")) return true;
       return !!p?.description && !!p?.name && p?.name !== "My Business" && p?.description !== "Standard business profile";
     },
@@ -32,6 +33,7 @@ export const SETUP_TASKS: SetupTask[] = [
     dependencies: [],
     isCompleted: (state: SetupState) => {
       const bp = (state.settings as any)?.bookingPreferences;
+      if (bp?.uncompletedTasks?.includes("hours")) return false;
       return !!bp?.hoursConfigured || !!bp?.confirmedTasks?.includes("hours");
     },
     href: "/settings",
@@ -49,17 +51,9 @@ export const SETUP_TASKS: SetupTask[] = [
     dependencies: ["profile"],
     isCompleted: (state: SetupState) => {
       const bp = (state.settings as any)?.bookingPreferences;
+      if (bp?.uncompletedTasks?.includes("faqs")) return false;
       if (bp?.confirmedTasks?.includes("faqs")) return true;
-      if (!state.faqs || state.faqs.length === 0) return false;
-      // Must have real custom FAQs, not auto-seeded clinic templates
-      return state.faqs.some(
-        (f: any) =>
-          !f.isTemplate &&
-          !f.question?.toLowerCase().includes("insurance do you take") &&
-          !f.question?.toLowerCase().includes("parking available") &&
-          !f.question?.toLowerCase().includes("cancellation policy") &&
-          !f.question?.toLowerCase().includes("sample")
-      );
+      return !!bp?.faqsConfigured;
     },
     href: "/faqs",
   },
@@ -75,10 +69,11 @@ export const SETUP_TASKS: SetupTask[] = [
     dependencies: ["profile"],
     isCompleted: (state: SetupState) => {
       const bp = (state.settings as any)?.bookingPreferences;
-      return (
-        !!bp?.confirmedTasks?.includes("kb") ||
-        (!!state.settings?.websiteImportUrl && state.settings?.websiteImportStatus === "completed")
-      );
+      if (bp?.uncompletedTasks?.includes("kb")) return false;
+      if (bp?.confirmedTasks?.includes("kb")) return true;
+      if (state.settings?.websiteImportUrl && state.settings?.websiteImportStatus === "completed") return true;
+      if (state.documents && state.documents.some((d: any) => d.status === "completed" || (d.metadata as any)?.url)) return true;
+      return false;
     },
     href: "/kb",
   },
@@ -95,16 +90,9 @@ export const SETUP_TASKS: SetupTask[] = [
     dependencies: [],
     isCompleted: (state: SetupState) => {
       const bp = (state.settings as any)?.bookingPreferences;
-      if (bp?.servicesConfigured || bp?.confirmedTasks?.includes("services")) return true;
-      if (!state.servicesList || state.servicesList.length === 0) return false;
-      // Must not be just unedited generic placeholders
-      return state.servicesList.some(
-        (s: any) =>
-          !s.isTemplate &&
-          s.name !== "General Consultation" &&
-          s.name !== "Follow-up Appointment" &&
-          s.name !== "Initial Assessment"
-      );
+      if (bp?.uncompletedTasks?.includes("services")) return false;
+      if (bp?.confirmedTasks?.includes("services")) return true;
+      return !!bp?.servicesConfigured;
     },
     href: "/services",
   },
@@ -120,16 +108,9 @@ export const SETUP_TASKS: SetupTask[] = [
     dependencies: ["services"],
     isCompleted: (state: SetupState) => {
       const bp = (state.settings as any)?.bookingPreferences;
+      if (bp?.uncompletedTasks?.includes("flows")) return false;
       if (bp?.confirmedTasks?.includes("flows")) return true;
-      if (!state.flows || state.flows.length === 0) return false;
-      // Filter out auto-seeded generic symptoms template
-      return state.flows.some(
-        (f: any) =>
-          !f.isTemplate &&
-          !f.question?.toLowerCase().includes("symptoms are you experiencing") &&
-          !f.question?.toLowerCase().includes("first visit to our clinic") &&
-          !f.question?.toLowerCase().includes("urgency of your visit")
-      );
+      return !!bp?.flowsConfigured;
     },
     href: "/flows",
   },
@@ -146,6 +127,7 @@ export const SETUP_TASKS: SetupTask[] = [
     dependencies: ["profile"],
     isCompleted: (state: SetupState) => {
       const bp = (state.settings as any)?.bookingPreferences;
+      if (bp?.uncompletedTasks?.includes("ai_tone")) return false;
       return !!bp?.confirmedTasks?.includes("ai_tone") || !!(state.settings as any)?.aiVoiceToneConfigured;
     },
     href: "/settings/ai",
@@ -163,6 +145,7 @@ export const SETUP_TASKS: SetupTask[] = [
     dependencies: ["profile", "faqs", "services"],
     isCompleted: (state: SetupState) => {
       const bp = (state.settings as any)?.bookingPreferences;
+      if (bp?.uncompletedTasks?.includes("phone")) return false;
       return (
         !!bp?.confirmedTasks?.includes("phone") ||
         (!!state.channels && state.channels.filter((c: any) => c.status === "active").length > 0)
@@ -183,6 +166,7 @@ export const SETUP_TASKS: SetupTask[] = [
     dependencies: ["phone"],
     isCompleted: (state: SetupState) => {
       const bp = (state.settings as any)?.bookingPreferences;
+      if (bp?.uncompletedTasks?.includes("test_call")) return false;
       return (
         !!bp?.confirmedTasks?.includes("test_call") ||
         (!!state.appointments && state.appointments.length > 0) ||

@@ -7,6 +7,7 @@ import { syncService } from "../services/sync";
 import { db } from "../db";
 import { faqItems } from "../db/schema";
 import { eq, and, inArray } from "drizzle-orm";
+import { settingsRepository } from "../repositories/settings";
 
 export async function getFaqsAction() {
   try {
@@ -43,6 +44,25 @@ export async function createFaqAction(data: {
     });
 
     await syncService.syncFAQ(organizationId, faq.id, faq.question, faq.answer, faq.isActive);
+
+    // Auto-mark faqs setup task completed
+    try {
+      const settings = await settingsRepository.getByOrg(organizationId);
+      if (settings) {
+        const currentBp = (settings.bookingPreferences as Record<string, any>) || {};
+        const confirmed: string[] = Array.isArray(currentBp.confirmedTasks) ? [...currentBp.confirmedTasks] : [];
+        if (!confirmed.includes("faqs")) confirmed.push("faqs");
+        const uncompleted = Array.isArray(currentBp.uncompletedTasks) ? currentBp.uncompletedTasks.filter((t: string) => t !== "faqs") : [];
+        await settingsRepository.update(organizationId, {
+          bookingPreferences: {
+            ...currentBp,
+            faqsConfigured: true,
+            confirmedTasks: confirmed,
+            uncompletedTasks: uncompleted,
+          },
+        });
+      }
+    } catch (e) {}
 
     revalidatePath("/faqs");
     revalidatePath("/dashboard");

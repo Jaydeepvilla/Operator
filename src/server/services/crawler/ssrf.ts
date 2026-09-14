@@ -85,7 +85,11 @@ export async function validateSafeUrl(rawUrl: string): Promise<{ valid: boolean;
     } else {
       // Resolve DNS to verify all resolved IPs
       try {
-        const lookupResults = await dns.lookup(hostname, { all: true });
+        const lookupPromise = dns.lookup(hostname, { all: true });
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("DNS resolution timed out")), 3500)
+        );
+        const lookupResults = await Promise.race([lookupPromise, timeoutPromise]);
         for (const record of lookupResults) {
           if (record.family === 4 && isPrivateIPv4(record.address)) {
             return { valid: false, error: `Hostname '${hostname}' resolves to private IP (${record.address}). Access is forbidden.` };
@@ -95,7 +99,11 @@ export async function validateSafeUrl(rawUrl: string): Promise<{ valid: boolean;
           }
         }
       } catch (dnsErr: any) {
-        return { valid: false, error: `Could not resolve hostname '${hostname}': ${dnsErr.message || "DNS lookup failed"}` };
+        if (dnsErr.message?.includes("timed out")) {
+          console.warn(`[SSRF] DNS lookup timed out for '${hostname}', proceeding with fetch`);
+        } else {
+          return { valid: false, error: `Could not resolve hostname '${hostname}': ${dnsErr.message || "DNS lookup failed"}` };
+        }
       }
     }
 

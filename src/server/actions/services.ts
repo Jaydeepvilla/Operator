@@ -8,6 +8,7 @@ import { db } from "../db";
 import { services, serviceCategories } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { verificationEngine } from "../services/verification/engine";
+import { settingsRepository } from "../repositories/settings";
 
 export async function getServicesAction() {
   try {
@@ -73,6 +74,25 @@ export async function createServiceAction(data: {
     );
 
     await verificationEngine.invalidateScenarios(organizationId, ["pricing_hours"]);
+
+    // Auto-mark services setup task completed
+    try {
+      const settings = await settingsRepository.getByOrg(organizationId);
+      if (settings) {
+        const currentBp = (settings.bookingPreferences as Record<string, any>) || {};
+        const confirmed: string[] = Array.isArray(currentBp.confirmedTasks) ? [...currentBp.confirmedTasks] : [];
+        if (!confirmed.includes("services")) confirmed.push("services");
+        const uncompleted = Array.isArray(currentBp.uncompletedTasks) ? currentBp.uncompletedTasks.filter((t: string) => t !== "services") : [];
+        await settingsRepository.update(organizationId, {
+          bookingPreferences: {
+            ...currentBp,
+            servicesConfigured: true,
+            confirmedTasks: confirmed,
+            uncompletedTasks: uncompleted,
+          },
+        });
+      }
+    } catch (e) {}
 
     revalidatePath("/services");
     revalidatePath("/dashboard");

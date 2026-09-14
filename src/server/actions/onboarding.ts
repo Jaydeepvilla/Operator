@@ -24,6 +24,10 @@ import crypto from "crypto";
 import { cookies } from "next/headers";
 import { validateSafeUrl, safeFetch } from "../services/crawler/ssrf";
 import { ContentExtractor } from "../services/crawler/extractor";
+import { sourcesRepository } from "../repositories/sources";
+import { documentsRepository } from "../repositories/documents";
+import { chunksRepository } from "../repositories/chunks";
+import { chunkingService } from "../services/chunking";
 
 export interface OnboardingStateResult {
   hasOrg: boolean;
@@ -328,13 +332,88 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
           slotIntervalMinutes: 30,
           bufferMinutes: 10,
           autoApprove: false,
-          hoursConfigured: false, // User hasn't reviewed/confirmed business hours yet
-          servicesConfigured: hasCustomServices,
-          confirmedTasks: hasCustomServices ? ["services"] : [],
+          hoursConfigured: false,
+          servicesConfigured: false,
+          faqsConfigured: false,
+          flowsConfigured: false,
+          confirmedTasks: [],
+          uncompletedTasks: [],
         },
         notificationPreferences: { channels: ["email"] },
         leadAssignmentRules: { type: "round_robin" },
       });
+
+      // Real Website Ingestion: If user provided a website, crawl & ingest it into Knowledge Base
+      if (website && website !== "no-website") {
+        try {
+          const fetchRes = await safeFetch(website, { timeoutMs: 8000 });
+          if (fetchRes.ok && fetchRes.html) {
+            const extracted = ContentExtractor.extract(fetchRes.html, website);
+            if (extracted.content && extracted.content.trim().length > 30) {
+              let source = await sourcesRepository.getByType(organization.id, "website");
+              if (!source) {
+                source = await sourcesRepository.create({
+                  organizationId: organization.id,
+                  name: "Website Crawl",
+                  type: "website",
+                  isActive: true,
+                });
+              }
+
+              const doc = await documentsRepository.create({
+                organizationId: organization.id,
+                sourceId: source.id,
+                name: extracted.title || "Website Homepage Content",
+                fileType: "html",
+                fileSize: Buffer.byteLength(extracted.content, "utf8"),
+                status: "completed",
+                metadata: {
+                  url: website,
+                  title: extracted.title,
+                  description: extracted.description,
+                  content: extracted.content,
+                  scrapedAt: new Date().toISOString(),
+                  wordCount: extracted.wordCount,
+                },
+              });
+
+              // Create RAG chunks
+              const textChunks = chunkingService.splitText(extracted.content);
+              if (textChunks.length > 0) {
+                await chunksRepository.createMany(
+                  textChunks.map((tc) => ({
+                    organizationId: organization.id,
+                    documentId: doc.id,
+                    content: tc.content,
+                    chunkIndex: tc.chunkIndex,
+                    tokenCount: tc.tokenCount,
+                    metadata: { url: website, index: tc.chunkIndex },
+                  }))
+                );
+              }
+
+              // Update settings to mark website import as successfully completed
+              await settingsRepository.update(organization.id, {
+                websiteImportUrl: website,
+                websiteImportStatus: "completed",
+                bookingPreferences: {
+                  slotIntervalMinutes: 30,
+                  bufferMinutes: 10,
+                  autoApprove: false,
+                  hoursConfigured: false,
+                  servicesConfigured: false,
+                  faqsConfigured: false,
+                  flowsConfigured: false,
+                  confirmedTasks: ["kb"],
+                  uncompletedTasks: [],
+                },
+              });
+            }
+          }
+        } catch (crawlErr) {
+          console.warn("[Onboarding Website Scrape Error]:", crawlErr);
+        }
+      }
 
       // Insert services if user verified them during onboarding
       if (hasCustomServices) {
@@ -533,24 +612,32 @@ export async function toggleSetupTaskAction(taskId: string, completed: boolean) 
 
     const currentBp = (settings.bookingPreferences as Record<string, any>) || {};
     const confirmed: string[] = Array.isArray(currentBp.confirmedTasks) ? [...currentBp.confirmedTasks] : [];
+    let uncompleted: string[] = Array.isArray(currentBp.uncompletedTasks) ? [...currentBp.uncompletedTasks] : [];
 
     let updatedConfirmed = [...confirmed];
-    if (completed && !updatedConfirmed.includes(taskId)) {
-      updatedConfirmed.push(taskId);
-    } else if (!completed && updatedConfirmed.includes(taskId)) {
+    if (completed) {
+      if (!updatedConfirmed.includes(taskId)) {
+        updatedConfirmed.push(taskId);
+      }
+      uncompleted = uncompleted.filter((t) => t !== taskId);
+    } else {
       updatedConfirmed = updatedConfirmed.filter((t) => t !== taskId);
+      if (!uncompleted.includes(taskId)) {
+        uncompleted.push(taskId);
+      }
     }
 
     await settingsRepository.update(org.id, {
       bookingPreferences: {
         ...currentBp,
         confirmedTasks: updatedConfirmed,
+        uncompletedTasks: uncompleted,
         [`${taskId}Configured`]: completed,
       },
     });
 
     revalidatePath("/dashboard");
-    return { success: true, confirmedTasks: updatedConfirmed };
+    return { success: true, confirmedTasks: updatedConfirmed, uncompletedTasks: uncompleted };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to update setup task" };
   }

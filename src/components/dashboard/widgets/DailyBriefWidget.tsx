@@ -159,28 +159,48 @@ export function DailyBriefWidget({
                 </button>
 
                 {showSimulateMenu && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-xl border border-border bg-card p-2 shadow-xl z-20 space-y-1 animate-fade-in">
-                    <button
-                      onClick={() => {
-                        setShowSimulateMenu(false);
-                        onSimulate("conversation");
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-[12px] font-medium text-foreground flex items-center justify-between"
-                    >
-                      <span>Simulate Customer Inquiry</span>
-                      <Zap className="w-3.5 h-3.5 text-primary" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowSimulateMenu(false);
-                        onSimulate("booking");
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-[12px] font-medium text-foreground flex items-center justify-between"
-                    >
-                      <span>Simulate Confirmed Booking</span>
-                      <Play className="w-3.5 h-3.5 text-emerald-500" />
-                    </button>
-                  </div>
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowSimulateMenu(false)}
+                      aria-hidden="true"
+                    />
+                    <div className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-border/80 bg-popover/95 p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 backdrop-blur-xl">
+                      <div className="px-2.5 py-1 mb-1 border-b border-border/40">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Interactive AI Testing
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowSimulateMenu(false);
+                          onSimulate("conversation");
+                        }}
+                        className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-accent/80 text-[12px] font-medium text-foreground flex items-center justify-between transition-colors group"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Zap className="w-3.5 h-3.5 text-primary shrink-0" />
+                          <span className="font-semibold">Simulate Customer Inquiry</span>
+                        </div>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-mono">Chat</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowSimulateMenu(false);
+                          onSimulate("booking");
+                        }}
+                        className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-accent/80 text-[12px] font-medium text-foreground flex items-center justify-between transition-colors group"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Play className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                          <span className="font-semibold">Simulate Confirmed Booking</span>
+                        </div>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono">Book</span>
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
             )}
