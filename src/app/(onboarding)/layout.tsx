@@ -15,9 +15,9 @@ export default async function OnboardingLayout({
 }) {
   const { userId } = await auth();
 
-  // Unauthenticated users cannot access onboarding — redirect to sign-in
+  // Unauthenticated users cannot access onboarding — redirect to sign-in and clear invalid session
   if (!userId) {
-    redirect("/sign-in?redirect=/onboarding");
+    redirect("/api/auth/logout?redirect=/sign-in");
   }
 
   return <>{children}</>;

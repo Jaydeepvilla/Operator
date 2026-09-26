@@ -76,11 +76,18 @@ export function proxy(request: NextRequest) {
 
   // ── Public routes ────────────────────────────────────────────────────
   if (isPublicRoute(pathname)) {
-    // Authenticated users visiting auth pages → redirect to dashboard
-    // (dashboard layout will further redirect to /onboarding if needed)
-    if (hasSession && isAuthPage(pathname)) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+    // If arriving at sign-in with logout intent, delete session cookies immediately
+    if (pathname === "/sign-in" && request.nextUrl.searchParams.get("logout") === "true") {
+      const response = NextResponse.next();
+      response.cookies.delete("session_token");
+      response.cookies.delete("refresh_token");
+      response.cookies.delete("active_org_id");
+      return response;
     }
+
+    // Note: Do not blindly redirect from auth pages (sign-in/sign-up) at the edge
+    // because the session token cookie might be orphaned/deleted in the database.
+    // AuthLayout performs the verified database check and redirects only if valid.
     return NextResponse.next();
   }
 

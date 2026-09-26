@@ -12,7 +12,7 @@ export default async function AccountSettingsPage() {
   const result = await getUserProfileAction();
 
   if (!result.success || !result.data) {
-    redirect("/sign-in");
+    redirect("/api/auth/logout?redirect=/sign-in");
   }
 
   return (

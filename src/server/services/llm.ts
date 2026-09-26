@@ -195,6 +195,8 @@ export const llmRegistry = {
     if (openaiKey) return new OpenAIProvider(openaiKey);
     if (geminiKey) return new GeminiProvider(geminiKey);
 
-    return new OpenAIProvider("mock_key");
+    throw new Error(
+      "No LLM provider configured. Please provide OPENAI_API_KEY or GEMINI_API_KEY in your environment variables."
+    );
   },
 };

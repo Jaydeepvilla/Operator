@@ -39,8 +39,7 @@ export class RazorpayProvider
     organizationId?: string
   ): Promise<{ id: string; clientSecret: string; status: string }> {
     if (!this.isConfigured()) {
-      const mockId = `order_rzp_mock_${Date.now()}`;
-      return { id: mockId, clientSecret: `secret_${mockId}`, status: "created" };
+      throw new Error("Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in environment variables.");
     }
 
     const response = await fetch("https://api.razorpay.com/v1/orders", {

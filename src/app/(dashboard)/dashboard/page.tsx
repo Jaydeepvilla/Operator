@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth/server";
 import { checkUserOrganization } from "@/server/actions/onboarding";
 import { profileRepository } from "@/server/repositories/profile";
 import { servicesRepository } from "@/server/repositories/services";
@@ -12,14 +14,18 @@ import { DashboardEngine } from "@/lib/dashboard-engine";
 import { VerificationStatus } from "@/server/services/verification/types";
 import { DashboardLiveClient } from "@/components/dashboard/dashboard-live-client";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
-  const { org } = await checkUserOrganization();
-  const activeOrg = org || {
-    id: "00000000-0000-0000-0000-000000000000",
-    name: "My Business",
-    industry: "Professional Services",
-    verificationStatus: "verified",
-  };
+  const { userId } = await auth();
+  if (!userId) {
+    redirect("/api/auth/logout?redirect=/sign-in");
+  }
+
+  const { hasOrg, org, isCompleted } = await checkUserOrganization();
+  if (!hasOrg || !org || !isCompleted) {
+    redirect("/onboarding");
+  }
 
   let profile: any = null;
   let servicesList: any[] = [];
@@ -31,13 +37,13 @@ export default async function DashboardPage() {
 
   try {
     const results = await Promise.allSettled([
-      profileRepository.getByOrg(activeOrg.id),
-      servicesRepository.list(activeOrg.id),
-      faqRepository.list(activeOrg.id),
-      flowsRepository.list(activeOrg.id),
-      settingsRepository.getByOrg(activeOrg.id),
-      staffRepository.list(activeOrg.id),
-      documentsRepository.list(activeOrg.id),
+      profileRepository.getByOrg(org.id),
+      servicesRepository.list(org.id),
+      faqRepository.list(org.id),
+      flowsRepository.list(org.id),
+      settingsRepository.getByOrg(org.id),
+      staffRepository.list(org.id),
+      documentsRepository.list(org.id),
     ]);
 
     if (results[0].status === "fulfilled") profile = results[0].value;
@@ -52,31 +58,31 @@ export default async function DashboardPage() {
   }
 
   const effectiveProfile = profile || {
-    businessName: activeOrg.name,
-    name: activeOrg.name,
-    description: (activeOrg as any).description || `${activeOrg.industry || "Professional"} services`,
-    phone: (activeOrg as any).phone || null,
-    email: (activeOrg as any).email || null,
-    website: (activeOrg as any).website || null,
-    address: (activeOrg as any).address || null,
+    businessName: org.name,
+    name: org.name,
+    description: (org as any).description || `${org.industry || "Professional"} services`,
+    phone: (org as any).phone || null,
+    email: (org as any).email || null,
+    website: (org as any).website || null,
+    address: (org as any).address || null,
   };
 
   const setupState: SetupState = {
-    organization: activeOrg,
+    organization: org,
     profile: effectiveProfile,
     services: servicesList,
     servicesList,
     faqs,
     flows,
     settings,
-    staff: staffList.length > 0 ? staffList : [{ id: "owner", name: activeOrg.name, role: "Owner" }],
+    staff: staffList.length > 0 ? staffList : [{ id: "owner", name: org.name, role: "Owner" }],
     documents: documentsList,
   };
 
   // Get the outcome-oriented snapshot
   let snapshot: any = null;
   try {
-    snapshot = await DashboardEngine.getOutcomeDashboard(activeOrg.id, setupState);
+    snapshot = await DashboardEngine.getOutcomeDashboard(org.id, setupState);
   } catch (e) {
     console.warn("DashboardEngine fallback:", e);
     snapshot = {
@@ -90,30 +96,32 @@ export default async function DashboardPage() {
         estimatedTimeSavedMinutes: 0,
         revenueGenerated: 0,
         aiSuccessRate: 100,
+        conversionRate: 0,
+        hasConversations: false,
+        hasAppointments: false,
         date: new Date().toISOString(),
       },
-      health: { score: 95, status: "healthy", breakdown: [] },
+      health: { score: 0, status: "needs_setup", breakdown: [] },
       gapAnalysis: { gaps: [], recommendations: [] },
-      aiReadiness: { score: 95, factors: [] },
-      knowledgeScore: { overall: 90, coverage: 90, missingDocuments: 0, suggestions: [], aiConfidence: 95 },
+      aiReadiness: { score: 0, factors: [] },
+      knowledgeScore: { overall: 0, coverage: 0, missingDocuments: 0, suggestions: [], aiConfidence: 0 },
       nextBestAction: null,
       topRecommendations: [],
-      setupProgress: { completed: 3, total: 3, percentage: 100, remainingMinutes: 0, items: [] },
+      setupProgress: { completed: 0, total: 5, percentage: 0, remainingMinutes: 10, items: [] },
       recentActivity: [],
       notifications: [],
     };
   }
 
-  const businessName = activeOrg.name || "your business";
-  const verificationStatus = (activeOrg.verificationStatus as VerificationStatus) || "verified";
+  const businessName = org.name || "your business";
+  const verificationStatus = (org.verificationStatus as VerificationStatus) || "unverified";
 
   return (
     <DashboardLiveClient
       initialSnapshot={snapshot}
       businessName={businessName}
       verificationStatus={verificationStatus}
-      orgId={activeOrg.id}
+      orgId={org.id}
     />
   );
 }
-

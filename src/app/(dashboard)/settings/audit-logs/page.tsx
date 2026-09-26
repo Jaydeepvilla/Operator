@@ -19,7 +19,7 @@ export default async function AuditLogsPage() {
   const { userId } = await auth();
 
   if (!userId) {
-    redirect("/sign-in");
+    redirect("/api/auth/logout?redirect=/sign-in");
   }
 
   // Get user's org

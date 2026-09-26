@@ -10,6 +10,8 @@ import { SidebarProvider } from "@/components/shared/sidebar-context";
 import { DashboardShell } from "@/components/shared/dashboard-shell";
 import { NotificationEngine } from "@/lib/notification-engine";
 
+export const dynamic = "force-dynamic";
+
 // ─── Layout ───────────────────────────────────────────────────────────────────
 
 export default async function DashboardLayout({
@@ -20,7 +22,7 @@ export default async function DashboardLayout({
   const { userId } = await auth();
 
   if (!userId) {
-    redirect("/sign-in");
+    redirect("/api/auth/logout?redirect=/sign-in");
   }
 
   const { hasOrg, org, isCompleted } = await checkUserOrganization();
