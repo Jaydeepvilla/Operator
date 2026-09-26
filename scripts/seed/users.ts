@@ -7,8 +7,6 @@ export async function seedUsers(): Promise<string[]> {
   
   const { hashPassword } = await import("../../src/lib/auth/password");
   const standardPasswordHash = await hashPassword("password123");
-  const clerkDemoPasswordHash = await hashPassword("Dem0P@ssw0rd!2026_");
-
   const usersToSeed = [
     {
       id: "user_admin_operator_ai",
@@ -27,8 +25,8 @@ export async function seedUsers(): Promise<string[]> {
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
     },
     {
-      id: "user_2demo_admin_clerk_test",
-      email: "demo+clerk_test@example.com",
+      id: "user_2demo_admin_test",
+      email: "demo+admin@example.com",
       name: "Demo Admin",
       passwordHash: standardPasswordHash,
       isVerified: true,

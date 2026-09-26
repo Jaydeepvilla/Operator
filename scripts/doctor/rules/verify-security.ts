@@ -78,10 +78,10 @@ export const verifySecurity: DoctorRule = {
 
     if (authFile) {
         const middlewareContent = fs.readFileSync(authFile, "utf-8");
-        if (!middlewareContent.includes("clerkMiddleware") && !middlewareContent.includes("authMiddleware") && !middlewareContent.includes("NextAuth")) {
+        if (!middlewareContent.includes("authMiddleware") && !middlewareContent.includes("session") && !middlewareContent.includes("NextAuth")) {
             violations.push({
                 file: authFile,
-                message: `Security Risk: Middleware does not seem to implement an authentication guard (Clerk/NextAuth).`
+                message: `Security Risk: Middleware does not seem to implement an authentication guard.`
             , severity: 'Error' });
         }
     } else {

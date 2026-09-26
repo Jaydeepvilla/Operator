@@ -12,8 +12,8 @@ async function globalSetup(config: FullConfig) {
   const { baseURL } = config.projects[0].use;
   const url = baseURL || 'http://localhost:3000';
   
-  const testUserId = 'user_2demo_admin_clerk_test';
-  const testEmail = 'demo+clerk_test@example.com';
+  const testUserId = 'user_2demo_admin_test';
+  const testEmail = 'demo+admin@example.com';
   const testOrgId = '11111111-1111-1111-1111-111111111111';
   const passwordHash = await hashPassword('Dem0P@ssw0rd!2026_');
 

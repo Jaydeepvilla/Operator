@@ -19,7 +19,7 @@ async function main() {
   console.log("🌱 Starting complete production-grade seeding process...");
   
   try {
-    // 1. Seed Users (Preserve existing dev Clerk sessions)
+    // 1. Seed Users
     const userIds = await seedUsers();
 
     // 2. Seed Organization, Memberships, Profile and Settings

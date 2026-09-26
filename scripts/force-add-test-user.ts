@@ -5,12 +5,12 @@ import { faker } from "@faker-js/faker";
 import { hashPassword } from "../src/lib/auth/password";
 
 async function main() {
-  const demoUserId = "user_2demo_admin_clerk_test";
+  const demoUserId = "user_2demo_admin_test";
   const passwordHash = await hashPassword("Dem0P@ssw0rd!2026_");
 
   await db.insert(users).values({
     id: demoUserId,
-    email: "demo+clerk_test@example.com",
+    email: "demo+admin@example.com",
     name: "Demo Admin",
     passwordHash,
     isVerified: true,
@@ -26,7 +26,7 @@ async function main() {
     name: "Demo Organization",
     slug: "demo-organization",
     industry: "Other",
-    email: "demo+clerk_test@example.com",
+    email: "demo+admin@example.com",
     phone: "15552345678",
     timezone: "America/New_York",
     verificationStatus: "verified",

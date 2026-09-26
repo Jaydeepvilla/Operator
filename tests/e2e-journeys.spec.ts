@@ -11,7 +11,7 @@ import crypto from 'crypto';
 test.describe('Operator Production Readiness — E2E User Journeys', () => {
 
   const testOrgId = '11111111-1111-1111-1111-111111111111';
-  const testUserId = 'user_2demo_admin_clerk_test';
+  const testUserId = 'user_2demo_admin_test';
 
   // ──────────────────────────────────────────────────────────────────────────
   // JOURNEY A: Authentication & Session Management
@@ -19,7 +19,7 @@ test.describe('Operator Production Readiness — E2E User Journeys', () => {
   test('Journey A — Authentication: Login, Session Persistence, and Logout', async ({ page }) => {
     // 1. Visit sign-in page, fill credentials, submit and verify redirect
     await page.goto('/sign-in');
-    await page.fill('#signin-email', 'demo+clerk_test@example.com');
+    await page.fill('#signin-email', 'demo+admin@example.com');
     await page.fill('#signin-password', 'Dem0P@ssw0rd!2026_');
     await page.click('button[type="submit"]');
 

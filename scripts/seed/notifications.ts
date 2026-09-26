@@ -9,8 +9,8 @@ export async function seedNotifications(): Promise<void> {
     {
       id: "99999999-6666-1111-1111-111111111111",
       organizationId: ORG_ID,
-      title: "Clerk Authentication Verification Failed",
-      description: "Webhook logs indicate Clerk event validation signatures are missing. Ensure your CLERK_WEBHOOK_SECRET is set correctly in settings to authorize webhook synchronization.",
+      title: "OAuth Authentication Security Notice",
+      description: "Ensure your OAuth redirect URIs and API credentials are appropriately set in production settings to authorize user synchronization.",
       priority: "urgent",
       severity: "critical",
       category: "alert",

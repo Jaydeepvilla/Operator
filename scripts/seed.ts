@@ -16,11 +16,11 @@ async function main() {
   console.log("🌱 Starting database seed...");
   try {
     // 1. Setup Local User (Syncing Auth with DB)
-    const email = "demo+clerk_test@example.com";
+    const email = "demo+admin@example.com";
     const password = "Dem0P@ssw0rd!2026_";
     const { hashPassword } = await import("../src/lib/auth/password");
     const passwordHash = await hashPassword(password);
-    const userId = "user_2demo_admin_clerk_test";
+    const userId = "user_2demo_admin_test";
 
     // 1b. Create Demo User in Database
     await db.insert(users).values({
