@@ -2,13 +2,15 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
 import { checkUserOrganization } from "@/server/actions/onboarding";
 import { db } from "@/server/db";
-import { subscriptions, memberships } from "@/server/db/schema";
+import { memberships } from "@/server/db/schema";
 import { eq, and } from "drizzle-orm";
 import { TrialBanner } from "@/components/shared/trial-banner";
 import { DashboardHeaderActions } from "@/components/shared/dashboard-header-actions";
 import { SidebarProvider } from "@/components/shared/sidebar-context";
 import { DashboardShell } from "@/components/shared/dashboard-shell";
 import { NotificationEngine } from "@/lib/notification-engine";
+import { subscriptionEngine } from "@/server/services/billing/subscription-engine";
+import { trialReminderEngine } from "@/server/services/billing/trial-reminder-engine";
 
 export const dynamic = "force-dynamic";
 
@@ -31,17 +33,18 @@ export default async function DashboardLayout({
     redirect("/onboarding");
   }
 
-  // BUG #1 FIX: Workspace exists but onboarding not completed → redirect back to onboarding
+  // Workspace exists but onboarding not completed → redirect back to onboarding
   if (!isCompleted) {
     redirect("/onboarding");
   }
-  let subscription: any = null;
+
+  let dynamicSub: any = null;
   let membership: any = null;
   let notifications: any = [];
 
   try {
     const results = await Promise.allSettled([
-      db.query.subscriptions.findFirst({ where: eq(subscriptions.organizationId, org.id) }),
+      subscriptionEngine.getSubscriptionStatus(org.id),
       userId
         ? db.query.memberships.findFirst({
             where: and(
@@ -51,9 +54,10 @@ export default async function DashboardLayout({
           })
         : Promise.resolve(null),
       NotificationEngine.getSmartNotifications(org.id),
+      trialReminderEngine.evaluateOrganizationReminders(org.id),
     ]);
 
-    if (results[0].status === "fulfilled") subscription = results[0].value;
+    if (results[0].status === "fulfilled") dynamicSub = results[0].value;
     if (results[1].status === "fulfilled") membership = results[1].value;
     if (results[2].status === "fulfilled") notifications = results[2].value || [];
   } catch (dbErr) {
@@ -61,8 +65,8 @@ export default async function DashboardLayout({
   }
 
   const isAgency =
-    subscription?.planId === "agency" ||
-    subscription?.planId === "enterprise";
+    dynamicSub?.planId === "agency" ||
+    dynamicSub?.planId === "enterprise";
 
   const memberRole = membership?.role ?? "staff";
   const roleLabel =
@@ -83,8 +87,17 @@ export default async function DashboardLayout({
         isAgency={isAgency}
         trialBanner={
           <TrialBanner
-            trialEndsAt={subscription?.trialEnd ?? null}
-            planId={subscription?.planId ?? "free"}
+            status={dynamicSub?.state ?? "TRIALING"}
+            planId={dynamicSub?.planId ?? "starter"}
+            planName={dynamicSub?.plan?.name ?? "Starter"}
+            trialDaysRemaining={dynamicSub?.trialDaysRemaining}
+            trialEndsAt={dynamicSub?.trialEndsAt}
+            currentPeriodEnd={dynamicSub?.currentPeriodEnd}
+            gracePeriodDaysRemaining={dynamicSub?.gracePeriodDaysRemaining}
+            convUsage={dynamicSub?.usage?.conversations?.current ?? 0}
+            convLimit={dynamicSub?.usage?.conversations?.limit ?? 500}
+            voiceUsage={dynamicSub?.usage?.voiceMinutes?.current ?? 0}
+            voiceLimit={dynamicSub?.usage?.voiceMinutes?.limit ?? 100}
           />
         }
         headerActions={

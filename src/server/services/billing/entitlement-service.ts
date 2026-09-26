@@ -3,7 +3,6 @@ import { eq, and } from "drizzle-orm";
 import {
   subscriptions,
   subscriptionPlans,
-  featureEntitlements,
   usageCounters,
   usageRecords,
   services,
@@ -11,246 +10,44 @@ import {
   knowledgeChunks,
   communicationChannels,
   staffMembers,
-  channelConnections,
   organizations,
+  calendarConnections,
 } from "../../db/schema";
+import {
+  getPlan,
+  getPlanFeature,
+  getPlanLimit,
+  PLAN_CATALOG,
+  PlanConfig,
+  PlanFeatures,
+  PlanLimits,
+  UsageLimitBehavior,
+} from "@/lib/billing/plans";
+import { subscriptionEngine, DynamicSubscriptionStatus } from "./subscription-engine";
 
 export type FeatureKey =
+  | keyof PlanFeatures
   | "voice_ai"
   | "sms_messaging"
   | "email_responses"
-  | "whatsapp"
+  | "custom_ai_training"
   | "social_messaging"
   | "calendar_sync"
   | "advanced_lead_qualification"
-  | "custom_ai_training"
   | "white_label"
   | "multi_location"
   | "analytics_export"
   | "dedicated_onboarding"
   | "sla_guarantee";
 
-export type MetricKey =
-  | "conversations"
-  | "voice_minutes"
-  | "calendar_connections"
-  | "team_members"
-  | "knowledge_articles"
-  | "locations";
-
-export interface PlanConfig {
-  id: string;
-  name: string;
-  monthlyPrice: number;
-  limits: Record<MetricKey, number>;
-  features: Record<FeatureKey, boolean>;
-}
-
-export const COMMERCIAL_PLANS: Record<string, PlanConfig> = {
-  free: {
-    id: "free",
-    name: "Free Trial",
-    monthlyPrice: 0,
-    limits: {
-      conversations: 50,
-      voice_minutes: 10,
-      calendar_connections: 1,
-      team_members: 1,
-      knowledge_articles: 5,
-      locations: 1,
-    },
-    features: {
-      voice_ai: true,
-      sms_messaging: true,
-      email_responses: true,
-      whatsapp: false,
-      social_messaging: false,
-      calendar_sync: true,
-      advanced_lead_qualification: false,
-      custom_ai_training: false,
-      white_label: false,
-      multi_location: false,
-      analytics_export: false,
-      dedicated_onboarding: false,
-      sla_guarantee: false,
-    },
-  },
-  trial: {
-    id: "trial",
-    name: "14-Day Trial",
-    monthlyPrice: 0,
-    limits: {
-      conversations: 100,
-      voice_minutes: 50,
-      calendar_connections: 1,
-      team_members: 2,
-      knowledge_articles: 25,
-      locations: 1,
-    },
-    features: {
-      voice_ai: true,
-      sms_messaging: true,
-      email_responses: true,
-      whatsapp: true,
-      social_messaging: false,
-      calendar_sync: true,
-      advanced_lead_qualification: true,
-      custom_ai_training: false,
-      white_label: false,
-      multi_location: false,
-      analytics_export: false,
-      dedicated_onboarding: false,
-      sla_guarantee: false,
-    },
-  },
-  starter: {
-    id: "starter",
-    name: "Starter",
-    monthlyPrice: 49,
-    limits: {
-      conversations: 500,
-      voice_minutes: 100,
-      calendar_connections: 1,
-      team_members: 1,
-      knowledge_articles: 25,
-      locations: 1,
-    },
-    features: {
-      voice_ai: true,
-      sms_messaging: true,
-      email_responses: true,
-      whatsapp: false,
-      social_messaging: false,
-      calendar_sync: true,
-      advanced_lead_qualification: false,
-      custom_ai_training: false,
-      white_label: false,
-      multi_location: false,
-      analytics_export: false,
-      dedicated_onboarding: false,
-      sla_guarantee: false,
-    },
-  },
-  pro: {
-    id: "pro",
-    name: "Professional",
-    monthlyPrice: 149,
-    limits: {
-      conversations: 2500,
-      voice_minutes: 500,
-      calendar_connections: 3,
-      team_members: 5,
-      knowledge_articles: 100,
-      locations: 1,
-    },
-    features: {
-      voice_ai: true,
-      sms_messaging: true,
-      email_responses: true,
-      whatsapp: true,
-      social_messaging: true,
-      calendar_sync: true,
-      advanced_lead_qualification: true,
-      custom_ai_training: true,
-      white_label: false,
-      multi_location: false,
-      analytics_export: true,
-      dedicated_onboarding: false,
-      sla_guarantee: false,
-    },
-  },
-  professional: {
-    id: "professional",
-    name: "Professional",
-    monthlyPrice: 149,
-    limits: {
-      conversations: 2500,
-      voice_minutes: 500,
-      calendar_connections: 3,
-      team_members: 5,
-      knowledge_articles: 100,
-      locations: 1,
-    },
-    features: {
-      voice_ai: true,
-      sms_messaging: true,
-      email_responses: true,
-      whatsapp: true,
-      social_messaging: true,
-      calendar_sync: true,
-      advanced_lead_qualification: true,
-      custom_ai_training: true,
-      white_label: false,
-      multi_location: false,
-      analytics_export: true,
-      dedicated_onboarding: false,
-      sla_guarantee: false,
-    },
-  },
-  business: {
-    id: "business",
-    name: "Business",
-    monthlyPrice: 349,
-    limits: {
-      conversations: 10000,
-      voice_minutes: 2000,
-      calendar_connections: 999,
-      team_members: 20,
-      knowledge_articles: 500,
-      locations: 5,
-    },
-    features: {
-      voice_ai: true,
-      sms_messaging: true,
-      email_responses: true,
-      whatsapp: true,
-      social_messaging: true,
-      calendar_sync: true,
-      advanced_lead_qualification: true,
-      custom_ai_training: true,
-      white_label: false,
-      multi_location: true,
-      analytics_export: true,
-      dedicated_onboarding: true,
-      sla_guarantee: true,
-    },
-  },
-  enterprise: {
-    id: "enterprise",
-    name: "Enterprise",
-    monthlyPrice: 999,
-    limits: {
-      conversations: 999999,
-      voice_minutes: 999999,
-      calendar_connections: 999,
-      team_members: 999,
-      knowledge_articles: 9999,
-      locations: 99,
-    },
-    features: {
-      voice_ai: true,
-      sms_messaging: true,
-      email_responses: true,
-      whatsapp: true,
-      social_messaging: true,
-      calendar_sync: true,
-      advanced_lead_qualification: true,
-      custom_ai_training: true,
-      white_label: true,
-      multi_location: true,
-      analytics_export: true,
-      dedicated_onboarding: true,
-      sla_guarantee: true,
-    },
-  },
-};
+export type MetricKey = keyof PlanLimits;
 
 export class EntitlementError extends Error {
   readonly feature: string;
   readonly requiredPlan: string;
   readonly status: number;
 
-  constructor(message: string, feature: string, requiredPlan = "pro") {
+  constructor(message: string, feature: string, requiredPlan = "professional") {
     super(message);
     this.name = "EntitlementError";
     this.feature = feature;
@@ -259,19 +56,56 @@ export class EntitlementError extends Error {
   }
 }
 
+export interface UsageCheckResult {
+  allowed: boolean;
+  current: number;
+  limit: number | null;
+  percentage: number;
+  state: "NORMAL" | "WARNING_80" | "WARNING_90" | "LIMIT_REACHED";
+  action: "ALLOW" | "WARN" | "BLOCK" | "OVERAGE" | "UPGRADE_REQUIRED";
+  warningMessage?: string;
+  behavior: UsageLimitBehavior;
+}
+
+export interface CalendarLimitResult {
+  allowed: boolean;
+  current: number;
+  limit: number | null;
+  message?: string;
+  targetPlan?: string;
+}
+
+// Normalize snake_case feature names to camelCase PlanFeatures keys
+function normalizeFeatureKey(feature: FeatureKey): keyof PlanFeatures {
+  const map: Record<string, keyof PlanFeatures> = {
+    voice_ai: "voiceAI",
+    sms_messaging: "sms",
+    email_responses: "email",
+    custom_ai_training: "customAiTraining",
+    social_messaging: "instagramFacebook",
+    advanced_lead_qualification: "advancedLeadQualification",
+    analytics_export: "analyticsExport",
+    dedicated_onboarding: "dedicatedOnboarding",
+    sla_guarantee: "slaGuarantee",
+    white_label: "analyticsExport",
+    multi_location: "analyticsExport",
+  };
+  return (map[feature as string] || feature) as keyof PlanFeatures;
+}
+
 export const entitlementService = {
   /**
    * Seeds default commercial plans into subscription_plans table if missing.
    */
   async seedCommercialPlans() {
-    for (const [id, config] of Object.entries(COMMERCIAL_PLANS)) {
+    for (const [id, config] of Object.entries(PLAN_CATALOG)) {
       await db
         .insert(subscriptionPlans)
         .values({
           id,
           name: config.name,
-          description: `${config.name} Commercial Plan`,
-          price: String(config.monthlyPrice),
+          description: config.description,
+          price: String(config.price),
           interval: "month",
           features: Object.keys(config.features).filter((k) => (config.features as any)[k]),
         })
@@ -279,7 +113,7 @@ export const entitlementService = {
           target: subscriptionPlans.id,
           set: {
             name: config.name,
-            price: String(config.monthlyPrice),
+            price: String(config.price),
             updatedAt: new Date(),
           },
         });
@@ -287,61 +121,49 @@ export const entitlementService = {
   },
 
   /**
-   * Resolves the subscription and active plan config for an organization.
+   * Single Source of Truth Entitlement Check.
+   * Checks whether the organization has access to a specific feature flag.
+   * Never relies on checking plan name strings like `if (plan === 'pro')`.
    */
-  async getSubscription(organizationId: string) {
-    const sub = await db.query.subscriptions.findFirst({
-      where: eq(subscriptions.organizationId, organizationId),
-    });
+  async can(organizationId: string, feature: FeatureKey): Promise<boolean> {
+    const status = await subscriptionEngine.getSubscriptionStatus(organizationId);
 
-    const planId = (sub?.planId || "free").toLowerCase();
-    const planConfig = COMMERCIAL_PLANS[planId] || COMMERCIAL_PLANS.free;
-    const status = sub?.status || "trialing";
-
-    // Grace period evaluation: past_due subscriptions retain access for 3 days
-    const isPastDue = status === "past_due";
-    const isCanceled = status === "canceled";
-    const isActive = status === "active" || status === "trialing" || isPastDue;
-
-    return {
-      subscription: sub,
-      planId,
-      planConfig,
-      status,
-      isActive,
-      isPastDue,
-      isCanceled,
-    };
-  },
-
-  /**
-   * Checks if an organization can access a specific feature.
-   */
-  async canAccess(organizationId: string, feature: FeatureKey): Promise<boolean> {
-    const { planConfig, isActive, isCanceled } = await this.getSubscription(organizationId);
-
-    // If subscription is canceled, only free tier features are accessible
-    if (isCanceled) {
-      return COMMERCIAL_PLANS.free.features[feature] ?? false;
-    }
-
-    if (!isActive) {
+    // If subscription is suspended or expired, block operational capabilities
+    if (status.isRestricted) {
       return false;
     }
 
-    // Check plan feature flag
-    return planConfig.features[feature] ?? false;
+    const normalizedKey = normalizeFeatureKey(feature);
+    return Boolean(status.plan.features[normalizedKey]);
+  },
+
+  /**
+   * Backwards-compatible alias for can().
+   */
+  async canAccess(organizationId: string, feature: FeatureKey): Promise<boolean> {
+    return this.can(organizationId, feature);
   },
 
   /**
    * Enforces feature access server-side. Throws EntitlementError if unauthorized.
    */
   async requireFeature(organizationId: string, feature: FeatureKey) {
-    const allowed = await this.canAccess(organizationId, feature);
+    const allowed = await this.can(organizationId, feature);
     if (!allowed) {
-      const requiredPlan = feature === "whatsapp" || feature === "custom_ai_training" ? "pro" : "enterprise";
+      let requiredPlan = "professional";
+      if (feature === "whatsapp" || feature === "instagramFacebook" || feature === "social_messaging") {
+        requiredPlan = "professional";
+      } else if (
+        feature === "analyticsExport" ||
+        feature === "dedicatedOnboarding" ||
+        feature === "slaGuarantee" ||
+        feature === "analytics_export"
+      ) {
+        requiredPlan = "business";
+      }
+
       throw new EntitlementError(
-        `Feature '${feature}' is not included in your current plan. Please upgrade to ${requiredPlan} to unlock.`,
+        `Feature '${feature}' is not included in your current subscription. Upgrade to ${requiredPlan.toUpperCase()} to unlock.`,
         feature,
         requiredPlan
       );
@@ -349,46 +171,145 @@ export const entitlementService = {
   },
 
   /**
-   * Returns resource usage, limit, and status (normal, warning_80, limit_reached).
+   * Checks whether live operational capabilities (AI receptionist, messaging, voice AI, booking automation)
+   * are allowed for this workspace. When SUSPENDED, EXPIRED, or CANCELED, operational capabilities are halted
+   * while dashboard, settings, billing, and knowledge base remain accessible.
    */
-  async getUsage(organizationId: string, metric: MetricKey) {
-    const { planConfig } = await this.getSubscription(organizationId);
-    const limit = planConfig.limits[metric] ?? 100;
+  async isOperationalAllowed(organizationId: string): Promise<boolean> {
+    const status = await subscriptionEngine.getSubscriptionStatus(organizationId);
+    return !status.isRestricted;
+  },
 
-    const counter = await db.query.usageCounters.findFirst({
-      where: and(
-        eq(usageCounters.organizationId, organizationId),
-        eq(usageCounters.metricName, metric)
-      ),
-    });
+  /**
+   * Checks calendar integration limits dynamically.
+   * Starter: maxCalendars = 1
+   * Professional: maxCalendars = 3
+   * Business: maxCalendars = null (Unlimited)
+   */
+  async checkCalendarLimit(organizationId: string): Promise<CalendarLimitResult> {
+    const status = await subscriptionEngine.getSubscriptionStatus(organizationId);
+    const limit = status.plan.limits.calendars;
 
-    const current = counter?.currentValue ?? 0;
-    const percentage = limit > 0 ? Math.min(100, Math.round((current / limit) * 100)) : 0;
+    // Fetch actual connected calendar count from database
+    const connections = await db
+      .select()
+      .from(calendarConnections)
+      .where(eq(calendarConnections.organizationId, organizationId));
 
-    let state: "normal" | "warning_80" | "limit_reached" | "overage" = "normal";
+    const current = connections.length;
+
+    // Unlimited calendars on Business
+    if (limit === null) {
+      return { allowed: true, current, limit: null };
+    }
+
     if (current >= limit) {
-      state = planConfig.id === "enterprise" ? "overage" : "limit_reached";
-    } else if (current >= limit * 0.8) {
-      state = "warning_80";
+      if (limit === 1) {
+        return {
+          allowed: false,
+          current,
+          limit,
+          message: "You've reached your calendar limit. Upgrade to Professional to connect up to 3 calendars.",
+          targetPlan: "professional",
+        };
+      } else {
+        return {
+          allowed: false,
+          current,
+          limit,
+          message: "You've reached the 3-calendar limit. Business supports unlimited calendar integrations.",
+          targetPlan: "business",
+        };
+      }
+    }
+
+    return { allowed: true, current, limit };
+  },
+
+  /**
+   * Evaluates resource usage against plan limits and returns progressive warning states (80%, 90%, 100%).
+   */
+  async checkUsage(organizationId: string, metric: "conversations" | "voice_minutes"): Promise<UsageCheckResult> {
+    const status = await subscriptionEngine.getSubscriptionStatus(organizationId);
+    const plan = status.plan;
+    const limit = metric === "conversations" ? plan.limits.conversations : plan.limits.voiceMinutes;
+    const current =
+      metric === "conversations"
+        ? status.usage.conversations.current
+        : status.usage.voiceMinutes.current;
+
+    const percentage = limit ? Math.min(100, Math.round((current / limit) * 100)) : 0;
+    const behavior = plan.usageLimitBehavior;
+
+    if (current >= limit) {
+      if (behavior === "OVERAGE") {
+        return {
+          allowed: true,
+          current,
+          limit,
+          percentage,
+          state: "LIMIT_REACHED",
+          action: "OVERAGE",
+          warningMessage: `You've used ${current.toLocaleString()} / ${limit.toLocaleString()} ${metric.replace("_", " ")}. Business overage rates apply.`,
+          behavior,
+        };
+      } else {
+        return {
+          allowed: false,
+          current,
+          limit,
+          percentage,
+          state: "LIMIT_REACHED",
+          action: behavior === "UPGRADE_REQUIRED" ? "UPGRADE_REQUIRED" : "BLOCK",
+          warningMessage: `You have reached 100% of your monthly ${metric.replace("_", " ")} allowance. Upgrade your plan to continue processing calls without interruption.`,
+          behavior,
+        };
+      }
+    }
+
+    if (percentage >= 90) {
+      return {
+        allowed: true,
+        current,
+        limit,
+        percentage,
+        state: "WARNING_90",
+        action: "WARN",
+        warningMessage: `You've used 90% of your monthly ${metric.replace("_", " ")} (${current.toLocaleString()} / ${limit.toLocaleString()}). Consider upgrading before reaching your limit.`,
+        behavior,
+      };
+    }
+
+    if (percentage >= 80) {
+      return {
+        allowed: true,
+        current,
+        limit,
+        percentage,
+        state: "WARNING_80",
+        action: "WARN",
+        warningMessage: `You're approaching your monthly ${metric.replace("_", " ")} limit (${current.toLocaleString()} / ${limit.toLocaleString()}).`,
+        behavior,
+      };
     }
 
     return {
-      metric,
+      allowed: true,
       current,
       limit,
-      remaining: Math.max(0, limit - current),
       percentage,
-      state,
-      resetDate: counter?.resetDate || null,
+      state: "NORMAL",
+      action: "ALLOW",
+      behavior,
     };
   },
 
   /**
-   * Records resource usage and enforces limit gates.
+   * Records resource consumption dynamically and increments counters.
    */
   async recordUsage(
     organizationId: string,
-    metric: MetricKey,
+    metric: "conversations" | "voice_minutes",
     amount = 1
   ): Promise<{
     allowed: boolean;
@@ -396,18 +317,25 @@ export const entitlementService = {
     limit: number;
     action: "allow" | "warn" | "block" | "overage";
   }> {
-    const { planConfig } = await this.getSubscription(organizationId);
-    const limit = planConfig.limits[metric] ?? 100;
+    const status = await subscriptionEngine.getSubscriptionStatus(organizationId);
+    const limit =
+      metric === "conversations"
+        ? status.plan.limits.conversations
+        : status.plan.limits.voiceMinutes;
 
-    let counter = await db.query.usageCounters.findFirst({
-      where: and(
-        eq(usageCounters.organizationId, organizationId),
-        eq(usageCounters.metricName, metric)
-      ),
-    });
+    let [counter] = await db
+      .select()
+      .from(usageCounters)
+      .where(
+        and(
+          eq(usageCounters.organizationId, organizationId),
+          eq(usageCounters.metricName, metric)
+        )
+      )
+      .limit(1);
 
     const now = new Date();
-    const defaultReset = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const defaultReset = status.currentPeriodEnd;
 
     if (!counter) {
       const [newCounter] = await db
@@ -423,7 +351,7 @@ export const entitlementService = {
       counter = newCounter;
     } else {
       let nextValue = counter.currentValue + amount;
-      if (now > counter.resetDate) {
+      if (now.getTime() > new Date(counter.resetDate).getTime()) {
         nextValue = amount;
         await db
           .update(usageCounters)
@@ -447,7 +375,7 @@ export const entitlementService = {
       counter.currentValue = nextValue;
     }
 
-    // Insert usage record ledger entry
+    // Insert audit ledger entry
     await db.insert(usageRecords).values({
       organizationId,
       metricName: metric,
@@ -458,7 +386,7 @@ export const entitlementService = {
     let allowed = true;
 
     if (counter.currentValue > limit) {
-      if (planConfig.id === "enterprise") {
+      if (status.plan.usageLimitBehavior === "OVERAGE") {
         action = "overage";
         allowed = true;
       } else {
@@ -478,25 +406,61 @@ export const entitlementService = {
   },
 
   /**
+   * Backwards-compatible getSubscription resolver.
+   */
+  async getSubscription(organizationId: string) {
+    const status = await subscriptionEngine.getSubscriptionStatus(organizationId);
+    return {
+      subscription: status,
+      planId: status.plan.id,
+      planConfig: status.plan,
+      status: status.state.toLowerCase(),
+      isActive: status.state === "ACTIVE" || status.state === "TRIALING",
+      isPastDue: status.state === "PAST_DUE",
+      isCanceled: status.state === "CANCELED" || status.state === "EXPIRED",
+    };
+  },
+
+  /**
+   * Returns resource usage, limit, and status.
+   */
+  async getUsage(organizationId: string, metric: "conversations" | "voice_minutes") {
+    const check = await this.checkUsage(organizationId, metric);
+    const legacyState = check.state === "LIMIT_REACHED" ? "limit_reached" : check.state === "WARNING_80" ? "warning_80" : check.state.toLowerCase();
+    return {
+      metric,
+      current: check.current,
+      limit: check.limit,
+      remaining: check.limit ? Math.max(0, check.limit - check.current) : 999999,
+      percentage: check.percentage,
+      state: legacyState,
+      action: check.action,
+      warningMessage: check.warningMessage,
+      resetDate: null,
+    };
+  },
+
+  /**
    * Dynamically calculates plan-specific onboarding checklist requirements.
    */
   async getPlanOnboardingRequirements(organizationId: string) {
-    const { planConfig } = await this.getSubscription(organizationId);
+    const status = await subscriptionEngine.getSubscriptionStatus(organizationId);
+    const plan = status.plan;
 
     const steps = [
       { id: "business_profile", title: "Business Profile & Contact Info", required: true },
       { id: "services", title: "Bookable Services & Pricing", required: true },
       { id: "business_hours", title: "Operating Hours & Weekly Availability", required: true },
       { id: "knowledge_base", title: "Knowledge Base FAQs & Training Chunks", required: true },
-      { id: "calendar_connection", title: "Staff Calendar Sync (Google / Microsoft)", required: planConfig.features.calendar_sync },
-      { id: "voice_telephony", title: "Voice AI Receptionist & Phone Number", required: planConfig.features.voice_ai },
-      { id: "channels_messaging", title: "SMS / WhatsApp Messaging Channel", required: planConfig.features.whatsapp || planConfig.features.sms_messaging },
-      { id: "website_widget", title: "Website Booking & Intake Widget", required: true },
+      { id: "calendar_connection", title: "Staff Calendar Sync", required: plan.limits.calendars !== 0 },
+      { id: "voice_telephony", title: "Voice AI Receptionist & Phone Number", required: plan.features.voiceAI },
+      { id: "channels_messaging", title: "SMS / WhatsApp Messaging Channel", required: plan.features.whatsapp || plan.features.sms },
+      { id: "website_widget", title: "Website Booking & Intake Widget", required: plan.features.websiteWidget },
     ];
 
     return {
-      planId: planConfig.id,
-      planName: planConfig.name,
+      planId: plan.id,
+      planName: plan.name,
       steps,
     };
   },
@@ -547,10 +511,30 @@ export const entitlementService = {
     if (checks.channelsConfigured) score += weights.channelsConfigured;
     if (checks.staffAdded) score += weights.staffAdded;
 
+    const completedItems: string[] = [];
+    const missingItems: string[] = [];
+
+    if (checks.profileComplete) completedItems.push("Business profile");
+    else missingItems.push("Business profile");
+
+    if (checks.servicesConfigured) completedItems.push("Services");
+    else missingItems.push("Services");
+
+    if (checks.hoursConfigured) completedItems.push("Business hours");
+    else missingItems.push("Business hours");
+
+    if (checks.knowledgeIngested) completedItems.push("Knowledge base");
+    else missingItems.push("Knowledge base");
+
+    if (checks.channelsConfigured) completedItems.push("AI receptionist channels");
+    else missingItems.push("AI receptionist channels");
+
     return {
       score,
       isReadyForProduction: score >= 80,
       checks,
+      completedItems,
+      missingItems,
       metrics: {
         servicesCount: servicesList.length,
         knowledgeChunksCount: chunks.length,

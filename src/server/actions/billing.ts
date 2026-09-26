@@ -44,30 +44,18 @@ export async function getPaymentConfigStatusAction(providerId = "stripe") {
   }
 }
 
+import { subscriptionEngine } from "../services/billing/subscription-engine";
+import { getPlan, PLAN_CATALOG, getAllPlans } from "@/lib/billing/plans";
+
 /**
- * Loads billing portal dashboard data with safe fallback seeding.
+ * Loads billing portal dashboard data using the central dynamic SubscriptionEngine.
  */
 export async function getBillingPortalDataAction() {
   try {
     const { organizationId } = await getVerifiedOrgContext();
     
-    // Resolve subscription
-    let sub = await db.query.subscriptions.findFirst({
-      where: eq(subscriptions.organizationId, organizationId),
-    });
-
-    // Seed default free subscription if none exists
-    if (!sub) {
-      const [newSub] = await db
-        .insert(subscriptions)
-        .values({
-          organizationId,
-          planId: "free",
-          status: "trialing",
-        })
-        .returning();
-      sub = newSub;
-    }
+    // Resolve dynamic subscription status from SubscriptionEngine
+    const dynamicStatus = await subscriptionEngine.getSubscriptionStatus(organizationId);
 
     // Resolve customer billing account
     let account = await billingRepository.getBillingAccount(organizationId);
@@ -86,7 +74,24 @@ export async function getBillingPortalDataAction() {
 
     return {
       success: true,
-      subscription: sub,
+      subscription: {
+        id: organizationId,
+        organizationId,
+        planId: dynamicStatus.planId,
+        status: dynamicStatus.state.toLowerCase(),
+        state: dynamicStatus.state,
+        currentPeriodStart: dynamicStatus.currentPeriodStart,
+        currentPeriodEnd: dynamicStatus.currentPeriodEnd,
+        cancelAtPeriodEnd: dynamicStatus.cancelAtPeriodEnd,
+        trialDaysRemaining: dynamicStatus.trialDaysRemaining,
+        trialStartedAt: dynamicStatus.trialStartedAt,
+        trialEndsAt: dynamicStatus.trialEndsAt,
+        gracePeriodDaysRemaining: dynamicStatus.gracePeriodDaysRemaining,
+        isRestricted: dynamicStatus.isRestricted,
+        plan: dynamicStatus.plan,
+        usage: dynamicStatus.usage,
+      },
+      availablePlans: getAllPlans(),
       account,
       invoices: invoicesList,
       payments: paymentsList,
@@ -199,83 +204,78 @@ export async function createCheckoutSessionAction(params: {
 }
 
 /**
- * Direct subscription upgrade action with strict configuration validation.
+ * Dynamic plan change action: determines upgrade vs downgrade.
+ * If downgrade and current usage exceeds target limits, schedules downgrade at period end.
+ * If upgrade, unlocks features and raises limits immediately.
  */
-export async function upgradeSubscriptionAction(planId: string) {
+export async function upgradeSubscriptionAction(newPlanId: string) {
   const correlationId = generateCorrelationId();
   try {
     const { organizationId } = await getVerifiedOrgContext();
-    
-    const validPlans = ["starter", "pro", "business", "enterprise"];
-    if (!planId || !validPlans.includes(planId.toLowerCase())) {
-      throw new CheckoutValidationError(`Invalid plan selection: ${planId || "none"}.`, {
-        correlationId,
-      });
-    }
+    const currentStatus = await subscriptionEngine.getSubscriptionStatus(organizationId);
 
-    let sub = await db.query.subscriptions.findFirst({
-      where: eq(subscriptions.organizationId, organizationId),
-    });
+    const targetPlan = getPlan(newPlanId);
+    const currentPlan = currentStatus.plan;
 
-    if (!sub) {
-      throw new CheckoutValidationError("No existing subscription record found for organization.", {
-        correlationId,
-      });
-    }
+    // Determine if this is an upgrade or a downgrade
+    const isDowngrade = targetPlan.price < currentPlan.price;
 
-    // Check payment provider configuration state first
-    const paymentStatus = await getPaymentProviderStatus("stripe", organizationId);
-    if (!paymentStatus.isAvailable) {
-      console.warn(`[Billing Upgrade] Configuration unavailable for org ${organizationId}. Missing: ${paymentStatus.missingFields.join(", ")}. Correlation: ${correlationId}`);
+    if (isDowngrade) {
+      const result = await subscriptionEngine.downgradePlan(organizationId, targetPlan.id);
+      revalidatePath("/billing");
       return {
-        success: false as const,
-        code: (paymentStatus.state === "DISABLED" ? "PAYMENT_PROVIDER_DISABLED" : "PAYMENT_CONFIGURATION_UNAVAILABLE") as any,
-        message: "Online checkout is temporarily unavailable. Please try again later.",
-        retryable: false,
+        success: true as const,
+        scheduledAtPeriodEnd: result.scheduledAtPeriodEnd,
+        message: result.message,
         correlationId,
-        missingRequirements: paymentStatus.missingFields,
       };
     }
 
-    // Resolve or create customer account
-    let account = await billingRepository.getBillingAccount(organizationId);
-    if (!account) {
-      account = await billingRepository.createBillingAccount({
-        organizationId,
-        email: "billing@customer.com",
-        currency: "USD",
-      });
-    }
+    // Upgrade immediately
+    await subscriptionEngine.upgradePlan(organizationId, targetPlan.id);
+    revalidatePath("/billing");
+    return {
+      success: true as const,
+      scheduledAtPeriodEnd: false,
+      message: `Upgraded to ${targetPlan.name} plan successfully!`,
+      correlationId,
+    };
+  } catch (error: any) {
+    const controlled = formatControlledBillingError(error, correlationId);
+    return controlled;
+  }
+}
 
-    // Trigger Stripe customer and subscription creation
-    const stripeBilling = ProviderRegistry.getBillingProvider("stripe");
-    const stripeSubProvider = ProviderRegistry.getSubscriptionProvider("stripe");
+/**
+ * Subscription cancellation request:
+ * Keeps subscription active until current period end according to SaaS best practices.
+ */
+export async function cancelSubscriptionAction() {
+  const correlationId = generateCorrelationId();
+  try {
+    const { organizationId } = await getVerifiedOrgContext();
+    const canceledSub = await subscriptionEngine.requestCancellation(organizationId);
 
-    let stripeCustomerId = account.stripeCustomerId;
-    if (!stripeCustomerId) {
-      const cust = await stripeBilling.createCustomer(account.email, undefined, { organizationId }, organizationId);
-      stripeCustomerId = cust.id;
-      await db
-        .update(billingAccounts)
-        .set({ stripeCustomerId, updatedAt: new Date() })
-        .where(eq(billingAccounts.id, account.id));
-    }
+    revalidatePath("/billing");
+    return { 
+      success: true as const, 
+      periodEnd: canceledSub.currentPeriodEnd,
+      correlationId 
+    };
+  } catch (error: any) {
+    const controlled = formatControlledBillingError(error, correlationId);
+    return controlled;
+  }
+}
 
-    const priceId = process.env[`STRIPE_PRICE_${planId.toUpperCase()}`] || `price_${planId}`;
-    const stripeSub = await stripeSubProvider.createSubscription(stripeCustomerId, priceId, 14, undefined, organizationId);
-
-    // Update DB Sub only when successfully returned from Stripe
-    await db
-      .update(subscriptions)
-      .set({
-        planId,
-        status: stripeSub.status === "active" ? "active" : "trialing",
-        stripeSubscriptionId: stripeSub.id,
-        currentPeriodStart: stripeSub.currentPeriodStart,
-        currentPeriodEnd: stripeSub.currentPeriodEnd,
-        updatedAt: new Date(),
-      })
-      .where(eq(subscriptions.id, sub.id));
+/**
+ * Revokes scheduled cancellation and restores active status seamlessly.
+ */
+export async function revokeCancellationAction() {
+  const correlationId = generateCorrelationId();
+  try {
+    const { organizationId } = await getVerifiedOrgContext();
+    await subscriptionEngine.revokeCancellation(organizationId);
 
     revalidatePath("/billing");
     return { success: true as const, correlationId };
@@ -286,46 +286,15 @@ export async function upgradeSubscriptionAction(planId: string) {
 }
 
 /**
- * Subscription cancellation action.
+ * Returns the dynamic real-time subscription status.
  */
-export async function cancelSubscriptionAction() {
-  const correlationId = generateCorrelationId();
+export async function getDynamicSubscriptionStatusAction() {
   try {
     const { organizationId } = await getVerifiedOrgContext();
-    
-    const sub = await db.query.subscriptions.findFirst({
-      where: eq(subscriptions.organizationId, organizationId),
-    });
-
-    if (!sub) throw new CheckoutValidationError("No active subscription found to cancel.", { correlationId });
-
-    if (sub.stripeSubscriptionId) {
-      try {
-        const paymentStatus = await getPaymentProviderStatus("stripe", organizationId);
-        if (paymentStatus.isAvailable) {
-          const stripe = ProviderRegistry.getSubscriptionProvider("stripe");
-          await stripe.cancelSubscription(sub.stripeSubscriptionId, false, organizationId);
-        }
-      } catch (providerErr) {
-        console.warn(`[Billing Cancel] Provider cancel warning [${correlationId}]:`, providerErr);
-      }
-    }
-
-    await db
-      .update(subscriptions)
-      .set({
-        planId: "free",
-        status: "canceled",
-        stripeSubscriptionId: null,
-        updatedAt: new Date(),
-      })
-      .where(eq(subscriptions.id, sub.id));
-
-    revalidatePath("/billing");
-    return { success: true as const, correlationId };
+    const status = await subscriptionEngine.getSubscriptionStatus(organizationId);
+    return { success: true, status };
   } catch (error: any) {
-    const controlled = formatControlledBillingError(error, correlationId);
-    return controlled;
+    return { success: false, error: error?.message || "Failed to load subscription status" };
   }
 }
 
