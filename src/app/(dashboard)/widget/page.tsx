@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from"react";
+import { useState, useEffect, useMemo } from "react";
 import Image from"next/image";
 import { getWidgetSettingsAction, saveWidgetSettingsAction, addDomainAction, deleteDomainAction, verifyDomainAction, resetThemeToBrandAction } from"@/server/actions/widget";
 import { 
@@ -105,6 +105,17 @@ export default function WidgetSettingsPage() {
  engagementRate: 0,
  conversionRate: 0
  });
+
+ const engagementTrend = useMemo(() => {
+   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+   const opens = analytics.widgetOpens || 0;
+   const chats = analytics.conversationStarts || 0;
+   return days.map((day) => ({
+     date: day,
+     opens: opens > 0 ? Math.round(opens / 7) : 0,
+     chats: chats > 0 ? Math.round(chats / 7) : 0,
+   }));
+ }, [analytics]);
 
  // Action inputs
  const [newDomain, setNewDomain] = useState("");
@@ -1029,15 +1040,7 @@ export default function WidgetSettingsPage() {
  </div>
  <div className="flex-1 p-space-5 pt-space-0">
  <AreaChartCard 
- data={[
- { date:"Mon", opens: 120, chats: 45 },
- { date:"Tue", opens: 145, chats: 52 },
- { date:"Wed", opens: 132, chats: 48 },
- { date:"Thu", opens: 180, chats: 75 },
- { date:"Fri", opens: 165, chats: 62 },
- { date:"Sat", opens: 90, chats: 25 },
- { date:"Sun", opens: 85, chats: 30 },
- ]}
+ data={engagementTrend}
  index="date"
  categories={["opens","chats"]}
  colors={["#a1a1aa","#7a5af8"]}

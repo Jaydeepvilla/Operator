@@ -8,7 +8,7 @@ import { categoriesRepository } from "@/server/repositories/categories";
 import { tagsRepository } from "@/server/repositories/tags";
 import { settingsRepository } from "@/server/repositories/settings";
 import { db } from "@/server/db";
-import { websiteImports, automationRules, automationRuleExecutions } from "@/server/db/schema";
+import { websiteImports, knowledgeSources, automationRules, automationRuleExecutions } from "@/server/db/schema";
 import { requireOrganizationAccess } from "@/lib/auth/server";
 import { ruleEngine, RuleAction, RuleCondition } from "../services/automations/rule-engine";
 import { eq, and, desc } from "drizzle-orm";
@@ -111,15 +111,37 @@ export async function generateWebsiteAction() {
 
 export async function publishWebsiteAction(data: { title: string; content: string }) {
   const { organizationId } = await requireOrganizationAccess();
-  
+  const url = data.title.replace('Importing ', '');
+
+  // Ensure knowledgeSource exists for website
+  let [source] = await db
+    .select()
+    .from(knowledgeSources)
+    .where(and(eq(knowledgeSources.organizationId, organizationId), eq(knowledgeSources.type, "website")))
+    .limit(1);
+
+  if (!source) {
+    const [newSource] = await db
+      .insert(knowledgeSources)
+      .values({
+        organizationId,
+        name: `Website: ${url}`,
+        type: "website",
+        isActive: true,
+        metadata: { sourceUrl: url },
+      })
+      .returning();
+    source = newSource;
+  }
+
   // Create an import job
   await db.insert(websiteImports).values({
     organizationId,
-    url: data.title.replace('Importing ', ''),
+    url,
     status: 'pending',
     pagesFound: 0,
     pagesScraped: 0,
-    sourceId: "00000000-0000-0000-0000-000000000000"
+    sourceId: source.id,
   });
 
   revalidatePath("/dashboard");

@@ -137,16 +137,16 @@ export async function resolveUserDestination(
 
   const onboardingStatus = (selectedOrg.onboardingStatus as any) || "not_started";
   const onboardingStep = selectedOrg.onboardingStep || "url";
-  const hasVerifiedOrg = selectedOrg.verificationStatus === "verified" || onboardingStatus === "completed";
+  const isCompleted = onboardingStatus === "completed";
 
   // If onboarding is NOT completed, direct them back to their exact unfinished step
-  if (onboardingStatus !== "completed" && !hasVerifiedOrg) {
+  if (!isCompleted) {
     const stepParam = onboardingStep && onboardingStep !== "url" ? `?step=${onboardingStep}` : "";
     return {
       destination: `/onboarding${stepParam}`,
       onboardingStatus,
       onboardingStep,
-      hasVerifiedOrg: false,
+      hasVerifiedOrg: selectedOrg.verificationStatus === "verified",
       activeOrgId: selectedOrg.id,
       userStatus: user.status,
     };

@@ -1,7 +1,7 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { 
  getAppointmentsAction, 
  getAppointmentDetailsAction,
@@ -82,6 +82,37 @@ export default function AppointmentsPage() {
  const [servicesList, setServicesList] = useState<any[]>([]);
  const [loading, setLoading] = useState(true);
  const [errorMsg, setErrorMsg] = useState("");
+
+ // Dynamic booking funnel breakdown derived from real appointments
+ const bookingFunnelData = useMemo(() => {
+   const total = appointmentsList.length;
+   const confirmedCount = appointmentsList.filter(a => a.appointment.status === "confirmed").length;
+   const completedCount = appointmentsList.filter(a => a.appointment.status === "completed").length;
+   const pendingCount = appointmentsList.filter(a => a.appointment.status === "pending").length;
+   const cancelledCount = appointmentsList.filter(a => a.appointment.status === "cancelled").length;
+   const noShowCount = appointmentsList.filter(a => a.appointment.status === "no_show").length;
+
+   const stages = [
+     { stage: "All Appointments", count: total, color: "bg-[hsl(var(--primary))]", pct: total > 0 ? 100 : 0 },
+     { stage: "Confirmed", count: confirmedCount, color: "bg-emerald-500", pct: total > 0 ? Math.round((confirmedCount / total) * 100) : 0 },
+     { stage: "Completed", count: completedCount, color: "bg-blue-500", pct: total > 0 ? Math.round((completedCount / total) * 100) : 0 },
+     { stage: "Pending Approval", count: pendingCount, color: "bg-amber-500", pct: total > 0 ? Math.round((pendingCount / total) * 100) : 0 },
+     { stage: "Cancelled / No Show", count: cancelledCount + noShowCount, color: "bg-rose-500", pct: total > 0 ? Math.round(((cancelledCount + noShowCount) / total) * 100) : 0 },
+   ];
+
+   const chartStages = [
+     { stage: "Confirmed", count: confirmedCount },
+     { stage: "Completed", count: completedCount },
+     { stage: "Pending", count: pendingCount },
+     { stage: "Cancelled", count: cancelledCount },
+     { stage: "No Show", count: noShowCount },
+   ].filter(s => s.count > 0);
+
+   return {
+     stages,
+     chartData: chartStages.length > 0 ? chartStages : [{ stage: "No appointments yet", count: 0 }],
+   };
+ }, [appointmentsList]);
 
  // Filters
  const [selectedStaffId, setSelectedStaffId] = useState("all");
@@ -679,13 +710,7 @@ export default function AppointmentsPage() {
  {/* Donut Chart */}
  <div className="flex justify-center items-center shrink-0">
  <DonutChartCard
- data={[
- { stage: "Website Visit", count: 1250 },
- { stage: "Widget Opened", count: 850 },
- { stage: "AI Chat Started", count: 540 },
- { stage: "Availability Requested", count: 320 },
- { stage: "Booking Confirmed", count: 215 }
- ]}
+ data={bookingFunnelData.chartData}
  category="count"
  index="stage"
  colors={["hsl(var(--primary))", "hsl(var(--primary)/0.7)", "#10b981", "#f59e0b", "#ef4444"]}
@@ -695,13 +720,7 @@ export default function AppointmentsPage() {
  </div>
  {/* Funnel Breakdown */}
  <div className="space-y-space-2 shrink-0">
- {[
- { stage: "Website Visit", count: 1250, color: "bg-[hsl(var(--primary))]", pct: 100 },
- { stage: "Widget Opened", count: 850, color: "bg-[hsl(var(--primary)/0.7)]", pct: 68 },
- { stage: "AI Chat Started", count: 540, color: "bg-emerald-500", pct: 43 },
- { stage: "Availability Requested", count: 320, color: "bg-amber-500", pct: 25.6 },
- { stage: "Booking Confirmed", count: 215, color: "bg-rose-500", pct: 17.2 },
- ].map((item, i) => (
+ {bookingFunnelData.stages.map((item, i) => (
  <div key={i} className="flex justify-between items-center text-caption font-medium py-space-2 border-b border-slate-200/20 last:border-b-0">
  <div className="flex items-center gap-space-2">
  <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", item.color)} />

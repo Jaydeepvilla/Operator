@@ -1,6 +1,7 @@
 "use client";import { Badge } from "@/components/shared/badge";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getTeamMembersAction, inviteTeamMemberAction, removeTeamMemberAction } from "@/server/actions/team";
 import {
   Users,
   UserPlus,
@@ -41,39 +42,15 @@ interface TeamMember {
 }
 
 export default function TeamPage() {
-  // Members List State for interactive UI simulations
-  const [members, setMembers] = useState<TeamMember[]>([
-  {
-    id: "1",
-    name: "Workspace Creator",
-    email: "owner@operator.ai",
-    role: "owner",
-    status: "active",
-    joinedAt: "Jun 22, 2026"
-  },
-  {
-    id: "2",
-    name: "Office Manager",
-    email: "manager@operator.ai",
-    role: "manager",
-    status: "active",
-    joinedAt: "Jun 28, 2026"
-  },
-  {
-    id: "3",
-    name: "Front Desk Staff",
-    email: "staff@operator.ai",
-    role: "staff",
-    status: "pending",
-    joinedAt: "Jul 01, 2026"
-  }]
-  );
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // UI state hooks
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Form input hooks
   const [inviteName, setInviteName] = useState("");
@@ -81,48 +58,67 @@ export default function TeamPage() {
   const [inviteRole, setInviteRole] = useState<"staff" | "manager" | "admin">("staff");
   const [inviting, setInviting] = useState(false);
 
+  const fetchMembers = async () => {
+    try {
+      setLoading(true);
+      const res = await getTeamMembersAction();
+      if (res.success && res.data) {
+        setMembers(res.data as TeamMember[]);
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || "Failed to load team members");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMembers();
+  }, []);
+
   // Seat Configuration
   const maxSeats = 10;
   const usedSeats = members.length;
-  const remainingSeats = maxSeats - usedSeats;
-  const seatProgress = usedSeats / maxSeats * 100;
+  const remainingSeats = Math.max(0, maxSeats - usedSeats);
+  const seatProgress = Math.min(100, (usedSeats / maxSeats) * 100);
 
   // Handles adding new operator
-  const handleInviteSubmit = (e: React.FormEvent) => {
+  const handleInviteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteName.trim() || !inviteEmail.trim()) return;
 
     setInviting(true);
+    setErrorMessage(null);
 
-    // Simulate network delay for premium feel
-    setTimeout(() => {
-      const newMember: TeamMember = {
-        id: Math.random().toString(36).substring(2, 9),
-        name: inviteName,
-        email: inviteEmail,
-        role: inviteRole,
-        status: "pending",
-        joinedAt: new Date().toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-          year: "numeric"
-        })
-      };
+    const res = await inviteTeamMemberAction({
+      name: inviteName,
+      email: inviteEmail,
+      role: inviteRole,
+    });
 
-      setMembers((prev) => [...prev, newMember]);
-      setSuccessBanner(`Successfully sent email invitation to ${inviteEmail}!`);
+    if (res.success) {
+      setSuccessBanner(`Successfully added ${inviteEmail} to the team!`);
       setInviteName("");
       setInviteEmail("");
       setInviteRole("staff");
-      setInviting(false);
       setShowInviteForm(false);
-    }, 1200);
+      await fetchMembers();
+    } else {
+      setErrorMessage(res.error || "Failed to invite team member.");
+    }
+    setInviting(false);
   };
 
   // Revoke/Delete user handler
-  const handleRevoke = (id: string, name: string) => {
-    setMembers((prev) => prev.filter((m) => m.id !== id));
-    setSuccessBanner(`Revoked invitation for ${name}.`);
+  const handleRevoke = async (id: string, name: string) => {
+    setErrorMessage(null);
+    const res = await removeTeamMemberAction(id);
+    if (res.success) {
+      setSuccessBanner(`Removed ${name} from team.`);
+      await fetchMembers();
+    } else {
+      setErrorMessage(res.error || "Failed to remove member.");
+    }
   };
 
   // Filter members list based on filters & queries
@@ -200,6 +196,13 @@ export default function TeamPage() {
  </Button>
  </Badge>
       }
+
+ {errorMessage && (
+   <div className="p-space-3 radius-md bg-rose-500/10 border border-rose-500/20 text-rose-500 text-body-sm flex items-center justify-between animate-fade-in">
+     <span>{errorMessage}</span>
+     <button className="text-body-sm hover:opacity-70" onClick={() => setErrorMessage(null)}>✕</button>
+   </div>
+ )}
 
  {/* KPI metrics row from analytics page styling */}
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-4 shrink-0">
@@ -312,12 +315,22 @@ export default function TeamPage() {
                </tr>
                </thead>
                <tbody className="divide-y divide-[hsl(var(--foreground)/0.04)]">
-               {filteredMembers.length === 0 ?
-                            <tr>
+               {loading ? (
+               <tr>
+               <td colSpan={5} className="p-space-8 text-center text-muted-foreground/60 text-caption">
+               <div className="flex items-center justify-center gap-space-2">
+               <Loader2 className="h-4 w-4 animate-spin text-primary" />
+               <span>Loading team members...</span>
+               </div>
+               </td>
+               </tr>
+               ) : filteredMembers.length === 0 ? (
+               <tr>
                <td colSpan={5} className="p-space-8 text-center text-muted-foreground/60 italic text-caption">
                No workspace members found matching current filters.
                </td>
-               </tr> :
+               </tr>
+               ) : (
 
                             filteredMembers.map((member) => {
                               const RoleIcon = getRoleIcon(member.role);
@@ -334,7 +347,7 @@ export default function TeamPage() {
                                           "flex h-8.5 w-8.5 items-center justify-center rounded-full text-white font-bold text-caption bg-gradient-to-tr",
                                           roleGradient
                                         )}>
-               {member.name.split("").map((w) => w.charAt(0)).join("").substring(0, 2).toUpperCase()}
+               {member.name.split(" ").map((w) => w.charAt(0)).join("").substring(0, 2).toUpperCase() || "U"}
                </div>
                <span
                                           className={cn(
@@ -414,7 +427,7 @@ export default function TeamPage() {
                </tr>);
 
                             })
-                            }
+                            )}
                </tbody>
                </NativeTable>
                </ScrollArea>

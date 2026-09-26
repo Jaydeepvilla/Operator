@@ -367,8 +367,20 @@ export async function createCouponAction(data: {
 
 export async function getRevenueMetricsAction() {
   try {
-    const metrics = await billingRepository.getRevenueAnalytics();
-    return { success: true, metrics };
+    const metrics = await financialMetricsService.calculateRealtimeMetrics();
+    return { 
+      success: true, 
+      metrics: {
+        ...metrics,
+        mrr: `$${metrics.mrr.toLocaleString()}.00`,
+        arr: `$${metrics.arr.toLocaleString()}.00`,
+        churnRate: `${metrics.churnRate}%`,
+        ltv: `$${metrics.ltv.toLocaleString()}.00`,
+        arpu: `$${metrics.arpu.toLocaleString()}.00`,
+        netRevenue: `$${metrics.netRevenue.toLocaleString()}.00`,
+        grossRevenue: `$${metrics.grossRevenue.toLocaleString()}.00`,
+      }
+    };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to compile financial metrics" };
   }

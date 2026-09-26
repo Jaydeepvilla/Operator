@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { cache } from "react";
-import { getSession } from "./session";
+import { getSession, deleteSession } from "./session";
 import { db } from "@/server/db";
 import { users, memberships } from "@/server/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -33,6 +33,18 @@ export const auth = cache(async (): Promise<AuthResult> => {
 
     const session = await getSession(token);
     if (!session) {
+      return { userId: null, orgId: null };
+    }
+
+    // Verify user actually exists in the database and is active
+    const [userRecord] = await db
+      .select({ id: users.id, status: users.status, deletedAt: users.deletedAt })
+      .from(users)
+      .where(eq(users.id, session.userId))
+      .limit(1);
+
+    if (!userRecord || userRecord.status === "suspended" || userRecord.deletedAt) {
+      await deleteSession(token);
       return { userId: null, orgId: null };
     }
 

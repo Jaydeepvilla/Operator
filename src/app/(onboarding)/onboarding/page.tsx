@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 import { ShieldCheck } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function OnboardingPage() {
   const { hasOrg, org, isCompleted, currentStep, draftData } = await checkUserOrganization();
   

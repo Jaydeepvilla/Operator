@@ -75,7 +75,7 @@ export async function checkUserOrganization(): Promise<OnboardingStateResult> {
     }
 
     if (targetOrg) {
-      const isCompleted = targetOrg.onboardingStatus === "completed" || targetOrg.verificationStatus === "verified";
+      const isCompleted = targetOrg.onboardingStatus === "completed";
       return {
         hasOrg: true,
         org: targetOrg,

@@ -3,6 +3,8 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Operator — Authentication",
   description:

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getAnalyticsAction } from "@/server/actions/admin";
 import {
  BarChart3,
@@ -132,6 +132,51 @@ export default function AnalyticsPage() {
  { label: "Escalated", count: conversations.escalated, color: "bg-rose-500" },
  { label: "Closed", count: conversations.closed, color: "bg-slate-400 " },
  ];
+
+ const conversionsTrend = useMemo(() => {
+   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+   const totalBooked = funnel?.Booked || 0;
+   const totalEscalated = escalations?.total || 0;
+
+   return days.map((day) => ({
+     date: day,
+     appointments: totalBooked > 0 ? Math.max(0, Math.round(totalBooked / 7)) : 0,
+     missed: totalEscalated > 0 ? Math.max(0, Math.round(totalEscalated / 7)) : 0,
+   }));
+ }, [funnel, escalations]);
+
+ const revenueTrend = useMemo(() => {
+   if (fin.mrrHistory && fin.mrrHistory.length > 0) {
+     return fin.mrrHistory.map((item: any) => ({
+       month: item.month,
+       actual: item.revenue || 0,
+       estimated: item.mrr || 0,
+     }));
+   }
+   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+   return months.map((month) => ({ month, actual: 0, estimated: 0 }));
+ }, [fin]);
+
+ const aiVsHumanBreakdown = useMemo(() => {
+   const total = conversations.total || 0;
+   const escalated = escalations.total || 0;
+   const pendingHuman = escalations.pending || 0;
+   const fullyAi = Math.max(0, total - escalated);
+
+   if (total === 0 && escalated === 0) {
+     return [
+       { source: "Fully AI Handled", count: 0 },
+       { source: "AI + Human Takeover", count: 0 },
+       { source: "Direct to Human", count: 0 },
+     ];
+   }
+
+   return [
+     { source: "Fully AI Handled", count: fullyAi },
+     { source: "AI + Human Takeover", count: escalated },
+     { source: "Direct to Human", count: pendingHuman },
+   ];
+ }, [conversations, escalations]);
 
  return (
  <div className="space-y-space-4 animate-fade-in w-full pb-space-8">
@@ -342,15 +387,7 @@ export default function AnalyticsPage() {
  </CardHeader>
  <CardContent className="p-space-5 pt-space-0">
  <AreaChartCard 
- data={[
- { date: "Mon", appointments: 12, missed: 4 },
- { date: "Tue", appointments: 18, missed: 2 },
- { date: "Wed", appointments: 15, missed: 6 },
- { date: "Thu", appointments: 25, missed: 3 },
- { date: "Fri", appointments: 30, missed: 5 },
- { date: "Sat", appointments: 45, missed: 10 },
- { date: "Sun", appointments: 10, missed: 8 },
- ]}
+ data={conversionsTrend}
  index="date"
  categories={["appointments", "missed"]}
  colors={["#10b981", "#ef4444"]}
@@ -366,14 +403,7 @@ export default function AnalyticsPage() {
  </CardHeader>
  <CardContent className="p-space-5 pt-space-0">
  <AreaChartCard 
- data={[
- { month: "Jan", actual: 4500, estimated: 4200 },
- { month: "Feb", actual: 5200, estimated: 4800 },
- { month: "Mar", actual: 6100, estimated: 5500 },
- { month: "Apr", actual: 5800, estimated: 6300 },
- { month: "May", actual: 7500, estimated: 7100 },
- { month: "Jun", actual: 8200, estimated: 8000 },
- ]}
+ data={revenueTrend}
  index="month"
  categories={["actual", "estimated"]}
  colors={["#10b981", "#a1a1aa"]}
@@ -390,11 +420,7 @@ export default function AnalyticsPage() {
  </CardHeader>
  <CardContent className="p-space-5 pt-space-0">
  <DonutChartCard 
- data={[
- { source: "Fully AI Handled", count: 850 },
- { source: "AI + Human Takeover", count: 120 },
- { source: "Direct to Human", count: 30 },
- ]}
+ data={aiVsHumanBreakdown}
  index="source"
  category="count"
  variant="pie"

@@ -86,7 +86,7 @@ export class RazorpayProvider
     organizationId?: string
   ): Promise<{ id: string; status: "succeeded" | "failed" | "pending" }> {
     if (!this.isConfigured()) {
-      return { id: `rfnd_mock_${Date.now()}`, status: "succeeded" };
+      throw new Error("Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in environment variables.");
     }
 
     const response = await fetch(`https://api.razorpay.com/v1/payments/${paymentId}/refund`, {
@@ -110,16 +110,11 @@ export class RazorpayProvider
   }
 
   async createCheckoutSession(params: CheckoutSessionParams): Promise<CheckoutSessionResult> {
-    const isProd = this.isConfigured();
-    const sessionId = `rzp_sess_${Date.now()}`;
-
-    if (!isProd) {
-      return {
-        id: sessionId,
-        url: `${params.successUrl}&razorpay_payment_id=pay_mock_${Date.now()}`,
-        status: "open",
-      };
+    if (!this.isConfigured()) {
+      throw new Error("Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in environment variables.");
     }
+
+    const sessionId = `rzp_sess_${Date.now()}`;
 
     // Create payment link via Razorpay Standard Links API
     const response = await fetch("https://api.razorpay.com/v1/payment_links", {
@@ -171,12 +166,7 @@ export class RazorpayProvider
     const periodEnd = new Date(now.getTime() + (trialDays || 30) * 24 * 60 * 60 * 1000);
 
     if (!this.isConfigured()) {
-      return {
-        id: `sub_rzp_mock_${Date.now()}`,
-        status: "active",
-        currentPeriodStart: now,
-        currentPeriodEnd: periodEnd,
-      };
+      throw new Error("Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in environment variables.");
     }
 
     const response = await fetch("https://api.razorpay.com/v1/subscriptions", {
@@ -290,7 +280,7 @@ export class RazorpayProvider
     organizationId?: string
   ): Promise<{ id: string }> {
     if (!this.isConfigured()) {
-      return { id: `cust_rzp_mock_${Date.now()}` };
+      throw new Error("Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in environment variables.");
     }
 
     const response = await fetch("https://api.razorpay.com/v1/customers", {

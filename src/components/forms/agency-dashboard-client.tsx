@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Building,
   TrendingUp,
@@ -44,21 +44,26 @@ export function AgencyDashboardClient({
   const [activeTab, setActiveTab] = useState<"overview" | "finance">("overview");
   const [auditLogs] = useState<AuditLog[]>(logs as AuditLog[]);
 
-  // Fallback metrics
-  const mrr = metrics?.mrr || "$948.00";
-  const arr = metrics?.arr || "$11,376.00";
-  const churn = metrics?.churnRate || "2.8%";
-  const ltv = metrics?.ltv || "$1,840.00";
-  const arpu = metrics?.arpu || "$68.00";
+  // Dynamic metrics with zero defaults
+  const mrr = metrics?.mrr || "$0.00";
+  const arr = metrics?.arr || "$0.00";
+  const churn = metrics?.churnRate || "0.0%";
+  const ltv = metrics?.ltv || "$0.00";
+  const arpu = metrics?.arpu || "$0.00";
+  const clientsCount = agency?.clients?.length || 0;
+  const growthPercent = metrics?.revenueGrowthPercent || 0;
 
-  const clientGrowthData = [
-    { month: "Jan", count: 4, revenue: 800 },
-    { month: "Feb", count: 6, revenue: 1200 },
-    { month: "Mar", count: 8, revenue: 1600 },
-    { month: "Apr", count: 9, revenue: 1800 },
-    { month: "May", count: 11, revenue: 2200 },
-    { month: "Jun", count: 12, revenue: 2450 },
-  ];
+  const clientGrowthData = useMemo(() => {
+    if (metrics?.mrrHistory && metrics.mrrHistory.length > 0) {
+      return metrics.mrrHistory.map((item: any) => ({
+        month: item.month,
+        count: clientsCount,
+        revenue: item.revenue || 0,
+      }));
+    }
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+    return months.map((month) => ({ month, count: clientsCount, revenue: 0 }));
+  }, [metrics, clientsCount]);
 
   return (
     <div className="space-y-space-6">
@@ -84,10 +89,10 @@ export function AgencyDashboardClient({
             <Card className="bg-card/45 backdrop-blur-md border border-border/50 flex items-center justify-between p-space-6">
               <div className="space-y-space-1">
                 <span className="text-caption text-muted-foreground">Active Client Accounts</span>
-                <h3 className="text-heading-lg text-foreground">{clientGrowthData[5].count}</h3>
-                <span className="text-caption text-success-500 flex items-center gap-space-1 mt-space-1">
-                  <TrendingUp className="h-3 w-3" />
-                  +20% growth this month
+                <h3 className="text-heading-lg text-foreground">{clientsCount}</h3>
+                <span className="text-caption text-muted-foreground flex items-center gap-space-1 mt-space-1">
+                  <Building className="h-3 w-3" />
+                  {clientsCount} registered clients
                 </span>
               </div>
               <div className="h-10 w-10 radius-lg bg-primary/10 text-primary flex items-center justify-center">
@@ -99,9 +104,9 @@ export function AgencyDashboardClient({
               <div className="space-y-space-1">
                 <span className="text-caption text-muted-foreground">Monthly Recurring Revenue</span>
                 <h3 className="text-heading-lg text-foreground">{mrr}</h3>
-                <span className="text-caption text-success-500 flex items-center gap-space-1 mt-space-1">
+                <span className="text-caption text-muted-foreground flex items-center gap-space-1 mt-space-1">
                   <TrendingUp className="h-3 w-3" />
-                  +$250 net new MRR
+                  {growthPercent > 0 ? `+${growthPercent}%` : `${growthPercent}%`} vs last period
                 </span>
               </div>
               <div className="h-10 w-10 radius-lg bg-success-500/10 text-success-500 flex items-center justify-center">
@@ -113,7 +118,7 @@ export function AgencyDashboardClient({
               <div className="space-y-space-1">
                 <span className="text-caption text-muted-foreground">Annual Recurring Revenue</span>
                 <h3 className="text-heading-lg text-foreground">{arr}</h3>
-                <span className="text-caption text-muted-foreground mt-space-1">Reseller margin: 68%</span>
+                <span className="text-caption text-muted-foreground mt-space-1">Active recurring baseline</span>
               </div>
               <div className="h-10 w-10 radius-lg bg-warning-500/10 text-warning-500 flex items-center justify-center">
                 <DollarSign className="h-5 w-5" />
@@ -151,7 +156,7 @@ export function AgencyDashboardClient({
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-space-4 pt-space-2">
-                    {clientGrowthData.map((data, index) => (
+                    {clientGrowthData.map((data: any, index: number) => (
                       <div key={index} className="space-y-space-1">
                         <div className="flex justify-between text-caption">
                           <span className="text-foreground">{data.month} ({data.count} Clients)</span>
@@ -320,31 +325,31 @@ export function AgencyDashboardClient({
               <CardContent className="space-y-space-4 pt-space-2">
                 <div className="space-y-space-1">
                   <div className="flex justify-between text-caption">
-                    <span>Professional Tier ($79/mo)</span>
-                    <span className="text-primary font-mono">8 active (66.7%)</span>
+                    <span>Active Subscriptions</span>
+                    <span className="text-primary font-mono">{metrics?.activeSubscriptionsCount || 0} active</span>
                   </div>
                   <div className="w-full bg-border h-2 radius-md overflow-hidden">
-                    <div className="bg-primary h-full radius-md w-2/3" />
+                    <div className="bg-primary h-full radius-md" style={{ width: `${metrics?.activeSubscriptionsCount ? 100 : 0}%` }} />
                   </div>
                 </div>
 
                 <div className="space-y-space-1">
                   <div className="flex justify-between text-caption">
-                    <span>Business Tier ($299/mo)</span>
-                    <span className="text-warning-500 font-mono">2 active (16.7%)</span>
+                    <span>Trialing Accounts</span>
+                    <span className="text-warning-500 font-mono">{metrics?.trialingCount || 0} active</span>
                   </div>
                   <div className="w-full bg-border h-2 radius-md overflow-hidden">
-                    <div className="bg-warning-500 h-full radius-md w-1/6" />
+                    <div className="bg-warning-500 h-full radius-md" style={{ width: `${metrics?.trialingCount ? 100 : 0}%` }} />
                   </div>
                 </div>
 
                 <div className="space-y-space-1">
                   <div className="flex justify-between text-caption">
-                    <span>Starter Trial ($0/mo)</span>
-                    <span className="text-muted-foreground font-mono">2 active (16.7%)</span>
+                    <span>Cancelled Accounts</span>
+                    <span className="text-muted-foreground font-mono">{metrics?.cancelledCount || 0}</span>
                   </div>
                   <div className="w-full bg-border h-2 radius-md overflow-hidden">
-                    <div className="bg-muted h-full radius-md w-1/6" />
+                    <div className="bg-muted h-full radius-md" style={{ width: `${metrics?.cancelledCount ? 100 : 0}%` }} />
                   </div>
                 </div>
               </CardContent>
@@ -357,37 +362,37 @@ export function AgencyDashboardClient({
                   Conversion & Growth Funnels
                 </CardTitle>
                 <CardDescription className="text-caption">
-                  Customer signup conversion ratios.
+                  Platform account performance metrics.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-space-4 pt-space-2">
                 <div className="space-y-space-1">
                   <div className="flex justify-between text-caption">
-                    <span>Trial Conversion Rate</span>
-                    <span className="font-mono text-foreground">34.8%</span>
+                    <span>Churn Rate</span>
+                    <span className="font-mono text-foreground">{churn}</span>
                   </div>
                   <div className="w-full bg-border h-2 radius-md overflow-hidden">
-                    <div className="bg-success-500 h-full radius-md w-1/3" />
+                    <div className="bg-destructive h-full radius-md" style={{ width: `${Math.min(100, parseFloat(churn) || 0)}%` }} />
                   </div>
                 </div>
 
                 <div className="space-y-space-1">
                   <div className="flex justify-between text-caption">
-                    <span>Upgrade Rate (Professional ➜ Business)</span>
-                    <span className="font-mono text-foreground">12.5%</span>
+                    <span>Average Revenue Per User (ARPU)</span>
+                    <span className="font-mono text-foreground">{arpu}</span>
                   </div>
                   <div className="w-full bg-border h-2 radius-md overflow-hidden">
-                    <div className="bg-primary-500 h-full radius-md w-1/8" />
+                    <div className="bg-primary-500 h-full radius-md" style={{ width: `${metrics?.arpu ? 100 : 0}%` }} />
                   </div>
                 </div>
 
                 <div className="space-y-space-1">
                   <div className="flex justify-between text-caption">
-                    <span>Refund Rate</span>
-                    <span className="font-mono text-foreground">0.8%</span>
+                    <span>Estimated Lifetime Value (LTV)</span>
+                    <span className="font-mono text-foreground">{ltv}</span>
                   </div>
                   <div className="w-full bg-border h-2 radius-md overflow-hidden">
-                    <div className="bg-destructive h-full radius-md w-0" />
+                    <div className="bg-success-500 h-full radius-md" style={{ width: `${metrics?.ltv ? 100 : 0}%` }} />
                   </div>
                 </div>
               </CardContent>

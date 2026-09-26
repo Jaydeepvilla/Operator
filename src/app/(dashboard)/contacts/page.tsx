@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getContactsAction, updateContactAction } from "@/server/actions/omnichannel";
 import {
  User,
@@ -55,6 +55,42 @@ export default function ContactsPage() {
  const [editTags, setEditTags] = useState("");
  const [editLtv, setEditLtv] = useState(0);
  const [savingEdit, setSavingEdit] = useState(false);
+
+ // Dynamic source distribution computed from real contacts
+ const sourceDistribution = useMemo(() => {
+   if (!contacts || contacts.length === 0) {
+     return [{ source: "Direct", count: 0 }];
+   }
+   const counts: Record<string, number> = {};
+   contacts.forEach((c: any) => {
+     const src = c.source || (c.tags && c.tags.length > 0 ? c.tags[0] : "Direct");
+     counts[src] = (counts[src] || 0) + 1;
+   });
+   return Object.entries(counts).map(([source, count]) => ({ source, count }));
+ }, [contacts]);
+
+ // Dynamic contacts growth over last 6 months
+ const contactsGrowth = useMemo(() => {
+   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+   const now = new Date();
+   const currentMonth = now.getMonth();
+
+   return Array.from({ length: 6 }, (_, i) => {
+     const monthIdx = (currentMonth - (5 - i) + 12) % 12;
+     const monthLabel = months[monthIdx];
+
+     const countInMonth = (contacts || []).filter((c: any) => {
+       if (!c.createdAt) return false;
+       const d = new Date(c.createdAt);
+       return d.getMonth() === monthIdx;
+     }).length;
+
+     return {
+       date: monthLabel,
+       contacts: countInMonth,
+     };
+   });
+ }, [contacts]);
 
  const loadContacts = async () => {
  try {
@@ -188,13 +224,7 @@ export default function ContactsPage() {
  </div>
  <div className="flex-1 p-space-5 pt-0">
  <DonutChartCard 
- data={[
- { source: "Organic Search", count: 124 },
- { source: "Paid Ads", count: 85 },
- { source: "Referral", count: 42 },
- { source: "Social Media", count: 35 },
- { source: "Direct", count: 28 }
- ]}
+ data={sourceDistribution}
  index="source"
  category="count"
  variant="pie"
@@ -210,15 +240,7 @@ export default function ContactsPage() {
  </div>
  <div className="flex-1 p-space-5 pt-0">
  <AreaChartCard 
- data={[
- { date: "Jan", contacts: 12 },
- { date: "Feb", contacts: 25 },
- { date: "Mar", contacts: 45 },
- { date: "Apr", contacts: 78 },
- { date: "May", contacts: 112 },
- { date: "Jun", contacts: 156 },
- { date: "Jul", contacts: 210 }
- ]}
+ data={contactsGrowth}
  index="date"
  categories={["contacts"]}
  colors={["#3b82f6"]}

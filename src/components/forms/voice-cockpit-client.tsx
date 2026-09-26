@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from"react";
+import { useState, useEffect, useTransition, useMemo } from "react";
 import {
  Activity,
  Play,
@@ -84,19 +84,59 @@ export function VoiceCockpitClient({
  );
  const [outboundStatus, setOutboundStatus] = useState<string | null>(null);
 
- // Simulated live transcripts mapping
- const SIMULATED_TRANSCRIPTS: Record<string, { speaker:"caller"|"agent"; content: string; time: string }[]> = {
- live: [
- { speaker:"caller", content:"Hello, I wanted to inquire if you have any dental checkup slots open for this Wednesday.", time:"14:32:05"},
- { speaker:"agent", content:"Hello! Yes, we have standard dental checkup slots available this Wednesday. I can offer you 10:00 AM or 2:00 PM. Would either of those work for you?", time:"14:32:12"},
- { speaker:"caller", content:"Wednesday at 10 AM works perfectly for me.", time:"14:32:20"},
- { speaker:"agent", content:"Great! I have selected Wednesday at 10:00 AM. May I please have your full name and email address to confirm the booking?", time:"14:32:27"},
- { speaker:"caller", content:"Sure, my name is John Doe, and my email is john.doe@example.com.", time:"14:32:38"},
- { speaker:"agent", content:"Thank you, John. I have confirmed your appointment for Wednesday at 10:00 AM. A confirmation email has been sent to john.doe@example.com. Is there anything else I can help with?", time:"14:32:45"},
- ]
- };
+ const [activeTranscript, setActiveTranscript] = useState<{ speaker: "caller" | "agent"; content: string; time: string }[]>([]);
 
- const activeTranscript = SIMULATED_TRANSCRIPTS.live;
+ // Dynamic 7-day call volume & duration derived from real metrics or sessions
+ const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+ const callActivityData = useMemo(() => {
+   if (initialAnalytics && initialAnalytics.length > 0) {
+     return [...initialAnalytics].reverse().map((a: any) => ({
+       date: a.dateStr ? a.dateStr.slice(5) : "Day",
+       calls: (a.callsAnswered || 0) + (a.callsMissed || 0),
+       duration: Math.round(((a.averageDurationSeconds || 0) / 60) * 10) / 10,
+     }));
+   }
+
+   const now = new Date();
+   return Array.from({ length: 7 }, (_, i) => {
+     const d = new Date(now.getTime() - (6 - i) * 24 * 60 * 60 * 1000);
+     const dayLabel = daysOfWeek[d.getDay()];
+     const dStr = d.toISOString().slice(0, 10);
+
+     const daySessions = (sessions || []).filter((s) => {
+       if (!s.createdAt) return false;
+       const sDate = new Date(s.createdAt).toISOString().slice(0, 10);
+       return sDate === dStr;
+     });
+
+     const totalDur = daySessions.reduce((acc, s) => acc + (s.durationSeconds || 0), 0);
+     const avgDur = daySessions.length > 0 ? Math.round((totalDur / daySessions.length / 60) * 10) / 10 : 0;
+
+     return {
+       date: dayLabel,
+       calls: daySessions.length,
+       duration: avgDur,
+     };
+   });
+ }, [initialAnalytics, sessions]);
+
+ const sentimentData = useMemo(() => {
+   if (initialAnalytics && initialAnalytics.length > 0) {
+     return [...initialAnalytics].reverse().map((a: any) => ({
+       date: a.dateStr ? a.dateStr.slice(5) : "Day",
+       sentiment: a.csatAverage ? Math.round(parseFloat(a.csatAverage) * 20) : 0,
+     }));
+   }
+
+   const now = new Date();
+   return Array.from({ length: 7 }, (_, i) => {
+     const d = new Date(now.getTime() - (6 - i) * 24 * 60 * 60 * 1000);
+     return {
+       date: daysOfWeek[d.getDay()],
+       sentiment: 0,
+     };
+   });
+ }, [initialAnalytics]);
 
  const handleUpdateVoicemailStatus = (voicemailId: string, currentStatus: string) => {
  const nextStatus = currentStatus ==="pending"?"called":"pending";
@@ -213,15 +253,7 @@ export function VoiceCockpitClient({
  </div>
  <div className="flex-1 p-space-5 pt-0">
  <AreaChartCard 
- data={[
- { date:"Mon", calls: 45, duration: 2.1 },
- { date:"Tue", calls: 52, duration: 2.4 },
- { date:"Wed", calls: 48, duration: 1.8 },
- { date:"Thu", calls: 61, duration: 2.7 },
- { date:"Fri", calls: 59, duration: 2.2 },
- { date:"Sat", calls: 30, duration: 1.5 },
- { date:"Sun", calls: 25, duration: 1.2 },
- ]}
+ data={callActivityData}
  index="date"
  categories={["calls","duration"]}
  colors={["#6366f1","#10b981"]}
@@ -237,15 +269,7 @@ export function VoiceCockpitClient({
  </div>
  <div className="flex-1 p-space-5 pt-0">
  <LineChartCard 
- data={[
- { date:"Mon", sentiment: 85 },
- { date:"Tue", sentiment: 88 },
- { date:"Wed", sentiment: 82 },
- { date:"Thu", sentiment: 91 },
- { date:"Fri", sentiment: 89 },
- { date:"Sat", sentiment: 94 },
- { date:"Sun", sentiment: 95 },
- ]}
+ data={sentimentData}
  index="date"
  categories={["sentiment"]}
  colors={["#8b5cf6"]}
@@ -399,7 +423,16 @@ export function VoiceCockpitClient({
 
  {/* Scrollable Dialogue viewport */}
  <div className="flex-1 overflow-y-auto p-space-4 space-y-space-4 bg-[hsl(var(--foreground)/0.02)] sidebar-scroll">
- {activeTranscript.map((line, idx) => (
+ {activeTranscript.length === 0 ? (
+   <div className="flex flex-col items-center justify-center text-center h-full min-h-48 py-space-12 text-muted-foreground/60 gap-space-2">
+     <MessageSquare className="h-8 w-8 text-muted-foreground/30" />
+     <span className="text-caption font-medium text-foreground">No active live call</span>
+     <span className="text-caption text-muted-foreground/60 max-w-xs">
+       Real-time audio transcripts stream here automatically during inbound receptionist or outbound campaign calls.
+     </span>
+   </div>
+ ) : (
+   activeTranscript.map((line, idx) => (
  <div
  key={idx}
  className={cn(
@@ -422,7 +455,8 @@ export function VoiceCockpitClient({
  {line.content}
  </div>
  </div>
- ))}
+ ))
+ )}
  </div>
 
  <div className="bg-[hsl(var(--foreground)/0.015)] border-t border-[hsl(var(--foreground)/0.06)] p-space-3 text-caption text-muted-foreground/80 flex items-center justify-between shrink-0">
