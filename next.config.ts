@@ -55,6 +55,54 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "ai-appointments-git-main-jc16.vercel.app",
+          },
+        ],
+        destination: "https://apps.nexxtechnologies.com/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "ai-appointments-jzovt71pf-jc16.vercel.app",
+          },
+        ],
+        destination: "https://apps.nexxtechnologies.com/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "ai-appointments(.*)\\.vercel\\.app",
+          },
+        ],
+        destination: "https://apps.nexxtechnologies.com/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "operator-azure(.*)\\.vercel\\.app",
+          },
+        ],
+        destination: "https://apps.nexxtechnologies.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
   // Logging configuration
   logging: {
     fetches: {
