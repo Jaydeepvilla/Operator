@@ -1,51 +1,62 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import Image from"next/image";
-import { getWidgetSettingsAction, saveWidgetSettingsAction, addDomainAction, deleteDomainAction, verifyDomainAction, resetThemeToBrandAction } from"@/server/actions/widget";
-import { 
- Code, 
- Settings, 
- Globe, 
- Sparkles, 
- BarChart2, 
- Save, 
- Loader2, 
- Check, 
- Copy, 
- Plus, 
- Trash2, 
- RefreshCw, 
- AlertCircle, 
- ExternalLink,
- MessageSquare,
- Palette,
- Play,
- X,
- Send,
- Sun,
- Moon,
- Mail,
- FileText,
- CheckCircle2
-} from"lucide-react";
+import Image from "next/image";
+import {
+  getWidgetSettingsAction,
+  saveWidgetSettingsAction,
+  addDomainAction,
+  deleteDomainAction,
+  verifyDomainAction,
+  resetThemeToBrandAction,
+} from "@/server/actions/widget";
+import {
+  Code,
+  Globe,
+  Sparkles,
+  BarChart2,
+  Save,
+  Loader2,
+  Check,
+  Copy,
+  Plus,
+  Trash2,
+  RefreshCw,
+  AlertCircle,
+  ExternalLink,
+  MessageSquare,
+  Palette,
+  Send,
+  Mail,
+  FileText,
+  Smartphone,
+  Monitor,
+  HelpCircle,
+  ShieldCheck,
+  CheckCircle2,
+} from "lucide-react";
 import { Button } from "@/components/shared/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/shared/tabs";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from"@/components/shared/card";
-import { Input } from"@/components/shared/input";
-import { Label } from"@/components/shared/label";
-import { PageTitle } from"@/components/shared/page-title";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shared/card";
+import { Input } from "@/components/shared/input";
+import { Label } from "@/components/shared/label";
+import { PageTitle } from "@/components/shared/page-title";
 import { useToast } from "@/components/shared/toast";
 import { formatUserErrorMessage } from "@/lib/errors";
-import { cn } from"@/components/shared/utils";
-import { AreaChartCard } from"@/components/charts";
-import { NativeSelect } from "@/components/shared/native";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/components/shared/utils";
+
+const PRESET_COLORS = [
+  { name: "Modern Purple", hex: "#7a5af8" },
+  { name: "Emerald Health", hex: "#10b981" },
+  { name: "Ocean Blue", hex: "#0ea5e9" },
+  { name: "Sunset Rose", hex: "#f43f5e" },
+  { name: "Luxury Amber", hex: "#f59e0b" },
+  { name: "Midnight Slate", hex: "#475569" },
+];
 
 const PLATFORM_GUIDES = [
   {
     id: "html",
-    name: "Custom HTML / React / Web",
+    name: "Custom HTML / Web",
     tagline: "React, Next.js, Vue, or static HTML",
     steps: [
       "Open your website's main template or layout file (e.g. index.html, layout.tsx, or footer template).",
@@ -110,161 +121,199 @@ const PLATFORM_GUIDES = [
 ];
 
 export default function WidgetSettingsPage() {
- const [loading, setLoading] = useState(true);
- const [isSaving, setIsSaving] = useState(false);
- const [saveSuccess, setSaveSuccess] = useState(false);
- const [errorMsg, setErrorMsg] = useState("");
- const toast = useToast();
- 
- const [activeTab, setActiveTab] = useState<"install"|"branding"|"appearance"|"triggers"|"analytics">("install");
- 
- // Settings States
- const [orgId, setOrgId] = useState("");
- const [enabled, setEnabled] = useState(true);
- 
- // Theme State
- const [theme, setTheme] = useState({
- themeMode:"light",
- primaryColor:"#7a5af8",
- backgroundColor:"#ffffff",
- textColor:"#18181b",
- borderColor:"#e4e4e7",
- borderRadius:"0.75rem"
- });
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const toast = useToast();
 
- // Branding State
- const [branding, setBranding] = useState({
- companyName:"",
- tagline:"AI Assistant",
- welcomeMessage:"Hello! How can I help you today?",
- logoUrl:"",
- avatarUrl:""
- });
+  const [activeTab, setActiveTab] = useState<"install" | "branding" | "triggers" | "domains" | "analytics">("install");
+  const [previewMode, setPreviewMode] = useState<"chat" | "bubble">("chat");
 
- // Launcher State
- const [launcher, setLauncher] = useState({
- position:"bottom_right",
- icon:"message-square",
- size:"medium",
- spacingX: 20,
- spacingY: 20
- });
+  // Settings States
+  const [orgId, setOrgId] = useState("");
+  const [enabled, setEnabled] = useState(true);
 
- // Customization State
- const [customization, setCustomization] = useState({
- starterQuestions: [] as string[],
- suggestedActions: [] as any[],
- proactiveTriggers: {
- timeOnPage: 10,
- scrollDepth: 50,
- exitIntent: false,
- active: false
- },
- widgetWidth: 380,
- widgetHeight: 600,
- shadowStyle:"lg"
- });
+  // Theme State
+  const [theme, setTheme] = useState({
+    themeMode: "light",
+    primaryColor: "#7a5af8",
+    backgroundColor: "#ffffff",
+    textColor: "#18181b",
+    borderColor: "#e4e4e7",
+    borderRadius: "0.75rem",
+  });
 
- const [domains, setDomains] = useState<any[]>([]);
- const [installations, setInstallations] = useState<any[]>([]);
- const [analytics, setAnalytics] = useState<any>({
- widgetOpens: 0,
- conversationStarts: 0,
- bookingsCount: 0,
- leadCapturesCount: 0,
- engagementRate: 0,
- conversionRate: 0
- });
+  // Branding State
+  const [branding, setBranding] = useState({
+    companyName: "",
+    tagline: "AI Assistant",
+    welcomeMessage: "Hello! How can I help you today?",
+    logoUrl: "",
+    avatarUrl: "",
+  });
 
- const engagementTrend = useMemo(() => {
-   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-   const opens = analytics.widgetOpens || 0;
-   const chats = analytics.conversationStarts || 0;
-   return days.map((day) => ({
-     date: day,
-     opens: opens > 0 ? Math.round(opens / 7) : 0,
-     chats: chats > 0 ? Math.round(chats / 7) : 0,
-   }));
- }, [analytics]);
+  // Launcher State
+  const [launcher, setLauncher] = useState({
+    position: "bottom_right",
+    icon: "message-square",
+    size: "medium",
+    spacingX: 20,
+    spacingY: 20,
+  });
 
- // Action inputs
- const [newDomain, setNewDomain] = useState("");
- const [addingDomain, setAddingDomain] = useState(false);
- const [verifyingId, setVerifyingId] = useState<string | null>(null);
- 
-  // Question inputs
+  // Customization State
+  const [customization, setCustomization] = useState({
+    starterQuestions: ["What are your business hours?", "How do I book an appointment?", "What services do you offer?"] as string[],
+    suggestedActions: [
+      { type: "booking", label: "Book Appointment" },
+      { type: "services", label: "View Services" },
+      { type: "pricing", label: "View Pricing" },
+    ] as any[],
+    proactiveTriggers: {
+      timeOnPage: 10,
+      scrollDepth: 50,
+      exitIntent: false,
+      active: false,
+    },
+    widgetWidth: 380,
+    widgetHeight: 600,
+    shadowStyle: "lg",
+  });
+
+  const [domains, setDomains] = useState<any[]>([]);
+  const [installations, setInstallations] = useState<any[]>([]);
+  const [analytics, setAnalytics] = useState<any>({
+    widgetOpens: 0,
+    conversationStarts: 0,
+    bookingsCount: 0,
+    leadCapturesCount: 0,
+    engagementRate: 0,
+    conversionRate: 0,
+  });
+
+  // Action inputs
+  const [newDomain, setNewDomain] = useState("");
+  const [addingDomain, setAddingDomain] = useState(false);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
+
+  // Question & Sharing inputs
   const [newQuestion, setNewQuestion] = useState("");
   const [copied, setCopied] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState<string>("html");
 
- const loadData = async () => {
- setLoading(true);
- const res = await getWidgetSettingsAction();
- if (res.success && res.data) {
- const d = res.data;
- setOrgId(d.config.organizationId);
- setEnabled(d.config.enabled);
- setTheme(d.theme);
- setBranding({
- companyName: d.branding.companyName,
- tagline: d.branding.tagline ||"",
- welcomeMessage: d.branding.welcomeMessage ||"",
- logoUrl: d.branding.logoUrl ||"",
- avatarUrl: d.branding.avatarUrl ||""
- });
- setLauncher(d.launcher);
- setCustomization(d.customization as any);
- setDomains(d.domains);
- setInstallations(d.installations);
- setAnalytics(d.analytics);
- } else {
- setErrorMsg(res.error ||"Failed to load settings.");
- }
- setLoading(false);
- };
+  const loadData = async () => {
+    setLoading(true);
+    const res = await getWidgetSettingsAction();
+    if (res.success && res.data) {
+      const d = res.data;
+      setOrgId(d.config.organizationId);
+      setEnabled(d.config.enabled);
+      if (d.theme) {
+        setTheme({
+          themeMode: d.theme.themeMode || "light",
+          primaryColor: d.theme.primaryColor || "#7a5af8",
+          backgroundColor: d.theme.backgroundColor || "#ffffff",
+          textColor: d.theme.textColor || "#18181b",
+          borderColor: d.theme.borderColor || "#e4e4e7",
+          borderRadius: d.theme.borderRadius || "0.75rem",
+        });
+      }
+      if (d.branding) {
+        setBranding({
+          companyName: d.branding.companyName || "",
+          tagline: d.branding.tagline || "",
+          welcomeMessage: d.branding.welcomeMessage || "",
+          logoUrl: d.branding.logoUrl || "",
+          avatarUrl: d.branding.avatarUrl || "",
+        });
+      }
+      if (d.launcher) {
+        setLauncher({
+          position: d.launcher.position || "bottom_right",
+          icon: d.launcher.icon || "message-square",
+          size: d.launcher.size || "medium",
+          spacingX: d.launcher.spacingX ?? 20,
+          spacingY: d.launcher.spacingY ?? 20,
+        });
+      }
+      if (d.customization) {
+        setCustomization({
+          starterQuestions: Array.isArray(d.customization.starterQuestions)
+            ? (d.customization.starterQuestions as string[])
+            : ["What are your business hours?", "How do I book an appointment?", "What services do you offer?"],
+          suggestedActions: Array.isArray(d.customization.suggestedActions)
+            ? (d.customization.suggestedActions as any[])
+            : [
+                { type: "booking", label: "Book Appointment" },
+                { type: "services", label: "View Services" },
+                { type: "pricing", label: "View Pricing" },
+              ],
+          proactiveTriggers: (d.customization.proactiveTriggers as any) || {
+            timeOnPage: 10,
+            scrollDepth: 50,
+            exitIntent: false,
+            active: false,
+          },
+          widgetWidth: d.customization.widgetWidth || 380,
+          widgetHeight: d.customization.widgetHeight || 600,
+          shadowStyle: d.customization.shadowStyle || "0 20px 25px -5px rgb(0 0 0 / 0.1)",
+        });
+      }
+      setDomains(d.domains || []);
+      setInstallations(d.installations || []);
+      setAnalytics(d.analytics || {});
+    } else {
+      setErrorMsg(res.error || "Failed to load settings.");
+    }
+    setLoading(false);
+  };
 
- useEffect(() => {
- loadData();
- }, []);
+  useEffect(() => {
+    loadData();
+  }, []);
 
- const handleSave = async (e: React.FormEvent) => {
- e.preventDefault();
- setIsSaving(true);
- setSaveSuccess(false);
- setErrorMsg("");
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsSaving(true);
+    setSaveSuccess(false);
+    setErrorMsg("");
 
- const res = await saveWidgetSettingsAction({
- enabled,
- theme,
- branding,
- launcher,
- customization
- });
+    const res = await saveWidgetSettingsAction({
+      enabled,
+      theme,
+      branding,
+      launcher,
+      customization,
+    });
 
- if (res.success) {
- setSaveSuccess(true);
- setTimeout(() => setSaveSuccess(false), 3000);
- loadData();
- } else {
- setErrorMsg(res.error ||"Failed to save configurations.");
- }
- setIsSaving(false);
- };
+    if (res.success) {
+      setSaveSuccess(true);
+      toast.success("Settings Saved", "Your website widget configurations are updated.");
+      setTimeout(() => setSaveSuccess(false), 3000);
+      loadData();
+    } else {
+      setErrorMsg(res.error || "Failed to save configurations.");
+      toast.error("Save Failed", res.error || "Failed to save configurations.");
+    }
+    setIsSaving(false);
+  };
 
- const handleAddDomain = async (e: React.FormEvent) => {
- e.preventDefault();
- if (!newDomain.trim()) return;
- setAddingDomain(true);
- const res = await addDomainAction(newDomain);
- if (res.success) {
- setNewDomain("");
- loadData();
- } else {
- setErrorMsg(res.error ||"Failed to add domain.");
- }
- setAddingDomain(false);
- };
+  const handleAddDomain = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newDomain.trim()) return;
+    setAddingDomain(true);
+    const res = await addDomainAction(newDomain);
+    if (res.success) {
+      setNewDomain("");
+      toast.success("Domain Added", "Domain added to whitelist.");
+      loadData();
+    } else {
+      setErrorMsg(res.error || "Failed to add domain.");
+    }
+    setAddingDomain(false);
+  };
 
   const handleDeleteDomain = async (id: string) => {
     const confirm = window.confirm("Are you sure you want to delete this domain whitelist?");
@@ -299,6 +348,7 @@ export default function WidgetSettingsPage() {
     const snippet = `<script src="${origin}/widget.js" data-org-id="${orgId}"></script>`;
     navigator.clipboard.writeText(snippet);
     setCopied(true);
+    toast.success("Code Copied", "Widget embed script copied to clipboard.");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -354,1244 +404,832 @@ Platform-specific guides:
     setTimeout(() => setCopiedEmail(false), 2000);
   };
 
- const handleAddQuestion = () => {
- if (!newQuestion.trim()) return;
- setCustomization({
- ...customization,
- starterQuestions: [...customization.starterQuestions, newQuestion.trim()]
- });
- setNewQuestion("");
- };
+  const handleAddQuestion = () => {
+    if (!newQuestion.trim()) return;
+    setCustomization({
+      ...customization,
+      starterQuestions: [...customization.starterQuestions, newQuestion.trim()],
+    });
+    setNewQuestion("");
+  };
 
- const handleRemoveQuestion = (idx: number) => {
- setCustomization({
- ...customization,
- starterQuestions: customization.starterQuestions.filter((_, i) => i !== idx)
- });
- };
+  const handleRemoveQuestion = (idx: number) => {
+    setCustomization({
+      ...customization,
+      starterQuestions: customization.starterQuestions.filter((_, i) => i !== idx),
+    });
+  };
 
- const handleToggleAction = (type: string, label: string) => {
- const exists = customization.suggestedActions.some((a) => a.type === type);
- let updatedActions = [];
- if (exists) {
- updatedActions = customization.suggestedActions.filter((a) => a.type !== type);
- } else {
- updatedActions = [...customization.suggestedActions, { type, label }];
- }
- setCustomization({ ...customization, suggestedActions: updatedActions });
- };
+  const handleToggleAction = (type: string, label: string) => {
+    const exists = customization.suggestedActions.some((a) => a.type === type);
+    let updatedActions = [];
+    if (exists) {
+      updatedActions = customization.suggestedActions.filter((a) => a.type !== type);
+    } else {
+      updatedActions = [...customization.suggestedActions, { type, label }];
+    }
+    setCustomization({ ...customization, suggestedActions: updatedActions });
+  };
 
- const handleResetTheme = async () => {
- const confirm = window.confirm("Are you sure you want to reset your widget appearance to Operator brand defaults?");
- if (!confirm) return;
- setIsSaving(true);
- const res = await resetThemeToBrandAction();
- if (res.success && res.theme) {
- setTheme(res.theme);
- setSaveSuccess(true);
- setTimeout(() => setSaveSuccess(false), 3000);
- } else {
- setErrorMsg(res.error ||"Failed to reset theme.");
- }
- setIsSaving(false);
- };
+  if (loading) {
+    return (
+      <div className="h-96 flex flex-col items-center justify-center text-caption text-muted-foreground gap-space-3">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <span>Loading Website Widget Studio...</span>
+      </div>
+    );
+  }
 
- if (loading) {
- return (
- <div className="h-96 flex flex-col items-center justify-center text-caption text-muted-foreground gap-space-2">
- <Loader2 className="h-5 w-5 animate-spin text-primary"/>
- Configuring live branding panel...
- </div>
- );
- }
+  return (
+    <div className="space-y-space-6 max-w-7xl mx-auto pb-space-12">
+      {/* Top Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-4 border-b border-border/40 pb-space-5">
+        <div>
+          <PageTitle
+            title="Website Widget Studio"
+            description="Customize your live receptionist bubble, copy your 1-line script, or share installation guides."
+          />
+        </div>
 
- return (
- <div className="space-y-space-6">
- {/* Header */}
- <PageTitle
- title="Website Widget"
- description="Customize messenger themes, whitelist domains, copy script snippets, and view engagement analytics."
- />
+        <div className="flex items-center gap-space-3 shrink-0">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-9 text-caption gap-space-2 cursor-pointer border-border/50"
+            onClick={copySnippet}
+          >
+            {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+            <span>{copied ? "Copied" : "Copy Embed Script"}</span>
+          </Button>
 
- {errorMsg && (
- <div className="flex items-center gap-space-2 radius-lg bg-error-500/10 border border-error-500/20 p-space-3 text-caption text-error-500">
- <AlertCircle className="h-4 w-4"/>
- <span>{errorMsg}</span>
- <Button className="ml-auto"onClick={() => setErrorMsg("")}>X</Button>
- </div>
- )}
+          <Button
+            type="button"
+            className="h-9 text-caption font-semibold gap-space-2 cursor-pointer bg-primary hover:bg-primary/90 text-white shadow-xs"
+            onClick={() => handleSave()}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : saveSuccess ? (
+              <Check className="h-4 w-4 text-white" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            <span>{isSaving ? "Saving..." : saveSuccess ? "Saved!" : "Save Changes"}</span>
+          </Button>
+        </div>
+      </div>
 
- {saveSuccess && (
- <div className="flex items-center gap-space-2 p-space-3 radius-md bg-success-500/10 border border-success-500/20 text-caption text-success-500">
- <Check className="h-4 w-4"/> Widget configurations saved successfully.
- </div>
- )}
+      {errorMsg && (
+        <div className="flex items-center justify-between gap-space-2 radius-lg bg-error-500/10 border border-error-500/20 p-space-3.5 text-caption text-error-500">
+          <div className="flex items-center gap-space-2">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+          <button onClick={() => setErrorMsg("")} className="text-xs hover:underline cursor-pointer">
+            Dismiss
+          </button>
+        </div>
+      )}
 
- {/* Main Split Layout: Customizers on Left, Sticky Preview on Right */}
- <div className="flex flex-col lg:flex-row gap-space-8 items-start w-full">
- 
- {/* Sidebar Sub-Navigation */}
- <Tabs value={activeTab} onValueChange={(val: any) => { setActiveTab(val); setSaveSuccess(false); }} variant="default" orientation="vertical" className="w-full lg:w-56 shrink-0">
- <TabsList className="w-full flex flex-row lg:flex-col lg:overflow-x-visible pb-space-2 lg:pb-space-0 border-b lg:border-b-0 lg:border-r border-border/60 lg:pr-space-6 gap-space-1.5 whitespace-nowrap lg:whitespace-normal bg-transparent border-none"><ScrollArea className="h-full w-full" vertical={false}>
- {[
- { id:"install", label:"Installation", icon: Code },
- { id:"branding", label:"Branding", icon: Sparkles },
- { id:"appearance", label:"Appearance", icon: Palette },
- { id:"triggers", label:"Triggers & Actions", icon: Settings },
- { id:"analytics", label:"Analytics", icon: BarChart2 }
- ].map((tab) => {
- const Icon = tab.icon;
- const isSelected = activeTab === tab.id;
- return (
- <TabsTrigger
- key={tab.id}
- value={tab.id}
- className="flex items-center gap-space-2.5 px-space-3.5 py-space-2.5 text-caption font-medium transition-all duration-200 cursor-pointer w-auto lg:w-full text-left radius-lg relative select-none border-none"
- >
- {isSelected && (
- <span className="absolute left-space-0 top-space-2.5 bottom-space-2.5 w-0.75 bg-primary radius-full hidden lg:block"/>
- )}
- <Icon className="h-4 w-4 shrink-0 text-current"/>
- <span className="leading-none">{tab.label}</span>
- </TabsTrigger>
- );
- })}
- </ScrollArea></TabsList>
- </Tabs>
+      {/* Horizontal Segmented Tabs (Clean, zero scrollbars!) */}
+      <div className="flex items-center gap-space-1.5 p-space-1 radius-xl bg-background/60 border border-border/50 overflow-x-auto no-scrollbar">
+        {[
+          { id: "install", label: "Integration & Script", icon: Code },
+          { id: "branding", label: "Appearance & Styling", icon: Palette },
+          { id: "triggers", label: "Greetings & Actions", icon: MessageSquare },
+          { id: "domains", label: "Allowed Domains", icon: Globe },
+          { id: "analytics", label: "Analytics", icon: BarChart2 },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isSelected = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id as any)}
+              className={cn(
+                "flex items-center gap-space-2 px-space-4 py-space-2 text-caption font-medium radius-lg transition-all cursor-pointer whitespace-nowrap select-none",
+                isSelected
+                  ? "bg-primary text-white shadow-xs font-semibold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/80"
+              )}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
 
- {/* Center: Configuration Panels */}
- <div className="flex-1 min-w-0 space-y-space-6">
- <form onSubmit={handleSave} className="space-y-space-6">
+      {/* Main 2-Column Split: Controls on Left, Sticky Real-Time Preview on Right */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-8 items-start w-full">
+        {/* Left Column: Active Configuration Panel (7 cols) */}
+        <div className="lg:col-span-7 space-y-space-6 min-w-0">
+          {/* TAB 1: INTEGRATION & SCRIPT */}
+          {activeTab === "install" && (
+            <div className="space-y-space-6 animate-fade-in">
+              <Card className="border-border/60 bg-card/40 backdrop-blur-xs">
+                <CardHeader className="pb-space-4 border-b border-border/10">
+                  <div className="flex items-center justify-between">
+                    <div className="h-9 w-9 radius-lg bg-primary-500/10 border border-primary-500/20 flex items-center justify-center text-primary">
+                      <Code className="h-5 w-5" />
+                    </div>
+                    <span className="text-caption font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-space-2.5 py-space-0.5 radius-full flex items-center gap-space-1">
+                      <span className="h-1.5 w-1.5 radius-full bg-emerald-500 animate-pulse" />
+                      Live Ready
+                    </span>
+                  </div>
+                  <CardTitle className="text-body-sm font-semibold text-foreground mt-space-3">
+                    1-Line Website Script
+                  </CardTitle>
+                  <CardDescription className="text-caption text-muted-foreground">
+                    Paste this snippet right before the closing &lt;/body&gt; tag on your website to launch Operator AI instantly.
+                  </CardDescription>
+                </CardHeader>
 
- {/* TAB 1: INSTALLATION & DOMAINS */}
- {activeTab ==="install"&& (
- <div className="space-y-space-6 animate-fade-in">
- {/* 1. Install Script */}
- <Card className="border-border/60 bg-card/30 backdrop-blur-xs flex flex-col justify-between hover:border-primary/20 transition-all duration-300">
- <CardHeader className="pb-space-4 border-b border-border/10">
- <div className="flex items-center justify-between">
- <div className="h-9 w-9 radius-lg bg-primary-500/10 border border-primary-500/20 flex items-center justify-center text-primary-400">
- <Code className="h-5 w-5"/>
- </div>
- <span className="text-caption bg-primary-500/10 text-primary border border-primary-500/20 px-space-2 py-space-1 radius-full">Self-Serve Integration</span>
- </div>
- <CardTitle className="text-body-sm font-semibold text-foreground mt-space-4">Website Integration Script</CardTitle>
- <CardDescription className="text-caption text-muted-foreground mt-space-1">
- Install your AI Receptionist on your website in 2 minutes. Copy your unique 1-line script or forward ready-to-use instructions to your web developer.
- </CardDescription>
- </CardHeader>
- <div className="p-space-6 pt-space-5 bg-transparent space-y-space-5">
- {/* Script Snippet Box */}
- <div className="p-space-4 bg-background/50 border border-border/40 radius-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-space-3 font-mono text-caption text-muted-foreground/80">
- <span className="truncate select-all pr-space-2 overflow-x-auto">{`<script src="${typeof window !== "undefined" ? window.location.origin : ""}/widget.js" data-org-id="${orgId}"></script>`}</span>
- <div className="flex items-center gap-space-2 shrink-0 flex-wrap">
- <Button 
- type="button"
- variant="outline"
- className="h-8 shrink-0 text-caption gap-space-1.5 border-border/40 bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground cursor-pointer px-space-3"
- onClick={copySnippet}
- >
- {copied ? <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0"/> : <Copy className="h-3.5 w-3.5 shrink-0"/>}
- <span className="leading-none">{copied ? "Copied" : "Copy Code"}</span>
- </Button>
- <Button 
- type="button"
- variant="outline"
- className="h-8 shrink-0 text-caption gap-space-1.5 border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer px-space-3"
- onClick={emailInstructionsToDeveloper}
- title="Open email draft for your web developer"
- >
- <Mail className="h-3.5 w-3.5 shrink-0"/>
- <span className="leading-none">Email Developer</span>
- </Button>
- <Button 
- type="button"
- variant="outline"
- className="h-8 shrink-0 text-caption gap-space-1.5 border-border/40 bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground cursor-pointer px-space-3"
- onClick={copyDeveloperInstructions}
- title="Copy complete developer email instructions to clipboard"
- >
- {copiedEmail ? <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0"/> : <FileText className="h-3.5 w-3.5 shrink-0"/>}
- <span className="leading-none">{copiedEmail ? "Copied" : "Copy Instructions"}</span>
- </Button>
- </div>
- </div>
+                <CardContent className="p-space-6 space-y-space-5">
+                  {/* Code snippet display */}
+                  <div className="p-space-4 bg-background/70 border border-border/50 radius-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-space-3 font-mono text-caption text-foreground/90">
+                    <span className="truncate select-all pr-space-2 overflow-x-auto text-[13px]">
+                      {`<script src="${typeof window !== "undefined" ? window.location.origin : ""}/widget.js" data-org-id="${orgId}"></script>`}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-8 shrink-0 text-caption gap-space-1.5 border-border/50 bg-background hover:bg-background text-foreground cursor-pointer px-space-3"
+                      onClick={copySnippet}
+                    >
+                      {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                      <span>{copied ? "Copied" : "Copy Code"}</span>
+                    </Button>
+                  </div>
 
- {/* Platform Step-by-Step Guides */}
- <div className="space-y-space-3 pt-space-2">
- <div className="flex items-center justify-between">
- <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">
- Platform-Specific Installation Guides
- </Label>
- <span className="text-[11px] text-muted-foreground">Select your website builder</span>
- </div>
+                  {/* Non-technical actions: Email to Webmaster */}
+                  <div className="flex flex-wrap items-center gap-space-2.5 pt-space-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-8.5 text-caption gap-space-2 border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer px-space-3.5 radius-lg"
+                      onClick={emailInstructionsToDeveloper}
+                    >
+                      <Mail className="h-3.5 w-3.5" />
+                      <span>Email to My Webmaster / Developer</span>
+                    </Button>
 
- {/* Platform Selector Buttons */}
- <div className="flex flex-wrap gap-space-1.5">
- {PLATFORM_GUIDES.map((platform) => {
- const isSelected = selectedPlatform === platform.id;
- return (
- <button
- key={platform.id}
- type="button"
- onClick={() => setSelectedPlatform(platform.id)}
- className={cn(
- "px-space-3 py-space-1.5 text-caption font-medium radius-md transition-all cursor-pointer border",
- isSelected
- ? "bg-primary text-white border-primary shadow-xs"
- : "bg-background/40 hover:bg-background text-muted-foreground hover:text-foreground border-border/40"
- )}
- >
- {platform.name}
- </button>
- );
- })}
- </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-8.5 text-caption gap-space-2 border-border/50 bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground cursor-pointer px-space-3.5 radius-lg"
+                      onClick={copyDeveloperInstructions}
+                    >
+                      {copiedEmail ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <FileText className="h-3.5 w-3.5" />}
+                      <span>{copiedEmail ? "Copied!" : "Copy Developer Guide"}</span>
+                    </Button>
+                  </div>
 
- {/* Active Guide Steps */}
- {(() => {
- const activeGuide = PLATFORM_GUIDES.find((p) => p.id === selectedPlatform) || PLATFORM_GUIDES[0];
- return (
- <div className="p-space-4 radius-xl border border-border/40 bg-background/30 space-y-space-3 animate-fade-in">
- <div className="flex items-center justify-between border-b border-border/20 pb-space-2">
- <span className="text-body-sm font-semibold text-foreground flex items-center gap-space-2">
- <Globe className="h-4 w-4 text-primary"/>
- {activeGuide.name}
- </span>
- <span className="text-caption text-muted-foreground">{activeGuide.tagline}</span>
- </div>
- <ol className="space-y-space-2.5 text-caption text-muted-foreground">
- {activeGuide.steps.map((step, idx) => (
- <li key={idx} className="flex items-start gap-space-2.5 leading-relaxed">
- <span className="h-5 w-5 shrink-0 rounded-full bg-primary/10 text-primary border border-primary/20 text-[11px] font-bold flex items-center justify-center mt-0.5">
- {idx + 1}
- </span>
- <span className="text-foreground/90">{step}</span>
- </li>
- ))}
- </ol>
- </div>
- );
- })()}
- </div>
- </div>
- </Card>
+                  {/* CMS Platform Step Guides */}
+                  <div className="space-y-space-3 pt-space-4 border-t border-border/20">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/80">
+                        Platform-Specific Installation Steps
+                      </Label>
+                      <span className="text-[11px] text-muted-foreground">Select your CMS</span>
+                    </div>
 
- {/* 2. Whitelist Domains */}
- <Card className="border-border/60 bg-card/30 backdrop-blur-xs flex flex-col justify-between hover:border-primary/20 transition-all duration-300">
- <CardHeader className="pb-space-4 border-b border-border/10">
- <div className="flex items-center justify-between">
- <div className="h-9 w-9 radius-lg bg-success-500/10 border border-success-500/20 flex items-center justify-center text-success-500">
- <Globe className="h-5 w-5"/>
- </div>
- <span className="text-caption bg-success-500/10 text-success-500 border border-success-500/20 px-space-2 py-space-1 radius-full">Origin Whitelist</span>
- </div>
- <CardTitle className="text-body-sm font-semibold text-foreground mt-space-4">Allowed Whitelist Domains</CardTitle>
- <CardDescription className="text-caption text-muted-foreground mt-space-1">
- Restrict which websites can embed Operator AI to prevent theft or unauthorized access.
- </CardDescription>
- </CardHeader>
- <div className="p-space-6 pt-space-5 space-y-space-4 bg-transparent">
- <div className="flex gap-space-2 max-w-md items-end">
- <div className="flex-1 space-y-space-1.5 min-w-0">
- <Label htmlFor="domain_input"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Domain URL</Label>
- <div className="relative">
- <Globe className="absolute left-space-3 top-space-3 h-3.5 w-3.5 text-muted-foreground/50 z-10 pointer-events-none"/>
- <Input
- id="domain_input"
- value={newDomain}
- onChange={(e) => setNewDomain(e.target.value)}
- placeholder="e.g. mybusiness.com"
- className="pl-space-9 h-9.5 text-caption bg-background/50 border-border/40 focus-visible:ring-primary/20 focus:border-primary/30"
- />
- </div>
- </div>
- <Button 
- type="button"
- onClick={handleAddDomain} 
- disabled={addingDomain || !newDomain.trim()}
- className="h-9.5 text-caption font-semibold text-white cursor-pointer gap-space-1.5 px-space-5 shrink-0 flex items-center bg-primary hover:bg-primary/90 transition-all duration-200"
- >
- {addingDomain ? (
- <>
- <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0"/>
- <span className="leading-none">Adding...</span>
- </>
- ) : (
- <>
- <Plus className="h-3.5 w-3.5 shrink-0"/>
- <span className="leading-none">Add Domain</span>
- </>
- )}
- </Button>
- </div>
+                    {/* Platform Selector Buttons */}
+                    <div className="flex flex-wrap gap-space-1.5">
+                      {PLATFORM_GUIDES.map((platform) => {
+                        const isSelected = selectedPlatform === platform.id;
+                        return (
+                          <button
+                            key={platform.id}
+                            type="button"
+                            onClick={() => setSelectedPlatform(platform.id)}
+                            className={cn(
+                              "px-space-3 py-space-1.5 text-caption font-medium radius-md transition-all cursor-pointer border",
+                              isSelected
+                                ? "bg-primary text-white border-primary shadow-xs font-semibold"
+                                : "bg-background/40 hover:bg-background text-muted-foreground hover:text-foreground border-border/40"
+                            )}
+                          >
+                            {platform.name}
+                          </button>
+                        );
+                      })}
+                    </div>
 
- {domains.length === 0 ? (
- <p className="text-caption text-muted-foreground/60 italic pt-space-2">No domains whitelisted. The widget will embed on any origin during testing.</p>
- ) : (
- <div className="space-y-space-2 pt-space-2">
- {domains.map((d) => (
- <div 
- key={d.id} 
- className="flex items-center justify-between p-space-3 px-space-4 radius-xl border border-border/10 bg-background/20 text-caption hover:bg-background/40 transition-colors duration-150"
- >
- <div className="space-y-space-1">
- <div className="flex items-center gap-space-2.5">
- <span className="text-foreground font-semibold">{d.domain}</span>
- {d.isVerified ? (
- <span className="inline-flex items-center text-caption font-semibold bg-emerald-500/8 border border-emerald-500/15 text-emerald-500 px-space-2 py-space-0.5 radius-full uppercase tracking-wider">Verified</span>
- ) : (
- <span className="inline-flex items-center text-caption font-semibold bg-amber-500/8 border border-amber-500/15 text-amber-500 px-space-2 py-space-0.5 radius-full uppercase tracking-wider">Pending DNS Check</span>
- )}
- </div>
- {!d.isVerified && (
- <p className="text-caption text-muted-foreground/80 leading-relaxed font-mono">
- Add TXT DNS Token: <code className="text-primary bg-background/50 border border-border/10 px-space-1.5 py-space-0.5 rounded font-semibold font-mono select-all">{d.verificationToken}</code>
- </p>
- )}
- </div>
+                    {/* Active Guide Steps */}
+                    {(() => {
+                      const activeGuide = PLATFORM_GUIDES.find((p) => p.id === selectedPlatform) || PLATFORM_GUIDES[0];
+                      return (
+                        <div className="p-space-4 radius-xl border border-border/40 bg-background/30 space-y-space-3 mt-space-2">
+                          <div className="flex items-center justify-between border-b border-border/20 pb-space-2">
+                            <span className="text-body-sm font-semibold text-foreground flex items-center gap-space-2">
+                              <Globe className="h-4 w-4 text-primary" />
+                              {activeGuide.name}
+                            </span>
+                            <span className="text-caption text-muted-foreground">{activeGuide.tagline}</span>
+                          </div>
+                          <ol className="space-y-space-2.5 text-caption text-muted-foreground">
+                            {activeGuide.steps.map((step, idx) => (
+                              <li key={idx} className="flex items-start gap-space-2.5 leading-relaxed">
+                                <span className="h-5 w-5 shrink-0 rounded-full bg-primary/10 text-primary border border-primary/20 text-[11px] font-bold flex items-center justify-center mt-0.5">
+                                  {idx + 1}
+                                </span>
+                                <span className="text-foreground/90">{step}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
- <div className="flex items-center gap-space-1.5">
- {!d.isVerified && (
- <Button
- type="button"
- variant="outline"
- className="h-7 text-caption font-semibold border-border/40 bg-background text-muted-foreground hover:text-foreground cursor-pointer radius-md px-space-2.5 flex items-center gap-space-1"
- onClick={() => handleVerifyDomain(d.id)}
- disabled={verifyingId === d.id}
- >
- {verifyingId === d.id ? <Loader2 className="h-3 w-3 animate-spin shrink-0"/> : <RefreshCw className="h-3 w-3 shrink-0"/>}
- <span className="leading-none">Verify DNS</span>
- </Button>
- )}
- <Button
- type="button"
- variant="ghost"
- className="h-7 w-7 text-error-500 hover:bg-error-500/5 cursor-pointer radius-md flex items-center justify-center p-space-0"
- onClick={() => handleDeleteDomain(d.id)}
- >
- <Trash2 className="h-3.5 w-3.5"/>
- </Button>
- </div>
- </div>
- ))}
- </div>
- )}
- </div>
- </Card>
+          {/* TAB 2: APPEARANCE & STYLING */}
+          {activeTab === "branding" && (
+            <div className="space-y-space-6 animate-fade-in">
+              <Card className="border-border/60 bg-card/40 backdrop-blur-xs">
+                <CardHeader className="pb-space-4 border-b border-border/10">
+                  <CardTitle className="text-body-sm font-semibold text-foreground">
+                    Brand Identity & Colors
+                  </CardTitle>
+                  <CardDescription className="text-caption text-muted-foreground">
+                    Customize your company title, greeting, and brand palette to match your website.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-space-6 space-y-space-5">
+                  <div className="space-y-space-1.5">
+                    <Label htmlFor="companyName" className="text-caption font-medium">Business / Assistant Name</Label>
+                    <Input
+                      id="companyName"
+                      value={branding.companyName}
+                      onChange={(e) => setBranding({ ...branding, companyName: e.target.value })}
+                      placeholder="e.g. Acme Dental & Spa"
+                      className="bg-background/50 border-border/50"
+                    />
+                  </div>
 
- {/* 3. Connected Sites Health */}
- <Card className="border-border/60 bg-card/30 backdrop-blur-xs flex flex-col justify-between hover:border-primary/20 transition-all duration-300">
- <CardHeader className="pb-space-4 border-b border-border/10">
- <div className="flex items-center justify-between">
- <div className="h-9 w-9 radius-lg bg-warning-500/10 border border-warning-500/20 flex items-center justify-center text-warning-500">
- <RefreshCw className="h-5 w-5 animate-pulse"/>
- </div>
- <span className="text-caption bg-warning-500/10 text-warning-500 border border-warning-500/20 px-space-2 py-space-1 radius-full">Embed Health</span>
- </div>
- <CardTitle className="text-body-sm font-semibold text-foreground mt-space-4">Connected Sites Health</CardTitle>
- <CardDescription className="text-caption text-muted-foreground mt-space-1">
- Tracks active embeds communicating with our synchronization API.
- </CardDescription>
- </CardHeader>
- <div className="p-space-6 pt-space-5 bg-transparent">
- {installations.length === 0 ? (
- <p className="text-caption text-muted-foreground/60 italic">No script integrations detected. Insert script snippet to ping health status.</p>
- ) : (
- <div className="space-y-space-2">
- {installations.map((inst) => (
- <div 
- key={inst.id} 
- className="flex items-center justify-between p-space-3 px-space-4 radius-xl border border-border/10 bg-background/20 text-caption"
- >
- <div className="flex items-center gap-space-3">
- <span className="h-2 w-2 radius-full bg-emerald-500 animate-pulse shrink-0"/>
- <div>
- <span className="text-foreground font-semibold block">{inst.domain}</span>
- <span className="text-caption text-muted-foreground/60 block mt-space-0.5">Last Detected: {new Date(inst.lastDetectedAt).toLocaleString()}</span>
- </div>
- </div>
- <span className="inline-flex items-center text-caption font-semibold bg-emerald-500/8 border border-emerald-500/15 text-emerald-500 px-space-2.5 py-space-0.5 radius-full uppercase tracking-wider leading-none">Operational</span>
- </div>
- ))}
- </div>
- )}
- </div>
- </Card>
- </div>
- )}
+                  <div className="space-y-space-1.5">
+                    <Label htmlFor="tagline" className="text-caption font-medium">Tagline / Role</Label>
+                    <Input
+                      id="tagline"
+                      value={branding.tagline}
+                      onChange={(e) => setBranding({ ...branding, tagline: e.target.value })}
+                      placeholder="e.g. AI Front Desk Receptionist"
+                      className="bg-background/50 border-border/50"
+                    />
+                  </div>
 
- {/* TAB 2: BRANDING */}
- {activeTab ==="branding"&& (
- <div className="space-y-space-6 animate-fade-in">
- <Card className="border-border/60 bg-card/30 backdrop-blur-xs flex flex-col justify-between hover:border-primary/20 transition-all duration-300">
- <CardHeader className="pb-space-4 border-b border-border/10">
- <div className="flex items-center justify-between">
- <div className="h-9 w-9 radius-lg bg-primary-500/10 border border-primary-500/20 flex items-center justify-center text-primary-400">
- <Sparkles className="h-5 w-5"/>
- </div>
- <span className="text-caption bg-primary-500/10 text-primary border border-primary-500/20 px-space-2 py-space-1 radius-full">Chat Identity</span>
- </div>
- <CardTitle className="text-body-sm font-semibold text-foreground mt-space-4">Widget Branding & Identity</CardTitle>
- <CardDescription className="text-caption text-muted-foreground mt-space-1">
- Adjust how the header identity and avatar appears to client visitors.
- </CardDescription>
- </CardHeader>
- <div className="p-space-6 pt-space-5 bg-transparent">
- <div className="grid gap-space-4 sm:grid-cols-2">
- <div className="space-y-space-1.5">
- <Label htmlFor="companyName"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Company Name</Label>
- <Input
- id="companyName"
- value={branding.companyName}
- onChange={(e) => setBranding({ ...branding, companyName: e.target.value })}
- className="h-9.5 text-caption bg-background/50 border-border/40 focus-visible:ring-primary/20"
- required
- />
- </div>
- <div className="space-y-space-1.5">
- <Label htmlFor="tagline"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Header Tagline</Label>
- <Input
- id="tagline"
- value={branding.tagline}
- onChange={(e) => setBranding({ ...branding, tagline: e.target.value })}
- className="h-9.5 text-caption bg-background/50 border-border/40 focus-visible:ring-primary/20"
- />
- </div>
- </div>
+                  {/* Primary Color Palette Presets */}
+                  <div className="space-y-space-2.5 pt-space-2">
+                    <Label className="text-caption font-medium">Brand Accent Color</Label>
+                    <div className="flex flex-wrap items-center gap-space-2.5">
+                      {PRESET_COLORS.map((preset) => (
+                        <button
+                          key={preset.hex}
+                          type="button"
+                          onClick={() => setTheme({ ...theme, primaryColor: preset.hex })}
+                          className={cn(
+                            "h-7 w-7 rounded-full transition-transform cursor-pointer relative flex items-center justify-center border-2",
+                            theme.primaryColor.toLowerCase() === preset.hex.toLowerCase()
+                              ? "scale-110 border-white ring-2 ring-primary shadow-sm"
+                              : "border-transparent hover:scale-105"
+                          )}
+                          style={{ backgroundColor: preset.hex }}
+                          title={preset.name}
+                        >
+                          {theme.primaryColor.toLowerCase() === preset.hex.toLowerCase() && (
+                            <Check className="h-3.5 w-3.5 text-white" />
+                          )}
+                        </button>
+                      ))}
+                      <div className="flex items-center gap-space-2 ml-space-2">
+                        <input
+                          type="color"
+                          value={theme.primaryColor}
+                          onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })}
+                          className="h-7 w-7 rounded cursor-pointer border border-border/50 bg-transparent p-0"
+                          title="Custom Color"
+                        />
+                        <span className="text-caption font-mono text-muted-foreground">{theme.primaryColor}</span>
+                      </div>
+                    </div>
+                  </div>
 
- <div className="grid gap-space-4 sm:grid-cols-2 mt-space-4">
- <div className="space-y-space-1.5">
- <Label htmlFor="logoUrl"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Logo Image URL</Label>
- <Input
- id="logoUrl"
- value={branding.logoUrl}
- onChange={(e) => setBranding({ ...branding, logoUrl: e.target.value })}
- placeholder="https://..."
- className="h-9.5 text-caption bg-background/50 border-border/40 focus-visible:ring-primary/20"
- />
- </div>
- <div className="space-y-space-1.5">
- <Label htmlFor="welcomeMessage"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Welcome Message</Label>
- <Input
- id="welcomeMessage"
- value={branding.welcomeMessage}
- onChange={(e) => setBranding({ ...branding, welcomeMessage: e.target.value })}
- className="h-9.5 text-caption bg-background/50 border-border/40 focus-visible:ring-primary/20"
- />
- </div>
- </div>
- </div>
- <div className="pt-space-3 px-space-6 py-space-4 border-t border-border/10 flex gap-space-2 justify-end bg-transparent">
- <Button type="submit"disabled={isSaving} className="h-9 text-caption font-semibold text-white cursor-pointer gap-space-1.5 px-space-5 flex items-center bg-primary hover:bg-primary/90 transition-all duration-200">
- {isSaving ? (
- <>
- <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0"/>
- <span className="leading-none">Saving...</span>
- </>
- ) : (
- <>
- <Save className="h-3.5 w-3.5 shrink-0"/>
- <span className="leading-none">Save Branding</span>
- </>
- )}
- </Button>
- </div>
- </Card>
- </div>
- )}
+                  {/* Theme Mode & Corner Position */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-4 pt-space-2">
+                    <div className="space-y-space-1.5">
+                      <Label className="text-caption font-medium">Theme Mode</Label>
+                      <div className="grid grid-cols-2 gap-space-2">
+                        <button
+                          type="button"
+                          onClick={() => setTheme({ ...theme, themeMode: "light", backgroundColor: "#ffffff", textColor: "#18181b" })}
+                          className={cn(
+                            "py-space-2 px-space-3 text-caption font-medium radius-md border transition-all text-center cursor-pointer",
+                            theme.themeMode === "light"
+                              ? "bg-primary/10 border-primary text-primary font-semibold"
+                              : "bg-background/40 border-border/40 text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          ☀️ Light
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTheme({ ...theme, themeMode: "dark", backgroundColor: "#09090b", textColor: "#fafafa" })}
+                          className={cn(
+                            "py-space-2 px-space-3 text-caption font-medium radius-md border transition-all text-center cursor-pointer",
+                            theme.themeMode === "dark"
+                              ? "bg-primary/10 border-primary text-primary font-semibold"
+                              : "bg-background/40 border-border/40 text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          🌙 Dark
+                        </button>
+                      </div>
+                    </div>
 
- {/* TAB 3: APPEARANCE */}
- {activeTab ==="appearance"&& (
- <div className="space-y-space-6 animate-fade-in">
- <Card className="border-border/60 bg-card/30 backdrop-blur-xs flex flex-col justify-between hover:border-primary/20 transition-all duration-300">
- <CardHeader className="pb-space-4 border-b border-border/10">
- <div className="flex items-center justify-between">
- <div className="h-9 w-9 radius-lg bg-success-500/10 border border-success-500/20 flex items-center justify-center text-success-500">
- <Palette className="h-5 w-5"/>
- </div>
- <span className="text-caption bg-success-500/10 text-success-500 border border-success-500/20 px-space-2 py-space-1 radius-full">Color System & Geometry</span>
- </div>
- <CardTitle className="text-body-sm font-semibold text-foreground mt-space-4">Color System & Geometry</CardTitle>
- <CardDescription className="text-caption text-muted-foreground mt-space-1">
- Style colors, sizes, and viewport parameters. Previews immediately on the right panel.
- </CardDescription>
- </CardHeader>
- <div className="p-space-6 pt-space-5 space-y-space-5 bg-transparent">
+                    <div className="space-y-space-1.5">
+                      <Label className="text-caption font-medium">Launcher Position</Label>
+                      <div className="grid grid-cols-2 gap-space-2">
+                        <button
+                          type="button"
+                          onClick={() => setLauncher({ ...launcher, position: "bottom_right" })}
+                          className={cn(
+                            "py-space-2 px-space-3 text-caption font-medium radius-md border transition-all text-center cursor-pointer",
+                            launcher.position === "bottom_right"
+                              ? "bg-primary/10 border-primary text-primary font-semibold"
+                              : "bg-background/40 border-border/40 text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          Bottom Right
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLauncher({ ...launcher, position: "bottom_left" })}
+                          className={cn(
+                            "py-space-2 px-space-3 text-caption font-medium radius-md border transition-all text-center cursor-pointer",
+                            launcher.position === "bottom_left"
+                              ? "bg-primary/10 border-primary text-primary font-semibold"
+                              : "bg-background/40 border-border/40 text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          Bottom Left
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
- {/* Theme Mode Toggle */}
- <div className="space-y-space-1.5">
- <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Widget Theme Mode</Label>
- <div className="flex gap-space-2">
- {[
- { value:"light", label:"Light", icon: Sun, bgColor:"#ffffff", textColor:"#18181b", borderColor:"#e4e4e7"},
- { value:"dark", label:"Dark", icon: Moon, bgColor:"#09090b", textColor:"#fafafa", borderColor:"#27272a"}
- ].map((mode) => {
- const ModeIcon = mode.icon;
- const isActive = theme.themeMode === mode.value;
- return (
- <Button
- key={mode.value}
- type="button"
- onClick={() => setTheme({
- ...theme,
- themeMode: mode.value,
- backgroundColor: mode.bgColor,
- textColor: mode.textColor,
- borderColor: mode.borderColor
- })}
- className={cn(
- "flex-1 flex items-center justify-center gap-space-2 h-10 radius-xl border text-caption font-semibold transition-all duration-200 cursor-pointer select-none",
- isActive
- ?"border-primary bg-primary/8 text-primary 0_0_0_1px_hsl(var(--primary)/0.3)]"
- :"border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
- )}
- >
- <ModeIcon className="h-3.5 w-3.5"/>
- {mode.label}
- </Button>
- );
- })}
- </div>
- </div>
+          {/* TAB 3: GREETINGS & ACTIONS */}
+          {activeTab === "triggers" && (
+            <div className="space-y-space-6 animate-fade-in">
+              <Card className="border-border/60 bg-card/40 backdrop-blur-xs">
+                <CardHeader className="pb-space-4 border-b border-border/10">
+                  <CardTitle className="text-body-sm font-semibold text-foreground">
+                    AI Greeting & Quick Actions
+                  </CardTitle>
+                  <CardDescription className="text-caption text-muted-foreground">
+                    Customize the opening conversation prompt and interactive action chips.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-space-6 space-y-space-5">
+                  <div className="space-y-space-1.5">
+                    <Label htmlFor="welcomeMsg" className="text-caption font-medium">Welcome Greeting</Label>
+                    <textarea
+                      id="welcomeMsg"
+                      rows={3}
+                      value={branding.welcomeMessage}
+                      onChange={(e) => setBranding({ ...branding, welcomeMessage: e.target.value })}
+                      placeholder="Hello! How can I help you book or view services today?"
+                      className="w-full p-space-3 text-caption radius-lg bg-background/50 border border-border/50 text-foreground resize-none focus:outline-hidden focus:border-primary"
+                    />
+                  </div>
 
- {/* Primary Color Selector */}
- <div className="grid gap-space-4 sm:grid-cols-3">
- <div className="space-y-space-1.5">
- <Label htmlFor="primaryColor"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Primary Color</Label>
- <div className="flex items-center gap-space-2 p-space-2 radius-xl border border-border/40 bg-background/20">
- <div className="relative h-7 w-10 radius-lg overflow-hidden border border-border/10 shrink-0 flex items-center justify-center">
- <Input
- id="primaryColor"
- type="color"
- value={theme.primaryColor}
- onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })}
- className="absolute inset-space-0 h-full w-full opacity-0 cursor-pointer"
- />
- <div className="h-full w-full"style={{ backgroundColor: theme.primaryColor }} />
- </div>
- <Input
- type="text"
- value={theme.primaryColor}
- onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })}
- className="h-7 bg-transparent text-caption text-center font-mono flex-1 border-none focus-visible:ring-0 p-space-0"
- />
- </div>
- </div>
+                  {/* Quick Action Chips */}
+                  <div className="space-y-space-2 pt-space-2">
+                    <Label className="text-caption font-medium">Quick Action Chips (Click to toggle)</Label>
+                    <div className="flex flex-wrap gap-space-2">
+                      {[
+                        { type: "booking", label: "Book Appointment" },
+                        { type: "services", label: "View Services" },
+                        { type: "pricing", label: "View Pricing" },
+                        { type: "hours", label: "Check Hours" },
+                        { type: "human", label: "Talk to Human" },
+                      ].map((item) => {
+                        const isActive = customization.suggestedActions.some((a) => a.type === item.type);
+                        return (
+                          <button
+                            key={item.type}
+                            type="button"
+                            onClick={() => handleToggleAction(item.type, item.label)}
+                            className={cn(
+                              "px-space-3 py-space-1.5 text-caption font-medium radius-full border transition-all cursor-pointer flex items-center gap-space-1.5",
+                              isActive
+                                ? "bg-primary text-white border-primary shadow-xs font-semibold"
+                                : "bg-background/40 border-border/40 text-muted-foreground hover:text-foreground"
+                            )}
+                          >
+                            {isActive ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                            <span>{item.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
 
- <div className="space-y-space-1.5">
- <Label htmlFor="backgroundColor"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Background CSS</Label>
- <div className="flex items-center gap-space-2 p-space-2 radius-xl border border-border/40 bg-background/20">
- <div className="relative h-7 w-10 radius-lg overflow-hidden border border-border/10 shrink-0 flex items-center justify-center">
- <Input
- id="backgroundColor"
- type="color"
- value={theme.backgroundColor}
- onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })}
- className="absolute inset-space-0 h-full w-full opacity-0 cursor-pointer"
- />
- <div className="h-full w-full"style={{ backgroundColor: theme.backgroundColor }} />
- </div>
- <Input
- type="text"
- value={theme.backgroundColor}
- onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })}
- className="h-7 bg-transparent text-caption text-center font-mono flex-1 border-none focus-visible:ring-0 p-space-0"
- />
- </div>
- </div>
+                  {/* Starter Questions */}
+                  <div className="space-y-space-2.5 pt-space-2">
+                    <Label className="text-caption font-medium">Starter Suggested Questions</Label>
+                    <div className="flex gap-space-2">
+                      <Input
+                        value={newQuestion}
+                        onChange={(e) => setNewQuestion(e.target.value)}
+                        placeholder="e.g. What insurance do you accept?"
+                        className="bg-background/50 border-border/50 text-caption"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddQuestion();
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleAddQuestion}
+                        disabled={!newQuestion.trim()}
+                        className="shrink-0 text-caption border-border/50"
+                      >
+                        Add
+                      </Button>
+                    </div>
 
- <div className="space-y-space-1.5">
- <Label htmlFor="textColor"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Dialogue Text</Label>
- <div className="flex items-center gap-space-2 p-space-2 radius-xl border border-border/40 bg-background/20">
- <div className="relative h-7 w-10 radius-lg overflow-hidden border border-border/10 shrink-0 flex items-center justify-center">
- <Input
- id="textColor"
- type="color"
- value={theme.textColor}
- onChange={(e) => setTheme({ ...theme, textColor: e.target.value })}
- className="absolute inset-space-0 h-full w-full opacity-0 cursor-pointer"
- />
- <div className="h-full w-full"style={{ backgroundColor: theme.textColor }} />
- </div>
- <Input
- type="text"
- value={theme.textColor}
- onChange={(e) => setTheme({ ...theme, textColor: e.target.value })}
- className="h-7 bg-transparent text-caption text-center font-mono flex-1 border-none focus-visible:ring-0 p-space-0"
- />
- </div>
- </div>
- </div>
+                    <div className="space-y-space-1.5 pt-space-1">
+                      {customization.starterQuestions.map((q, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-space-2.5 px-space-3 radius-lg border border-border/30 bg-background/30 text-caption text-foreground/90"
+                        >
+                          <span className="truncate pr-space-2">{q}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveQuestion(idx)}
+                            className="text-muted-foreground hover:text-error-500 cursor-pointer p-0.5"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
- <div className="grid gap-space-4 sm:grid-cols-2 border-t border-border/10 pt-space-4">
- <div className="space-y-space-1.5">
- <Label htmlFor="borderRadius"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Border Radius</Label>
- <NativeSelect
- id="borderRadius"
- value={theme.borderRadius}
- onChange={(e) => setTheme({ ...theme, borderRadius: e.target.value })}
- className="flex h-9.5 w-full radius-xl border border-border/40 bg-background/50 px-space-3 py-space-1 text-caption text-foreground bg-popover focus:border-primary/20 cursor-pointer outline-none"
- >
- <option value="0rem">Sharp (0px)</option>
- <option value="0.25rem">Subtle (4px)</option>
- <option value="0.5rem">Medium (8px)</option>
- <option value="0.75rem">Large (12px)</option>
- <option value="1rem">X-Large (16px)</option>
- </NativeSelect>
- </div>
+          {/* TAB 4: ALLOWED DOMAINS */}
+          {activeTab === "domains" && (
+            <div className="space-y-space-6 animate-fade-in">
+              <Card className="border-border/60 bg-card/40 backdrop-blur-xs">
+                <CardHeader className="pb-space-4 border-b border-border/10">
+                  <div className="flex items-center justify-between">
+                    <div className="h-9 w-9 radius-lg bg-success-500/10 border border-success-500/20 flex items-center justify-center text-success-500">
+                      <Globe className="h-5 w-5" />
+                    </div>
+                    <span className="text-caption bg-success-500/10 text-success-500 border border-success-500/20 px-space-2.5 py-space-0.5 radius-full font-semibold">
+                      Origin Security
+                    </span>
+                  </div>
+                  <CardTitle className="text-body-sm font-semibold text-foreground mt-space-3">
+                    Allowed Whitelist Domains
+                  </CardTitle>
+                  <CardDescription className="text-caption text-muted-foreground">
+                    Restrict which websites are authorized to embed your Operator AI widget.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-space-6 space-y-space-4">
+                  <form onSubmit={handleAddDomain} className="flex gap-space-2 max-w-md">
+                    <Input
+                      value={newDomain}
+                      onChange={(e) => setNewDomain(e.target.value)}
+                      placeholder="e.g. mybusiness.com"
+                      className="bg-background/50 border-border/50 text-caption"
+                    />
+                    <Button
+                      type="submit"
+                      disabled={addingDomain || !newDomain.trim()}
+                      className="shrink-0 text-caption bg-primary hover:bg-primary/90 text-white"
+                    >
+                      {addingDomain ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                      <span>Add Domain</span>
+                    </Button>
+                  </form>
 
- <div className="space-y-space-1.5">
- <Label htmlFor="launcherPosition"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Launcher Position</Label>
- <NativeSelect
- id="launcherPosition"
- value={launcher.position}
- onChange={(e) => setLauncher({ ...launcher, position: e.target.value })}
- className="flex h-9.5 w-full radius-xl border border-border/40 bg-background/50 px-space-3 py-space-1 text-caption text-foreground bg-popover focus:border-primary/20 cursor-pointer outline-none"
- >
- <option value="bottom_right">Bottom Right</option>
- <option value="bottom_left">Bottom Left</option>
- </NativeSelect>
- </div>
- </div>
+                  {domains.length === 0 ? (
+                    <div className="p-space-3.5 radius-lg border border-border/20 bg-background/20 text-caption text-muted-foreground flex items-center gap-space-2">
+                      <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
+                      <span>No domain restrictions set. The widget will run on all origins (recommended for testing).</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-space-2">
+                      {domains.map((d) => (
+                        <div
+                          key={d.id}
+                          className="flex items-center justify-between p-space-3 px-space-4 radius-lg border border-border/30 bg-background/30 text-caption"
+                        >
+                          <span className="font-semibold text-foreground">{d.domain}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="h-7 w-7 text-error-500 hover:bg-error-500/10 p-0 cursor-pointer"
+                            onClick={() => handleDeleteDomain(d.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
- <div className="grid gap-space-4 sm:grid-cols-2 border-t border-border/10 pt-space-4">
- <div className="space-y-space-1.5">
- <Label htmlFor="widgetWidth"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Widget Frame Width (px)</Label>
- <Input
- id="widgetWidth"
- type="number"
- min={320}
- max={500}
- value={customization.widgetWidth}
- onChange={(e) => setCustomization({ ...customization, widgetWidth: parseInt(e.target.value) || 380 })}
- className="h-9.5 text-caption bg-background/50 border-border/40 focus-visible:ring-primary/20"
- />
- </div>
+          {/* TAB 5: ANALYTICS */}
+          {activeTab === "analytics" && (
+            <div className="space-y-space-6 animate-fade-in">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-space-4">
+                <Card className="border-border/60 bg-card/40 p-space-4 space-y-space-1">
+                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Widget Opens</span>
+                  <p className="text-h3 font-bold text-foreground">{analytics.widgetOpens || 0}</p>
+                </Card>
+                <Card className="border-border/60 bg-card/40 p-space-4 space-y-space-1">
+                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Conversations</span>
+                  <p className="text-h3 font-bold text-primary">{analytics.conversationStarts || 0}</p>
+                </Card>
+                <Card className="border-border/60 bg-card/40 p-space-4 space-y-space-1">
+                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Bookings Created</span>
+                  <p className="text-h3 font-bold text-emerald-500">{analytics.bookingsCount || 0}</p>
+                </Card>
+                <Card className="border-border/60 bg-card/40 p-space-4 space-y-space-1">
+                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Conversion Rate</span>
+                  <p className="text-h3 font-bold text-foreground">{analytics.conversionRate || 0}%</p>
+                </Card>
+              </div>
+            </div>
+          )}
+        </div>
 
- <div className="space-y-space-1.5">
- <Label htmlFor="widgetHeight"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Widget Frame Height (px)</Label>
- <Input
- id="widgetHeight"
- type="number"
- min={450}
- max={800}
- value={customization.widgetHeight}
- onChange={(e) => setCustomization({ ...customization, widgetHeight: parseInt(e.target.value) || 600 })}
- className="h-9.5 text-caption bg-background/50 border-border/40 focus-visible:ring-primary/20"
- />
- </div>
- </div>
- </div>
- <div className="pt-space-3 px-space-6 py-space-4 border-t border-border/10 flex justify-between items-center bg-transparent">
- <Button 
- type="button"
- variant="outline"
- onClick={handleResetTheme} 
- className="h-9 text-caption font-semibold border-border/40 hover:bg-error-500/5 hover:text-error-500 transition-all px-space-4"
- >
- Reset to Brand Defaults
- </Button>
- <Button type="submit"disabled={isSaving} className="h-9 text-caption font-semibold text-white cursor-pointer gap-space-1.5 px-space-5 flex items-center bg-primary hover:bg-primary/90 transition-all duration-200">
- {isSaving ? (
- <>
- <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0"/>
- <span className="leading-none">Saving...</span>
- </>
- ) : (
- <>
- <Save className="h-3.5 w-3.5 shrink-0"/>
- <span className="leading-none">Save Appearance</span>
- </>
- )}
- </Button>
- </div>
- </Card>
- </div>
- )}
+        {/* Right Column: Live Sticky Preview Studio (5 cols) */}
+        <div className="lg:col-span-5 lg:sticky lg:top-space-6 space-y-space-4">
+          <div className="flex items-center justify-between select-none">
+            <span className="text-caption uppercase font-semibold tracking-wider text-muted-foreground/80 flex items-center gap-space-1.5">
+              <Palette className="h-3.5 w-3.5 text-primary" /> Live Preview
+            </span>
 
- {/* TAB 4: TRIGGERS & ACTIONS */}
- {activeTab ==="triggers"&& (
- <div className="space-y-space-6 animate-fade-in">
- 
- {/* Suggested actions grid */}
- <Card className="border-border/60 bg-card/30 backdrop-blur-xs flex flex-col justify-between hover:border-primary/20 transition-all duration-300">
- <CardHeader className="pb-space-4 border-b border-border/10">
- <div className="flex items-center justify-between">
- <div className="h-9 w-9 radius-lg bg-warning-500/10 border border-warning-500/20 flex items-center justify-center text-warning-500">
- <MessageSquare className="h-5 w-5"/>
- </div>
- <span className="text-caption bg-warning-500/10 text-warning-500 border border-warning-500/20 px-space-2 py-space-1 radius-full">Quick Replies</span>
- </div>
- <CardTitle className="text-body-sm font-semibold text-foreground mt-space-4">Suggested Quick Replies</CardTitle>
- <CardDescription className="text-caption text-muted-foreground mt-space-1">
- Choose which buttons appear instantly on the conversation footer to enable"no-typing"bookings.
- </CardDescription>
- </CardHeader>
- <div className="p-space-6 pt-space-5 bg-transparent">
- <div className="grid gap-space-3 sm:grid-cols-2">
- {[
- { type:"book", label:"Book Appointment"},
- { type:"services", label:"View Services"},
- { type:"pricing", label:"View Pricing"},
- { type:"hours", label:"Business Hours"},
- { type:"location", label:"Location"},
- { type:"human", label:"Speak to Human"}
- ].map((act) => {
- const isSelected = customization.suggestedActions.some((a) => a.type === act.type);
- return (
- <Button
- key={act.type}
- type="button"
- onClick={() => handleToggleAction(act.type, act.label)}
- className={cn(
- "flex items-center justify-between p-space-3.5 px-space-4 radius-xl border text-left transition-all duration-200 select-none cursor-pointer",
- isSelected
- ?"text-foreground"
- :"border-border/40 bg-background/25 text-muted-foreground hover:bg-[hsl(var(--foreground)/0.015)] hover:border-[hsl(var(--foreground)/0.1)]"
- )}
- style={isSelected ? { borderColor: theme.primaryColor, backgroundColor:`${theme.primaryColor}06`} : undefined}
- >
- <span className="text-caption font-semibold text-foreground">{act.label}</span>
- <div 
- className="h-4 w-4 radius-md border flex items-center justify-center transition-all duration-200 shrink-0 ml-space-2"
- style={{
- borderColor: isSelected ? theme.primaryColor :"rgba(122, 90, 248, 0.15)",
- backgroundColor: isSelected ? theme.primaryColor :"transparent",
- color: isSelected ?"#ffffff":"transparent"
- }}
- >
- {isSelected && <Check className="h-2.5 w-2.5 stroke-[3] text-white"/>}
- </div>
- </Button>
- );
- })}
- </div>
- </div>
- </Card>
+            {/* View Mode Switcher: Chat View vs Bubble View */}
+            <div className="flex items-center gap-space-1 p-space-0.5 radius-lg bg-background/50 border border-border/40 text-[11px]">
+              <button
+                type="button"
+                onClick={() => setPreviewMode("chat")}
+                className={cn(
+                  "px-space-2.5 py-space-1 radius-md transition-colors cursor-pointer",
+                  previewMode === "chat" ? "bg-primary text-white font-semibold shadow-xs" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Chat View
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewMode("bubble")}
+                className={cn(
+                  "px-space-2.5 py-space-1 radius-md transition-colors cursor-pointer",
+                  previewMode === "bubble" ? "bg-primary text-white font-semibold shadow-xs" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Floating Bubble
+              </button>
+            </div>
+          </div>
 
- {/* Starter Questions */}
- <Card className="border-border/60 bg-card/30 backdrop-blur-xs flex flex-col justify-between hover:border-primary/20 transition-all duration-300">
- <CardHeader className="pb-space-4 border-b border-border/10">
- <div className="flex items-center justify-between">
- <div className="h-9 w-9 radius-lg bg-primary-500/10 border border-primary-500/20 flex items-center justify-center text-primary-400">
- <Plus className="h-5 w-5"/>
- </div>
- <span className="text-caption bg-primary-500/10 text-primary border border-primary-500/20 px-space-2 py-space-1 radius-full">Conversation Starters</span>
- </div>
- <CardTitle className="text-body-sm font-semibold text-foreground mt-space-4">Conversation Starter Questions</CardTitle>
- <CardDescription className="text-caption text-muted-foreground mt-space-1">
- These questions are introduced during initial empty conversation session loads.
- </CardDescription>
- </CardHeader>
- <div className="p-space-6 pt-space-5 space-y-space-4 bg-transparent">
- <div className="flex gap-space-2 max-w-lg items-end">
- <div className="flex-1 space-y-space-1.5 min-w-0">
- <Label htmlFor="starter_question"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Starter Question</Label>
- <Input
- id="starter_question"
- value={newQuestion}
- onChange={(e) => setNewQuestion(e.target.value)}
- placeholder="Add a starter question..."
- className="h-9.5 text-caption bg-background/50 border-border/40 focus-visible:ring-primary/20"
- />
- </div>
- <Button 
- type="button"
- onClick={handleAddQuestion} 
- disabled={!newQuestion.trim()}
- className="h-9.5 text-caption font-semibold text-white cursor-pointer gap-space-1.5 px-space-5 shrink-0 flex items-center hover:brightness-110 active:brightness-95 transition-all duration-200 bg-primary hover:bg-primary/95"
- >
- <Plus className="h-3.5 w-3.5 shrink-0"/>
- <span className="leading-none">Add Question</span>
- </Button>
- </div>
+          {/* Interactive Device Shell */}
+          <div
+            className="radius-2xl border backdrop-blur-md overflow-hidden flex flex-col shadow-lg transition-all duration-300"
+            style={{
+              borderColor: theme.themeMode === "dark" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)",
+              backgroundColor: theme.themeMode === "dark" ? "#09090b" : "#ffffff",
+            }}
+          >
+            {/* Browser Control Header */}
+            <div
+              className="flex items-center gap-space-2 px-space-4 py-space-3 border-b select-none"
+              style={{
+                backgroundColor: theme.themeMode === "dark" ? "#121215" : "#f4f4f5",
+                borderColor: theme.themeMode === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+              }}
+            >
+              <div className="flex gap-space-1.5">
+                <span className="h-2.5 w-2.5 radius-full bg-rose-500/80" />
+                <span className="h-2.5 w-2.5 radius-full bg-amber-500/80" />
+                <span className="h-2.5 w-2.5 radius-full bg-emerald-500/80" />
+              </div>
+              <div
+                className="flex-1 max-w-xs mx-auto border radius-lg py-space-0.5 px-space-3 text-caption font-mono text-center truncate text-[11px]"
+                style={{
+                  backgroundColor: theme.themeMode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.85)",
+                  borderColor: theme.themeMode === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+                  color: theme.themeMode === "dark" ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
+                }}
+              >
+                https://{branding.companyName ? branding.companyName.toLowerCase().replace(/\s+/g, "") : "mybusiness"}.com
+              </div>
+            </div>
 
- <div className="space-y-space-2">
- {customization.starterQuestions.map((q, idx) => (
- <div 
- key={idx} 
- className="flex items-center justify-between p-space-3 px-space-4 radius-xl border border-border/10 bg-background/20 text-caption hover:bg-background/40 transition-colors duration-150"
- >
- <span className="text-foreground font-semibold">{q}</span>
- <Button 
- type="button"
- variant="ghost"
- className="h-7 w-7 text-error-500 hover:bg-error-500/5 cursor-pointer radius-md flex items-center justify-center p-space-0"
- onClick={() => handleRemoveQuestion(idx)}
- >
- <X className="h-3.5 w-3.5"/>
- </Button>
- </div>
- ))}
- </div>
- </div>
- </Card>
+            {/* PREVIEW MODE 1: EXPANDED CHAT */}
+            {previewMode === "chat" ? (
+              <div
+                className="flex flex-col justify-between h-[460px] w-full transition-colors"
+                style={{
+                  backgroundColor: theme.backgroundColor,
+                  color: theme.textColor,
+                }}
+              >
+                {/* Chat Top Banner */}
+                <div
+                  className="flex items-center justify-between p-space-3.5 px-space-4 border-b shrink-0"
+                  style={{ borderColor: theme.borderColor }}
+                >
+                  <div className="flex items-center gap-space-2.5">
+                    <div
+                      className="h-8 w-8 radius-full flex items-center justify-center text-white font-bold text-xs"
+                      style={{ backgroundColor: theme.primaryColor }}
+                    >
+                      {branding.companyName ? branding.companyName[0].toUpperCase() : "O"}
+                    </div>
+                    <div>
+                      <h4 className="text-caption font-semibold leading-tight" style={{ color: theme.textColor }}>
+                        {branding.companyName || "Operator AI Receptionist"}
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground flex items-center gap-space-1 leading-tight">
+                        <span className="h-1.5 w-1.5 radius-full bg-emerald-500 inline-block" />
+                        {branding.tagline || "Online • 24/7 Front Desk"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
- {/* Proactive Triggers */}
- <Card className="border-border/60 bg-card/30 backdrop-blur-xs flex flex-col justify-between hover:border-primary/20 transition-all duration-300">
- <CardHeader className="pb-space-4 border-b border-border/10">
- <div className="flex items-center justify-between">
- <div className="h-9 w-9 radius-lg bg-success-500/10 border border-success-500/20 flex items-center justify-center text-success-500">
- <Settings className="h-5 w-5"/>
- </div>
- <span className="text-caption bg-success-500/10 text-success-500 border border-success-500/20 px-space-2 py-space-1 radius-full">Popup Trigger</span>
- </div>
- <CardTitle className="text-body-sm font-semibold text-foreground mt-space-4">Proactive Message Popups</CardTitle>
- <CardDescription className="text-caption text-muted-foreground mt-space-1">
- Configure when the widget launcher automatically expands to catch user attention.
- </CardDescription>
- </CardHeader>
- <div className="p-space-6 pt-space-5 space-y-space-4 bg-transparent">
- <Button
- type="button"
- onClick={() => setCustomization({
- ...customization,
- proactiveTriggers: {
- ...customization.proactiveTriggers,
- active: !customization.proactiveTriggers.active
- }
- })}
- className={cn(
- "flex items-start justify-between w-full p-space-4 radius-xl border text-left transition-all duration-200 select-none cursor-pointer",
- customization.proactiveTriggers.active
- ?""
- :"border-border/40 bg-background/25 hover:bg-[hsl(var(--foreground)/0.015)]"
- )}
- style={customization.proactiveTriggers.active ? { borderColor: theme.primaryColor, backgroundColor:`${theme.primaryColor}06`} : undefined}
- >
- <div>
- <span className="text-caption font-semibold text-foreground block">Enable Proactive Expansion</span>
- <span className="text-caption text-muted-foreground/60 block mt-space-1">Launches the widget frame dynamically on page triggers.</span>
- </div>
- <div 
- className="h-4.5 w-4.5 radius-md border flex items-center justify-center transition-all duration-200 shrink-0 ml-space-2 mt-space-0.5"
- style={{
- borderColor: customization.proactiveTriggers.active ? theme.primaryColor :"rgba(122, 90, 248, 0.15)",
- backgroundColor: customization.proactiveTriggers.active ? theme.primaryColor :"transparent",
- color: customization.proactiveTriggers.active ?"#ffffff":"transparent"
- }}
- >
- {customization.proactiveTriggers.active && <Check className="h-3 w-3 stroke-[3] text-white"/>}
- </div>
- </Button>
+                {/* Chat Messages Body */}
+                <div className="flex-1 p-space-4 space-y-space-3 overflow-y-auto no-scrollbar">
+                  {/* AI Greeting Message */}
+                  <div className="flex items-start gap-space-2 max-w-[85%]">
+                    <div
+                      className="p-space-3 text-caption leading-relaxed border shadow-xs"
+                      style={{
+                        backgroundColor: theme.themeMode === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.03)",
+                        borderColor: theme.borderColor,
+                        color: theme.textColor,
+                        borderRadius: "4px 16px 16px 16px",
+                      }}
+                    >
+                      {branding.welcomeMessage || "Hello! How can I help you book or view services today?"}
+                    </div>
+                  </div>
 
- {customization.proactiveTriggers.active && (
- <div className="space-y-space-1.5 max-w-xs pt-space-2 animate-fade-in">
- <Label htmlFor="triggerSeconds"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Delay Trigger (seconds on page)</Label>
- <Input
- id="triggerSeconds"
- type="number"
- min={1}
- value={customization.proactiveTriggers.timeOnPage}
- onChange={(e) => setCustomization({
- ...customization,
- proactiveTriggers: {
- ...customization.proactiveTriggers,
- timeOnPage: parseInt(e.target.value) || 5
- }
- })}
- className="h-9.5 text-caption bg-background/50 border-border/40 focus-visible:ring-primary/20"
- />
- </div>
- )}
- </div>
- <div className="pt-space-3 px-space-6 py-space-4 border-t border-border/10 flex justify-end bg-transparent">
- <Button 
- type="submit"
- disabled={isSaving} 
- className="h-9 text-caption font-semibold text-white cursor-pointer gap-space-1.5 px-space-5 flex items-center hover:brightness-110 active:brightness-95 transition-all duration-200 bg-primary hover:bg-primary/90"
- >
- {isSaving ? (
- <>
- <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0"/>
- <span className="leading-none">Saving...</span>
- </>
- ) : (
- <>
- <Save className="h-3.5 w-3.5 shrink-0"/>
- <span className="leading-none">Save Triggers</span>
- </>
- )}
- </Button>
- </div>
- </Card>
- </div>
- )}
+                  {/* User Query Simulation */}
+                  <div className="flex justify-end">
+                    <div
+                      className="p-space-3 text-caption leading-relaxed text-white font-medium max-w-[80%] shadow-xs"
+                      style={{
+                        backgroundColor: theme.primaryColor,
+                        borderRadius: "16px 4px 16px 16px",
+                      }}
+                    >
+                      Can I book an appointment for tomorrow?
+                    </div>
+                  </div>
 
- {/* TAB 5: ANALYTICS */}
- {activeTab ==="analytics"&& (
- <div className="space-y-space-6 animate-fade-in">
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-space-4">
- {[
- { label:"Widget Opens", value: analytics.widgetOpens },
- { label:"Chat Starts", value: analytics.conversationStarts },
- { label:"Bookings Completed", value: analytics.bookingsCount },
- { label:"Leads Qualified", value: analytics.leadCapturesCount }
- ].map((stat, i) => (
- <Card key={i} className="border-border/60 bg-card/30 backdrop-blur-xs hover:border-primary/10 transition-all duration-300">
- <div className="p-space-5 flex flex-col justify-between min-h-24">
- <span className="text-caption uppercase font-semibold tracking-wider text-muted-foreground/75 leading-none block">{stat.label}</span>
- <span className="text-title-lg font-semibold text-foreground mt-space-3 leading-none">{stat.value}</span>
- </div>
- </Card>
- ))}
- </div>
+                  {/* AI Assistant Confirmation */}
+                  <div className="flex items-start gap-space-2 max-w-[85%]">
+                    <div
+                      className="p-space-3 text-caption leading-relaxed border shadow-xs"
+                      style={{
+                        backgroundColor: theme.themeMode === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.03)",
+                        borderColor: theme.borderColor,
+                        color: theme.textColor,
+                        borderRadius: "4px 16px 16px 16px",
+                      }}
+                    >
+                      Certainly! I can book that for you right now. Please choose from our available services below.
+                    </div>
+                  </div>
+                </div>
 
- <div className="grid grid-cols-1 gap-space-4">
- <div className="bg-card border border-border-default radius-xl overflow-hidden flex flex-col">
- <div className="p-space-5 pb-space-2 shrink-0">
- <h3 className="text-body-sm font-semibold">Engagement Trend</h3>
- <p className="text-caption text-muted-foreground">Widget opens vs active chats over time</p>
- </div>
- <div className="flex-1 p-space-5 pt-space-0">
- <AreaChartCard 
- data={engagementTrend}
- index="date"
- categories={["opens","chats"]}
- colors={["#a1a1aa","#7a5af8"]}
- height={260}
- />
- </div>
- </div>
+                {/* Quick Action Chips (Rendered as sleek pill buttons, NOT giant arches!) */}
+                {customization.suggestedActions.length > 0 && (
+                  <div
+                    className="flex items-center gap-space-1.5 p-space-2.5 px-space-3 border-t overflow-x-auto no-scrollbar shrink-0"
+                    style={{ borderColor: theme.borderColor }}
+                  >
+                    {customization.suggestedActions.map((act: any, idx: number) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        className="inline-flex items-center text-[11px] font-semibold px-space-3 py-space-1 radius-full shrink-0 transition-colors border shadow-xs"
+                        style={{
+                          backgroundColor: `${theme.primaryColor}15`,
+                          borderColor: `${theme.primaryColor}30`,
+                          color: theme.primaryColor,
+                        }}
+                      >
+                        {act.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
- <Card className="border-border/60 bg-card/30 backdrop-blur-xs flex flex-col justify-between hover:border-primary/20 transition-all duration-300">
- <CardHeader className="pb-space-4 border-b border-border/10">
- <div className="flex items-center justify-between">
- <div className="h-9 w-9 radius-lg bg-success-500/10 border border-success-500/20 flex items-center justify-center text-success-500">
- <BarChart2 className="h-5 w-5"/>
- </div>
- <span className="text-caption bg-success-500/10 text-success-500 border border-success-500/20 px-space-2 py-space-1 radius-full">Performance Metrics</span>
- </div>
- <CardTitle className="text-body-sm font-semibold text-foreground mt-space-4">Conversion Rates</CardTitle>
- </CardHeader>
- <div className="p-space-6 pt-space-5 space-y-space-6 bg-transparent">
- <div className="space-y-space-2">
- <div className="flex justify-between text-caption font-semibold text-foreground">
- <span>Widget Engagement (Opens ➜ Chats)</span>
- <span className="text-primary">{analytics.engagementRate}%</span>
- </div>
- <div className="h-2 w-full bg-border/40 radius-full overflow-hidden">
- <div className="h-full bg-primary"style={{ width:`${analytics.engagementRate}%`}} />
- </div>
- </div>
- 
- <div className="space-y-space-2 border-t border-border/10 pt-space-5">
- <div className="flex justify-between text-caption font-semibold text-foreground">
- <span>Booking Conversion (Chats ➜ Appointments)</span>
- <span className="text-emerald-500">{analytics.conversionRate}%</span>
- </div>
- <div className="h-2 w-full bg-border/40 radius-full overflow-hidden">
- <div className="h-full bg-emerald-500"style={{ width:`${analytics.conversionRate}%`}} />
- </div>
- </div>
- </div>
- </Card>
- </div>
- </div>
- )}
+                {/* Chat Input Bar */}
+                <div
+                  className="p-space-3 border-t flex items-center gap-space-2 shrink-0"
+                  style={{ borderColor: theme.borderColor }}
+                >
+                  <div
+                    className="flex-1 h-9 radius-lg border bg-transparent text-caption flex items-center px-space-3 text-muted-foreground/60 text-xs"
+                    style={{ borderColor: theme.borderColor }}
+                  >
+                    Type your message...
+                  </div>
+                  <div
+                    className="h-9 w-9 radius-lg flex items-center justify-center text-white shrink-0 shadow-xs cursor-pointer hover:opacity-90"
+                    style={{ backgroundColor: theme.primaryColor }}
+                  >
+                    <Send className="h-4 w-4" />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* PREVIEW MODE 2: FLOATING BUBBLE ON SITE */
+              <div
+                className="relative h-[460px] w-full p-space-6 flex flex-col justify-between"
+                style={{
+                  backgroundColor: theme.themeMode === "dark" ? "#09090b" : "#f8fafc",
+                }}
+              >
+                {/* Mock Website Page Content */}
+                <div className="space-y-space-3 select-none opacity-40">
+                  <div className="h-4 w-1/3 bg-foreground/20 radius-md" />
+                  <div className="h-2.5 w-full bg-foreground/15 radius-md" />
+                  <div className="h-2.5 w-5/6 bg-foreground/15 radius-md" />
+                  <div className="h-2.5 w-2/3 bg-foreground/15 radius-md" />
+                  <div className="pt-space-4 flex gap-space-2">
+                    <div className="h-7 w-24 bg-primary/20 radius-md" />
+                    <div className="h-7 w-20 bg-foreground/15 radius-md" />
+                  </div>
+                </div>
 
- </form>
- </div>
+                {/* Floating Bubble in Configured Corner */}
+                <div
+                  className={cn(
+                    "absolute bottom-space-6 flex items-center gap-space-2.5 transition-all duration-300",
+                    launcher.position === "bottom_left" ? "left-space-6 flex-row-reverse" : "right-space-6 flex-row"
+                  )}
+                >
+                  {/* Greeting Tooltip Callout */}
+                  <div
+                    className="border text-caption font-semibold px-space-3 py-space-1.5 radius-xl select-none flex items-center gap-space-1.5 shadow-md text-xs animate-fade-in"
+                    style={{
+                      backgroundColor: theme.themeMode === "dark" ? "#18181b" : "#ffffff",
+                      borderColor: theme.themeMode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)",
+                      color: theme.textColor,
+                    }}
+                  >
+                    <span className="h-1.5 w-1.5 radius-full bg-emerald-500" />
+                    Chat with {branding.companyName || "us"}
+                  </div>
 
- {/* Right Side: Live Sticky Preview Panel */}
- <div className="w-full lg:w-96 xl:w-[var(--w-420,420px)] lg:sticky lg:top-space-6 shrink-0 space-y-space-4">
- <div className="flex items-center justify-between select-none">
- <span className="text-caption uppercase font-semibold tracking-wider text-muted-foreground/75 leading-none flex items-center gap-space-1.5">
- <Palette className="h-3.5 w-3.5 text-primary"/> Live customizer visualizer
- </span>
- <span className="text-caption font-semibold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-space-2 py-space-0.5 radius-full flex items-center gap-space-1">
- <span className="h-1.5 w-1.5 radius-full bg-emerald-500 animate-pulse"/> Real-time active preview
- </span>
- </div>
-
- {/* High-Fidelity Mock Browser Shell */}
- <div 
- className="radius-2xl border backdrop-blur-md overflow-hidden flex flex-col transition-all duration-300"
- style={{
- borderColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.08)":"rgba(0,0,0,0.10)",
- backgroundColor: theme.themeMode ==="dark"?"rgba(9,9,11,0.6)":"rgba(255,255,255,0.85)"
- }}
- >
- 
- {/* Browser Control Header */}
- <div 
- className="flex items-center gap-space-1.5 px-space-4 py-space-3 border-b select-none transition-all duration-300"
- style={{
- backgroundColor: theme.themeMode ==="dark"?"#09090b":"#f4f4f5",
- borderColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.06)"
- }}
- >
- <div className="flex gap-space-1.5">
- <span className="h-2.5 w-2.5 radius-full bg-rose-500/80 shrink-0"/>
- <span className="h-2.5 w-2.5 radius-full bg-amber-500/80 shrink-0"/>
- <span className="h-2.5 w-2.5 radius-full bg-emerald-500/80 shrink-0"/>
- </div>
- <div 
- className="flex-1 max-w-xs mx-auto border radius-lg py-space-1 px-space-3 text-caption font-mono text-center truncate transition-all duration-300"
- style={{
- backgroundColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.05)":"rgba(255,255,255,0.8)",
- borderColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.08)",
- color: theme.themeMode ==="dark"?"rgba(255,255,255,0.35)":"rgba(0,0,0,0.4)"
- }}
- >
- https://{branding.companyName ? branding.companyName.toLowerCase().replace(/\s+/g,"") :"business"}.com/chat
- </div>
- </div>
-
- {/* Widget Frame Viewport */}
- <div 
- className="relative flex flex-col justify-between overflow-hidden transition-all duration-300 w-full"
- style={{
- height:`${customization.widgetHeight - 50}px`,
- backgroundColor: theme.backgroundColor,
- borderColor: theme.borderColor,
- borderRadius: theme.borderRadius
- }}
- >
- {/* Preview Header */}
- <div className="flex items-center justify-between p-space-4 border-b bg-background/10 backdrop-blur-lg"style={{ borderColor: theme.borderColor }}>
- <div className="flex items-center gap-space-3">
- <div className="relative">
- {branding.logoUrl ? (
- <Image 
- src={branding.logoUrl} 
- width={34}
- height={34}
- className="h-8.5 w-8.5 radius-full object-cover border"
- style={{ borderColor:`${theme.primaryColor}30`}}
- alt="Logo"
- />
- ) : (
- <div 
- className="h-8.5 w-8.5 radius-full border flex items-center justify-center transition-all duration-300"
- style={{ backgroundColor:`${theme.primaryColor}15`, borderColor:`${theme.primaryColor}30`}}
- >
- <Sparkles className="h-4.5 w-4.5"style={{ color: theme.primaryColor }} />
- </div>
- )}
- <span className="absolute bottom-space-0 right-space-0 h-2 w-2 radius-full bg-emerald-500 animate-pulse"style={{ boxShadow:`0 0 0 2px ${theme.backgroundColor}`}} />
- </div>
- <div>
- <h4 className="text-caption font-semibold tracking-tight leading-none"style={{ color: theme.textColor }}>
- {branding.companyName ||"Your Company Name"}
- </h4>
- <p className="text-caption text-muted-foreground/70 font-semibold mt-space-1 truncate max-w-xs leading-none">
- {branding.tagline ||"Active Operator AI"}
- </p>
- </div>
- </div>
- <div className="flex items-center gap-space-2">
- <span className="h-1.5 w-1.5 radius-full bg-emerald-500"/>
- <X className="h-4 w-4 text-muted-foreground/60 hover:text-muted-foreground cursor-pointer"/>
- </div>
- </div>
-
- {/* Preview Chat list content */}
- <ScrollArea className="flex-1 p-space-5 space-y-space-5 bg-background/2 flex flex-col" horizontal={false}>
- 
- {/* AI Welcome Message */}
- <div className="flex items-start gap-space-2.5 max-w-5/6 self-start animate-fade-in">
- <div 
- className="h-7 w-7 radius-full border flex items-center justify-center shrink-0 mt-space-0.5"
- style={{ backgroundColor:`${theme.primaryColor}15`, borderColor:`${theme.primaryColor}20`}}
- >
- <Sparkles className="h-3.5 w-3.5"style={{ color: theme.primaryColor }} />
- </div>
- <div 
- className="p-space-3.5 text-caption leading-relaxed border"
- style={{ 
- backgroundColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.03)", 
- borderColor: theme.borderColor,
- color: theme.textColor,
- borderRadius:`0px ${theme.borderRadius} ${theme.borderRadius} ${theme.borderRadius}`
- }}
- >
- {branding.welcomeMessage ||"Hello! How can I help you book or view services today?"}
- </div>
- </div>
-
- {/* User Mock Message */}
- <div className="flex items-start justify-end gap-space-2.5 max-w-5/6 self-end animate-fade-in [animation-delay:200ms]">
- <div 
- className="p-space-3.5 text-caption leading-relaxed text-white bg-gradient-to-br font-semibold bg-[linear-gradient(135deg,_rgba(255,255,255,0.1)_0%,_rgba(0,0,0,0.05)_100%)]"
- style={{ 
- backgroundColor: theme.primaryColor,
- borderRadius:`${theme.borderRadius} 0px ${theme.borderRadius} ${theme.borderRadius}`
- }}
- >
- Can I book an appointment for tomorrow?
- </div>
- </div>
-
- {/* AI Mock Response */}
- <div className="flex items-start gap-space-2.5 max-w-5/6 self-start animate-fade-in [animation-delay:400ms]">
- <div 
- className="h-7 w-7 radius-full border flex items-center justify-center shrink-0 mt-space-0.5"
- style={{ backgroundColor:`${theme.primaryColor}15`, borderColor:`${theme.primaryColor}20`}}
- >
- <Sparkles className="h-3.5 w-3.5"style={{ color: theme.primaryColor }} />
- </div>
- <div 
- className="p-space-3.5 text-caption leading-relaxed border space-y-space-3.5"
- style={{ 
- backgroundColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.03)", 
- borderColor: theme.borderColor,
- color: theme.textColor,
- borderRadius:`0px ${theme.borderRadius} ${theme.borderRadius} ${theme.borderRadius}`
- }}
- >
- <p>Sure! I can help you book an appointment. Select a quick action below to schedule instantly.</p>
- 
- {/* Calendar Mock Card in Chat */}
- <div className="p-space-3.5 radius-xl border flex items-center justify-between gap-space-3"style={{ borderColor: theme.borderColor, backgroundColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.02)"}}>
- <div className="flex items-center gap-space-2.5">
- <div 
- className="h-8.5 w-8.5 radius-lg flex items-center justify-center shrink-0"
- style={{ color: theme.primaryColor, backgroundColor:`${theme.primaryColor}15`}}
- >
- <Sparkles className="h-4 w-4"style={{ color: theme.primaryColor }} />
- </div>
- <div className="text-left">
- <span className="text-caption font-semibold block leading-none"style={{ color: theme.textColor }}>Schedule Appointment</span>
- <span className="text-caption block mt-space-1"style={{ color: theme.themeMode ==="dark"?"rgba(255,255,255,0.4)":"rgba(0,0,0,0.45)"}}>Takes less than 1 minute</span>
- </div>
- </div>
- <Button 
- type="button"
- className="h-7.5 px-space-3 text-caption font-semibold text-white shrink-0 hover:brightness-105 active:brightness-95 transition-all"
- style={{ backgroundColor: theme.primaryColor }}
- >
- Book Now
- </Button>
- </div>
- </div>
- </div>
-
- {/* Starter questions stubs */}
- {customization.starterQuestions.length > 0 && (
- <div className="space-y-space-2 pt-space-3 mt-auto">
- <span className="text-caption font-semibold text-muted-foreground/75 uppercase tracking-wider block">Suggested Questions</span>
- <div className="grid gap-space-2 grid-cols-2">
- {customization.starterQuestions.slice(0, 4).map((q, i) => (
- <div 
- key={i} 
- className="p-space-2.5 px-space-3 border text-caption font-medium text-muted-foreground/80 hover:text-foreground hover:bg-[hsl(var(--foreground)/0.02)] transition-all duration-200 truncate text-center cursor-pointer select-none"
- style={{ borderColor: theme.borderColor, borderRadius: theme.borderRadius }}
- >
- {q}
- </div>
- ))}
- </div>
- </div>
- )}
- </ScrollArea>
-
- {/* Suggestions Footer */}
- {customization.suggestedActions.length > 0 && (
- <ScrollArea className="flex gap-space-2 p-space-3 bg-background/15 border-t shrink-0"style={{ borderColor: theme.borderColor }} vertical={false}>
- {customization.suggestedActions.map((act: any, idx: number) => (
- <div
- key={idx}
- className="text-caption font-semibold border px-space-3.5 py-space-1.5 bg-background/55 text-foreground/90 shrink-0 select-none cursor-pointer hover:bg-background/80 transition-colors radius-full"
- style={{ borderColor: theme.borderColor }}
- >
- {act.label}
- </div>
- ))}
- </ScrollArea>
- )}
-
- {/* Input preview */}
- <div className="p-space-3.5 border-t bg-background/30 flex items-center gap-space-2.5 shrink-0"style={{ borderColor: theme.borderColor }}>
- <div className="flex-1 h-9 radius-xl border bg-transparent text-caption flex items-center px-space-3.5 text-muted-foreground/40"style={{ borderColor: theme.borderColor }}>
- Ask a question...
- </div>
- <div 
- className="h-9 w-9 radius-xl flex items-center justify-center text-primary-foreground shrink-0 cursor-pointer hover:brightness-105 transition-all"
- style={{ backgroundColor: theme.primaryColor, borderRadius: theme.borderRadius }}
- >
- <Send className="h-4 w-4 text-white"/>
- </div>
- </div>
- </div>
-
- {/* Simulated Live Webpage Context with Launcher widget */}
- <div 
- className="border-t p-space-5 space-y-space-4 transition-all duration-300"
- style={{
- borderColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.08)":"rgba(0,0,0,0.08)",
- backgroundColor: theme.themeMode ==="dark"?"rgba(24,24,27,0.4)":"rgba(244,244,245,0.5)"
- }}
- >
- <div className="flex items-center justify-between select-none">
- <span className="text-caption uppercase font-semibold tracking-wider leading-none"style={{ color: theme.themeMode ==="dark"?"rgba(255,255,255,0.45)":"rgba(0,0,0,0.45)"}}>Floating widget preview launcher</span>
- <span className="text-caption font-mono leading-none"style={{ color: theme.themeMode ==="dark"?"rgba(255,255,255,0.35)":"rgba(0,0,0,0.4)"}}>Position: {launcher.position ==="bottom_left"?"Left Align":"Right Align"}</span>
- </div>
-
- {/* Mock site canvas */}
- <div 
- className="relative border radius-2xl overflow-hidden h-44 flex flex-col justify-between p-space-4.5 transition-all duration-300"
- style={{
- borderColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.06)",
- backgroundColor: theme.themeMode ==="dark"?"#09090b":"#fafafb"
- }}
- >
- {/* Mock site top navigation */}
- <div className="flex items-center justify-between pb-space-2.5 text-caption select-none"style={{ borderBottom:`1px solid ${theme.themeMode ==="dark"?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.06)"}`, color: theme.themeMode ==="dark"?"rgba(255,255,255,0.3)":"rgba(0,0,0,0.35)"}}>
- <div className="flex items-center gap-space-1.5">
- <div className="h-1.5 w-1.5 radius-full"style={{ backgroundColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.2)"}} />
- <span className="font-semibold tracking-wide"style={{ color: theme.themeMode ==="dark"?"rgba(255,255,255,0.5)":"rgba(0,0,0,0.5)"}}>https://{branding.companyName ? branding.companyName.toLowerCase().replace(/\s+/g,"") :"business"}.com</span>
- </div>
- <div className="flex gap-space-3 font-semibold">
- <span>Services</span>
- <span>Pricing</span>
- <span>Contact</span>
- </div>
- </div>
-
- {/* Mock site hero text */}
- <div className="space-y-space-2 py-space-3 select-none">
- <div className="h-3.5 w-2/3 radius-md"style={{ backgroundColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.06)"}} />
- <div className="h-2 w-5/6 radius-md"style={{ backgroundColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.06)"}} />
- <div className="h-2 w-1/2 radius-md"style={{ backgroundColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.06)"}} />
- <div className="pt-space-1.5 flex gap-space-2">
- <div className="h-6 w-20 radius-lg"style={{ backgroundColor:`${theme.primaryColor}20`}} />
- <div className="h-6 w-16 radius-lg"style={{ backgroundColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.06)"}} />
- </div>
- </div>
-
- {/* Floating launcher toggler representation */}
- <div className={cn(
- "absolute bottom-space-4.5 flex items-center gap-space-2.5 transition-all duration-300",
- launcher.position ==="bottom_left"?"left-space-4.5":"right-space-4.5"
- )}>
- {/* Floating tooltip */}
- <div 
- className="border text-caption font-semibold px-space-3 py-space-1.5 radius-xl select-none flex items-center gap-space-1 transition-all duration-300"
- style={{ backgroundColor: theme.themeMode ==="dark"?"#18181b":"#ffffff", borderColor: theme.themeMode ==="dark"?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.08)", color: theme.themeMode ==="dark"?"#fff":"#18181b", borderRadius: theme.borderRadius }}
- >
- <span className="h-1.5 w-1.5 radius-full bg-emerald-500"/>
- Chat Online
- </div>
- <div 
- className="h-10.5 w-10.5 radius-full flex items-center justify-center text-white cursor-pointer transition-transform hover:scale-105 active:scale-95 duration-200 radius-full"
- style={{ 
- backgroundColor: theme.primaryColor, 
- boxShadow:`0 4px 20px ${theme.primaryColor}45`
- }}
- >
- <MessageSquare className="h-5 w-5"/>
- </div>
- </div>
- </div>
- </div>
-
- </div>
-
- </div>
-
- </div>
- </div>
- );
+                  {/* Circular Launcher Icon */}
+                  <div
+                    className="h-12 w-12 radius-full flex items-center justify-center text-white shadow-lg cursor-pointer hover:scale-105 transition-transform"
+                    style={{
+                      backgroundColor: theme.primaryColor,
+                      boxShadow: `0 4px 20px ${theme.primaryColor}50`,
+                    }}
+                  >
+                    <MessageSquare className="h-6 w-6" />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
