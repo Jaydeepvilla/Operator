@@ -11,7 +11,7 @@ import { promptService } from "./prompt";
 import { escalationService } from "./escalation";
 import { scoringService } from "./scoring";
 import { memoryService } from "./memory";
-import { llmRegistry } from "./llm";
+import { llmRegistry, setLLMFallbackListener } from "./llm";
 import { db } from "../db";
 import { 
   conversationEvents, 
@@ -90,6 +90,16 @@ export const orchestratorService = {
     const org = await organizationRepository.getById(organizationId);
     const timezone = org?.timezone || "UTC";
 
+    // LEARNING SIGNAL: Wire up LLM fallback tracking for this request
+    setLLMFallbackListener((signal) => {
+      db.insert(conversationEvents).values({
+        organizationId,
+        conversationId: input.conversationId || "unknown",
+        eventType: "llm_fallback",
+        payload: signal,
+      }).catch(() => {}); // Non-blocking
+    });
+
     // 1. Resolve or Create Conversation
     const conversationId = input.conversationId;
     let conversation = conversationId ? await conversationsRepository.findById(conversationId) : null;
@@ -154,6 +164,20 @@ export const orchestratorService = {
       eventType: "intent_detected",
       payload: { intent: intentResult.intent, confidence: intentResult.confidence },
     });
+
+    // LEARNING SIGNAL: Low confidence intent — potential gap in intent model
+    if (intentResult.confidence < 0.6) {
+      await db.insert(conversationEvents).values({
+        organizationId,
+        conversationId: activeConversationId,
+        eventType: "low_confidence_intent",
+        payload: {
+          intent: intentResult.intent,
+          confidence: intentResult.confidence,
+          userMessage: userMessage.substring(0, 200),
+        },
+      }).catch(() => {}); // Non-blocking
+    }
 
     // 5. Check for emergencies or human escalation triggers
     // NOTE: Only escalate on explicit emergency or human request — NOT on generic 'help' words.
@@ -693,6 +717,18 @@ export const orchestratorService = {
     // HALLUCINATION GUARD: If no knowledge context was found, return a safe fallback
     // instead of letting the LLM fabricate answers from its training data.
     if (!ragContextResult.contextText || ragContextResult.contextText.trim().length === 0) {
+      // LEARNING SIGNAL: RAG empty result — knowledge gap detected
+      await db.insert(conversationEvents).values({
+        organizationId,
+        conversationId: activeConversationId,
+        eventType: "rag_empty_result",
+        payload: {
+          userMessage: userMessage.substring(0, 300),
+          intent: intentResult.intent,
+          confidence: intentResult.confidence,
+        },
+      }).catch(() => {}); // Non-blocking
+
       const fallbackResponse = "I don't have specific information about that in my knowledge base. I'd be happy to connect you with our team who can answer in detail. Would you like me to collect your contact information for a callback?";
       await messagesRepository.create({
         organizationId,

@@ -3374,3 +3374,92 @@ export const appointmentWaitlistRelations = relations(appointmentWaitlist, ({ on
   }),
 }));
 
+// ============================================================
+// SELF-IMPROVING AI ENGINE TABLES
+// ============================================================
+
+export const signalCategoryEnum = pgEnum("signal_category", [
+  "knowledge_gap",
+  "intent_gap",
+  "quality_degradation",
+  "ux_friction",
+  "conversion_drop",
+  "escalation_pattern",
+]);
+
+export const proposalStatusEnum = pgEnum("proposal_status", [
+  "pending",
+  "approved",
+  "rejected",
+  "applied",
+  "rolled_back",
+]);
+
+export const proposalSafetyEnum = pgEnum("proposal_safety", [
+  "auto_safe",
+  "review_required",
+]);
+
+export const aiLearningSignals = pgTable("ai_learning_signals", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id")
+    .references(() => organizations.id, { onDelete: "cascade" })
+    .notNull(),
+  signalCategory: text("signal_category").notNull(), // knowledge_gap, intent_gap, quality_degradation, etc.
+  signalType: text("signal_type").notNull(), // specific sub-type: rag_empty, low_confidence, llm_fallback, etc.
+  frequency: integer("frequency").default(1).notNull(), // how many times this signal occurred in the window
+  samplePayloads: jsonb("sample_payloads").default([]).notNull(), // up to 5 representative payloads
+  aggregationWindow: text("aggregation_window").notNull(), // e.g. "2026-09-27_00-06"
+  severity: text("severity").default("low").notNull(), // low, medium, high, critical
+  metadata: jsonb("metadata").default({}).notNull(),
+  processedAt: timestamp("processed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_learning_signals_org_category").on(table.organizationId, table.signalCategory),
+  index("idx_learning_signals_window").on(table.aggregationWindow),
+]);
+
+export const aiImprovementProposals = pgTable("ai_improvement_proposals", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id")
+    .references(() => organizations.id, { onDelete: "cascade" })
+    .notNull(),
+  signalId: uuid("signal_id")
+    .references(() => aiLearningSignals.id, { onDelete: "set null" }),
+  proposalType: text("proposal_type").notNull(), // faq_addition, intent_keyword, prompt_refinement, ux_alert
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  safetyLevel: text("safety_level").default("review_required").notNull(), // auto_safe, review_required
+  status: text("status").default("pending").notNull(), // pending, approved, rejected, applied, rolled_back
+  proposedChanges: jsonb("proposed_changes").default({}).notNull(), // structured diff of what to change
+  impactEstimate: jsonb("impact_estimate").default({}).notNull(), // { affectedConversations: N, severity: "medium" }
+  appliedAt: timestamp("applied_at"),
+  appliedBy: text("applied_by"), // "auto" or userId
+  rollbackData: jsonb("rollback_data"), // data needed to undo the change
+  reviewedBy: text("reviewed_by"),
+  reviewNotes: text("review_notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_proposals_org_status").on(table.organizationId, table.status),
+  index("idx_proposals_safety").on(table.safetyLevel),
+]);
+
+export const aiLearningSignalsRelations = relations(aiLearningSignals, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [aiLearningSignals.organizationId],
+    references: [organizations.id],
+  }),
+  proposals: many(aiImprovementProposals),
+}));
+
+export const aiImprovementProposalsRelations = relations(aiImprovementProposals, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [aiImprovementProposals.organizationId],
+    references: [organizations.id],
+  }),
+  signal: one(aiLearningSignals, {
+    fields: [aiImprovementProposals.signalId],
+    references: [aiLearningSignals.id],
+  }),
+}));

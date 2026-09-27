@@ -1,3 +1,24 @@
+// Learning signal callback type for LLM fallback tracking
+export type LLMFallbackCallback = (signal: {
+  fromProvider: string;
+  toProvider: string;
+  reason: string;
+  userMessage?: string;
+}) => void;
+
+// Global fallback signal listener (set by orchestrator per-request)
+let _fallbackListener: LLMFallbackCallback | null = null;
+
+export function setLLMFallbackListener(cb: LLMFallbackCallback | null) {
+  _fallbackListener = cb;
+}
+
+function emitFallbackSignal(from: string, to: string, reason: string) {
+  if (_fallbackListener) {
+    try { _fallbackListener({ fromProvider: from, toProvider: to, reason }); } catch {}
+  }
+}
+
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
   content: string;
@@ -84,12 +105,15 @@ export class OpenAIProvider implements LLMProvider {
         const errMsg = errData.error?.message || `HTTP ${response.status}`;
         console.warn(`[OpenAIProvider] Remote API notice (${errMsg}). Engaging smart semantic fallback.`);
 
+        emitFallbackSignal("openai", "gemini", errMsg);
+
         if (process.env.GEMINI_API_KEY) {
           try {
             const gemini = new GeminiProvider(process.env.GEMINI_API_KEY);
             return await gemini.generateCompletion(messages, options);
           } catch (geminiErr) {
             console.warn("[GeminiProvider] Fallback also unavailable:", geminiErr);
+            emitFallbackSignal("gemini", "deterministic", String(geminiErr));
           }
         }
 
@@ -115,6 +139,7 @@ export class OpenAIProvider implements LLMProvider {
       };
     } catch (error: any) {
       console.warn("[OpenAIProvider] Network/Quota error, engaging resilient fallback:", error.message);
+      emitFallbackSignal("openai", "deterministic", error.message);
       const userMsg = messages.find((m) => m.role === "user")?.content || "";
       const systemPrompt = messages.find((m) => m.role === "system")?.content || "";
       return {
@@ -178,6 +203,7 @@ export class GeminiProvider implements LLMProvider {
       };
     } catch (error: any) {
       console.warn("[GeminiProvider] Error generating completion:", error);
+      emitFallbackSignal("gemini", "deterministic", String(error));
       const userMsg = messages.find((m) => m.role === "user")?.content || "";
       const systemPrompt = messages.find((m) => m.role === "system")?.content || "";
       return {

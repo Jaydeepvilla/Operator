@@ -71,6 +71,13 @@
       "when": 1788361490569,
       "tag": "0009_overconfident_fixer",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790532998708,
+      "tag": "0010_learning-engine-tables",
+      "breakpoints": true
     }
   ]
 }
