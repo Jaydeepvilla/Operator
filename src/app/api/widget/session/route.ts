@@ -4,13 +4,23 @@ import { leadsRepository } from "@/server/repositories/leads";
 import { widgetRepository } from "@/server/repositories/widget";
 import { messagesRepository } from "@/server/repositories/messages";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { orgId, conversationId, deviceInfo } = body;
 
     if (!orgId) {
-      return NextResponse.json({ error: "Missing organization identifier" }, { status: 400 });
+      return NextResponse.json({ error: "Missing organization identifier" }, { status: 400, headers: corsHeaders });
     }
 
     // 1. Recover Session if conversationId is provided
@@ -37,7 +47,7 @@ export async function POST(req: NextRequest) {
           sessionId: session.id,
           conversationId,
           messages
-        });
+        }, { headers: corsHeaders });
       }
     }
 
@@ -75,8 +85,8 @@ export async function POST(req: NextRequest) {
       sessionId: session.id,
       conversationId: conversation.id,
       messages: [welcomeMessage]
-    });
+    }, { headers: corsHeaders });
   } catch (error: any) {
-    return NextResponse.json({ error: error?.message || "Failed to manage session" }, { status: 500 });
+    return NextResponse.json({ error: error?.message || "Failed to manage session" }, { status: 500, headers: corsHeaders });
   }
 }

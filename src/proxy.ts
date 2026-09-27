@@ -89,9 +89,21 @@ export function proxy(request: NextRequest) {
       return response;
     }
 
-    if (pathname.startsWith("/widget-frame") || pathname.startsWith("/widget.js")) {
+    if (pathname.startsWith("/api/widget") || pathname.startsWith("/widget-frame") || pathname.startsWith("/widget.js")) {
+      if (request.method === "OPTIONS") {
+        return new NextResponse(null, {
+          status: 204,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          },
+        });
+      }
       const response = NextResponse.next();
       response.headers.set("Access-Control-Allow-Origin", "*");
+      response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+      response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
       return response;
     }
 
