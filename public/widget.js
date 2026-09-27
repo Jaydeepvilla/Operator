@@ -40,14 +40,19 @@
       localStorage.getItem('nexx_widget_conv_id_' + orgId) ||
       '';
 
-    // Create stylesheet for basic transition animations
+    // Create stylesheet for 2026 dimensional animations & mobile responsiveness
     var style = document.createElement('style');
     style.innerHTML =
-      '.operator-widget-container, .nexx-widget-container { position: fixed; z-index: 999999; font-family: system-ui, sans-serif; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }' +
-      '.operator-widget-launcher, .nexx-widget-launcher { cursor: pointer; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease; }' +
-      '.operator-widget-launcher:hover, .nexx-widget-launcher:hover { transform: scale(1.06); }' +
-      '.operator-widget-frame-container, .nexx-widget-frame-container { overflow: hidden; opacity: 0; pointer-events: none; transform: translateY(20px); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); border: 1px solid ' + settings.theme.borderColor + '; background: ' + settings.theme.backgroundColor + '; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }' +
-      '.operator-widget-frame-container.open, .nexx-widget-frame-container.open { opacity: 1; pointer-events: auto; transform: translateY(0); }';
+      '.operator-widget-container, .nexx-widget-container { position: fixed; z-index: 999999; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); }' +
+      '.operator-widget-launcher, .nexx-widget-launcher { cursor: pointer; border-radius: 9999px; box-shadow: 0 12px 28px -4px rgba(0,0,0,0.28), 0 8px 12px -6px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); }' +
+      '.operator-widget-launcher:hover, .nexx-widget-launcher:hover { transform: scale(1.08) translateY(-2px); box-shadow: 0 18px 36px -4px rgba(0,0,0,0.35); }' +
+      '.operator-widget-launcher:active, .nexx-widget-launcher:active { transform: scale(0.95); }' +
+      '.operator-widget-frame-container, .nexx-widget-frame-container { overflow: hidden; opacity: 0; pointer-events: none; transform: translateY(24px) scale(0.96); transform-origin: bottom right; border-radius: 18px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.08); background: ' + (settings.theme.backgroundColor || '#090a0f') + '; transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease; }' +
+      '.operator-widget-frame-container.open, .nexx-widget-frame-container.open { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }' +
+      '@media (max-width: 480px) {' +
+      '  .operator-widget-container { bottom: 0 !important; right: 0 !important; left: 0 !important; }' +
+      '  .operator-widget-frame-container { width: 100vw !important; height: 100dvh !important; bottom: 0 !important; border-radius: 0 !important; max-width: 100% !important; max-height: 100dvh !important; }' +
+      '}';
     document.head.appendChild(style);
 
     // Create Container
@@ -89,15 +94,18 @@
     container.appendChild(frameContainer);
 
     // Launcher Design SVG
-    var launcherSize = settings.launcher.size === 'small' ? 50 : (settings.launcher.size === 'large' ? 64 : 56);
+    var launcherSize = settings.launcher.size === 'small' ? 52 : (settings.launcher.size === 'large' ? 68 : 60);
     var launcher = document.createElement('div');
     launcher.className = 'operator-widget-launcher';
     launcher.style.width = launcherSize + 'px';
     launcher.style.height = launcherSize + 'px';
-    launcher.style.backgroundColor = settings.theme.primaryColor;
+    launcher.style.backgroundColor = settings.theme.primaryColor || '#7a5af8';
     launcher.innerHTML =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="' + settings.theme.textColor + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-      '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>' +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>' +
+      '<circle cx="9" cy="12" r="1" fill="#ffffff" stroke="none" />' +
+      '<circle cx="12" cy="12" r="1" fill="#ffffff" stroke="none" />' +
+      '<circle cx="15" cy="12" r="1" fill="#ffffff" stroke="none" />' +
       '</svg>';
     container.appendChild(launcher);
 
@@ -107,7 +115,7 @@
       if (isOpen) {
         frameContainer.className = 'operator-widget-frame-container open';
         launcher.innerHTML =
-          '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="' + settings.theme.textColor + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+          '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
           '<line x1="18" y1="6" x2="6" y2="18"></line>' +
           '<line x1="6" y1="6" x2="18" y2="18"></line>' +
           '</svg>';
@@ -116,8 +124,11 @@
       } else {
         frameContainer.className = 'operator-widget-frame-container';
         launcher.innerHTML =
-          '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="' + settings.theme.textColor + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-          '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>' +
+          '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+          '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>' +
+          '<circle cx="9" cy="12" r="1" fill="#ffffff" stroke="none" />' +
+          '<circle cx="12" cy="12" r="1" fill="#ffffff" stroke="none" />' +
+          '<circle cx="15" cy="12" r="1" fill="#ffffff" stroke="none" />' +
           '</svg>';
       }
     }
