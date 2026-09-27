@@ -89,7 +89,15 @@ export const NAVIGATION_REGISTRY: NavigationSearchEntry[] = [
     description: "Connect WhatsApp Business, Twilio SMS, Instagram, and Web Chat",
     href: APP_ROUTES.channels,
     badge: "Integrations",
-    keywords: ["channels", "whatsapp", "twilio", "sms", "instagram", "web chat", "widget"],
+    keywords: ["channels", "whatsapp", "twilio", "sms", "instagram", "web chat"],
+  },
+  {
+    id: "nav_widget",
+    title: "Website Chat Widget",
+    description: "Customize bubble styling, embed snippet, and test live chat & call widget",
+    href: APP_ROUTES.widget,
+    badge: "Widget",
+    keywords: ["widget", "embed", "chat widget", "website widget", "script", "bubble", "webchat", "snippet"],
   },
   {
     id: "nav_analytics",

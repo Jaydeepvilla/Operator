@@ -40,6 +40,7 @@ const CUSTOMERS_LINKS = [
 ];
 
 const AI_LINKS = [
+  { href: "/widget", icon: "MessageSquare" as const, label: "Website Widget" },
   { href: "/channels", icon: "Radio" as const, label: "Channels" },
   { href: "/voice/dashboard", icon: "PhoneCall" as const, label: "Voice" },
   { href: "/kb", icon: "BookOpen" as const, label: "Knowledge" },
