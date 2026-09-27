@@ -1,6 +1,7 @@
 import { useState } from "react";
+import Link from "next/link";
 import { DailyBriefData, TimeRange } from "@/lib/dashboard-engine/daily-brief";
-import { RefreshCw, Play, Sparkles, Radio, Zap, Clock } from "lucide-react";
+import { RefreshCw, Play, Sparkles, Radio, Zap, Clock, MessageSquare, Phone, ArrowUpRight } from "lucide-react";
 import { cn } from "@/components/shared/utils";
 import {
   DropdownMenu,
@@ -17,8 +18,6 @@ interface DailyBriefWidgetProps {
   onRefresh?: () => void;
   isRefreshing?: boolean;
   lastUpdatedText?: string;
-  onSimulate?: (type: "conversation" | "booking") => void;
-  isSimulating?: boolean;
 }
 
 function formatTimeSaved(minutes: number): string {
@@ -38,8 +37,6 @@ export function DailyBriefWidget({
   onRefresh,
   isRefreshing = false,
   lastUpdatedText = "Just now",
-  onSimulate,
-  isSimulating = false,
 }: DailyBriefWidgetProps) {
   const hour = new Date().getHours();
   const greeting =
@@ -152,51 +149,58 @@ export function DailyBriefWidget({
             </button>
 
             {/* Quick Test AI Button */}
-            {onSimulate && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    disabled={isSimulating}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-[12px] font-bold hover:bg-primary/90 transition-all shadow-sm shadow-primary/20 cursor-pointer disabled:opacity-50"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>{isSimulating ? "Simulating..." : "Test AI Call/Chat"}</span>
-                  </button>
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent
-                  align="end"
-                  sideOffset={8}
-                  className="w-72 rounded-2xl border border-border/80 bg-popover text-popover-foreground p-2 shadow-2xl backdrop-blur-xl z-50 animate-in fade-in zoom-in-95"
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-[12px] font-bold hover:bg-primary/90 transition-all shadow-sm shadow-primary/20 cursor-pointer"
                 >
-                  <div className="px-3 py-1.5 mb-1 border-b border-border/40">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Interactive AI Testing
-                    </span>
-                  </div>
-                  <DropdownMenuItem
-                    onClick={() => onSimulate("conversation")}
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Test AI Call/Chat</span>
+                </button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent
+                align="end"
+                sideOffset={8}
+                className="w-72 rounded-2xl border border-border/80 bg-popover text-popover-foreground p-2 shadow-2xl backdrop-blur-xl z-50 animate-in fade-in zoom-in-95"
+              >
+                <div className="px-3 py-1.5 mb-1 border-b border-border/40">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Live Receptionist Testing
+                  </span>
+                </div>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/widget"
                     className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-accent/80 text-[12px] font-medium text-foreground flex items-center justify-between transition-colors cursor-pointer focus:bg-accent/80"
                   >
                     <div className="flex items-center gap-2">
-                      <Zap className="w-3.5 h-3.5 text-primary shrink-0" />
-                      <span className="font-semibold">Simulate Customer Inquiry</span>
+                      <MessageSquare className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <div>
+                        <p className="font-semibold text-[12px]">Test Web Chatbot</p>
+                        <p className="text-[10px] text-muted-foreground font-normal">Live chat with your business knowledge</p>
+                      </div>
                     </div>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-mono">Chat</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onSimulate("booking")}
+                    <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/settings/voice"
                     className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-accent/80 text-[12px] font-medium text-foreground flex items-center justify-between transition-colors cursor-pointer focus:bg-accent/80"
                   >
                     <div className="flex items-center gap-2">
-                      <Play className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span className="font-semibold">Simulate Confirmed Booking</span>
+                      <Phone className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      <div>
+                        <p className="font-semibold text-[12px]">Test Phone Voice</p>
+                        <p className="text-[10px] text-muted-foreground font-normal">Voice speed, agent prompt & test dial</p>
+                      </div>
                     </div>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono">Book</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                    <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 

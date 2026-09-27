@@ -310,7 +310,7 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
     // 7. Initialize Settings and Custom/Scraped Services cleanly
     try {
       const template = INDUSTRY_TEMPLATES[industry];
-      const desc = template?.description || `${name} - Professional Front Desk & Automated Receptionist`;
+      const desc = `${name} — Professional Front Desk & Automated Receptionist`;
 
       await profileRepository.create({
         organizationId: organization.id,
@@ -350,6 +350,12 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
           if (fetchRes.ok && fetchRes.html) {
             const extracted = ContentExtractor.extract(fetchRes.html, website);
             if (extracted.content && extracted.content.trim().length > 30) {
+              if (extracted.description && extracted.description.trim().length > 10) {
+                await profileRepository.update(organization.id, {
+                  description: extracted.description.trim(),
+                });
+              }
+
               let source = await sourcesRepository.getByType(organization.id, "website");
               if (!source) {
                 source = await sourcesRepository.create({

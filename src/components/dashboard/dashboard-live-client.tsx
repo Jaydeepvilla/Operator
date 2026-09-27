@@ -24,7 +24,6 @@ export function DashboardLiveClient({
   const [snapshot, setSnapshot] = React.useState<OutcomeDashboardSnapshot>(initialSnapshot);
   const [range, setRange] = React.useState<TimeRange>("today");
   const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const [isSimulating, setIsSimulating] = React.useState(false);
   const [lastUpdated, setLastUpdated] = React.useState<Date>(new Date());
   const [relativeTime, setRelativeTime] = React.useState("Just now");
 
@@ -60,26 +59,6 @@ export function DashboardLiveClient({
   // Manual refresh
   const handleManualRefresh = () => {
     fetchMetrics(range, true);
-  };
-
-  // Simulation handler: test a call or booking directly in live environment
-  const handleSimulate = async (type: "conversation" | "booking") => {
-    setIsSimulating(true);
-    try {
-      const res = await fetch("/api/dashboard/simulate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type }),
-      });
-      if (res.ok) {
-        // Immediate refresh to display new activity and numbers
-        await fetchMetrics(range, false);
-      }
-    } catch (e) {
-      console.error("[DashboardLive] Simulation failed:", e);
-    } finally {
-      setIsSimulating(false);
-    }
   };
 
   // Background real-time polling every 15 seconds
@@ -121,8 +100,6 @@ export function DashboardLiveClient({
             onRefresh={handleManualRefresh}
             isRefreshing={isRefreshing}
             lastUpdatedText={relativeTime}
-            onSimulate={handleSimulate}
-            isSimulating={isSimulating}
           />
         </ScrollReveal>
 

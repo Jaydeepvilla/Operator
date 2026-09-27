@@ -118,11 +118,7 @@ function buildGeneratedData(input: string, detectedIndustry: string): GeneratedD
  phone: "",
  address: "",
  website,
- services: [
- { name: "General Consultation", duration: 30, accepted: true },
- { name: "Follow-up Appointment", duration: 15, accepted: true },
- { name: "Initial Assessment", duration: 60, accepted: true },
- ],
+ services: [],
  hours: "Mon–Fri 9:00 AM – 5:00 PM",
  greeting: `Hi, thank you for contacting ${businessName}. I'm Operator, your automated assistant. How can I help you today?`,
  };
@@ -374,10 +370,7 @@ function ScreenGenerating({
  services:
  scrapedData.services && scrapedData.services.length > 0
  ? scrapedData.services
- : [
- { name: "General Consultation", duration: 30, accepted: true },
- { name: "Follow-up Appointment", duration: 15, accepted: true },
- ],
+ : [],
  hours: "Mon–Fri 9:00 AM – 5:00 PM",
  greeting: `Hi, thank you for contacting ${scrapedData.businessName || "us"}. I'm Operator, your automated assistant. How can I help you today?`,
  });
@@ -768,6 +761,14 @@ function ScreenVerify({
  <p className="text-body-sm text-muted-foreground">
  These services were detected from your website. Toggle off any you don't offer.
  </p>
+ {services.length === 0 ? (
+ <div className="py-6 px-4 text-center border border-dashed border-border/80 rounded-xl bg-muted/10 space-y-1.5">
+ <p className="text-body-sm font-semibold text-foreground">No services detected from website</p>
+ <p className="text-caption text-muted-foreground max-w-sm mx-auto">
+ Add your services below to enable automated booking, or configure them later in Services settings.
+ </p>
+ </div>
+ ) : (
  <div className="space-y-space-2">
  {services.map((svc, idx) => (
  <div
@@ -809,6 +810,7 @@ function ScreenVerify({
  </div>
  ))}
  </div>
+ )}
 
  {isAddingService ? (
  <div className="p-space-4 rounded-xl border-primary/30 bg-primary/5 space-y-space-3 animate-fade-up">
@@ -1097,10 +1099,7 @@ export function OnboardingWizard({
  phone: "",
  address: "",
  website: "",
- services: [
- { name: "General Consultation", duration: 30, accepted: true },
- { name: "Follow-up Appointment", duration: 15, accepted: true },
- ],
+ services: [],
  hours: "Mon–Fri 9:00 AM – 5:00 PM",
  greeting: `Hi, thank you for contacting ${initialOrg.name}. I'm Operator, your automated assistant. How can I help you today?`,
  }
