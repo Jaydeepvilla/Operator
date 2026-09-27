@@ -10,9 +10,13 @@ import { eq, and } from "drizzle-orm";
 import { verificationEngine } from "../services/verification/engine";
 import { settingsRepository } from "../repositories/settings";
 
-export async function getServicesAction() {
+export async function getServicesAction(overrideOrgId?: string) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    let organizationId = overrideOrgId;
+    if (!organizationId) {
+      const authResult = await requireOrganizationAccess();
+      organizationId = authResult.organizationId;
+    }
     const list = await servicesRepository.list(organizationId);
     const categories = await servicesRepository.listCategories(organizationId);
     return { success: true, services: list, categories };

@@ -9,9 +9,14 @@ export async function getAvailableSlotsAction(data: {
   serviceId: string;
   dateStr: string; // YYYY-MM-DD
   staffMemberId?: string;
+  organizationId?: string;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    let organizationId = data.organizationId;
+    if (!organizationId) {
+      const authResult = await requireOrganizationAccess();
+      organizationId = authResult.organizationId;
+    }
     
     if (!data.serviceId || !data.dateStr) {
       throw new Error("Service ID and target date are required.");

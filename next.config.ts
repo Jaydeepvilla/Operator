@@ -49,9 +49,41 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Apply security headers to all routes
-        source: "/(.*)",
+        // Apply security headers to all routes except widget iframe
+        source: "/((?!widget-frame|widget\\.js).*)",
         headers: securityHeaders,
+      },
+      {
+        // Embed-safe headers for widget iframe to allow external embedding on client sites
+        source: "/widget-frame",
+        headers: [
+          {
+            key: "Access-Control-Allow-Origin",
+            value: "*",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors *",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+        ],
+      },
+      {
+        // Headers for widget script loader
+        source: "/widget.js",
+        headers: [
+          {
+            key: "Access-Control-Allow-Origin",
+            value: "*",
+          },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=3600, stale-while-revalidate=86400",
+          },
+        ],
       },
     ];
   },

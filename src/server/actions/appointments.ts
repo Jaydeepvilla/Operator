@@ -110,9 +110,14 @@ export async function createAppointmentAction(data: {
   customerName: string;
   customerEmail?: string | null;
   customerPhone?: string | null;
+  organizationId?: string;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    let organizationId = data.organizationId;
+    if (!organizationId) {
+      const authResult = await requireOrganizationAccess();
+      organizationId = authResult.organizationId;
+    }
     const org = await organizationRepository.getById(organizationId);
     const timezone = org?.timezone || "UTC";
 

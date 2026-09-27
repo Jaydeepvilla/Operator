@@ -7,9 +7,13 @@ import { db } from "../db";
 import { staffMembers, serviceAssignments, staffSchedules, staffAvailability, services } from "../db/schema";
 import { staffRepository } from "../repositories/staff";
 
-export async function getStaffListAction() {
+export async function getStaffListAction(overrideOrgId?: string) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    let organizationId = overrideOrgId;
+    if (!organizationId) {
+      const authResult = await requireOrganizationAccess();
+      organizationId = authResult.organizationId;
+    }
     const list = await staffRepository.list(organizationId);
     
     // Enrich with schedules & assignments summary

@@ -26,6 +26,8 @@ const PUBLIC_PATHS = [
   "/email-verified",
   "/session-expired",
   "/account-locked",
+  "/widget-frame",
+  "/widget.js",
   "/api/health",
   // Auth API routes used before login (e.g. email availability check during sign-up,
   // session lookup for the client AuthProvider, and the logout endpoint)
@@ -43,6 +45,8 @@ function isPublicRoute(pathname: string): boolean {
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/webhooks") ||
     pathname.startsWith("/api/widget") ||
+    pathname.startsWith("/widget-frame") ||
+    pathname.startsWith("/widget.js") ||
     pathname.startsWith("/_next") ||
     pathname.includes(".")
   ) {
@@ -82,6 +86,12 @@ export function proxy(request: NextRequest) {
       response.cookies.delete("session_token");
       response.cookies.delete("refresh_token");
       response.cookies.delete("active_org_id");
+      return response;
+    }
+
+    if (pathname.startsWith("/widget-frame") || pathname.startsWith("/widget.js")) {
+      const response = NextResponse.next();
+      response.headers.set("Access-Control-Allow-Origin", "*");
       return response;
     }
 

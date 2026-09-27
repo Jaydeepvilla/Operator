@@ -198,7 +198,7 @@ function WidgetFrameContent() {
         }
       ]);
       // Fetch services immediately
-      getServicesAction().then((res) => {
+      getServicesAction(orgId).then((res) => {
         if (res.success && res.services) {
           setServices(res.services);
         }
@@ -220,7 +220,7 @@ function WidgetFrameContent() {
   // 6. Inline Scheduler Flow Handler
   const handleSelectService = (service: any) => {
     setSelectedService(service);
-    getStaffListAction().then((res) => {
+    getStaffListAction(orgId).then((res) => {
       if (res.success && res.staff) {
         setStaff(res.staff);
       }
@@ -239,7 +239,8 @@ function WidgetFrameContent() {
       getAvailableSlotsAction({
         serviceId: selectedService.id,
         dateStr: bookingDate,
-        staffMemberId: selectedStaff?.id || null
+        staffMemberId: selectedStaff?.id || null,
+        organizationId: orgId
       }).then((res) => {
         if (res.success && res.slots) {
           setAvailableSlots(res.slots);
@@ -249,7 +250,7 @@ function WidgetFrameContent() {
         setLoadingSlots(false);
       });
     }
-  }, [bookingDate, bookingStep, selectedService, selectedStaff]);
+  }, [bookingDate, bookingStep, selectedService, selectedStaff, orgId]);
 
   const handleBookAppointment = async () => {
     if (!selectedService || !selectedSlot || !custName || !orgId) return;
@@ -267,7 +268,8 @@ function WidgetFrameContent() {
         startTime: targetDate.toISOString(),
         customerName: custName,
         customerEmail: custEmail || null,
-        customerPhone: custPhone || null
+        customerPhone: custPhone || null,
+        organizationId: orgId
       });
 
       if (res.success && res.appointment) {
