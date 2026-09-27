@@ -1,101 +1,82 @@
 import { db } from "../db";
 import { organizations, businessProfiles, businessSettings, voicePrompts } from "../db/schema";
 import { eq, and } from "drizzle-orm";
+import { BusinessContext, businessContextService } from "./business-context";
 
 export interface PromptInput {
   organizationId: string;
   ragContext?: string;
   nextQuestionText?: string | null;
   isEscalated?: boolean;
+  businessContext?: BusinessContext;
+  conversationState?: {
+    activeEntity?: any;
+    currentIntent?: string;
+    lastAssistantMessage?: string;
+    turnCount?: number;
+  };
 }
 
 export const promptService = {
   async buildSystemPrompt(input: PromptInput): Promise<string> {
-    const { organizationId, ragContext, nextQuestionText, isEscalated } = input;
+    const { organizationId, ragContext, nextQuestionText, isEscalated, conversationState } = input;
 
-    // 1. Fetch Organization metadata
-    let org: any = null;
-    let profile: any = null;
-    let settings: any = null;
+    // Use provided business context or fetch
+    const business = input.businessContext || (await businessContextService.getContext(organizationId));
+
     let customPrompt: any = null;
-
     try {
-      const orgs = await db
+      const customPrompts = await db
         .select()
-        .from(organizations)
-        .where(eq(organizations.id, organizationId));
-      org = orgs[0];
-
-      if (org) {
-        const profiles = await db
-          .select()
-          .from(businessProfiles)
-          .where(eq(businessProfiles.organizationId, organizationId));
-        profile = profiles[0];
-
-        const settingsList = await db
-          .select()
-          .from(businessSettings)
-          .where(eq(businessSettings.organizationId, organizationId));
-        settings = settingsList[0];
-
-        const customPrompts = await db
-          .select()
-          .from(voicePrompts)
-          .where(and(eq(voicePrompts.organizationId, organizationId), eq(voicePrompts.isActive, true)));
-        customPrompt = customPrompts[0];
-      }
+        .from(voicePrompts)
+        .where(and(eq(voicePrompts.organizationId, organizationId), eq(voicePrompts.isActive, true)));
+      customPrompt = customPrompts[0];
     } catch (e: any) {
-      console.warn("[PromptService] DB fallback for metadata:", e.message);
+      console.warn("[PromptService] DB fallback for custom prompt:", e.message);
     }
 
-    if (!org) {
-      org = {
-        name: "My Business",
-        industry: "General Business",
-        timezone: "UTC",
-        website: null,
-        phone: null,
-        address: null,
-      };
-    }
-
-    const businessHoursStr = settings?.businessHours
-      ? JSON.stringify(settings.businessHours, null, 2)
-      : "Standard Business Hours apply.";
-
-    const bookingPrefsStr = settings?.bookingPreferences
-      ? JSON.stringify(settings.bookingPreferences, null, 2)
-      : "Standard booking preferences.";
-
-    // Assemble dynamic system prompt parts
     const promptParts: string[] = [];
 
-    promptParts.push(`You are the official AI receptionist and assistant for "${org.name}" (powered by Operator AI).
-Your identity in conversation is "${org.name}". When greeting customers, introducing yourself, or answering questions, always represent "${org.name}".
-Industry: ${org.industry}
-Timezone: ${org.timezone}
-Website: ${org.website ?? "Not provided"}
-Phone: ${org.phone ?? "Not provided"}
-Address: ${org.address ?? "Not provided"}`);
+    promptParts.push(`You are the official AI receptionist and front desk assistant for "${business.name}" (powered by Operator AI).
+Your identity in conversation is "${business.name}". Always represent "${business.name}".
+Industry: ${business.industry}
+Timezone: ${business.timezone}
+Website: ${business.website ?? "Not provided"}
+Phone: ${business.phone ?? "Not provided"}
+Address: ${business.address ?? "Not provided"}`);
 
-    if (profile?.description) {
+    if (business.description) {
       promptParts.push(`Business Description:
-${profile.description}`);
+${business.description}`);
+    } else {
+      promptParts.push(`Business Description:
+${business.name} is a dedicated local service provider.`);
+    }
+
+    if (business.services && business.services.length > 0) {
+      const servicesList = business.services
+        .map((s) => `- ${s.name}: ${s.description ? s.description + ". " : ""}Duration: ${s.duration} mins. Price: $${s.price}`)
+        .join("\n");
+      promptParts.push(`Available Services:\n${servicesList}`);
+    } else {
+      promptParts.push(`Available Services: No services configured for direct online booking.`);
     }
 
     promptParts.push(`Business Operating Hours:
-${businessHoursStr}`);
+${business.businessHoursFormatted}`);
 
-    promptParts.push(`Booking Preferences:
-${bookingPrefsStr}`);
-
-    if (ragContext) {
+    if (ragContext && ragContext.trim().length > 0) {
       promptParts.push(`Retrieved Reference Knowledge (RAG):
 Use ONLY the facts below to answer customer queries. If the answer is not contained in this knowledge, politely inform the customer you don't have that information and offer to escalate to a human agent. Do not fabricate facts or pricing.
 ---
 ${ragContext}
 ---`);
+    }
+
+    if (conversationState?.activeEntity?.name) {
+      promptParts.push(`ACTIVE TOPIC / ENTITY UNDER DISCUSSION:
+The user is currently inquiring about: ${conversationState.activeEntity.name}.
+If the user asks follow-up questions such as "How much?", "Can I book that?", or "When?", resolve them specifically for ${conversationState.activeEntity.name}.`);
     }
 
     if (isEscalated) {
@@ -107,20 +88,18 @@ Your current goal in the conversation is to collect information from the custome
 At the end of your message, you MUST ask this exact question to proceed with qualification:
 "${nextQuestionText}"
 Do not ask multiple questions at once. Ask only this question.`);
-    } else {
-      promptParts.push(`LEAD QUALIFICATION STATUS: All required qualification questions have been answered.
-You can now help the user check out our services, answer any remaining questions, or guide them through finalizing their booking request.`);
     }
 
-    // Standard Operator AI rules & guidelines
-    promptParts.push(`GENERAL BEHAVIOR RULES:
-1. Maintain a warm, premium, and extremely professional tone.
-2. Be concise. Never send long paragraphs. Keep responses under 3-4 sentences.
-3. Zero emojis. Remain professional and sleek.
-4. NEVER fabricate, invent, or guess any pricing, services, hours, policies, staff names, or facts. If information is not explicitly stated in the Retrieved Reference Knowledge above, say: "I don't have that detail available right now, but our team can help. Would you like me to arrange a callback?"
-5. Do NOT promise specific appointment slots or times unless the system has confirmed availability. Use phrases like "I can check availability for you."
-6. If the user indicates pain, emergency, or explicitly requests a human agent, immediately acknowledge this and state that a human teammate has been flagged to help. Do not use the word "help" appearing in a normal question as an escalation signal.
-7. Speak as the direct assistant for "${org.name}". Never mention outdated legacy brand names (such as "Nexx"). If referring to the underlying platform capabilities, refer to them as "Operator AI".`);
+    // High intelligence conversation rules
+    promptParts.push(`CRITICAL CONVERSATIONAL INTELLIGENCE RULES:
+1. Warm, premium, and concise tone (under 3-4 sentences max). Zero emojis.
+2. NEVER repeat introductory greetings (like "Hello! I am your automated front desk assistant. How may I assist you today?") if the conversation has already started. Answer the user's question directly.
+3. If the user asks "Tell me about your business" or "I want to learn more about your business", explain what "${business.name}" does, mention your services, and offer to help them book or view pricing. Do NOT reply with a generic "How can I help you today?".
+4. If the user asks about services or what you offer, summarize the actual services listed above.
+5. If the user asks "How much?", quote the actual price from the catalog for the service discussed.
+6. If the user asks about hours or opening times, refer to the Operating Hours section above.
+7. NEVER invent services, prices, or policies that are not listed in this prompt. If unknown, say: "I don't have that specific information configured yet, but our team can help. Would you like me to connect you?"
+8. Speak as "${business.name}". Never mention outdated legacy brand names.`);
 
     if (customPrompt?.promptText) {
       promptParts.push(`CUSTOM BEHAVIOR GUIDELINES:

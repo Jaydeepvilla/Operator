@@ -25,7 +25,7 @@ function isOverviewOrBookingQuery(query: string): boolean {
   if (q.length === 0) return true;
   return (
     /^(hi|hello|hey|greetings|good\s+(morning|afternoon|evening)|help|start|menu)\b/i.test(q) ||
-    /(services?|offer|pricing|cost|prices?|appointment|book|schedule|consultation|hours|location|about|contact)/i.test(q)
+    /(services?|offer|pricing|cost|prices?|appointment|book|schedule|consultation|hours|location|about|contact|business|who\s+are\s+you|what\s+do\s+you\s+do|tell\s+me|learn\s+more)/i.test(q)
   );
 }
 

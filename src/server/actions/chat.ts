@@ -9,6 +9,7 @@ export async function sendMessageAction(data: {
   conversationId?: string;
   message: string;
   metadata?: Record<string, any>;
+  clientMessageId?: string;
 }) {
   try {
     if (!data.organizationId) {
@@ -23,6 +24,7 @@ export async function sendMessageAction(data: {
       conversationId: data.conversationId,
       userMessage: data.message,
       metadata: data.metadata,
+      clientMessageId: data.clientMessageId,
     });
 
     return {

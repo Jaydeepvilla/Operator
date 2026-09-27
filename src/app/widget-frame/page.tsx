@@ -16,7 +16,7 @@ import { WidgetHeader } from "./components/WidgetHeader";
 import { WidgetWelcome } from "./components/WidgetWelcome";
 import { WidgetServiceCards } from "./components/WidgetServiceCards";
 import { WidgetScheduler } from "./components/WidgetScheduler";
-import { WidgetQuickActions } from "./components/WidgetQuickActions";
+import { WidgetQuickActions, DynamicActionItem } from "./components/WidgetQuickActions";
 import { WidgetInputBar } from "./components/WidgetInputBar";
 import { OperatorAvatarOrb } from "./components/WidgetIcons3D";
 
@@ -67,6 +67,7 @@ function WidgetFrameContent() {
   // Business Data Cache
   const [services, setServices] = useState<any[]>([]);
   const [staff, setStaff] = useState<any[]>([]);
+  const [dynamicActions, setDynamicActions] = useState<DynamicActionItem[]>([]);
   const [quickActionContext, setQuickActionContext] = useState<"general" | "services" | "booking" | "completed">("general");
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -170,11 +171,14 @@ function WidgetFrameContent() {
       setQuickActionContext("booking");
     }
 
+    const clientMsgId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+
     try {
       const res = await sendMessageAction({
         organizationId: orgId,
         conversationId: conversationId || undefined,
         message: text,
+        clientMessageId: clientMsgId,
       });
 
       if (res.success && res.data) {
@@ -190,6 +194,10 @@ function WidgetFrameContent() {
             createdAt: new Date(),
           },
         ]);
+
+        if (res.data.actions && res.data.actions.length > 0) {
+          setDynamicActions(res.data.actions);
+        }
 
         if (res.data.isEscalated) {
           postToParent({ type: OPERATOR_WIDGET_EVENTS.ESCALATED });
@@ -223,16 +231,44 @@ function WidgetFrameContent() {
     }
   };
 
-  // 5. Intent and Quick Action Dispatcher
-  const handleActionDispatch = (actionType: string, customText?: string) => {
-    switch (actionType) {
+  // 5. Dynamic Action Dispatcher
+  const handleActionDispatch = (action: DynamicActionItem) => {
+    if (action.type === "booking" || action.id === "BOOK_APPOINTMENT" || action.id === "BOOK_SERVICE") {
+      if (action.payload?.serviceId) {
+        const found = services.find((s) => s.id === action.payload.serviceId);
+        setSelectedServiceForBooking(found || null);
+      } else {
+        setSelectedServiceForBooking(null);
+      }
+      setActiveInlineView("scheduler");
+      return;
+    }
+
+    if (action.type === "view" || action.id === "VIEW_SERVICES") {
+      setActiveInlineView("services");
+      return;
+    }
+
+    if (action.type === "escalate" || action.id === "SPEAK_WITH_HUMAN") {
+      handleSendMessage("I'd like to speak with a staff member or manager.");
+      return;
+    }
+
+    if (action.payload?.text) {
+      handleSendMessage(action.payload.text);
+    } else if (action.label) {
+      handleSendMessage(action.label);
+    }
+  };
+
+  const handleWelcomeIntent = (intent: "book" | "services" | "pricing" | "hours" | "question", text?: string) => {
+    switch (intent) {
       case "book":
         setSelectedServiceForBooking(null);
         setActiveInlineView("scheduler");
         break;
       case "services":
         setActiveInlineView("services");
-        setQuickActionContext("services");
         break;
       case "pricing":
         handleSendMessage("What are your service prices and fees?");
@@ -240,17 +276,11 @@ function WidgetFrameContent() {
       case "hours":
         handleSendMessage("What are your business hours?");
         break;
-      case "location":
-        handleSendMessage("Where are you located?");
-        break;
-      case "human":
-        handleSendMessage("I'd like to speak with a staff member or manager.");
-        break;
       case "question":
-        if (customText) handleSendMessage(customText);
+        if (text) handleSendMessage(text);
         break;
       default:
-        handleSendMessage(actionType);
+        handleSendMessage(intent);
     }
   };
 
@@ -262,6 +292,7 @@ function WidgetFrameContent() {
     }
     setConversationId("");
     setMessages([]);
+    setDynamicActions([]);
     setActiveInlineView("none");
     setSelectedServiceForBooking(null);
     setQuickActionContext("general");
@@ -377,7 +408,7 @@ function WidgetFrameContent() {
             companyName={settings.branding.companyName}
             welcomeMessage={settings.branding.welcomeMessage}
             starterQuestions={settings.customization?.starterQuestions}
-            onSelectIntent={handleActionDispatch}
+            onSelectIntent={handleWelcomeIntent}
           />
         )}
 
@@ -452,8 +483,10 @@ function WidgetFrameContent() {
 
       {/* 3. Adaptive Context-Aware Action Chips */}
       <WidgetQuickActions
-        context={quickActionContext}
+        dynamicActions={dynamicActions}
         onAction={handleActionDispatch}
+        hasBooking={services.length > 0 && staff.length > 0}
+        hasServices={services.length > 0}
       />
 
       {/* 4. Intelligent Input Dock */}
