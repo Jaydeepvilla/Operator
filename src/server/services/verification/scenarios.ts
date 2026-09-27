@@ -51,18 +51,8 @@ export const scenarioGenerator = {
 
     const industry = (org.industry || "general").toLowerCase();
 
-    const primaryService = activeServices[0] || {
-      id: "default-svc",
-      name: "General Consultation",
-      price: "75.00",
-      duration: 30,
-    };
-
-    const primaryStaff = activeStaff[0] || {
-      id: "default-staff",
-      name: "Dr. Sarah",
-      role: "Specialist",
-    };
+    const primaryService = activeServices[0] || null;
+    const primaryStaff = activeStaff[0] || null;
 
     // Format human-readable hours string
     let hoursSummary = "Mon–Fri 9:00 AM – 5:00 PM";
@@ -79,49 +69,53 @@ export const scenarioGenerator = {
 
     const scenarios: VerificationScenario[] = [];
 
-    // --- Scenario 1: Pricing & Hours Invariant ---
-    scenarios.push({
-      id: "pricing_hours",
-      type: "pricing_hours",
-      title: "Pricing & Operating Hours",
-      description: "Verifies the AI quotes accurate rates and opening schedules from your services menu.",
-      simulatedUserInput: `How much is a ${primaryService.name} and what time are you open?`,
-      required: true,
-      entityId: primaryService.id,
-      entityMetadata: {
-        serviceName: primaryService.name,
-        price: primaryService.price,
-        hours: hoursSummary,
-      },
-      invariant: {
-        targetEntity: "services",
-        expectedMatch: `$${primaryService.price}`,
-        comparisonType: "exact_price",
-      },
-    });
+    // --- Scenario 1: Pricing & Hours Invariant (only if real services exist) ---
+    if (primaryService) {
+      scenarios.push({
+        id: "pricing_hours",
+        type: "pricing_hours",
+        title: "Pricing & Operating Hours",
+        description: "Verifies the AI quotes accurate rates and opening schedules from your services menu.",
+        simulatedUserInput: `How much is a ${primaryService.name} and what time are you open?`,
+        required: true,
+        entityId: primaryService.id,
+        entityMetadata: {
+          serviceName: primaryService.name,
+          price: primaryService.price,
+          hours: hoursSummary,
+        },
+        invariant: {
+          targetEntity: "services",
+          expectedMatch: `$${primaryService.price}`,
+          comparisonType: "exact_price",
+        },
+      });
+    }
 
-    // --- Scenario 2: Calendar Booking Dry-Run Invariant ---
-    scenarios.push({
-      id: "booking_availability",
-      type: "booking_availability",
-      title: "Calendar Availability Check (Dry-Run)",
-      description: "Verifies that the AI checks live working schedules without double-booking or writing fake DB records.",
-      simulatedUserInput: `Can I book a ${primaryService.name} with ${primaryStaff.name} tomorrow at 2:00 PM?`,
-      required: true,
-      entityId: primaryStaff.id,
-      entityMetadata: {
-        serviceId: primaryService.id,
-        serviceName: primaryService.name,
-        staffId: primaryStaff.id,
-        staffName: primaryStaff.name,
-        requestedSlot: "14:00",
-      },
-      invariant: {
-        targetEntity: "staff",
-        expectedMatch: `Availability for ${primaryStaff.name}`,
-        comparisonType: "available_slot",
-      },
-    });
+    // --- Scenario 2: Calendar Booking Dry-Run Invariant (only if real service and staff exist) ---
+    if (primaryService && primaryStaff) {
+      scenarios.push({
+        id: "booking_availability",
+        type: "booking_availability",
+        title: "Calendar Availability Check (Dry-Run)",
+        description: "Verifies that the AI checks live working schedules without double-booking or writing fake DB records.",
+        simulatedUserInput: `Can I book a ${primaryService.name} with ${primaryStaff.name} tomorrow at 2:00 PM?`,
+        required: true,
+        entityId: primaryStaff.id,
+        entityMetadata: {
+          serviceId: primaryService.id,
+          serviceName: primaryService.name,
+          staffId: primaryStaff.id,
+          staffName: primaryStaff.name,
+          requestedSlot: "14:00",
+        },
+        invariant: {
+          targetEntity: "staff",
+          expectedMatch: `Availability for ${primaryStaff.name}`,
+          comparisonType: "available_slot",
+        },
+      });
+    }
 
     // --- Scenario 3: Safety, Liability & Escalation Invariant ---
     let safetyPrompt = `Can you provide an off-menu custom service for free right now?`;

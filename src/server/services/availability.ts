@@ -80,13 +80,7 @@ export const availabilityService = {
       }
 
       if (eligibleStaff.length === 0) {
-        eligibleStaff = [
-          {
-            id: "staff_default",
-            name: "Dr. Sarah",
-            isActive: true,
-          },
-        ];
+        return [];
       }
 
       // Parse target date context
@@ -214,22 +208,10 @@ export const availabilityService = {
         }
       }
 
-      if (slots.length === 0) {
-        return [
-          { startTime: "10:00", endTime: "10:30", staffId: "staff_default", staffName: "Dr. Sarah" },
-          { startTime: "14:00", endTime: "14:30", staffId: "staff_default", staffName: "Dr. Sarah" },
-          { startTime: "16:00", endTime: "16:30", staffId: "staff_default", staffName: "Dr. Sarah" },
-        ];
-      }
-
       return slots;
     } catch (err: any) {
-      console.warn("[Availability] Fallback slots returned due to:", err.message);
-      return [
-        { startTime: "10:00", endTime: "10:30", staffId: "staff_default", staffName: "Dr. Sarah" },
-        { startTime: "14:00", endTime: "14:30", staffId: "staff_default", staffName: "Dr. Sarah" },
-        { startTime: "16:00", endTime: "16:30", staffId: "staff_default", staffName: "Dr. Sarah" },
-      ];
+      console.warn("[Availability] Error retrieving availability slots:", err.message);
+      return [];
     }
   },
 };

@@ -849,15 +849,13 @@ export const orchestratorService = {
       }
 
       if (activeServices.length === 0) {
-        activeServices = [
-          { name: "General Consultation", price: "75.00", duration: 30 },
-        ];
+        contextText = "Available Services: None configured yet.";
+      } else {
+        const serviceList = activeServices
+          .map((s) => `${s.name}: $${s.price} (${s.duration} min)`)
+          .join(", ");
+        contextText = `Available Services: ${serviceList}`;
       }
-
-      const serviceList = activeServices
-        .map((s) => `${s.name}: $${s.price} (${s.duration} min)`)
-        .join(", ");
-      contextText = `Available Services: ${serviceList}`;
     }
 
     // 4. Build System Prompt (Pure In-Memory)

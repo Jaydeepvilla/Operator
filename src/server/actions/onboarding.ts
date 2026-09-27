@@ -563,23 +563,6 @@ export async function scrapeAndAnalyzeWebsiteAction(rawUrl: string) {
       if (extractedServices.length >= 5) break;
     }
 
-    // Fallback sensible defaults if site is text-sparse
-    if (extractedServices.length === 0) {
-      if (detectedIndustry === "Dental Clinic") {
-        extractedServices.push({ name: "Dental Cleaning & Checkup", duration: 45, accepted: true });
-        extractedServices.push({ name: "Tooth Pain Consultation", duration: 30, accepted: true });
-      } else if (detectedIndustry === "Law Firm") {
-        extractedServices.push({ name: "Initial Legal Consultation", duration: 30, accepted: true });
-        extractedServices.push({ name: "Case Review", duration: 60, accepted: true });
-      } else if (detectedIndustry === "Salon" || detectedIndustry === "Spa") {
-        extractedServices.push({ name: "Standard Appointment", duration: 45, accepted: true });
-        extractedServices.push({ name: "Consultation & Styling", duration: 60, accepted: true });
-      } else {
-        extractedServices.push({ name: "Initial Consultation", duration: 30, accepted: true });
-        extractedServices.push({ name: "General Inquiry Meeting", duration: 30, accepted: true });
-      }
-    }
-
     return {
       success: true,
       scraped: {

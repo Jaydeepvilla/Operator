@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "test:clean-slate": "tsx scripts/test-production-data-invariant.ts",
     "operator:terminology:clean": "tsx scripts/verify-and-clean-operator-terminology.ts",
     "migrate:operator-terminology": "tsx scripts/migrate-operator-terminology.ts",
     "operator:doctor": "tsx scripts/doctor/index.ts",

@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
       faqs: faqs || [],
       flows: flows || [],
       settings,
-      staff: (staffList && staffList.length > 0) ? staffList : [{ id: "owner", name: org.name, role: "Owner" }],
+      staff: staffList || [],
       documents: documentsList || [],
     };
 

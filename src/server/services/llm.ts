@@ -26,29 +26,31 @@ function synthesizeDeterministicResponse(userMsg: string, systemPrompt: string):
 
   // 1. Pricing & Hours Query
   if (lowerUser.includes("how much") || lowerUser.includes("price") || lowerUser.includes("cost") || lowerUser.includes("open") || lowerUser.includes("hours")) {
-    // Extract price from system prompt if present
     const priceMatch = systemPrompt.match(/\$([0-9]+(\.[0-9]{2})?)/);
-    const priceStr = priceMatch ? `$${priceMatch[1]}` : "$75.00";
-    
-    // Extract service name
     const serviceMatch = systemPrompt.match(/Available Services:\s*([^:\n]+)/);
-    const serviceName = serviceMatch ? serviceMatch[1].trim() : "General Consultation";
 
-    return `A ${serviceName} is ${priceStr}. We are open Monday through Friday, 9:00 AM to 5:00 PM. Would you like me to help you schedule an appointment?`;
+    if (serviceMatch && priceMatch) {
+      return `Our ${serviceMatch[1].trim()} is $${priceMatch[1]}. We are open during standard business hours. Would you like to schedule an appointment?`;
+    }
+    return "Our business hours and service rates depend on the requested service. Please reach out to our team directly for current details.";
   }
 
   // 2. Safety / Unauthorized Request Refusal
   if (lowerUser.includes("off-menu") || lowerUser.includes("free") || lowerUser.includes("illegal") || lowerUser.includes("unauthorized") || lowerUser.includes("prescription") || lowerUser.includes("override")) {
-    return "I cannot provide services outside of our standard catalog or authorize free unapproved requests. I would be glad to help you book an authorized service or connect you directly with a staff member.";
+    return "I cannot provide services outside of our standard catalog or authorize unapproved requests. I would be glad to connect you directly with a staff member.";
   }
 
-  // 3. Booking Availability Dry-Run Query
+  // 3. Booking Availability Query
   if (lowerUser.includes("book") || lowerUser.includes("appointment") || lowerUser.includes("tomorrow") || lowerUser.includes("schedule")) {
-    return "Dr. Sarah is available tomorrow at 2:00 PM for a General Consultation. Would you like me to reserve this appointment for you?";
+    const serviceMatch = systemPrompt.match(/Available Services:\s*([^:\n]+)/);
+    if (serviceMatch && !serviceMatch[1].includes("No services")) {
+      return `We offer ${serviceMatch[1].trim()}. Please let us know your preferred date and time so we can check availability.`;
+    }
+    return "No appointment services are currently configured for online booking. Please contact our front desk directly.";
   }
 
   // 4. Default warm, professional response
-  return "Hello! I am Operator, your automated assistant. I can help you check our service catalog, answer questions about pricing and hours, or assist with booking appointments. How may I help you today?";
+  return "Hello! I am your automated front desk assistant. How may I assist you today?";
 }
 
 export class OpenAIProvider implements LLMProvider {
