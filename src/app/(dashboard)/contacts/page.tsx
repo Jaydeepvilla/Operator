@@ -98,8 +98,26 @@ export default function ContactsPage() {
  const res = await getContactsAction();
  if (res.success && res.contacts) {
  setContacts(res.contacts);
- if (res.contacts.length > 0 && !editingContact) {
- handleEditClick(res.contacts[0]);
+ let initialSelected = res.contacts[0] || null;
+ if (typeof window !== "undefined") {
+   const urlParams = new URLSearchParams(window.location.search);
+   const q = urlParams.get("q") || "";
+   const id = urlParams.get("id") || "";
+   if (q) {
+     setSearchQuery(q);
+     const found = res.contacts.find((c: any) =>
+       c.name?.toLowerCase().includes(q.toLowerCase()) ||
+       c.email?.toLowerCase().includes(q.toLowerCase()) ||
+       c.phone?.includes(q)
+     );
+     if (found) initialSelected = found;
+   } else if (id) {
+     const found = res.contacts.find((c: any) => c.id === id);
+     if (found) initialSelected = found;
+   }
+ }
+ if (initialSelected && !editingContact) {
+ handleEditClick(initialSelected);
  }
  } else {
  setErrorMsg(res.error || "Failed to load contacts directory.");

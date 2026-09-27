@@ -149,8 +149,24 @@ export default function AppointmentsPage() {
 
  if (resApts.success && resApts.appointments) {
  setAppointmentsList(resApts.appointments as any[]);
- if (resApts.appointments.length > 0 && !selectedAptId) {
- setSelectedAptId(resApts.appointments[0].appointment.id);
+ let targetId = resApts.appointments[0]?.appointment?.id || null;
+ if (typeof window !== "undefined") {
+   const urlParams = new URLSearchParams(window.location.search);
+   const paramId = urlParams.get("id");
+   const paramQ = urlParams.get("q");
+   if (paramId) {
+     const exists = resApts.appointments.find((a: any) => a.appointment.id === paramId);
+     if (exists) targetId = paramId;
+   } else if (paramQ) {
+     setSearchTerm(paramQ);
+     const found = resApts.appointments.find((a: any) => 
+       a.appointment.customerName?.toLowerCase().includes(paramQ.toLowerCase())
+     );
+     if (found) targetId = found.appointment.id;
+   }
+ }
+ if (targetId) {
+   setSelectedAptId(targetId);
  }
  } else {
  setErrorMsg(resApts.error || "Failed to load appointments");

@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth/client";
 import { Bell, Sun, Moon, Search, Sparkles, Radio } from "lucide-react";
 import { Button } from "./button";
 import { NotificationsDropdown } from "./notifications-dropdown";
+import { GlobalSearchDialog } from "./global-search-dialog";
 
 interface DashboardHeaderActionsProps {
   roleLabel: string;
@@ -24,6 +25,7 @@ export function DashboardHeaderActions({
 }: DashboardHeaderActionsProps) {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
+  const [searchOpen, setSearchOpen] = React.useState(false);
   const { user, isLoading } = useAuth();
 
   React.useEffect(() => {
@@ -53,9 +55,11 @@ export function DashboardHeaderActions({
       </Link>
 
       {/* ── Quick Search / Command Palette Trigger ───────────────────── */}
-      <Link
-        href="/inbox"
+      <button
+        type="button"
+        onClick={() => setSearchOpen(true)}
         className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground bg-accent/40 hover:bg-accent hover:text-foreground border border-border/60 rounded-full transition-all duration-150 cursor-pointer shadow-2xs select-none"
+        aria-label="Open global search (Press ⌘K or Ctrl+K)"
       >
         <Search className="h-3.5 w-3.5 text-muted-foreground/70" />
         <span className="hidden xl:inline">Search contacts, leads, calls...</span>
@@ -63,7 +67,21 @@ export function DashboardHeaderActions({
         <kbd className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-mono bg-background/80 px-1.5 py-0.5 rounded border border-border/80 text-muted-foreground/80 shadow-2xs">
           ⌘K
         </kbd>
-      </Link>
+      </button>
+
+      {/* Mobile Search Trigger */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="md:hidden h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent/60 rounded-full transition-colors cursor-pointer"
+        onClick={() => setSearchOpen(true)}
+        aria-label="Open global search"
+      >
+        <Search className="h-4 w-4" />
+      </Button>
+
+      {/* Global Search Dialog Modal */}
+      <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
 
       <div className="h-4 w-px bg-border/60 hidden sm:block" />
 
