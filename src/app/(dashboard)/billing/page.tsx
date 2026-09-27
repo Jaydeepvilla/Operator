@@ -7,7 +7,6 @@ import { getBillingPortalDataAction, getPaymentProvidersAction } from "@/server/
 import { financialMetricsService } from "@/server/services/billing/financial-metrics";
 import { BillingPortalClient } from "@/components/forms/billing-portal-client";
 import { PageTitle } from "@/components/shared/page-title";
-import { BarChartCard } from "@/components/charts";
 
 export default async function BillingPage() {
   const { userId } = await auth();
@@ -57,31 +56,12 @@ export default async function BillingPage() {
   const chartData = metrics?.mrrHistory || [];
 
   return (
-    <div className="space-y-space-8 animate-fade-in max-w-5xl">
+    <div className="space-y-space-6 animate-fade-in max-w-5xl">
       {/* Page Header */}
       <PageTitle
-        title="Billing & Revenue"
-        description="Your plan, usage, payment history, and revenue forecast."
+        title="Billing & Subscription"
+        description="Manage your plan, monitor live conversation and voice quotas, and view invoices."
       />
-
-      {/* Revenue Forecast Chart */}
-      <div className="grid grid-cols-1 gap-space-4 shrink-0">
-        <div className="bg-card border border-border-default radius-xl overflow-hidden flex flex-col">
-          <div className="p-space-5 pb-space-2 shrink-0">
-            <h3 className="text-body-sm font-semibold">Revenue Trend</h3>
-            <p className="text-caption text-muted-foreground">Live monthly revenue processed through Operator</p>
-          </div>
-          <div className="flex-1 p-space-5 pt-space-0">
-            <BarChartCard
-              data={chartData}
-              index="month"
-              categories={["revenue"]}
-              colors={["#10b981"]}
-              height={260}
-            />
-          </div>
-        </div>
-      </div>
 
       <BillingPortalClient
         initialSubscription={initialSubscription}
@@ -90,6 +70,7 @@ export default async function BillingPage() {
         initialPayments={initialPayments}
         initialUsageCounters={initialUsageCounters}
         paymentProvidersData={providersData}
+        chartData={chartData}
       />
     </div>
   );

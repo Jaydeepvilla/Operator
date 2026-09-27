@@ -2,6 +2,12 @@ import { useState } from "react";
 import { DailyBriefData, TimeRange } from "@/lib/dashboard-engine/daily-brief";
 import { RefreshCw, Play, Sparkles, Radio, Zap, Clock } from "lucide-react";
 import { cn } from "@/components/shared/utils";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/shared/dropdown-menu";
 
 interface DailyBriefWidgetProps {
   brief: DailyBriefData;
@@ -35,7 +41,6 @@ export function DailyBriefWidget({
   onSimulate,
   isSimulating = false,
 }: DailyBriefWidgetProps) {
-  const [showSimulateMenu, setShowSimulateMenu] = useState(false);
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -148,61 +153,49 @@ export function DailyBriefWidget({
 
             {/* Quick Test AI Button */}
             {onSimulate && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowSimulateMenu(!showSimulateMenu)}
-                  disabled={isSimulating}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-[12px] font-bold hover:bg-primary/90 transition-all shadow-sm shadow-primary/20"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>{isSimulating ? "Simulating..." : "Test AI Call/Chat"}</span>
-                </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    disabled={isSimulating}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-[12px] font-bold hover:bg-primary/90 transition-all shadow-sm shadow-primary/20 cursor-pointer disabled:opacity-50"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>{isSimulating ? "Simulating..." : "Test AI Call/Chat"}</span>
+                  </button>
+                </DropdownMenuTrigger>
 
-                {showSimulateMenu && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setShowSimulateMenu(false)}
-                      aria-hidden="true"
-                    />
-                    <div className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-border/80 bg-popover/95 p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 backdrop-blur-xl">
-                      <div className="px-2.5 py-1 mb-1 border-b border-border/40">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                          Interactive AI Testing
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowSimulateMenu(false);
-                          onSimulate("conversation");
-                        }}
-                        className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-accent/80 text-[12px] font-medium text-foreground flex items-center justify-between transition-colors group"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Zap className="w-3.5 h-3.5 text-primary shrink-0" />
-                          <span className="font-semibold">Simulate Customer Inquiry</span>
-                        </div>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-mono">Chat</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowSimulateMenu(false);
-                          onSimulate("booking");
-                        }}
-                        className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-accent/80 text-[12px] font-medium text-foreground flex items-center justify-between transition-colors group"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Play className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                          <span className="font-semibold">Simulate Confirmed Booking</span>
-                        </div>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono">Book</span>
-                      </button>
+                <DropdownMenuContent
+                  align="end"
+                  sideOffset={8}
+                  className="w-72 rounded-2xl border border-border/80 bg-popover text-popover-foreground p-2 shadow-2xl backdrop-blur-xl z-50 animate-in fade-in zoom-in-95"
+                >
+                  <div className="px-3 py-1.5 mb-1 border-b border-border/40">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Interactive AI Testing
+                    </span>
+                  </div>
+                  <DropdownMenuItem
+                    onClick={() => onSimulate("conversation")}
+                    className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-accent/80 text-[12px] font-medium text-foreground flex items-center justify-between transition-colors cursor-pointer focus:bg-accent/80"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span className="font-semibold">Simulate Customer Inquiry</span>
                     </div>
-                  </>
-                )}
-              </div>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-mono">Chat</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onSimulate("booking")}
+                    className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-accent/80 text-[12px] font-medium text-foreground flex items-center justify-between transition-colors cursor-pointer focus:bg-accent/80"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Play className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      <span className="font-semibold">Simulate Confirmed Booking</span>
+                    </div>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono">Book</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
