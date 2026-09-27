@@ -24,7 +24,10 @@ import {
  X,
  Send,
  Sun,
- Moon
+ Moon,
+ Mail,
+ FileText,
+ CheckCircle2
 } from"lucide-react";
 import { Button } from "@/components/shared/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/shared/tabs";
@@ -38,6 +41,73 @@ import { cn } from"@/components/shared/utils";
 import { AreaChartCard } from"@/components/charts";
 import { NativeSelect } from "@/components/shared/native";
 import { ScrollArea } from "@/components/ui/scroll-area";
+
+const PLATFORM_GUIDES = [
+  {
+    id: "html",
+    name: "Custom HTML / React / Web",
+    tagline: "React, Next.js, Vue, or static HTML",
+    steps: [
+      "Open your website's main template or layout file (e.g. index.html, layout.tsx, or footer template).",
+      "Paste the script snippet directly above the closing </body> tag.",
+      "Save and deploy your site. The Operator chat bubble will automatically appear in your configured corner.",
+    ],
+  },
+  {
+    id: "wordpress",
+    name: "WordPress",
+    tagline: "Works with any WordPress theme or builder",
+    steps: [
+      "Log in to your WordPress Admin dashboard (wp-admin).",
+      "Go to Plugins > Add New and search for 'WPCode' (or 'Insert Headers and Footers'). Click Install and Activate.",
+      "In your WordPress admin menu, click Code Snippets > Header & Footer.",
+      "Paste your Operator script snippet into the 'Footer' box and click Save Changes.",
+    ],
+  },
+  {
+    id: "shopify",
+    name: "Shopify",
+    tagline: "Install in 1 minute on any Shopify theme",
+    steps: [
+      "In your Shopify Admin, navigate to Online Store > Themes.",
+      "Click the three dots (···) next to your live theme and choose 'Edit Code'.",
+      "Under Layout in the file tree on the left, click on 'theme.liquid'.",
+      "Scroll to the bottom, paste the script snippet directly above the </body> tag, and click Save.",
+    ],
+  },
+  {
+    id: "wix",
+    name: "Wix",
+    tagline: "Add via Wix Custom Code settings",
+    steps: [
+      "Go to your Wix Dashboard and open Settings > Custom Code (under Advanced).",
+      "Click '+ Add Custom Code' in the top right.",
+      "Paste the Operator script snippet into the code box and set name to 'Operator Receptionist'.",
+      "Select 'Body - end' under Place Code In, select 'All Pages', and click Apply.",
+    ],
+  },
+  {
+    id: "squarespace",
+    name: "Squarespace",
+    tagline: "Inject into site-wide footer",
+    steps: [
+      "In your Squarespace dashboard, go to Website > Pages > Website Tools > Code Injection.",
+      "Scroll down to the 'Footer' injection area.",
+      "Paste the Operator script snippet into the box and click Save at the top left.",
+    ],
+  },
+  {
+    id: "webflow",
+    name: "Webflow",
+    tagline: "Project Custom Code settings",
+    steps: [
+      "Open your project in the Webflow Designer and click Project Settings.",
+      "Navigate to the 'Custom Code' tab in the top navigation bar.",
+      "Scroll down to the 'Footer Code' field.",
+      "Paste the Operator snippet, click Save Changes, and Publish your website.",
+    ],
+  },
+];
 
 export default function WidgetSettingsPage() {
  const [loading, setLoading] = useState(true);
@@ -122,9 +192,11 @@ export default function WidgetSettingsPage() {
  const [addingDomain, setAddingDomain] = useState(false);
  const [verifyingId, setVerifyingId] = useState<string | null>(null);
  
- // Question inputs
- const [newQuestion, setNewQuestion] = useState("");
- const [copied, setCopied] = useState(false);
+  // Question inputs
+  const [newQuestion, setNewQuestion] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("html");
 
  const loadData = async () => {
  setLoading(true);
@@ -222,12 +294,65 @@ export default function WidgetSettingsPage() {
     setVerifyingId(null);
   };
 
- const copySnippet = () => {
- const snippet =`<script src="${window.location.origin}/widget.js"data-org-id="${orgId}"></script>`;
- navigator.clipboard.writeText(snippet);
- setCopied(true);
- setTimeout(() => setCopied(false), 2000);
- };
+  const copySnippet = () => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const snippet = `<script src="${origin}/widget.js" data-org-id="${orgId}"></script>`;
+    navigator.clipboard.writeText(snippet);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const emailInstructionsToDeveloper = () => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const snippet = `<script src="${origin}/widget.js" data-org-id="${orgId}"></script>`;
+    const company = branding.companyName || "our business";
+    const subject = encodeURIComponent(`Operator AI Widget Installation for ${company}`);
+    const body = encodeURIComponent(
+`Hi,
+
+Please add our new Operator AI Receptionist chat and appointment booking widget to our website.
+
+Here is our 1-line script tag to paste directly before the closing </body> tag:
+
+${snippet}
+
+Platform guides:
+- WordPress: Install 'WPCode', paste snippet into Code Snippets > Header & Footer > Footer, and click Save.
+- Shopify: In Online Store > Themes > Edit Code > layout/theme.liquid, paste right above </body>.
+- Wix: In Settings > Custom Code > Add Code, select 'Body - end', and click Apply.
+- Squarespace: In Settings > Developer Tools > Code Injection > Footer, paste and save.
+- Webflow: In Project Settings > Custom Code > Footer Code, paste and publish.
+
+Let me know once it is published so we can verify the live reception!
+
+Thank you!`
+    );
+    window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
+  };
+
+  const copyDeveloperInstructions = () => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const snippet = `<script src="${origin}/widget.js" data-org-id="${orgId}"></script>`;
+    const company = branding.companyName || "our business";
+    const instructions = 
+`Operator AI Receptionist Widget Installation for ${company}
+
+Add this 1-line script tag right before the closing </body> tag on your site:
+
+${snippet}
+
+Platform-specific guides:
+- WordPress: Install 'WPCode' or 'Insert Headers and Footers', paste into Footer Scripts, and save.
+- Shopify: In Online Store > Themes > Edit Code > layout/theme.liquid, paste right above </body>.
+- Wix: In Settings > Custom Code > Add Code, select 'Body - end', and click Apply.
+- Squarespace: In Settings > Developer Tools > Code Injection > Footer, paste and save.
+- Webflow: In Project Settings > Custom Code > Footer Code, paste and publish.`;
+
+    navigator.clipboard.writeText(instructions);
+    setCopiedEmail(true);
+    toast.success("Instructions Copied", "Developer instructions copied to clipboard.");
+    setTimeout(() => setCopiedEmail(false), 2000);
+  };
 
  const handleAddQuestion = () => {
  if (!newQuestion.trim()) return;
@@ -348,25 +473,106 @@ export default function WidgetSettingsPage() {
  <div className="h-9 w-9 radius-lg bg-primary-500/10 border border-primary-500/20 flex items-center justify-center text-primary-400">
  <Code className="h-5 w-5"/>
  </div>
- <span className="text-caption bg-primary-500/10 text-primary border border-primary-500/20 px-space-2 py-space-1 radius-full">HTML Integration</span>
+ <span className="text-caption bg-primary-500/10 text-primary border border-primary-500/20 px-space-2 py-space-1 radius-full">Self-Serve Integration</span>
  </div>
- <CardTitle className="text-body-sm font-semibold text-foreground mt-space-4">Install Script Code</CardTitle>
+ <CardTitle className="text-body-sm font-semibold text-foreground mt-space-4">Website Integration Script</CardTitle>
  <CardDescription className="text-caption text-muted-foreground mt-space-1">
- Copy and paste this snippet right before the closing &lt;/body&gt; tag on any WordPress, HTML, Webflow, Shopify, or React host page.
+ Install your AI Receptionist on your website in 2 minutes. Copy your unique 1-line script or forward ready-to-use instructions to your web developer.
  </CardDescription>
  </CardHeader>
- <div className="p-space-6 pt-space-5 bg-transparent">
- <div className="p-space-4 bg-background/50 border border-border/40 radius-xl flex items-center justify-between gap-space-4 font-mono text-caption text-muted-foreground/80">
- <span className="truncate select-all pr-space-2">{`<script src="${window.location.origin}/widget.js"data-org-id="${orgId}"></script>`}</span>
+ <div className="p-space-6 pt-space-5 bg-transparent space-y-space-5">
+ {/* Script Snippet Box */}
+ <div className="p-space-4 bg-background/50 border border-border/40 radius-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-space-3 font-mono text-caption text-muted-foreground/80">
+ <span className="truncate select-all pr-space-2 overflow-x-auto">{`<script src="${typeof window !== "undefined" ? window.location.origin : ""}/widget.js" data-org-id="${orgId}"></script>`}</span>
+ <div className="flex items-center gap-space-2 shrink-0 flex-wrap">
  <Button 
  type="button"
  variant="outline"
- className="h-8 shrink-0 text-caption gap-space-1.5 border-border/40 bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground cursor-pointer px-space-4"
+ className="h-8 shrink-0 text-caption gap-space-1.5 border-border/40 bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground cursor-pointer px-space-3"
  onClick={copySnippet}
  >
  {copied ? <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0"/> : <Copy className="h-3.5 w-3.5 shrink-0"/>}
- <span className="leading-none">{copied ?"Copied":"Copy"}</span>
+ <span className="leading-none">{copied ? "Copied" : "Copy Code"}</span>
  </Button>
+ <Button 
+ type="button"
+ variant="outline"
+ className="h-8 shrink-0 text-caption gap-space-1.5 border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer px-space-3"
+ onClick={emailInstructionsToDeveloper}
+ title="Open email draft for your web developer"
+ >
+ <Mail className="h-3.5 w-3.5 shrink-0"/>
+ <span className="leading-none">Email Developer</span>
+ </Button>
+ <Button 
+ type="button"
+ variant="outline"
+ className="h-8 shrink-0 text-caption gap-space-1.5 border-border/40 bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground cursor-pointer px-space-3"
+ onClick={copyDeveloperInstructions}
+ title="Copy complete developer email instructions to clipboard"
+ >
+ {copiedEmail ? <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0"/> : <FileText className="h-3.5 w-3.5 shrink-0"/>}
+ <span className="leading-none">{copiedEmail ? "Copied" : "Copy Instructions"}</span>
+ </Button>
+ </div>
+ </div>
+
+ {/* Platform Step-by-Step Guides */}
+ <div className="space-y-space-3 pt-space-2">
+ <div className="flex items-center justify-between">
+ <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">
+ Platform-Specific Installation Guides
+ </Label>
+ <span className="text-[11px] text-muted-foreground">Select your website builder</span>
+ </div>
+
+ {/* Platform Selector Buttons */}
+ <div className="flex flex-wrap gap-space-1.5">
+ {PLATFORM_GUIDES.map((platform) => {
+ const isSelected = selectedPlatform === platform.id;
+ return (
+ <button
+ key={platform.id}
+ type="button"
+ onClick={() => setSelectedPlatform(platform.id)}
+ className={cn(
+ "px-space-3 py-space-1.5 text-caption font-medium radius-md transition-all cursor-pointer border",
+ isSelected
+ ? "bg-primary text-white border-primary shadow-xs"
+ : "bg-background/40 hover:bg-background text-muted-foreground hover:text-foreground border-border/40"
+ )}
+ >
+ {platform.name}
+ </button>
+ );
+ })}
+ </div>
+
+ {/* Active Guide Steps */}
+ {(() => {
+ const activeGuide = PLATFORM_GUIDES.find((p) => p.id === selectedPlatform) || PLATFORM_GUIDES[0];
+ return (
+ <div className="p-space-4 radius-xl border border-border/40 bg-background/30 space-y-space-3 animate-fade-in">
+ <div className="flex items-center justify-between border-b border-border/20 pb-space-2">
+ <span className="text-body-sm font-semibold text-foreground flex items-center gap-space-2">
+ <Globe className="h-4 w-4 text-primary"/>
+ {activeGuide.name}
+ </span>
+ <span className="text-caption text-muted-foreground">{activeGuide.tagline}</span>
+ </div>
+ <ol className="space-y-space-2.5 text-caption text-muted-foreground">
+ {activeGuide.steps.map((step, idx) => (
+ <li key={idx} className="flex items-start gap-space-2.5 leading-relaxed">
+ <span className="h-5 w-5 shrink-0 rounded-full bg-primary/10 text-primary border border-primary/20 text-[11px] font-bold flex items-center justify-center mt-0.5">
+ {idx + 1}
+ </span>
+ <span className="text-foreground/90">{step}</span>
+ </li>
+ ))}
+ </ol>
+ </div>
+ );
+ })()}
  </div>
  </div>
  </Card>

@@ -134,6 +134,26 @@ export const SETUP_TASKS: SetupTask[] = [
   },
   // Phase: Channels
   {
+    id: "widget",
+    category: "Channels",
+    label: "Website Widget",
+    description: "Install your AI chat and booking widget on your website.",
+    whyItMatters: "Allows website visitors to ask questions, check pricing, and book appointments directly on your site 24/7.",
+    estimatedTimeMinutes: 2,
+    impact: "High",
+    difficulty: "Easy",
+    dependencies: ["profile"],
+    isCompleted: (state: SetupState) => {
+      const bp = (state.settings as any)?.bookingPreferences;
+      if (bp?.uncompletedTasks?.includes("widget")) return false;
+      return (
+        !!bp?.confirmedTasks?.includes("widget") ||
+        !!(state as any)?.widgetConfig?.isActive
+      );
+    },
+    href: "/widget",
+  },
+  {
     id: "phone",
     category: "Channels",
     label: "Phone Number",
