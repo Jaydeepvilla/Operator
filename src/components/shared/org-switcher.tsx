@@ -85,7 +85,7 @@ export function OrgSwitcher({
   };
 
   const currentOrg = organizations.find((o) => o.isCurrent) || {
-    name: currentOrgName || "My Workspace",
+    name: currentOrgName || "My Business",
     industry: currentOrgIndustry,
     role: roleLabel,
   };
@@ -98,7 +98,7 @@ export function OrgSwitcher({
             "flex items-center gap-space-2.5 px-space-2.5 py-space-1.5 rounded-lg border border-[hsl(var(--foreground)/0.08)] bg-card hover:bg-[hsl(var(--foreground)/0.04)] text-left transition-all duration-200 cursor-pointer select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
             className
           )}
-          aria-label="Switch organization"
+          aria-label="Switch business"
         >
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary border border-primary/20 font-bold text-caption">
             {currentOrg.name ? currentOrg.name.charAt(0).toUpperCase() : "O"}
@@ -128,10 +128,7 @@ export function OrgSwitcher({
           <div className="px-2.5 py-2 border-b border-[hsl(var(--foreground)/0.06)]">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                Workspaces ({organizations.length || 1})
-              </span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
-                Multi-Tenant
+                Businesses ({organizations.length || 1})
               </span>
             </div>
           </div>
@@ -140,7 +137,7 @@ export function OrgSwitcher({
             {organizations.length === 0 && loading ? (
               <div className="flex items-center justify-center py-4 text-caption text-muted-foreground gap-2">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                <span>Loading workspaces...</span>
+                <span>Loading businesses...</span>
               </div>
             ) : (
               organizations.map((org) => {
@@ -199,7 +196,7 @@ export function OrgSwitcher({
             className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-body-sm text-foreground/80 hover:text-foreground hover:bg-[hsl(var(--foreground)/0.05)] transition-colors cursor-pointer select-none outline-none font-medium"
           >
             <Plus className="h-4 w-4 text-muted-foreground" />
-            <span>Create New Workspace</span>
+            <span>Create new business</span>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>

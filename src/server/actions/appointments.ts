@@ -47,7 +47,7 @@ export async function getAppointmentsAction(filters?: {
     const list = await appointmentsRepository.list(organizationId, parsedFilters);
     return { success: true, appointments: list };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load appointments" };
+    return { success: false, error: error?.message || "We couldn't load appointments. Try again." };
   }
 }
 
@@ -99,7 +99,7 @@ export async function getAppointmentDetailsAction(appointmentId: string) {
       }
     };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load details" };
+    return { success: false, error: error?.message || "We couldn't load appointment details. Try again." };
   }
 }
 
@@ -134,7 +134,7 @@ export async function createAppointmentAction(data: {
     revalidatePath("/appointments");
     return { success: true, appointment };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to book appointment" };
+    return { success: false, error: error?.message || "We couldn't book this appointment. Try again." };
   }
 }
 
@@ -165,7 +165,7 @@ export async function rescheduleAppointmentAction(data: {
     revalidatePath("/appointments");
     return { success: true, appointment: updated };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to reschedule" };
+    return { success: false, error: error?.message || "We couldn't reschedule this appointment. Try again." };
   }
 }
 
@@ -186,7 +186,7 @@ export async function cancelAppointmentAction(data: {
     revalidatePath("/appointments");
     return { success: true, appointment: updated };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to cancel booking" };
+    return { success: false, error: error?.message || "We couldn't cancel this appointment. Try again." };
   }
 }
 
@@ -208,7 +208,7 @@ export async function addAppointmentNoteAction(data: {
     revalidatePath("/appointments");
     return { success: true, note };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to add note" };
+    return { success: false, error: error?.message || "We couldn't save your note. Try again." };
   }
 }
 
@@ -231,7 +231,7 @@ export async function updateAppointmentStatusAction(data: {
     revalidatePath("/appointments");
     return { success: true, appointment: updated };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to update status" };
+    return { success: false, error: error?.message || "We couldn't update appointment status. Try again." };
   }
 }
 
@@ -245,7 +245,7 @@ export async function getAppointmentWaitlistAction(status?: string) {
     return { success: true, waitlist };
   } catch (error: any) {
     console.error("getAppointmentWaitlistAction error:", error);
-    return { success: false, error: error?.message || "Failed to load waitlist", waitlist: [] };
+    return { success: false, error: error?.message || "We couldn't load the waitlist. Try again.", waitlist: [] };
   }
 }
 
@@ -283,7 +283,7 @@ export async function joinAppointmentWaitlistAction(data: {
     return { success: true, entry };
   } catch (error: any) {
     console.error("joinAppointmentWaitlistAction error:", error);
-    return { success: false, error: error?.message || "Failed to join waitlist" };
+    return { success: false, error: error?.message || "We couldn't add this customer to the waitlist. Try again." };
   }
 }
 
@@ -308,7 +308,7 @@ export async function quickCreateAppointmentAction(data: {
 
     const start = new Date(data.startTime);
     if (isNaN(start.getTime())) {
-      return { success: false, error: "Please select a valid appointment start time" };
+      return { success: false, error: "Select a valid appointment start time." };
     }
 
     const duration = data.durationMinutes || 30;

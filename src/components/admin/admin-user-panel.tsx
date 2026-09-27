@@ -85,7 +85,7 @@ export function AdminUserPanel() {
  toast.error("Failed to load users", formatUserErrorMessage(res.error));
  }
  } catch (e) {
- toast.error("Error", formatUserErrorMessage(e, "An unexpected error occurred loading users."));
+ toast.error("Failed to load users", formatUserErrorMessage(e, "We couldn't load the user list. Try refreshing the page."));
  } finally {
  setLoading(false);
  }
@@ -106,7 +106,7 @@ export function AdminUserPanel() {
  setSelectedUserId(null);
  }
  } catch (e) {
- toast.error("Error", formatUserErrorMessage(e, "Failed to retrieve user profile details."));
+ toast.error("Failed to load user details", formatUserErrorMessage(e, "We couldn't load user details. Try again."));
  } finally {
  setLoadingDetail(false);
  }
@@ -150,7 +150,7 @@ export function AdminUserPanel() {
  toast.error("Action failed", formatUserErrorMessage(res.error));
  }
  } catch (e) {
- toast.error("Error", formatUserErrorMessage(e, "Failed to update user status."));
+ toast.error("Status update failed", formatUserErrorMessage(e, "We couldn't update this user's status. Try again."));
  } finally {
  setActionLoadingId(null);
  }
@@ -175,7 +175,7 @@ export function AdminUserPanel() {
  toast.error("Action failed", formatUserErrorMessage(res.error));
  }
  } catch (e) {
- toast.error("Error", formatUserErrorMessage(e, "Failed to change user deletion state."));
+ toast.error("Status update failed", formatUserErrorMessage(e, "We couldn't update the user's account state. Try again."));
  } finally {
  setActionLoadingId(null);
  }
@@ -215,7 +215,7 @@ export function AdminUserPanel() {
 
  // Force Logout
  const handleForceLogout = async (userId: string) => {
- if (!confirm("Are you sure you want to terminate all active sessions for this user?")) return;
+ if (!confirm("Sign this user out from all devices?\n\nThey will need to sign in again to access their account.")) return;
  try {
  const res = await forceLogoutUserAction(userId);
  if (res.success) {
@@ -227,7 +227,7 @@ export function AdminUserPanel() {
  toast.error("Failed to force logout", formatUserErrorMessage(res.error));
  }
  } catch (e) {
- toast.error("Error", formatUserErrorMessage(e, "Failed to terminate active sessions."));
+ toast.error("Sign out failed", formatUserErrorMessage(e, "We couldn't sign out the user's active sessions. Try again."));
  }
  };
 
@@ -304,14 +304,14 @@ export function AdminUserPanel() {
  {loading ? (
  <div className="flex flex-col justify-center items-center py-20 gap-3">
  <Loader2 className="h-8 w-8 text-violet-400 animate-spin" />
- <p className="text-xs text-slate-400">Loading user database directory...</p>
+ <p className="text-xs text-slate-400">Loading users...</p>
  </div>
  ) : usersList.length === 0 ? (
  <div className="flex flex-col justify-center items-center py-20 text-center px-4">
  <UserX className="h-10 w-10 text-slate-600 mb-3" />
  <h3 className="text-sm font-bold text-white">No users found</h3>
  <p className="text-xs text-slate-400 mt-1 max-w-xs">
- No matching workspace members match your query filters. Try adjusting your parameters.
+ No business members match your current filters. Try adjusting your search.
  </p>
  </div>
  ) : (

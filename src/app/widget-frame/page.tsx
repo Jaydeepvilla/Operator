@@ -642,7 +642,7 @@ function WidgetFrameContent() {
           className="flex-1 h-8 bg-transparent text-caption border-border/40 focus:ring-0 focus:border-primary"
           disabled={loading}
         />
-        <Button type="submit" size="icon" className="radius-md" disabled={!inputText.trim() || loading}>
+        <Button type="submit" size="icon" className="radius-md" disabled={!inputText.trim() || loading} aria-label="Send message">
           <Send className="h-3.5 w-3.5" />
         </Button>
       </form>

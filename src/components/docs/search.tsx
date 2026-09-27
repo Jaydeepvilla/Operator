@@ -41,8 +41,7 @@ export function DocsSearch() {
         </kbd>
       </Button>
       
-      <Button variant="ghost" size="icon" className="sm:hidden text-foreground" onClick={() => setOpen(true)}
-      >
+      <Button variant="ghost" size="icon" className="sm:hidden text-foreground" onClick={() => setOpen(true)} aria-label="Search documentation">
         <Search className="h-5 w-5" />
       </Button>
 

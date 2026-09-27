@@ -218,7 +218,7 @@ export default function UnifiedInboxPage() {
       if (res.success && res.threads) {
         setThreads(res.threads);
       } else {
-        setErrorMsg(res.error || "Failed to load conversations.");
+        setErrorMsg(res.error || "We couldn't load conversations. Try again.");
       }
     } catch (e: any) {
       setErrorMsg(e.message || "An unexpected error occurred.");
@@ -234,10 +234,10 @@ export default function UnifiedInboxPage() {
       if (res.success && res.messages) {
         setMessages(res.messages);
       } else {
-        setErrorMsg(res.error || "Failed to load message history.");
+        setErrorMsg(res.error || "We couldn't load message history. Try again.");
       }
     } catch (e: any) {
-      setErrorMsg(e.message || "Error loading messages.");
+      setErrorMsg(e.message || "We couldn't load messages. Try again.");
     } finally {
       setLoadingMessages(false);
     }
@@ -261,10 +261,10 @@ export default function UnifiedInboxPage() {
           prev.map((t: any) => (t.id === selectedThread.id ? { ...t, aiAutonomy: newStatus } : t))
         );
       } else {
-        setErrorMsg(res.error || "Failed to update AI autopilot mode.");
+        setErrorMsg(res.error || "We couldn't update autopilot mode. Try again.");
       }
     } catch (e: any) {
-      setErrorMsg(e.message || "Error toggling AI autonomy.");
+      setErrorMsg(e.message || "We couldn't update autopilot mode. Try again.");
     } finally {
       setTogglingAutonomy(false);
     }
@@ -290,10 +290,10 @@ export default function UnifiedInboxPage() {
         });
         setActiveDrawerTab("copilot");
       } else {
-        setErrorMsg(res.error || "Unable to generate draft at this time.");
+        setErrorMsg(res.error || "We couldn't generate an AI draft right now. Try again.");
       }
     } catch (e: any) {
-      setErrorMsg(e.message || "Failed to generate AI draft reply.");
+      setErrorMsg(e.message || "We couldn't generate an AI draft. Try again.");
     } finally {
       setGeneratingDraft(false);
     }
@@ -342,10 +342,10 @@ export default function UnifiedInboxPage() {
         }
         fetchThreads();
       } else {
-        setErrorMsg(res.error || "Failed to send message.");
+        setErrorMsg(res.error || "We couldn't send your message. Try again.");
       }
     } catch (err: any) {
-      setErrorMsg(err.message || "Error sending message.");
+      setErrorMsg(err.message || "We couldn't send your message. Try again.");
     } finally {
       setSendingReply(false);
     }
@@ -361,10 +361,10 @@ export default function UnifiedInboxPage() {
         );
         fetchThreads();
       } else {
-        setErrorMsg(res.error || "Failed to assign staff.");
+        setErrorMsg(res.error || "We couldn't assign this conversation. Try again.");
       }
     } catch (e: any) {
-      setErrorMsg(e.message || "Error assigning staff.");
+      setErrorMsg(e.message || "We couldn't assign this conversation. Try again.");
     }
   };
 
@@ -376,10 +376,10 @@ export default function UnifiedInboxPage() {
         setSelectedThread((prev: any) => (prev ? { ...prev, status } : null));
         fetchThreads();
       } else {
-        setErrorMsg(res.error || "Failed to update status.");
+        setErrorMsg(res.error || "We couldn't update conversation status. Try again.");
       }
     } catch (e: any) {
-      setErrorMsg(e.message || "Error updating thread status.");
+      setErrorMsg(e.message || "We couldn't update conversation status. Try again.");
     }
   };
 
@@ -438,10 +438,10 @@ export default function UnifiedInboxPage() {
           })
         );
       } else {
-        setErrorMsg(res.error || "Failed to save profile.");
+        setErrorMsg(res.error || "We couldn't save customer details. Try again.");
       }
     } catch (e: any) {
-      setErrorMsg(e.message || "Error saving contact profile.");
+      setErrorMsg(e.message || "We couldn't save customer details. Try again.");
     } finally {
       setIsSavingContact(false);
     }
@@ -1037,7 +1037,7 @@ export default function UnifiedInboxPage() {
                                 <span className="text-[10px] text-emerald-600">{Math.round((cite.score || 0.94) * 100)}% Match</span>
                               </div>
                               <p className="text-[10px] text-neutral-500 line-clamp-2 italic">
-                                "{cite.content || cite.snippet || "Verified organizational policies and service guidelines."}"
+                                "{cite.content || cite.snippet || "Verified business policies and service guidelines."}"
                               </p>
                             </div>
                           ))}

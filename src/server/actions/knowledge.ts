@@ -61,7 +61,7 @@ export async function getKnowledgeCategoriesAction() {
     const categories = await categoriesRepository.list(orgId);
     return { success: true, categories };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load categories" };
+    return { success: false, error: error?.message || "We couldn't load categories. Try again." };
   }
 }
 
@@ -121,7 +121,7 @@ export async function createKnowledgeCategoryAction(data: {
     revalidatePath("/kb");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to create category" };
+    return { success: false, error: error?.message || "We couldn't create the category. Try again." };
   }
 }
 
@@ -186,7 +186,7 @@ export async function updateKnowledgeCategoryAction(
     revalidatePath("/kb");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to update category" };
+    return { success: false, error: error?.message || "We couldn't update the category. Try again." };
   }
 }
 
@@ -199,7 +199,7 @@ export async function deleteKnowledgeCategoryAction(id: string) {
     revalidatePath("/kb");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to delete category" };
+    return { success: false, error: error?.message || "We couldn't delete the category. Try again." };
   }
 }
 
@@ -216,7 +216,7 @@ export async function archiveKnowledgeCategoryAction(id: string, isArchived: boo
     revalidatePath("/kb");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to archive category" };
+    return { success: false, error: error?.message || "We couldn't archive the category. Try again." };
   }
 }
 
@@ -230,7 +230,7 @@ export async function getKnowledgeDocumentsAction(isArchived = false) {
     const docs = await documentsRepository.list(orgId, isArchived);
     return { success: true, documents: docs };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load documents" };
+    return { success: false, error: error?.message || "We couldn't load documents. Try again." };
   }
 }
 
@@ -324,7 +324,7 @@ export async function uploadKnowledgeDocumentAction(data: {
     revalidatePath("/kb");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to process upload" };
+    return { success: false, error: error?.message || "We couldn't process this document upload. Try again." };
   }
 }
 
@@ -387,7 +387,7 @@ export async function updateKnowledgeDocumentContentAction(data: {
     return { success: true, version: newVersion, chunksCount: chunks.length };
   } catch (error: any) {
     console.error("updateKnowledgeDocumentContentAction error:", error);
-    return { success: false, error: error?.message || "Failed to update document content" };
+    return { success: false, error: error?.message || "We couldn't update document content. Try again." };
   }
 }
 
@@ -403,7 +403,7 @@ export async function renameKnowledgeDocumentAction(id: string, name: string) {
     revalidatePath("/kb");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to rename document" };
+    return { success: false, error: error?.message || "We couldn't rename the document. Try again." };
   }
 }
 
@@ -416,7 +416,7 @@ export async function archiveKnowledgeDocumentAction(id: string, isArchived: boo
     revalidatePath("/kb");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to archive document" };
+    return { success: false, error: error?.message || "We couldn't archive the document. Try again." };
   }
 }
 
@@ -429,7 +429,7 @@ export async function deleteKnowledgeDocumentAction(id: string) {
     revalidatePath("/kb");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to delete document" };
+    return { success: false, error: error?.message || "We couldn't delete the document. Try again." };
   }
 }
 
@@ -543,7 +543,7 @@ export async function discoverWebsitePagesAction(data: {
     return { success: true, importId: importRun.id, discoveredPages: finalDiscovered };
   } catch (error: any) {
     console.error("[Crawler Action Error]:", error);
-    return { success: false, error: error?.message || "Failed to crawl page content" };
+    return { success: false, error: error?.message || "We couldn't crawl this webpage. Try again." };
   }
 }
 
@@ -572,7 +572,7 @@ export async function executeWebsiteIngestionAction(data: {
     revalidatePath("/kb");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to trigger website import" };
+    return { success: false, error: error?.message || "We couldn't start importing your website. Try again." };
   }
 }
 
@@ -581,11 +581,11 @@ export async function getImportStatusAction(importId: string) {
     const orgId = await getVerifiedOrgId();
     const importRecord = await importsRepository.getById(importId);
     if (!importRecord || importRecord.organizationId !== orgId) {
-      return { success: false, error: "Import record not found or access denied" };
+      return { success: false, error: "Import not found or you don't have permission to view it." };
     }
     return { success: true, import: importRecord };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load import status" };
+    return { success: false, error: error?.message || "We couldn't load the import status. Try again." };
   }
 }
 
@@ -611,7 +611,7 @@ export async function getProcessingJobsAction() {
 
     return { success: true, jobs: enrichedJobs };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load processing jobs" };
+    return { success: false, error: error?.message || "We couldn't load document processing tasks. Try again." };
   }
 }
 
@@ -764,7 +764,7 @@ export async function searchKnowledgeAction(query: string) {
       },
     };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Search execution failed" };
+    return { success: false, error: error?.message || "We couldn't execute your search. Try again." };
   }
 }
 
@@ -821,7 +821,7 @@ export async function getKnowledgeStatsAction() {
       },
     };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load stats" };
+    return { success: false, error: error?.message || "We couldn't load knowledge base analytics. Try again." };
   }
 }
 
@@ -840,6 +840,6 @@ export async function analyzeKnowledgeContentAction(data: {
     );
     return { success: true, analysis: result };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Analysis failed" };
+    return { success: false, error: error?.message || "We couldn't analyze knowledge gaps. Try again." };
   }
 }

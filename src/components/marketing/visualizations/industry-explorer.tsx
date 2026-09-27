@@ -223,7 +223,7 @@ export function InteractiveIndustryExplorer() {
         <div className="p-space-6 md:p-space-8 lg:p-space-10 grid grid-cols-1 lg:grid-cols-2 gap-space-8 lg:gap-space-10 items-start">
 
           {/* ── Left: Info Cards ──────────────────────────────── */}
-          <div className="space-y-space-4" key={activeTab}>
+          <div className="space-y-space-4 ie-msg-enter" key={`info-${activeTab}`}>
 
             {/* Header */}
             <div className="space-y-space-1">
@@ -285,7 +285,7 @@ export function InteractiveIndustryExplorer() {
           </div>
 
           {/* ── Right: Live Chat Simulator ────────────────── */}
-          <div className="relative radius-2xl border border-[hsl(var(--foreground)/0.08)] overflow-hidden bg-[hsl(var(--foreground)/0.01)]">
+          <div key={`chat-${activeTab}`} className="relative radius-2xl border border-[hsl(var(--foreground)/0.08)] overflow-hidden bg-[hsl(var(--foreground)/0.01)] ie-msg-enter">
 
             {/* Top ambient glow */}
             <div className="absolute top-space-0 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.05),transparent_70%)] pointer-events-none" />

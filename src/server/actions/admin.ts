@@ -82,7 +82,7 @@ export async function getConversationsAction() {
 
     return { success: true, data: list };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load conversations" };
+    return { success: false, error: error?.message || "We couldn't load conversations. Refresh the page to retry." };
   }
 }
 
@@ -133,7 +133,7 @@ export async function getConversationDetailsAction(conversationId: string) {
       },
     };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load conversation details" };
+    return { success: false, error: error?.message || "We couldn't load conversation details. Select another conversation or retry." };
   }
 }
 
@@ -161,7 +161,7 @@ export async function getLeadsAction() {
 
     return { success: true, data: fullLeads };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load leads" };
+    return { success: false, error: error?.message || "We couldn't load customer leads. Try refreshing the page." };
   }
 }
 
@@ -214,7 +214,7 @@ export async function getEscalationsAction(status?: string) {
 
     return { success: true, data: fullList };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load escalations" };
+    return { success: false, error: error?.message || "We couldn't load call escalations. Try refreshing the page." };
   }
 }
 
@@ -338,7 +338,7 @@ export async function getAnalyticsAction() {
       },
     };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load analytics" };
+    return { success: false, error: error?.message || "We couldn't load analytics metrics. Try again shortly." };
   }
 }
 
@@ -418,7 +418,7 @@ export async function getAdminUsersAction(params: {
     };
   } catch (error: any) {
     console.error("getAdminUsersAction error:", error);
-    return { success: false, error: error.message || "Failed to load users" };
+    return { success: false, error: error.message || "We couldn't load users. Try refreshing the page." };
   }
 }
 
@@ -437,7 +437,7 @@ export async function getAdminUserProfileDetailAction(targetUserId: string) {
       .limit(1);
 
     if (!membershipRecord) {
-      return { success: false, error: "Access Denied: User not in your organization" };
+      return { success: false, error: "Access denied: User not in your business account" };
     }
 
     const [userRecord] = await db.select().from(users).where(eq(users.id, targetUserId)).limit(1);
@@ -489,7 +489,7 @@ export async function getAdminUserProfileDetailAction(targetUserId: string) {
     };
   } catch (error: any) {
     console.error("getAdminUserProfileDetailAction error:", error);
-    return { success: false, error: error.message || "Failed to load user details" };
+    return { success: false, error: error.message || "We couldn't load user details. Try again." };
   }
 }
 
@@ -512,7 +512,7 @@ export async function suspendUserAction(targetUserId: string) {
       .limit(1);
 
     if (!membershipRecord) {
-      return { success: false, error: "User not found in your organization" };
+      return { success: false, error: "User not found in your business account" };
     }
 
     await db
@@ -553,7 +553,7 @@ export async function activateUserAction(targetUserId: string) {
       .limit(1);
 
     if (!membershipRecord) {
-      return { success: false, error: "User not found in your organization" };
+      return { success: false, error: "User not found in your business account" };
     }
 
     await db
@@ -573,7 +573,7 @@ export async function activateUserAction(targetUserId: string) {
     return { success: true };
   } catch (error: any) {
     console.error("activateUserAction error:", error);
-    return { success: false, error: error.message || "Failed to activate user" };
+    return { success: false, error: error.message || "We couldn't activate this user. Try again." };
   }
 }
 
@@ -595,7 +595,7 @@ export async function deleteUserAction(targetUserId: string) {
       .limit(1);
 
     if (!membershipRecord) {
-      return { success: false, error: "User not found in your organization" };
+      return { success: false, error: "User not found in your business account" };
     }
 
     await db
@@ -635,7 +635,7 @@ export async function restoreUserAction(targetUserId: string) {
       .limit(1);
 
     if (!membershipRecord) {
-      return { success: false, error: "User not found in your organization" };
+      return { success: false, error: "User not found in your business account" };
     }
 
     await db
@@ -655,7 +655,7 @@ export async function restoreUserAction(targetUserId: string) {
     return { success: true };
   } catch (error: any) {
     console.error("restoreUserAction error:", error);
-    return { success: false, error: error.message || "Failed to restore user" };
+    return { success: false, error: error.message || "We couldn't restore this user. Try again." };
   }
 }
 
@@ -673,7 +673,7 @@ export async function resetUserPasswordAction(targetUserId: string, newPasswordV
       .limit(1);
 
     if (!membershipRecord) {
-      return { success: false, error: "User not found in your organization" };
+      return { success: false, error: "User not found in your business account" };
     }
 
     const [user] = await db.select().from(users).where(eq(users.id, targetUserId)).limit(1);
@@ -709,7 +709,7 @@ export async function resetUserPasswordAction(targetUserId: string, newPasswordV
     return { success: true };
   } catch (error: any) {
     console.error("resetUserPasswordAction error:", error);
-    return { success: false, error: error.message || "Failed to reset user password" };
+    return { success: false, error: error.message || "We couldn't reset the user password. Try again." };
   }
 }
 
@@ -727,7 +727,7 @@ export async function forceLogoutUserAction(targetUserId: string) {
       .limit(1);
 
     if (!membershipRecord) {
-      return { success: false, error: "User not found in your organization" };
+      return { success: false, error: "User not found in your business account" };
     }
 
     await logoutAllDevices(targetUserId);

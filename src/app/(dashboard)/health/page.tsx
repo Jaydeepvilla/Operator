@@ -27,6 +27,7 @@ import { getNextBestAction } from "@/lib/recommendation-engine/engine";
 import { calculateKnowledgeQuality } from "@/lib/quality-engine/knowledge-quality";
 import { calculateChannelQuality } from "@/lib/quality-engine/channel-quality";
 import { calculateCrmQuality } from "@/lib/quality-engine/crm-quality";
+import { getPlan } from "@/lib/billing/plans";
 
 import { db } from "@/server/db";
 import { subscriptions } from "@/server/db/schema";
@@ -150,14 +151,9 @@ export default async function HealthDashboardPage() {
   const staffQuality = calculateStaffQualityScore(state);
   const billingQuality = calculateBillingQualityScore(state);
 
-  // 6. Plan Label Resolution
-  const planLabel = subscription?.planId === "pro" 
-    ? "Professional Plan" 
-    : subscription?.planId === "enterprise" 
-    ? "Enterprise Plan" 
-    : subscription?.planId === "free"
-    ? "Free Plan"
-    : "No Active Plan";
+  // 6. Dynamic Plan Label Resolution
+  const planConfig = subscription?.planId ? getPlan(subscription.planId) : null;
+  const planLabel = planConfig ? `${planConfig.name} Plan` : (subscription?.planId ? `${subscription.planId} Plan` : "No Active Plan");
 
   return (
     <div className="space-y-space-6 animate-fade-in w-full pb-space-10">

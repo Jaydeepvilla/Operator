@@ -155,10 +155,10 @@ export function BusinessSettingsForm({ settings, bookingRules }: BusinessSetting
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
       } else {
-        setSaveError(res.error || "Failed to save hours");
+        setSaveError(res.error || "We couldn't save your business hours. Try again.");
       }
     } catch (err: any) {
-      setSaveError(err?.message || "An unexpected error occurred");
+      setSaveError(err?.message || "We couldn't save your business hours. Try again.");
     } finally {
       setIsSaving(false);
     }
@@ -181,10 +181,10 @@ export function BusinessSettingsForm({ settings, bookingRules }: BusinessSetting
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
       } else {
-        setSaveError(res.error || "Failed to save configurations");
+        setSaveError(res.error || "We couldn't save your preferences. Try again.");
       }
     } catch (err: any) {
-      setSaveError(err?.message || "An unexpected error occurred");
+      setSaveError(err?.message || "We couldn't save your preferences. Try again.");
     } finally {
       setIsSaving(false);
     }
@@ -202,10 +202,10 @@ export function BusinessSettingsForm({ settings, bookingRules }: BusinessSetting
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
       } else {
-        setSaveError(res.error || "Failed to save booking rules");
+        setSaveError(res.error || "We couldn't save your booking rules. Try again.");
       }
     } catch (err: any) {
-      setSaveError(err?.message || "An unexpected error occurred");
+      setSaveError(err?.message || "We couldn't save your booking rules. Try again.");
     } finally {
       setIsSaving(false);
     }

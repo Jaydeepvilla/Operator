@@ -99,7 +99,7 @@ export async function getBillingPortalDataAction() {
       paymentStatus,
     };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load billing portal details" };
+    return { success: false, error: error?.message || "We couldn't load your billing details. Refresh the page or try again shortly." };
   }
 }
 
@@ -294,7 +294,7 @@ export async function getDynamicSubscriptionStatusAction() {
     const status = await subscriptionEngine.getSubscriptionStatus(organizationId);
     return { success: true, status };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load subscription status" };
+    return { success: false, error: error?.message || "We couldn't load your subscription status. Refresh the page to retry." };
   }
 }
 
@@ -304,7 +304,7 @@ export async function getCouponsAction() {
     const couponsList = await billingRepository.getCoupons();
     return { success: true, coupons: couponsList };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load coupons" };
+    return { success: false, error: error?.message || "We couldn't load available promotional codes." };
   }
 }
 
@@ -369,7 +369,7 @@ export async function getPaymentProvidersAction() {
     });
 
     if (!org) {
-      throw new Error("Organization not found");
+      throw new Error("Business account not found");
     }
 
     // 2. Perform region, currency and language auto-detection
@@ -416,7 +416,7 @@ export async function getPaymentProvidersAction() {
       systemStatus: status,
     };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load payment infrastructure setup" };
+    return { success: false, error: error?.message || "We couldn't load your payment provider settings." };
   }
 }
 
@@ -505,6 +505,6 @@ export async function getOrganizationInvoicesAction() {
     return { success: true, invoices: orgInvoices };
   } catch (error: any) {
     console.error("getOrganizationInvoicesAction error:", error);
-    return { success: false, error: error?.message || "Failed to load invoices", invoices: [] };
+    return { success: false, error: error?.message || "We couldn't load your invoice history. Try again shortly.", invoices: [] };
   }
 }

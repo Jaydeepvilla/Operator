@@ -477,6 +477,7 @@ export function VoiceSettingsClient({
                            </td>
                            <td className="px-space-5 py-space-3 text-right">
                            <Button variant="ghost" size="icon" onClick={() => handleDeleteRule(rule.id)}
+                                                aria-label="Delete routing rule"
                                                 className="text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 cursor-pointer h-7 w-7 radius-md">
                                                   
                            <Trash2 className="h-3.5 w-3.5" />

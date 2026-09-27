@@ -241,7 +241,7 @@ export function AgencyTeamClient({
                                             <td className="px-space-6 py-space-4 text-right">
                                               <Button variant="ghost" size="icon" disabled={member.role === "owner"} onClick={() => handleRemoveMember(member.id)}
                                             className="text-destructive hover:text-error-500 hover:bg-destructive/10 cursor-pointer h-8 w-8 p-space-0"
-                                            title="Revoke Credentials">
+                                            title="Revoke Credentials" aria-label="Remove team member">
                                               
                                                 <Trash2 className="h-4 w-4" />
                                               </Button>

@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { auth } from "@/lib/auth/server";
 import { checkUserOrganization } from "@/server/actions/onboarding";
+import { evaluateRouteGuard } from "@/server/services/routing/route-guard";
 import { db } from "@/server/db";
 import { memberships } from "@/server/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -22,19 +24,21 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { userId } = await auth();
+  const headerStore = await headers();
+  const requestedPath = headerStore.get("x-pathname") || "/dashboard";
 
-  if (!userId) {
-    redirect("/api/auth/logout?redirect=/sign-in");
+  // Authoritative Smart Route Guard resolution
+  const decision = await evaluateRouteGuard({
+    requestedPath,
+    autoRedirect: false,
+  });
+
+  if (decision.replace && decision.destination !== requestedPath) {
+    redirect(decision.destination);
   }
 
-  const { hasOrg, org, isCompleted } = await checkUserOrganization();
-
-  if (!hasOrg || !org) {
-    redirect("/onboarding");
-  }
-
-  // Workspace exists but onboarding not completed → redirect back to onboarding
-  if (!isCompleted) {
+  const { org } = await checkUserOrganization();
+  if (!org) {
     redirect("/onboarding");
   }
 

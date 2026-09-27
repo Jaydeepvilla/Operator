@@ -212,11 +212,11 @@ function ScreenUrl({
  return;
  }
  if (!url.trim()) {
- setError("Please enter your website URL.");
+ setError("Enter your business website URL.");
  return;
  }
  if (!isValidUrl(url.trim())) {
- setError("Please enter a valid URL, e.g. acmedental.com");
+ setError("Enter a valid URL (for example, acmedental.com).");
  return;
  }
  setError("");
@@ -1150,11 +1150,11 @@ export function OnboardingWizard({
  setStep("golive");
  }, 3200);
  } else {
- setSubmitError(result.error || "Failed to create workspace. Please try again.");
+ setSubmitError(result.error || "We couldn't create your business account. Try again.");
  setStep("verify");
  }
  } catch (e: any) {
- setSubmitError(e?.message || "An unexpected error occurred.");
+ setSubmitError(e?.message || "We couldn't complete the setup. Try again.");
  setStep("verify");
  }
  };

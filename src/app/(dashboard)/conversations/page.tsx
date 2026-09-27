@@ -68,7 +68,7 @@ export default function ConversationsPage() {
  setSelectedId(res.data[0].id);
  }
  } else {
- setErrorMsg(res.error || "Failed to load conversations");
+ setErrorMsg(res.error || "We couldn't load your conversations. Refresh the page to retry.");
  }
  setLoadingList(false);
  };
@@ -87,7 +87,7 @@ export default function ConversationsPage() {
  if (res.success && res.data) {
  setActiveDetails(res.data);
  } else {
- setErrorMsg(res.error || "Failed to load conversation details");
+ setErrorMsg(res.error || "We couldn't load conversation details. Select another conversation or retry.");
  }
  setLoadingDetails(false);
  };
@@ -179,7 +179,7 @@ export default function ConversationsPage() {
  {/* Header */}
  <PageTitle
  title="Conversations"
- description="See what your AI is saying to customers. Review, test, and replay conversations." />
+ description="Review customer interactions handled by Operator AI, monitor lead qualification, and test responses." />
  
 
  {errorMsg &&
@@ -197,7 +197,7 @@ export default function ConversationsPage() {
  <div className="lg:col-span-3 flex flex-col h-full bg-card border border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft-">
  <div className="p-space-4 border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)] flex items-center justify-between shrink-0">
  <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">Active Sessions</span>
- <Button size="icon" variant="ghost" className=" hover:bg-[hsl(var(--foreground)/0.05)]" onClick={loadList} title="Refresh sessions">
+ <Button size="icon" variant="ghost" className=" hover:bg-[hsl(var(--foreground)/0.05)]" onClick={loadList} title="Refresh conversations list" aria-label="Refresh conversations list">
  <RotateCw className={cn("h-4 w-4 text-muted-foreground/65 transition-transform duration-500", loadingList && "animate-spin")} />
  </Button>
  </div>
@@ -206,14 +206,14 @@ export default function ConversationsPage() {
  {loadingList ?
  <div className="flex h-40 flex-col items-center justify-center text-caption text-muted-foreground gap-space-2">
  <Loader2 className="h-5 w-5 animate-spin text-primary" />
- <span>Loading sessions...</span>
+ <span>Loading conversations...</span>
  </div> :
  conversationsList.length === 0 ?
  <div className="p-space-6 text-center flex flex-col items-center justify-center h-full min-h-64">
  <MessageSquare className="h-8 w-8 text-muted-foreground/20 mb-space-2 animate-float" />
- <span className="text-caption font-semibold text-foreground">No sessions</span>
- <p className="text-caption text-muted-foreground/60 max-w-40 mx-auto mt-space-1 leading-normal">
- No active conversation sessions found.
+ <span className="text-caption font-semibold text-foreground">No conversations yet</span>
+ <p className="text-caption text-muted-foreground/60 max-w-48 mx-auto mt-space-1 leading-normal">
+ Customer interactions handled by your AI receptionist will appear here once incoming calls or chats begin.
  </p>
  </div> :
 
@@ -283,9 +283,9 @@ export default function ConversationsPage() {
  <div className="flex h-12 w-12 items-center justify-center radius-xl bg-[hsl(var(--primary)/0.08)] text-primary ring-1 ring-[hsl(var(--primary)/0.12)] animate-float">
  <Bot className="h-5 w-5" />
  </div>
- <h3 className="text-body-sm font-semibold text-foreground mt-space-2">Select a session</h3>
+ <h3 className="text-body-sm font-semibold text-foreground mt-space-2">Select a conversation</h3>
  <p className="max-w-xs text-caption text-muted-foreground/80 leading-normal">
- Choose a session from the list on the left to view timeline history.
+ Choose a conversation from the left to view messages and details.
  </p>
  </div> :
 

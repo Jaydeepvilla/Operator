@@ -46,4 +46,7 @@ next-env.d.ts
 .cursor/
 reports/
 *.rej
+scratch/
+.doctor/
+
 

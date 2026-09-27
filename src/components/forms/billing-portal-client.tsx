@@ -71,14 +71,14 @@ export function BillingPortalClient({
       if (res.success) {
         setStatusMessage({ 
           type: res.scheduledAtPeriodEnd ? "info" : "success", 
-          text: res.message || `Plan updated to ${planId.toUpperCase()}!` 
+          text: res.message || `Plan changed to ${planId.toUpperCase()}.` 
         });
         if (!res.scheduledAtPeriodEnd) {
           setSubscription((prev: any) => ({ ...prev, planId, status: "active", state: "ACTIVE" }));
         }
       } else {
         const errPayload = res as { message?: string; error?: string; correlationId?: string };
-        const errorText = errPayload.message || errPayload.error || "Online plan change failed. Please try again.";
+        const errorText = errPayload.message || errPayload.error || "We couldn't change your plan. Check your payment details or try again.";
         const refText = errPayload.correlationId ? ` (Ref: ${errPayload.correlationId})` : "";
         setStatusMessage({ 
           type: "error", 
@@ -89,7 +89,12 @@ export function BillingPortalClient({
   };
 
   const handleCancel = () => {
-    if (!confirm("Are you sure you want to cancel your subscription? Your access will continue until the end of your current billing period.")) return;
+    const confirmationText = 
+      "Cancel your subscription?\n\n" +
+      "• Your AI receptionist will continue answering calls until the end of your billing period.\n" +
+      "• After that, phone numbers will be released and live call answering will pause.\n" +
+      "• You can reactivate anytime before your period ends.";
+    if (!confirm(confirmationText)) return;
 
     setStatusMessage(null);
     startTransition(async () => {
@@ -108,7 +113,7 @@ export function BillingPortalClient({
         const errPayload = res as { message?: string; error?: string; correlationId?: string };
         setStatusMessage({ 
           type: "error", 
-          text: errPayload.message || "Failed to schedule cancellation." 
+          text: errPayload.message || "We couldn't schedule the cancellation. Try again or contact support." 
         });
       }
     });
@@ -121,7 +126,7 @@ export function BillingPortalClient({
       if (res.success) {
         setStatusMessage({ 
           type: "success", 
-          text: "Cancellation revoked! Your subscription is active and will renew normally." 
+          text: "Cancellation revoked. Your subscription remains active and will renew on schedule." 
         });
         setSubscription((prev: any) => ({ 
           ...prev, 
@@ -133,7 +138,7 @@ export function BillingPortalClient({
         const errPayload = res as { message?: string; error?: string };
         setStatusMessage({ 
           type: "error", 
-          text: errPayload.message || "Failed to restore subscription." 
+          text: errPayload.message || "We couldn't restore your subscription. Try again or contact support." 
         });
       }
     });
@@ -365,12 +370,12 @@ export function BillingPortalClient({
                           description={`Instant subscription for ${tier.name} Plan`}
                           prefill={{
                             email: initialAccount?.email || "",
-                            name: initialAccount?.name || "Workspace Admin",
+                            name: initialAccount?.name || "Business Admin",
                           }}
                           onSuccess={async (payment) => {
                             setStatusMessage({
                               type: "success",
-                              text: `Payment verified (${payment.payment_id})! Upgrading plan to ${tier.name}...`,
+                              text: `Payment verified (${payment.payment_id}). Upgrading plan to ${tier.name}...`,
                             });
                             await handlePlanChange(tier.id);
                           }}
@@ -473,28 +478,37 @@ export function BillingPortalClient({
             </div>
 
             {/* Smart Progressive Warning Banners */}
-            {convPercent >= 90 && (
+            {convPercent >= 100 ? (
+              <div className="p-space-3 radius-lg border border-destructive/40 bg-destructive/10 text-destructive flex items-start gap-space-2 text-caption">
+                <AlertTriangle className="h-4.5 w-4.5 shrink-0 mt-space-1 text-destructive" />
+                <div>
+                  <span className="font-semibold">Monthly conversation limit reached:</span>
+                  <p className="mt-space-1 text-muted-foreground">
+                    You have used all {convLimit.toLocaleString()} included conversations for this period. Upgrade your plan to resume uninterrupted AI call handling.
+                  </p>
+                </div>
+              </div>
+            ) : convPercent >= 90 ? (
               <div className="p-space-3 radius-lg border border-destructive/30 bg-destructive/5 text-destructive flex items-start gap-space-2 text-caption">
                 <AlertTriangle className="h-4.5 w-4.5 shrink-0 mt-space-1" />
                 <div>
                   <span className="font-semibold">You've used {convPercent}% of your monthly conversations:</span>
                   <p className="mt-space-1 text-muted-foreground">
-                    Consider upgrading to the next plan before reaching your limit to avoid operational interruptions.
+                    Consider upgrading your plan before reaching the limit to prevent call answering interruptions.
                   </p>
                 </div>
               </div>
-            )}
-            {convPercent >= 80 && convPercent < 90 && (
+            ) : convPercent >= 80 ? (
               <div className="p-space-3 radius-lg border border-warning-500/20 bg-warning-500/5 text-warning-500 flex items-start gap-space-2 text-caption">
                 <AlertTriangle className="h-4.5 w-4.5 shrink-0 mt-space-1" />
                 <div>
-                  <span className="font-semibold">Approaching Monthly Conversation Limit:</span>
+                  <span className="font-semibold">Approaching monthly conversation limit:</span>
                   <p className="mt-space-1 text-muted-foreground">
-                    You have used {convUsage} of your {convLimit} included conversations ({convPercent}%).
+                    You have used {convUsage.toLocaleString()} of your {convLimit.toLocaleString()} included conversations ({convPercent}%).
                   </p>
                 </div>
               </div>
-            )}
+            ) : null}
           </CardContent>
         </Card>
       )}
@@ -512,8 +526,11 @@ export function BillingPortalClient({
           </CardHeader>
           <CardContent className="p-space-0 border-t border-border/10">
             {invoices.length === 0 ? (
-              <div className="py-space-12 text-center text-muted-foreground text-body-sm">
-                No invoices found in your billing history.
+              <div className="py-space-12 text-center text-muted-foreground text-body-sm px-space-4">
+                <p className="font-medium text-foreground">No invoices yet</p>
+                <p className="text-caption text-muted-foreground mt-1">
+                  Your billing invoices and payment receipts will appear here after your first paid billing cycle.
+                </p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -547,6 +564,7 @@ export function BillingPortalClient({
                             variant="ghost" 
                             size="icon" 
                             onClick={() => window.open(inv.pdfUrl || "#")}
+                            aria-label={`Download invoice ${inv.number}`}
                             className="h-8 w-8 text-primary hover:bg-primary/10 cursor-pointer"
                           >
                             <Download className="h-4 w-4" />

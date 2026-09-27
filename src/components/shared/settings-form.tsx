@@ -205,10 +205,10 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  setTimeout(() => setProfileSuccess(false), 3000);
  router.refresh();
  } else {
- setErrorMsg(result.error || "Failed to update profile details");
+ setErrorMsg(result.error || "We couldn't update your profile details. Try again.");
  }
  } catch (err: any) {
- setErrorMsg(err.message || "An unexpected error occurred");
+ setErrorMsg(err.message || "We couldn't update your profile details. Try again.");
  } finally {
  setSavingProfile(false);
  }
@@ -233,10 +233,10 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  setTimeout(() => setPrefsSuccess(false), 3000);
  router.refresh();
  } else {
- setErrorMsg(result.error || "Failed to update preferences");
+ setErrorMsg(result.error || "We couldn't save your preferences. Try again.");
  }
  } catch (err: any) {
- setErrorMsg(err.message || "An unexpected error occurred");
+ setErrorMsg(err.message || "We couldn't save your preferences. Try again.");
  } finally {
  setSavingPrefs(false);
  }
@@ -259,10 +259,10 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  setNotifySuccess(true);
  setTimeout(() => setNotifySuccess(false), 3000);
  } else {
- setErrorMsg(result.error || "Failed to update notifications");
+ setErrorMsg(result.error || "We couldn't update your notification preferences. Try again.");
  }
  } catch (err: any) {
- setErrorMsg(err.message || "An unexpected error occurred");
+ setErrorMsg(err.message || "We couldn't update your notification preferences. Try again.");
  } finally {
  setSavingNotify(false);
  }
@@ -271,11 +271,11 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  const handleChangePassword = async (e: React.FormEvent) => {
  e.preventDefault();
  if (newPassword !== confirmPassword) {
- setErrorMsg("Passwords do not match");
+ setErrorMsg("Passwords do not match. Check both fields and try again.");
  return;
  }
  if (strength.score < 4) {
- setErrorMsg("Please select a stronger password");
+ setErrorMsg("Choose a stronger password with at least 8 characters.");
  return;
  }
 
@@ -301,10 +301,10 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  loadSessions();
  }
  } else {
- setErrorMsg(result.error || "Failed to change password");
+ setErrorMsg(result.error || "We couldn't update your password. Verify your current password and try again.");
  }
  } catch (err: any) {
- setErrorMsg(err.message || "An unexpected error occurred");
+ setErrorMsg(err.message || "We couldn't update your password. Try again.");
  } finally {
  setSavingPassword(false);
  }
@@ -314,28 +314,28 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  try {
  const result = await logoutDeviceAction(sessionId);
  if (result.success) {
- toastSuccess("Session Revoked", "The device session has been terminated.");
+ toastSuccess("Session signed out", "The device session has been signed out.");
  loadSessions();
  } else {
- toastError("Failed to revoke session", formatUserErrorMessage(result.error));
+ toastError("Failed to sign out session", formatUserErrorMessage(result.error));
  }
  } catch (e) {
- toastError("Error", "An unexpected error occurred while revoking the session.");
+ toastError("Sign out failed", "We couldn't sign out this session. Try again.");
  }
  };
 
  const handleRevokeAllOtherSessions = async () => {
- if (!confirm("Are you sure you want to terminate all other device sessions?")) return;
+ if (!confirm("Sign out of all other devices?\n\nYou will need to sign in again on those devices.")) return;
  try {
  const result = await logoutOtherDevicesAction();
  if (result.success) {
- toastSuccess("Sessions Terminated", "All other device sessions have been revoked.");
+ toastSuccess("Sessions signed out", "All other device sessions have been signed out.");
  loadSessions();
  } else {
- toastError("Failed to revoke sessions", formatUserErrorMessage(result.error));
+ toastError("Failed to sign out sessions", formatUserErrorMessage(result.error));
  }
  } catch (e) {
- toastError("Error", "An unexpected error occurred while revoking sessions.");
+ toastError("Sign out failed", "We couldn't sign out your other sessions. Try again.");
  }
  };
 
@@ -343,13 +343,13 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  try {
  const result = await deactivateAccountAction();
  if (result.success) {
- toastSuccess("Account Deactivated", "Redirecting to sign in...");
+ toastSuccess("Account deactivated", "Signing you out...");
  router.push("/sign-in");
  } else {
- toastError("Failed to deactivate account", formatUserErrorMessage(result.error));
+ toastError("Deactivation failed", formatUserErrorMessage(result.error));
  }
  } catch (e) {
- toastError("Error", "An unexpected error occurred during deactivation.");
+ toastError("Deactivation failed", "We couldn't deactivate your account. Contact support if this continues.");
  }
  };
 
@@ -357,13 +357,13 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  try {
  const result = await deleteAccountAction();
  if (result.success) {
- toastSuccess("Account Deleted", "Redirecting to sign in...");
+ toastSuccess("Account deleted", "Signing you out...");
  router.push("/sign-in");
  } else {
- toastError("Failed to delete account", formatUserErrorMessage(result.error));
+ toastError("Deletion failed", formatUserErrorMessage(result.error));
  }
  } catch (e) {
- toastError("Error", "An unexpected error occurred during account deletion.");
+ toastError("Deletion failed", "We couldn't delete your account. Try again or contact support.");
  }
  };
 

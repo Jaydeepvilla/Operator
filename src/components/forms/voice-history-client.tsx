@@ -201,9 +201,9 @@ export function VoiceHistoryClient({ initialSessions }: {initialSessions: any[];
  {filteredSessions.length === 0 ?
  <div className="flex flex-col items-center justify-center text-center h-full min-h-64 py-space-6 text-muted-foreground/60 gap-space-1.5">
  <Inbox className="h-8 w-8 text-muted-foreground/35 animate-pulse" />
- <span className="text-caption font-semibold text-foreground">No matching logs found</span>
+ <span className="text-caption font-semibold text-foreground">No calls match your filters</span>
  <p className="text-caption text-muted-foreground/60 max-w-60">
- No historical call sessions matching your search filter conditions.
+ Try adjusting your search criteria or clearing filters to see call records.
  </p>
  </div> :
 
@@ -266,7 +266,7 @@ export function VoiceHistoryClient({ initialSessions }: {initialSessions: any[];
  <SheetHeader className="pb-space-3 border-b border-[hsl(var(--foreground)/0.05)]">
  <SheetTitle className="text-body-sm font-semibold text-foreground flex items-center gap-space-2">
  <FileText className="h-4.5 w-4.5 text-primary" />
- Call Session Review
+ Call Details
  </SheetTitle>
  <SheetDescription className="font-mono text-caption text-muted-foreground/60 mt-space-0.5">
  Session ID: {selectedSession?.id}
@@ -276,7 +276,7 @@ export function VoiceHistoryClient({ initialSessions }: {initialSessions: any[];
  {isLoadingDetails ?
  <div className="flex flex-col items-center justify-center py-space-20 gap-space-2.5 text-muted-foreground text-caption">
  <Loader2 className="h-6 w-6 animate-spin text-primary" />
- <span>Loading detailed session transcripts...</span>
+ <span>Loading call transcript...</span>
  </div> :
  sessionDetails ?
  <div className="space-y-space-4 mt-space-4 text-caption">
@@ -310,9 +310,9 @@ export function VoiceHistoryClient({ initialSessions }: {initialSessions: any[];
  {activeTab === "summary" &&
  <div className="space-y-space-4">
  <div className="space-y-space-1.5">
- <span className="text-caption font-semibold text-muted-foreground/60 uppercase tracking-wider block flex items-center gap-space-1"><Sparkles className="h-3 w-3 text-primary" /> AI Session Summary</span>
+ <span className="text-caption font-semibold text-muted-foreground/60 uppercase tracking-wider block flex items-center gap-space-1"><Sparkles className="h-3 w-3 text-primary" /> AI Call Summary</span>
  <p className="leading-relaxed text-foreground/95 bg-background border border-[hsl(var(--foreground)/0.05)] p-space-3 radius-lg leading-relaxed italic">
- "{sessionDetails.summary?.summary || "No AI summary was generated for this empty session."}"
+ "{sessionDetails.summary?.summary || "No summary available for this call."}"
  </p>
  </div>
 
@@ -325,7 +325,7 @@ export function VoiceHistoryClient({ initialSessions }: {initialSessions: any[];
  <li key={i}>{item}</li>
  ) :
 
- <li className="list-none pl-space-0 italic text-muted-foreground/50 text-caption">No action items resolved.</li>
+ <li className="list-none pl-space-0 italic text-muted-foreground/50 text-caption">No action items recorded.</li>
  }
  </ul>
  </div>
@@ -373,7 +373,7 @@ export function VoiceHistoryClient({ initialSessions }: {initialSessions: any[];
  </div>
  ) :
 
- <p className="text-center text-caption text-muted-foreground/50 py-space-8 italic">No transcript entries recorded.</p>
+ <p className="text-center text-caption text-muted-foreground/50 py-space-8 italic">No transcript available for this call.</p>
  }
  </ScrollArea>
  }
@@ -391,19 +391,19 @@ export function VoiceHistoryClient({ initialSessions }: {initialSessions: any[];
  </div>
  ) :
 
- <p className="text-center text-caption text-muted-foreground/50 py-space-8 italic">No audit events generated.</p>
+ <p className="text-center text-caption text-muted-foreground/50 py-space-8 italic">No system events recorded for this call.</p>
  }
  </ScrollArea>
  }
  </div> :
 
- <p className="text-center text-caption text-rose-500 py-space-12">Failed to load detailed record.</p>
+ <p className="text-center text-caption text-rose-500 py-space-12">We couldn't load call details. Close and try again.</p>
  }
  </div>
 
  <div className="border-t border-[hsl(var(--foreground)/0.05)] pt-space-3 flex justify-end shrink-0">
  <Button variant="ghost" onClick={() => setIsSheetOpen(false)} className="text-caption font-semibold h-8.5 hover:bg-[hsl(var(--foreground)/0.05)] cursor-pointer">
- Close History Review
+ Close
  </Button>
  </div>
  </ScrollArea></SheetContent>

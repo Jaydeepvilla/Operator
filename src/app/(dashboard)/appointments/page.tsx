@@ -399,7 +399,7 @@ export default function AppointmentsPage() {
  )}
 
  {loading ? (
- <LoadingState message="Loading appointments"/>
+ <LoadingState message="Loading appointments..."/>
  ) : (
  <div className="space-y-space-4">
  {/* Filter Row */}
@@ -455,10 +455,10 @@ export default function AppointmentsPage() {
  {/* Grid Layout Side by Side */}
  {filteredApts.length === 0 ? (
  <EmptyState
- title="No appointments found"
- description={searchTerm || selectedStatus !== "all" || selectedStaffId !== "all" ? "Try adjusting your filters to see more results." : "You don't have any appointments scheduled yet."}
+ title={searchTerm || selectedStatus !== "all" || selectedStaffId !== "all" ? "No matching appointments" : "No appointments scheduled"}
+ description={searchTerm || selectedStatus !== "all" || selectedStaffId !== "all" ? "Try adjusting your search terms or filters." : "Upcoming customer bookings scheduled by your AI receptionist or staff will appear here."}
  icon={CalendarIcon}
- actionText={(searchTerm || selectedStatus !== "all" || selectedStaffId !== "all") ? "Clear Filters" : undefined}
+ actionText={(searchTerm || selectedStatus !== "all" || selectedStaffId !== "all") ? "Clear filters" : undefined}
  onAction={() => { setSearchTerm(""); setSelectedStatus("all"); setSelectedStaffId("all"); }}
  className="h-[600px] bg-card border border-[hsl(var(--foreground)/0.06)] radius-xl soft-"
  />

@@ -74,7 +74,7 @@ export default function ChannelsPage() {
  if (res.success && res.channels) {
  setChannels(res.channels);
  } else {
- setErrorMsg(res.error ||"Failed to load channel configurations.");
+ setErrorMsg(res.error || "We couldn't load your channel configurations. Refresh to try again.");
  }
  setLoading(false);
  };
@@ -147,7 +147,7 @@ export default function ChannelsPage() {
  setActiveSetupChannel(null);
  loadChannels();
  } else {
- setErrorMsg(res.error ||"Failed to establish channel connection.");
+ setErrorMsg(res.error || "We couldn't connect this channel. Check your credentials and try again.");
  }
  setConnecting(false);
  };
@@ -184,7 +184,7 @@ export default function ChannelsPage() {
  setActiveSettingsChannel(null);
  loadChannels();
  } else {
- setErrorMsg(res.error ||"Failed to update channel settings.");
+ setErrorMsg(res.error || "We couldn't update channel settings. Try again.");
  }
  setSavingSettings(false);
  };
@@ -638,7 +638,7 @@ export default function ChannelsPage() {
  </div>
  <div className="space-y-space-0.5">
  <span className="text-caption font-medium block text-foreground">Enable AI Autopilot Responses</span>
- <span className="text-caption text-muted-foreground block leading-normal">Allows the bot to process and reply immediately.</span>
+ <span className="text-caption text-muted-foreground block leading-normal">Allows your AI receptionist to process and reply immediately.</span>
  </div>
  </div>
 

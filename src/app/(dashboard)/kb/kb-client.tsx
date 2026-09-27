@@ -236,7 +236,7 @@ export function KnowledgeCenterClient({
  toast.error("Failed to save category", formatUserErrorMessage(res.error));
  }
  } catch (err: any) {
- toast.error("Error", formatUserErrorMessage(err, "An error occurred while saving category."));
+ toast.error("Save failed", formatUserErrorMessage(err, "We couldn't save this category. Try again."));
  } finally {
  setIsCategorySubmitting(false);
  }
@@ -358,10 +358,10 @@ export function KnowledgeCenterClient({
  setUploadedFileExt("txt");
  router.refresh();
  } else {
- setUploadError(res.error ||"Failed to upload document");
+ setUploadError(res.error || "We couldn't upload this document. Try again.");
  }
  } catch (err: any) {
- setUploadError(err?.message ||"An error occurred");
+ setUploadError(err?.message || "We couldn't upload this document. Try again.");
  } finally {
  setIsDocSubmitting(false);
  }
@@ -384,7 +384,7 @@ export function KnowledgeCenterClient({
  toast.error("Failed to rename document", formatUserErrorMessage(res.error));
  }
  } catch (err: any) {
- toast.error("Error", formatUserErrorMessage(err, "An error occurred while renaming document."));
+ toast.error("Rename failed", formatUserErrorMessage(err, "We couldn't rename this document. Try again."));
  } finally {
  setIsRenameSubmitting(false);
  }
@@ -469,7 +469,7 @@ export function KnowledgeCenterClient({
  toast.error("Failed to trigger crawler", formatUserErrorMessage(res.error));
  }
  } catch (err: any) {
- toast.error("Error", formatUserErrorMessage(err, "An error occurred starting website crawler."));
+ toast.error("Crawl failed", formatUserErrorMessage(err, "We couldn't crawl this website. Check the URL and try again."));
  } finally {
  setIsScraperSubmitting(false);
  }
@@ -480,7 +480,7 @@ const handleExecuteIngestion = async () => {
 
  const selectedData = discoveredPages.filter(p => selectedPagesToImport.includes(p.url));
  if (selectedData.length === 0) {
- toast.error("Selection Required", "Please select at least one page to import.");
+ toast.error("Selection required", "Select at least one page to import.");
  return;
  }
 
@@ -535,7 +535,7 @@ const handleExecuteIngestion = async () => {
  }
  } catch (err: any) {
  setIsProgressOpen(false);
- toast.error("Ingestion Error", formatUserErrorMessage(err, "An error occurred starting website ingestion."));
+ toast.error("Ingestion failed", formatUserErrorMessage(err, "We couldn't start importing website content. Try again."));
  }
 };
 

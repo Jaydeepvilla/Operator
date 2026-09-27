@@ -270,6 +270,7 @@ export function AgencyDomainsClient({ initialDomains }: {initialDomains: any[];}
                                           Verify DNS
                                         </Button>
                                         <Button variant="ghost" size="icon" onClick={() => handleDeleteDomain(record.id)}
+                                    aria-label="Delete custom domain"
                                     className="text-destructive hover:text-error-500 hover:bg-destructive/10 cursor-pointer h-8 w-8 p-space-0">
                                       
                                           <Trash2 className="h-4 w-4" />

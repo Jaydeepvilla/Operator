@@ -269,7 +269,7 @@ export function SignInForm() {
     setUserNotFound(false);
 
     if (!email || !password) {
-      setErrorMsg("Please fill in all fields.");
+      setErrorMsg("Fill in both email and password.");
       return;
     }
 
@@ -284,11 +284,11 @@ export function SignInForm() {
           window.location.href = `/login-success?redirect=${encodeURIComponent(destination)}&firstTime=${isFirstTime}&mode=signin`;
         }, 300);
       } else {
-        setErrorMsg(result.error || "Invalid email or password.");
+        setErrorMsg(result.error || "Incorrect email or password. Check your details and try again.");
         if (result.code === "USER_NOT_FOUND") setUserNotFound(true);
       }
     } catch (err: any) {
-      setErrorMsg(err.message || "An unexpected error occurred.");
+      setErrorMsg(err.message || "We couldn't sign you in. Check your credentials and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -548,7 +548,7 @@ export function SignUpForm() {
     }
     if (!acceptTerms || !acceptPrivacy) {
       setErrorMsg(
-        "Please accept the Terms of Service and Privacy Policy."
+        "Accept the Terms of Service and Privacy Policy to continue."
       );
       return;
     }
@@ -557,7 +557,7 @@ export function SignUpForm() {
       return;
     }
     if (strength.score < 4) {
-      setErrorMsg("Please choose a stronger password.");
+      setErrorMsg("Choose a stronger password with at least 8 characters.");
       return;
     }
 
@@ -583,10 +583,10 @@ export function SignUpForm() {
           window.location.href = `/login-success?mode=signup&redirect=${encodeURIComponent(destination)}&firstTime=${isFirstTime}`;
         }
       } else {
-        setErrorMsg(result.error || "Failed to create account.");
+        setErrorMsg(result.error || "We couldn't create your account. Try again or contact support.");
       }
     } catch (err: any) {
-      setErrorMsg(err.message || "An unexpected error occurred.");
+      setErrorMsg(err.message || "We couldn't create your account. Try again.");
     } finally {
       setIsLoading(false);
     }
@@ -824,10 +824,10 @@ export function ForgotPasswordForm() {
       if (result.success) {
         setSuccess(true);
       } else {
-        setErrorMsg(result.error || "Failed to send reset link.");
+        setErrorMsg(result.error || "We couldn't send the reset link. Verify your email address and try again.");
       }
     } catch (err: any) {
-      setErrorMsg(err.message || "An unexpected error occurred.");
+      setErrorMsg(err.message || "We couldn't send the reset link. Try again shortly.");
     } finally {
       setIsLoading(false);
     }
@@ -938,11 +938,11 @@ export function ResetPasswordForm({ token }: { token: string }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      setErrorMsg("Passwords do not match.");
+      setErrorMsg("Passwords do not match. Check both fields and try again.");
       return;
     }
     if (strength.score < 4) {
-      setErrorMsg("Please choose a stronger password.");
+      setErrorMsg("Choose a stronger password with at least 8 characters.");
       return;
     }
     setIsLoading(true);
@@ -956,10 +956,10 @@ export function ResetPasswordForm({ token }: { token: string }) {
           router.refresh();
         }, 3000);
       } else {
-        setErrorMsg(result.error || "Failed to reset password.");
+        setErrorMsg(result.error || "We couldn't reset your password. The link may have expired.");
       }
     } catch (err: any) {
-      setErrorMsg(err.message || "An unexpected error occurred.");
+      setErrorMsg(err.message || "We couldn't reset your password. Try requesting a new link.");
     } finally {
       setIsLoading(false);
     }

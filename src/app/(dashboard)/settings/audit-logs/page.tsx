@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const metadata = {
   title: "Audit Logs",
-  description: "View organization activity and audit logs.",
+  description: "View business activity and security audit logs.",
 };
 
 export default async function AuditLogsPage() {
@@ -40,7 +40,7 @@ export default async function AuditLogsPage() {
     <div className="space-y-space-6 w-full pb-space-8 animate-fade-in">
       <PageTitle 
         title="Audit Logs" 
-        description="A record of significant activity within your organization."
+        description="A record of significant security and account activity within your business."
       />
 
       <Card className="p-space-0 overflow-hidden mt-space-6">
@@ -59,7 +59,7 @@ export default async function AuditLogsPage() {
                             {logs.length === 0 ? (
                               <tr>
                                 <td colSpan={5} className="px-space-6 py-space-8 text-center text-muted-foreground">
-                                  No audit logs found.
+                                  No audit events recorded yet.
                                 </td>
                               </tr>
                             ) : (

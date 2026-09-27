@@ -129,7 +129,7 @@ export function classifyErrorCategory(error: unknown): AppErrorCategory {
  * Strips raw internal database errors, stack traces, and technical details,
  * mapping them into clear, safe, actionable messages for end users.
  */
-export function formatUserErrorMessage(error: unknown, fallbackMessage = "Unable to complete request. Please try again."): string {
+export function formatUserErrorMessage(error: unknown, fallbackMessage = "We couldn't complete this action. Try again."): string {
   if (!error) return fallbackMessage;
 
   if (error instanceof AppError) {
@@ -144,66 +144,66 @@ export function formatUserErrorMessage(error: unknown, fallbackMessage = "Unable
 
   // 1. Database & SQL constraints (Security: Never leak Postgres errors or DB schemas)
   if (lower.includes("unique constraint") || lower.includes("duplicate key")) {
-    if (lower.includes("email")) return "An account with this email address already exists.";
-    if (lower.includes("slug") || lower.includes("handle")) return "This identifier is already in use. Please choose another.";
+    if (lower.includes("email")) return "An account with this email address already exists. Sign in instead.";
+    if (lower.includes("slug") || lower.includes("handle")) return "This web address is already in use. Choose another.";
     if (lower.includes("domain")) return "This domain is already registered.";
     if (lower.includes("phone")) return "This phone number is already registered.";
     return "A record with these details already exists.";
   }
   if (lower.includes("foreign key") || lower.includes("violates foreign key") || lower.includes("referenced by")) {
-    return "This item is linked to other active records and cannot be modified or removed.";
+    return "This item is linked to other active records and cannot be removed.";
   }
   if (lower.includes("postgres") || lower.includes("drizzle") || lower.includes("queryfailed") || lower.includes("select ") || lower.includes("insert into") || lower.includes("update ") || lower.includes("delete from") || lower.includes("connection refused") || lower.includes("pg_") || lower.includes("relation \"") || lower.includes("syntax error at or near") || lower.includes("sqlstate")) {
-    return "Our database service is temporarily unavailable. Please try again in a few moments.";
+    return "Service is temporarily unavailable. Try again in a few moments.";
   }
 
   // 2. Authentication & Authorization
   if (lower.includes("unauthorized") || lower.includes("not authenticated") || lower.includes("invalid session") || lower.includes("session expired")) {
-    return "Your session has expired. Please sign in again to continue.";
+    return "Your session expired. Sign in again to continue.";
   }
   if (lower.includes("forbidden") || lower.includes("permission denied") || lower.includes("insufficient role") || lower.includes("access denied")) {
-    return "You don't have permission to perform this action. Contact your workspace administrator.";
+    return "You don't have permission to perform this action. Contact your business administrator.";
   }
 
   // 3. Not Found
   if (lower.includes("not found") || lower.includes("does not exist")) {
-    if (lower.includes("user")) return "Requested user could not be found.";
-    if (lower.includes("service")) return "Requested service could not be found.";
-    if (lower.includes("appointment")) return "Requested appointment could not be found.";
-    if (lower.includes("document")) return "Requested document could not be found.";
+    if (lower.includes("user")) return "User could not be found.";
+    if (lower.includes("service")) return "Service could not be found.";
+    if (lower.includes("appointment")) return "Appointment could not be found.";
+    if (lower.includes("document")) return "Document could not be found.";
     return "The requested record was not found.";
   }
 
   // 4. Rate limiting
   if (lower.includes("rate limit") || lower.includes("too many requests") || lower.includes("429")) {
-    return "Too many requests. Please wait a moment before trying again.";
+    return "Too many requests. Wait a moment before trying again.";
   }
 
   // 5. Integrations & External Providers
   if (lower.includes("stripe") || lower.includes("card_declined") || lower.includes("card was declined") || lower.includes("expired_card") || lower.includes("insufficient_funds")) {
-    if (lower.includes("card_declined") || lower.includes("declined")) return "Your payment card was declined. Please check your card details or try another card.";
-    if (lower.includes("expired_card")) return "Your card has expired. Please use a valid card.";
-    if (lower.includes("insufficient_funds")) return "Your card has insufficient funds.";
-    return "Payment processing is temporarily unavailable. Please try again.";
+    if (lower.includes("card_declined") || lower.includes("declined")) return "Your payment card was declined. Check your card details or use another payment method.";
+    if (lower.includes("expired_card")) return "Your card has expired. Use a card with a valid expiration date.";
+    if (lower.includes("insufficient_funds")) return "Your card has insufficient funds. Try another payment method.";
+    return "Payment processing is temporarily unavailable. Try again shortly.";
   }
   if (lower.includes("vapi") || lower.includes("elevenlabs") || lower.includes("deepgram")) {
-    return "The voice service is temporarily unavailable. Please try again shortly.";
+    return "Voice service is temporarily unavailable. Try again shortly.";
   }
   if (lower.includes("vonage") || lower.includes("sinch") || lower.includes("twilio")) {
-    return "Unable to send SMS notification. Please verify the phone number format.";
+    return "Could not send SMS notification. Check the phone number format.";
   }
   if (lower.includes("openai") || lower.includes("gemini")) {
-    return "AI generation is temporarily busy. Please retry your request in a moment.";
+    return "AI generation is temporarily busy. Try again in a moment.";
   }
 
   // 6. Configuration
   if (lower.includes("not configured") || lower.includes("missing api key") || lower.includes("unconfigured")) {
-    return "This integration isn't configured yet. Contact your administrator.";
+    return "This integration isn't configured yet. Contact your business administrator.";
   }
 
   // 7. Network & Timeout
   if (lower.includes("timeout") || lower.includes("timed out") || lower.includes("econnrefused") || lower.includes("fetch failed") || lower.includes("failed to fetch")) {
-    return "Network connection timed out. Please check your internet connection and try again.";
+    return "Connection timed out. Check your internet connection and try again.";
   }
 
   // 8. Validation (keep clean input validation messages)
@@ -235,7 +235,7 @@ export function formatUserErrorMessage(error: unknown, fallbackMessage = "Unable
 /**
  * Standardizes server action / API error response.
  */
-export function toSafeErrorResponse(error: unknown, fallbackMessage = "Unable to complete request. Please try again.") {
+export function toSafeErrorResponse(error: unknown, fallbackMessage = "We couldn't complete this action. Try again.") {
   const category = classifyErrorCategory(error);
   const message = formatUserErrorMessage(error, fallbackMessage);
   const retryable = ["NETWORK", "TIMEOUT", "PROVIDER", "RATE_LIMIT"].includes(category);

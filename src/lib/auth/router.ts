@@ -1,6 +1,6 @@
-import { db } from "@/server/db";
-import { users, organizations, memberships } from "@/server/db/schema";
-import { eq, and } from "drizzle-orm";
+import { RoutingContextBuilder } from "@/server/services/routing/context-builder";
+import { RouteDecisionEngine } from "@/server/services/routing/decision-engine";
+import { RouteDecision } from "@/server/services/routing/types";
 
 /**
  * Validates that a requested redirect path is a safe, internal relative URL.
@@ -40,127 +40,38 @@ export interface RouteResolution {
   hasVerifiedOrg: boolean;
   activeOrgId: string | null;
   userStatus: string;
+  decision?: RouteDecision;
 }
 
 /**
- * Single Authoritative Routing Engine:
- * Inspects backend state for the authenticated user and determines their exact target destination.
+ * Authoritative User Destination Resolver:
+ * Integrates with the centralized Smart Route Decision Engine to determine
+ * deterministic destination based on authentication, business existence,
+ * onboarding, subscription blockers, and interrupted workflows.
  */
 export async function resolveUserDestination(
   userId: string,
   intendedRedirect?: string | null,
   activeOrgId?: string | null
 ): Promise<RouteResolution> {
-  // 1. Fetch User Record
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
+  const safeIntended = validateIntendedDestination(intendedRedirect);
+  const requestedPath = safeIntended || "/dashboard";
 
-  if (!user) {
-    return {
-      destination: "/sign-in",
-      onboardingStatus: "not_started",
-      onboardingStep: "url",
-      hasVerifiedOrg: false,
-      activeOrgId: null,
-      userStatus: "unknown",
-    };
-  }
+  const context = await RoutingContextBuilder.build({
+    userId,
+    activeOrgId,
+    requestedPath,
+  });
 
-  if (user.status === "suspended") {
-    return {
-      destination: "/account-locked",
-      onboardingStatus: "not_started",
-      onboardingStep: "url",
-      hasVerifiedOrg: false,
-      activeOrgId: null,
-      userStatus: "suspended",
-    };
-  }
-
-  // 2. Fetch User Workspaces / Memberships
-  let selectedOrg: typeof organizations.$inferSelect | null = null;
-
-  if (activeOrgId) {
-    const [matchingMembership] = await db
-      .select()
-      .from(memberships)
-      .where(
-        and(
-          eq(memberships.userId, userId),
-          eq(memberships.organizationId, activeOrgId)
-        )
-      )
-      .limit(1);
-
-    if (matchingMembership) {
-      const [org] = await db
-        .select()
-        .from(organizations)
-        .where(eq(organizations.id, activeOrgId))
-        .limit(1);
-      selectedOrg = org || null;
-    }
-  }
-
-  // Fallback to primary membership
-  if (!selectedOrg) {
-    const [primaryMembership] = await db
-      .select()
-      .from(memberships)
-      .where(eq(memberships.userId, userId))
-      .limit(1);
-
-    if (primaryMembership) {
-      const [org] = await db
-        .select()
-        .from(organizations)
-        .where(eq(organizations.id, primaryMembership.organizationId))
-        .limit(1);
-      selectedOrg = org || null;
-    }
-  }
-
-  // 3. Evaluate Workspace & Onboarding State
-  if (!selectedOrg) {
-    return {
-      destination: "/onboarding",
-      onboardingStatus: "not_started",
-      onboardingStep: "url",
-      hasVerifiedOrg: false,
-      activeOrgId: null,
-      userStatus: user.status,
-    };
-  }
-
-  const onboardingStatus = (selectedOrg.onboardingStatus as any) || "not_started";
-  const onboardingStep = selectedOrg.onboardingStep || "url";
-  const isCompleted = onboardingStatus === "completed";
-
-  // If onboarding is NOT completed, direct them back to their exact unfinished step
-  if (!isCompleted) {
-    const stepParam = onboardingStep && onboardingStep !== "url" ? `?step=${onboardingStep}` : "";
-    return {
-      destination: `/onboarding${stepParam}`,
-      onboardingStatus,
-      onboardingStep,
-      hasVerifiedOrg: selectedOrg.verificationStatus === "verified",
-      activeOrgId: selectedOrg.id,
-      userStatus: user.status,
-    };
-  }
-
-  // 4. Onboarding is Completed -> Route to Safe Intended Destination or /dashboard
-  const safeDestination = validateIntendedDestination(intendedRedirect) || "/dashboard";
+  const decision = RouteDecisionEngine.resolve(context);
 
   return {
-    destination: safeDestination,
-    onboardingStatus: "completed",
-    onboardingStep: "completed",
-    hasVerifiedOrg: true,
-    activeOrgId: selectedOrg.id,
-    userStatus: user.status,
+    destination: decision.destination,
+    onboardingStatus: context.onboarding.status,
+    onboardingStep: context.onboarding.currentStep,
+    hasVerifiedOrg: !!context.business && context.onboarding.isCompleted,
+    activeOrgId: context.businessId,
+    userStatus: context.accountStatus,
+    decision,
   };
 }

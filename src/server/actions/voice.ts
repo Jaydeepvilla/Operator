@@ -14,7 +14,7 @@ export async function getPhoneNumbersAction() {
     const numbers = await voiceRepository.getPhoneNumbers(organizationId);
     return { success: true, numbers };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load phone numbers" };
+    return { success: false, error: error?.message || "We couldn't load phone numbers. Try again." };
   }
 }
 
@@ -29,7 +29,7 @@ export async function purchasePhoneNumberAction(data: { name: string; phoneNumbe
     revalidatePath("/voice");
     return { success: true, number };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to purchase phone number" };
+    return { success: false, error: error?.message || "We couldn't allocate this phone number. Try again." };
   }
 }
 
@@ -41,7 +41,7 @@ export async function toggleRecordingAction(phoneNumberId: string, isEnabled: bo
     revalidatePath("/voice");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to update recording preferences" };
+    return { success: false, error: error?.message || "We couldn't update call recording preferences. Try again." };
   }
 }
 
@@ -52,7 +52,7 @@ export async function getCallSessionsAction(limit = 50, offset = 0) {
     const sessions = await voiceRepository.getCallSessions(organizationId, limit, offset);
     return { success: true, sessions };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load call sessions" };
+    return { success: false, error: error?.message || "We couldn't load call history. Try again." };
   }
 }
 
@@ -63,7 +63,7 @@ export async function getCallSessionDetailsAction(sessionId: string) {
     const session = await voiceRepository.getCallSessionDetails(sessionId, organizationId);
     return { success: true, session };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load call session details" };
+    return { success: false, error: error?.message || "We couldn't load call details. Try again." };
   }
 }
 
@@ -74,7 +74,7 @@ export async function getVoicemailMessagesAction() {
     const voicemails = await voiceRepository.getVoicemails(organizationId);
     return { success: true, voicemails };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load voicemail messages" };
+    return { success: false, error: error?.message || "We couldn't load voicemail messages. Try again." };
   }
 }
 
@@ -86,7 +86,7 @@ export async function updateVoicemailStatusAction(voicemailId: string, status: "
     revalidatePath("/voice/dashboard");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to update voicemail callback status" };
+    return { success: false, error: error?.message || "We couldn't update voicemail status. Try again." };
   }
 }
 
@@ -106,7 +106,7 @@ export async function getVoiceSettingsAction() {
     }
     return { success: true, settings };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load voice settings" };
+    return { success: false, error: error?.message || "We couldn't load voice settings. Try again." };
   }
 }
 
@@ -124,7 +124,7 @@ export async function saveVoiceSettingsAction(data: {
     revalidatePath("/voice/settings");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to save voice settings" };
+    return { success: false, error: error?.message || "We couldn't save voice settings. Try again." };
   }
 }
 
@@ -135,7 +135,7 @@ export async function getRoutingRulesAction() {
     const rules = await voiceRepository.getRoutingRules(organizationId);
     return { success: true, rules };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load call routing rules" };
+    return { success: false, error: error?.message || "We couldn't load call routing rules. Try again." };
   }
 }
 
@@ -153,7 +153,7 @@ export async function createRoutingRuleAction(data: {
     revalidatePath("/voice/settings");
     return { success: true, rule };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to create routing rule" };
+    return { success: false, error: error?.message || "We couldn't create the routing rule. Try again." };
   }
 }
 
@@ -172,7 +172,7 @@ export async function updateRoutingRuleAction(ruleId: string, data: {
     revalidatePath("/voice/settings");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to update routing rule" };
+    return { success: false, error: error?.message || "We couldn't update the routing rule. Try again." };
   }
 }
 
@@ -184,7 +184,7 @@ export async function deleteRoutingRuleAction(ruleId: string) {
     revalidatePath("/voice/settings");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to delete routing rule" };
+    return { success: false, error: error?.message || "We couldn't delete the routing rule. Try again." };
   }
 }
 
@@ -195,7 +195,7 @@ export async function getVoiceAnalyticsAction() {
     const analytics = await voiceRepository.getAnalytics(organizationId);
     return { success: true, analytics };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load voice analytics" };
+    return { success: false, error: error?.message || "We couldn't load voice analytics. Try again." };
   }
 }
 
@@ -209,7 +209,7 @@ export async function getVoicePromptAction() {
       .where(and(eq(voicePrompts.organizationId, organizationId), eq(voicePrompts.isActive, true)));
     return { success: true, prompt: prompt || null };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to load custom prompt" };
+    return { success: false, error: error?.message || "We couldn't load your custom prompt. Try again." };
   }
 }
 
@@ -236,7 +236,7 @@ export async function saveVoicePromptAction(promptText: string) {
     revalidatePath("/settings/ai");
     return { success: true, prompt: inserted };
   } catch (error: any) {
-    return { success: false, error: error?.message || "Failed to save custom prompt" };
+    return { success: false, error: error?.message || "We couldn't save your custom prompt. Try again." };
   }
 }
 
