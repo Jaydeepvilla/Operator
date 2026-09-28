@@ -538,30 +538,9 @@ export async function scrapeAndAnalyzeWebsiteAction(rawUrl: string) {
       detectedIndustry = "Gym";
     }
 
-    // 7. Extract Real Services from Headings or Lists
+    // 7. Do NOT auto-generate fake services from website headings or bullet points
+    // Services must only be created if explicitly configured by the business owner
     const extractedServices: { name: string; duration: number; accepted: boolean }[] = [];
-    const lines = extracted.content.split("\n");
-    for (const line of lines) {
-      const cleanLine = line.trim();
-      if (cleanLine.startsWith("##") || cleanLine.startsWith("###") || cleanLine.startsWith("-") || cleanLine.startsWith("*")) {
-        const item = cleanLine.replace(/^#+\s*/, "").replace(/^[-*]\s*/, "").trim();
-        if (
-          item.length >= 3 &&
-          item.length <= 45 &&
-          !item.toLowerCase().includes("privacy") &&
-          !item.toLowerCase().includes("terms") &&
-          !item.toLowerCase().includes("cookie") &&
-          !item.toLowerCase().includes("contact") &&
-          !item.toLowerCase().includes("about") &&
-          !item.toLowerCase().includes("navigation")
-        ) {
-          if (!extractedServices.some(s => s.name.toLowerCase() === item.toLowerCase())) {
-            extractedServices.push({ name: item, duration: 30, accepted: true });
-          }
-        }
-      }
-      if (extractedServices.length >= 5) break;
-    }
 
     return {
       success: true,
