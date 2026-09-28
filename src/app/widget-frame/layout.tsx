@@ -7,7 +7,7 @@ export default function WidgetFrameLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="h-full w-full bg-transparent overflow-hidden">
+    <div className="dark h-full w-full bg-background overflow-hidden">
       {children}
     </div>
   );

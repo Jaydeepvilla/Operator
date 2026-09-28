@@ -87,20 +87,13 @@ function WidgetFrameContent() {
       .finally(() => setSettingsLoading(false));
   }, [orgId]);
 
-  // Set transparent document and body styling to eliminate any white corner bleed
+  // Ensure widget-frame always renders with the dark mode theme tokens
   useEffect(() => {
     if (typeof document !== "undefined") {
-      document.documentElement.style.backgroundColor = "transparent";
-      document.documentElement.style.background = "transparent";
-      document.body.style.backgroundColor = "transparent";
-      document.body.style.background = "transparent";
-      if (!settings?.theme?.themeMode || settings?.theme?.themeMode === "dark") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
     }
-  }, [settings?.theme?.themeMode]);
+  }, []);
 
   // 2. Initialize or Recover Conversation Session
   useEffect(() => {
@@ -400,11 +393,8 @@ function WidgetFrameContent() {
 
   return (
     <div
-      className="flex flex-col h-dvh w-full overflow-hidden text-foreground antialiased font-sans select-text rounded-[18px]"
-      style={{
-        ...brandingStyles,
-        backgroundColor: settings.theme.backgroundColor || "#0a0d14",
-      }}
+      className="flex flex-col h-dvh w-full overflow-hidden text-foreground antialiased bg-background font-sans select-text"
+      style={brandingStyles}
     >
       {/* 1. Header */}
       <WidgetHeader
@@ -428,7 +418,7 @@ function WidgetFrameContent() {
             welcomeMessage={settings.branding.welcomeMessage}
             starterQuestions={settings.customization?.starterQuestions}
             hasServices={services.length > 0}
-            hasBooking={services.length > 0 && staff.length > 0}
+            hasBooking={services.length > 0}
             onSelectIntent={handleWelcomeIntent}
           />
         )}

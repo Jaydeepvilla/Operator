@@ -1,7 +1,8 @@
 html,
 body {
-  background: transparent !important;
-  background-color: transparent !important;
+  background: #030712 !important;
+  background-color: #030712 !important;
+  color-scheme: dark !important;
   overflow: hidden !important;
   margin: 0 !important;
   padding: 0 !important;
