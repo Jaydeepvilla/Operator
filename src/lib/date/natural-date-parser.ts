@@ -243,6 +243,27 @@ export function parseNaturalDateTime(
   const now = context.referenceDate || context.now || new Date();
   const nowParts = getNowPartsInTimezone(now, timezone);
 
+  // 0. Check for valid ISO 8601 strings (e.g. 2026-09-28T10:00:00.000Z)
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/i.test(trimmed)) {
+    const parsedDate = new Date(trimmed);
+    if (!isNaN(parsedDate.getTime())) {
+      const parts = getNowPartsInTimezone(parsedDate, timezone);
+      const isoDate = `${parts.year}-${parts.month.toString().padStart(2, "0")}-${parts.day.toString().padStart(2, "0")}`;
+      const isoTime = `${parts.hour.toString().padStart(2, "0")}:${parts.minute.toString().padStart(2, "0")}`;
+      return {
+        success: true,
+        date: parsedDate,
+        isoDate,
+        isoTime,
+        timezone,
+        confidence: "high",
+        interpretation: `${isoDate} at ${isoTime}`,
+        precision: "datetime",
+        isFuture: parsedDate.getTime() > now.getTime(),
+      };
+    }
+  }
+
   // 1. Check for explicit unsupported/vague expressions
   for (const pattern of UNSUPPORTED_PATTERNS) {
     if (pattern.test(lower)) {

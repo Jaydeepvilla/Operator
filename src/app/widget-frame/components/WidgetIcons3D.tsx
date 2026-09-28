@@ -185,7 +185,7 @@ export function Services3DIcon({ size = 24, className }: { size?: number; classN
           <stop stopColor="#6366f1" />
           <stop offset="1" stopColor="#312e81" />
         </linearGradient>
-        <filter id="srvShadow" x="1" y="2" width="30" height="30">
+        <filter id="srvShadow" x="1" y="2" width="30" height="30" filterUnits="userSpaceOnUse">
           <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#000" floodOpacity="0.18" />
         </filter>
       </defs>
@@ -219,7 +219,7 @@ export function Pricing3DIcon({ size = 24, className }: { size?: number; classNa
           <stop offset="50%" stopColor="#f59e0b" />
           <stop offset="100%" stopColor="#b45309" />
         </radialGradient>
-        <filter id="coinShadow" x="1" y="1" width="30" height="30">
+        <filter id="coinShadow" x="1" y="1" width="30" height="30" filterUnits="userSpaceOnUse">
           <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#78350f" floodOpacity="0.25" />
         </filter>
       </defs>
@@ -262,7 +262,7 @@ export function Clock3DIcon({ size = 24, className }: { size?: number; className
           <stop offset="0%" stopColor="#f1f5f9" />
           <stop offset="100%" stopColor="#94a3b8" />
         </radialGradient>
-        <filter id="clockShadow" x="1" y="1" width="30" height="30">
+        <filter id="clockShadow" x="1" y="1" width="30" height="30" filterUnits="userSpaceOnUse">
           <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#0f172a" floodOpacity="0.2" />
         </filter>
       </defs>

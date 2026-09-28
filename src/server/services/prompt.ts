@@ -59,7 +59,7 @@ ${business.name} is a dedicated local service provider.`);
         .join("\n");
       promptParts.push(`Available Services:\n${servicesList}`);
     } else {
-      promptParts.push(`Available Services: No services configured for direct online booking.`);
+      promptParts.push(`Available Services: NONE CONFIGURED. The business has not set up any services, treatments, packages, or pricing.`);
     }
 
     promptParts.push(`Business Operating Hours:
@@ -98,7 +98,7 @@ Do not ask multiple questions at once. Ask only this question.`);
 4. If the user asks about services or what you offer, summarize the actual services listed above.
 5. If the user asks "How much?", quote the actual price from the catalog for the service discussed.
 6. If the user asks about hours or opening times, refer to the Operating Hours section above.
-7. NEVER invent services, prices, or policies that are not listed in this prompt. If unknown, say: "I don't have that specific information configured yet, but our team can help. Would you like me to connect you?"
+7. NEVER invent services, prices, or policies that are not listed in this prompt. If the business has no services configured, NEVER make up, guess, or list any services or pricing. Instead say: "We do not have any services or pricing configured for online booking yet. Please contact our front desk directly."
 8. Speak as "${business.name}". Never mention outdated legacy brand names.`);
 
     if (customPrompt?.promptText) {

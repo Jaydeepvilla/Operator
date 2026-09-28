@@ -11,6 +11,7 @@ export interface TimeSlot {
   startTime: string; // "HH:MM"
   endTime: string;   // "HH:MM"
   staffId: string;
+  staffMemberId?: string;
   staffName: string;
 }
 
@@ -65,15 +66,29 @@ export const availabilityService = {
       const bufferBefore = rules?.defaultBufferBefore ?? 0;
       const bufferAfter = rules?.defaultBufferAfter ?? 0;
 
-      // 3. Resolve eligible staff members
+      // 3. Resolve eligible staff members with multi-tier fallback
       let eligibleStaff: any[] = [];
       try {
         if (staffMemberId) {
           const staff = await staffRepository.findById(staffMemberId);
           if (staff && staff.isActive) eligibleStaff = [staff];
-        } else {
-          const assignments = await staffRepository.listStaffForService(serviceId);
-          eligibleStaff = assignments.map((a) => a.staffMember);
+        }
+        if (eligibleStaff.length === 0) {
+          const assignments = await staffRepository.listStaffForService(serviceId, organizationId);
+          eligibleStaff = assignments.map((a) => a.staffMember).filter((s) => s && s.isActive);
+        }
+        if (eligibleStaff.length === 0) {
+          const allStaff = await staffRepository.list(organizationId);
+          eligibleStaff = allStaff.filter((s) => s.isActive);
+        }
+        if (eligibleStaff.length === 0) {
+          const defaultStaff = await staffRepository.create({
+            organizationId,
+            name: "General Specialist",
+            role: "Front Desk & Service Team",
+            isActive: true,
+          });
+          eligibleStaff = [defaultStaff];
         }
       } catch (e) {
         // Fallback
@@ -87,6 +102,8 @@ export const availabilityService = {
       const [year, month, day] = dateStr.split("-").map(Number);
       const targetDate = new Date(year, month - 1, day);
       const dayOfWeek = targetDate.getDay(); // 0 (Sunday) to 6 (Saturday)
+      const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+      const currentDayName = dayNames[dayOfWeek];
 
       // Check rules: min lead time
       const now = new Date();
@@ -107,9 +124,7 @@ export const availabilityService = {
 
       for (const staff of eligibleStaff) {
         // 4. Resolve shifts for the target date
-        let shifts: Array<{ start: string; end: string }> = [
-          { start: "09:00", end: "17:00" },
-        ];
+        let shifts: Array<{ start: string; end: string }> = [];
 
         try {
           const exceptions = await staffRepository.getAvailabilityExceptions(staff.id);
@@ -119,16 +134,29 @@ export const availabilityService = {
             if (!dayException.isAvailable) {
               continue;
             }
-            shifts = (dayException.shifts as Array<{ start: string; end: string }>) || shifts;
+            shifts = (dayException.shifts as Array<{ start: string; end: string }>) || [];
           } else {
             const schedules = await staffRepository.getSchedules(staff.id);
             const daySchedule = schedules.find((s) => s.dayOfWeek === dayOfWeek);
-            if (daySchedule) {
-              shifts = (daySchedule.shifts as Array<{ start: string; end: string }>) || shifts;
+            if (daySchedule && Array.isArray(daySchedule.shifts) && daySchedule.shifts.length > 0) {
+              shifts = daySchedule.shifts as Array<{ start: string; end: string }>;
             }
           }
         } catch (e) {
-          // Fallback to default shifts
+          // Fallback
+        }
+
+        // If no staff-specific shifts are defined, check organization business hours
+        if (shifts.length === 0) {
+          const bHours = settings?.businessHours?.[currentDayName];
+          if (bHours && !bHours.closed && bHours.open && bHours.close) {
+            shifts = [{ start: bHours.open, end: bHours.close }];
+          } else if (!bHours && dayOfWeek !== 0 && dayOfWeek !== 6) {
+            // Default 9am-5pm for weekdays
+            shifts = [{ start: "09:00", end: "17:00" }];
+          } else if (bHours?.closed) {
+            continue; // Business explicitly closed this day
+          }
         }
 
         if (shifts.length === 0) continue;
@@ -202,6 +230,7 @@ export const availabilityService = {
               startTime: startTimeStr,
               endTime: endTimeStr,
               staffId: staff.id,
+              staffMemberId: staff.id,
               staffName: staff.name,
             });
           }

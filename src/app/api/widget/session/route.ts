@@ -71,20 +71,11 @@ export async function POST(req: NextRequest) {
       deviceInfo
     });
 
-    // Seed initial system welcome message
-    const branding = await widgetRepository.getBranding(orgId);
-    const welcomeMessage = await messagesRepository.create({
-      organizationId: orgId,
-      conversationId: conversation.id,
-      sender: "assistant",
-      content: branding.welcomeMessage
-    });
-
     return NextResponse.json({
       success: true,
       sessionId: session.id,
       conversationId: conversation.id,
-      messages: [welcomeMessage]
+      messages: []
     }, { headers: corsHeaders });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || "Failed to manage session" }, { status: 500, headers: corsHeaders });

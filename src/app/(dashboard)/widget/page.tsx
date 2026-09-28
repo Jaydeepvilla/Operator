@@ -34,6 +34,7 @@ import {
   HelpCircle,
   ShieldCheck,
   CheckCircle2,
+  Upload,
 } from "lucide-react";
 import { Button } from "@/components/shared/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shared/card";
@@ -298,6 +299,36 @@ export default function WidgetSettingsPage() {
       toast.error("Save Failed", res.error || "Failed to save configurations.");
     }
     setIsSaving(false);
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Invalid File Type", "Please upload an image file (PNG, JPG, SVG, WebP).");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("File Too Large", "Logo file size must be less than 2MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl) {
+        setBranding((prev) => ({ ...prev, logoUrl: dataUrl }));
+        toast.success("Logo Ready", "Your logo is loaded. Click 'Save Changes' to apply.");
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveLogo = () => {
+    setBranding((prev) => ({ ...prev, logoUrl: "" }));
+    toast.success("Logo Cleared", "Custom logo removed. Remember to click 'Save Changes'.");
   };
 
   const handleAddDomain = async (e: React.FormEvent) => {
@@ -685,6 +716,83 @@ Platform-specific guides:
                     />
                   </div>
 
+                  {/* Brand Logo Upload */}
+                  <div className="space-y-space-2 pt-space-2 border-t border-border/30">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-caption font-medium text-foreground">Brand Logo</Label>
+                      {branding.logoUrl && (
+                        <span className="text-[11px] text-emerald-500 font-medium flex items-center gap-1">
+                          <CheckCircle2 className="h-3 w-3" /> Custom Logo Active
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[12px] text-muted-foreground">
+                      Upload your business logo to replace the default AI orb in the widget header and live previews.
+                    </p>
+                    
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-space-4 pt-space-1">
+                      <div className="relative shrink-0 w-16 h-16 rounded-full border-2 border-dashed border-border/70 flex items-center justify-center overflow-hidden bg-muted/20 shadow-inner">
+                        {branding.logoUrl ? (
+                          <>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={branding.logoUrl}
+                              alt="Brand Logo"
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleRemoveLogo}
+                              className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex items-center justify-center text-white transition-opacity cursor-pointer"
+                              title="Remove logo"
+                            >
+                              <Trash2 className="h-4 w-4 text-red-400" />
+                            </button>
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center text-muted-foreground">
+                            <Upload className="h-5 w-5 mb-0.5 opacity-60" />
+                            <span className="text-[9px] uppercase font-mono tracking-wider opacity-60">No logo</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 space-y-space-2 w-full">
+                        <div className="flex items-center gap-space-2">
+                          <label className="cursor-pointer">
+                            <input
+                              type="file"
+                              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                              onChange={handleLogoUpload}
+                              className="hidden"
+                            />
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-border bg-background hover:bg-muted/80 transition-colors cursor-pointer text-foreground shadow-2xs">
+                              <Upload className="h-3.5 w-3.5 text-primary" />
+                              {branding.logoUrl ? "Replace Logo Image" : "Upload Logo Image"}
+                            </span>
+                          </label>
+                          {branding.logoUrl && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleRemoveLogo}
+                              className="text-xs text-destructive hover:bg-destructive/10 h-7 px-2"
+                            >
+                              Remove
+                            </Button>
+                          )}
+                        </div>
+                        <Input
+                          placeholder="Or paste external image URL (https://...)"
+                          value={branding.logoUrl}
+                          onChange={(e) => setBranding({ ...branding, logoUrl: e.target.value })}
+                          className="bg-background/50 border-border/50 text-xs h-8"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Primary Color Palette Presets */}
                   <div className="space-y-space-2.5 pt-space-2">
                     <Label className="text-caption font-medium">Brand Accent Color</Label>
@@ -1068,12 +1176,23 @@ Platform-specific guides:
                   style={{ borderColor: theme.borderColor }}
                 >
                   <div className="flex items-center gap-space-2.5">
-                    <div
-                      className="h-8 w-8 radius-full flex items-center justify-center text-white font-bold text-xs"
-                      style={{ backgroundColor: theme.primaryColor }}
-                    >
-                      {branding.companyName ? branding.companyName[0].toUpperCase() : "O"}
-                    </div>
+                    {branding.logoUrl ? (
+                      <div className="h-8 w-8 radius-full overflow-hidden border border-border/40 shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={branding.logoUrl}
+                          alt="Brand Logo"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className="h-8 w-8 radius-full flex items-center justify-center text-white font-bold text-xs"
+                        style={{ backgroundColor: theme.primaryColor }}
+                      >
+                        {branding.companyName ? branding.companyName[0].toUpperCase() : "O"}
+                      </div>
+                    )}
                     <div>
                       <h4 className="text-caption font-semibold leading-tight" style={{ color: theme.textColor }}>
                         {branding.companyName || "Operator AI Receptionist"}
@@ -1216,13 +1335,22 @@ Platform-specific guides:
 
                   {/* Circular Launcher Icon */}
                   <div
-                    className="h-12 w-12 radius-full flex items-center justify-center text-white shadow-lg cursor-pointer hover:scale-105 transition-transform"
+                    className="h-12 w-12 radius-full flex items-center justify-center text-white shadow-lg cursor-pointer hover:scale-105 transition-transform overflow-hidden"
                     style={{
                       backgroundColor: theme.primaryColor,
                       boxShadow: `0 4px 20px ${theme.primaryColor}50`,
                     }}
                   >
-                    <MessageSquare className="h-6 w-6" />
+                    {branding.logoUrl ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={branding.logoUrl}
+                        alt="Logo"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <MessageSquare className="h-6 w-6" />
+                    )}
                   </div>
                 </div>
               </div>

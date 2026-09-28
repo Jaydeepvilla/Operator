@@ -1066,6 +1066,43 @@ export const orchestratorService = {
         "contact",
       ].includes(intentResult.intent);
 
+      // ZERO-SERVICE HALLUCINATION GUARD: If business has not configured any services, do not hallucinate services or pricing
+      if (
+        (["services", "service_details", "pricing"].includes(intentResult.intent) ||
+          /\b(services?|pricing|prices?|packages?|treatments?|rates?|offerings?)\b/i.test(userMessage)) &&
+        (!business.services || business.services.length === 0)
+      ) {
+        const noServicesResponse = `We have not configured our online services or pricing catalog yet for ${business.name}. Please contact our front desk at ${business.phone || "our team"} to ask about our offerings or to speak with staff.`;
+        const dynamicActions = actionEngine.determineNextBestActions(business, {
+          intent: "services",
+          lastUserMessage: userMessage,
+        });
+
+        await messagesRepository.create({
+          organizationId,
+          conversationId: activeConversationId,
+          sender: "assistant",
+          content: noServicesResponse,
+          intentDetected: intentResult.intent,
+          confidenceScore: "0.95",
+        });
+
+        sessionState.conversationContext.lastIntent = "services";
+        sessionState.conversationContext.lastAssistantMessage = noServicesResponse;
+        await sessionsRepository.upsert({ organizationId, conversationId: activeConversationId, state: sessionState });
+
+        return {
+          conversationId: activeConversationId,
+          assistantMessage: noServicesResponse,
+          citations: [],
+          intent: intentResult.intent,
+          confidence: 0.95,
+          entities: {},
+          actions: dynamicActions,
+          isEscalated: false,
+        };
+      }
+
       // HALLUCINATION GUARD: Only fallback to knowledge gap if query is NOT answered by the business profile/catalog
       if (
         !isBusinessContextQuery &&

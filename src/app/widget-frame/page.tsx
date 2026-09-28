@@ -87,6 +87,21 @@ function WidgetFrameContent() {
       .finally(() => setSettingsLoading(false));
   }, [orgId]);
 
+  // Set transparent document and body styling to eliminate any white corner bleed
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.style.backgroundColor = "transparent";
+      document.documentElement.style.background = "transparent";
+      document.body.style.backgroundColor = "transparent";
+      document.body.style.background = "transparent";
+      if (!settings?.theme?.themeMode || settings?.theme?.themeMode === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    }
+  }, [settings?.theme?.themeMode]);
+
   // 2. Initialize or Recover Conversation Session
   useEffect(() => {
     if (!orgId) return;
@@ -385,13 +400,17 @@ function WidgetFrameContent() {
 
   return (
     <div
-      className="flex flex-col h-dvh w-full overflow-hidden text-foreground antialiased bg-background font-sans select-text"
-      style={brandingStyles}
+      className="flex flex-col h-dvh w-full overflow-hidden text-foreground antialiased font-sans select-text rounded-[18px]"
+      style={{
+        ...brandingStyles,
+        backgroundColor: settings.theme.backgroundColor || "#0a0d14",
+      }}
     >
       {/* 1. Header */}
       <WidgetHeader
         companyName={settings.branding.companyName}
         tagline={settings.branding.tagline}
+        logoUrl={settings.branding.logoUrl}
         aiState={aiState}
         onResetConversation={handleResetConversation}
         onClose={() => postToParent({ type: OPERATOR_WIDGET_EVENTS.TOGGLE })}
@@ -402,18 +421,20 @@ function WidgetFrameContent() {
         ref={scrollRef}
         className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 space-y-3.5 scroll-smooth"
       >
-        {/* Zero-empty-state welcome layer when conversation is brand new */}
-        {messages.length === 0 && (
+        {/* Zero-empty-state welcome layer when conversation has not been initiated by the visitor */}
+        {!messages.some((m) => m.sender === "user") && activeInlineView === "none" && (
           <WidgetWelcome
             companyName={settings.branding.companyName}
             welcomeMessage={settings.branding.welcomeMessage}
             starterQuestions={settings.customization?.starterQuestions}
+            hasServices={services.length > 0}
+            hasBooking={services.length > 0 && staff.length > 0}
             onSelectIntent={handleWelcomeIntent}
           />
         )}
 
-        {/* Message bubbles */}
-        {messages.map((msg) => {
+        {/* Message bubbles (rendered once visitor has interacted) */}
+        {messages.some((m) => m.sender === "user") && messages.map((msg) => {
           const isUser = msg.sender === "user";
           return (
             <div

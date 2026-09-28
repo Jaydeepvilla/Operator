@@ -31,7 +31,9 @@ interface Staff {
 interface Slot {
   startTime: string; // HH:mm
   endTime?: string;
+  staffId?: string;
   staffMemberId?: string;
+  staffName?: string;
 }
 
 interface WidgetSchedulerProps {
@@ -68,12 +70,22 @@ export function WidgetScheduler({
   const [selectedService, setSelectedService] = useState<Service | null>(initialService || null);
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null); // null = "Any Available"
 
-  // Date selection
-  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+  // Date selection in local browser calendar context
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }, []);
+
   const tomorrowStr = useMemo(() => {
     const d = new Date();
     d.setDate(d.getDate() + 1);
-    return d.toISOString().split("T")[0];
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   }, []);
 
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
@@ -132,9 +144,15 @@ export function WidgetScheduler({
     const [h, m] = selectedSlot.startTime.split(":").map(Number);
     targetDate.setHours(h, m, 0, 0);
 
+    const staffIdToUse =
+      selectedStaff?.id ||
+      selectedSlot.staffId ||
+      selectedSlot.staffMemberId ||
+      "";
+
     const res = await onBookAppointment({
       serviceId: selectedService.id,
-      staffMemberId: selectedStaff?.id || "",
+      staffMemberId: staffIdToUse,
       targetDate,
       customerName: name,
       customerEmail: email,
@@ -205,23 +223,29 @@ export function WidgetScheduler({
           <div className="flex flex-col gap-2">
             <span className="text-[11px] text-muted-foreground">Select a service to book:</span>
             <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto pr-1">
-              {services.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedService(s);
-                    setStep("staff");
-                  }}
-                  className="flex items-center justify-between p-2.5 rounded-lg border border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all text-left cursor-pointer"
-                >
-                  <div>
-                    <div className="text-xs font-semibold text-foreground">{s.name}</div>
-                    <div className="text-[11px] text-muted-foreground">{s.duration} mins</div>
-                  </div>
-                  <span className="text-xs font-semibold text-primary">${s.price}</span>
-                </button>
-              ))}
+              {services.length === 0 ? (
+                <div className="py-8 text-center text-xs text-muted-foreground italic">
+                  No bookable services have been set up yet. Please contact our staff directly for appointments.
+                </div>
+              ) : (
+                services.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedService(s);
+                      setStep("staff");
+                    }}
+                    className="flex items-center justify-between p-2.5 rounded-lg border border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all text-left cursor-pointer"
+                  >
+                    <div>
+                      <div className="text-xs font-semibold text-foreground">{s.name}</div>
+                      <div className="text-[11px] text-muted-foreground">{s.duration} mins</div>
+                    </div>
+                    <span className="text-xs font-semibold text-primary">${s.price}</span>
+                  </button>
+                ))
+              )}
             </div>
           </div>
         )}
