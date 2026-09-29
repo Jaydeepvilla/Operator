@@ -6,3 +6,5 @@ export { RevenueOpportunitiesPanel } from "./RevenueOpportunitiesPanel";
 export { CustomerExperiencePanel } from "./CustomerExperiencePanel";
 export { WeeklyReviewPanel } from "./WeeklyReviewPanel";
 export { IntelligenceDashboardClient } from "./IntelligenceDashboardClient";
+export { ContinuousLearningPanel } from "./ContinuousLearningPanel";
+

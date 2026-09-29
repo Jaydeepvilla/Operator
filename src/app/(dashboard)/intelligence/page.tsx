@@ -26,7 +26,8 @@ import { subscriptions } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 
 import { PageTitle } from "@/components/shared/page-title";
-import { IntelligenceDashboardClient } from "@/components/intelligence";
+import { IntelligenceDashboardClient, ContinuousLearningPanel } from "@/components/intelligence";
+
 
 export const metadata = {
   title: "AI Executive Command Center | Operator",
@@ -138,6 +139,8 @@ export default async function IntelligencePage() {
           description="Real-time operations dashboard, Operator intelligence summary, priority tasks, and business growth ideas."
         />
       </div>
+
+      <ContinuousLearningPanel />
 
       <IntelligenceDashboardClient
         orgName={org.name || "your business"}

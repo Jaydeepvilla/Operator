@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrganizationAccess } from "@/lib/auth/server";
-import { learningEngine } from "@/server/services/learning-engine";
+import { learningEngine, proposalApplicator } from "@/server/services/learning-engine";
+import { knowledgeGapEngine } from "@/server/services/learning/knowledge-gap-engine";
 import { db } from "@/server/db";
-import { aiImprovementProposals, faqItems } from "@/server/db/schema";
+import { aiImprovementProposals } from "@/server/db/schema";
 import { eq, and } from "drizzle-orm";
 
 /**
@@ -29,21 +30,49 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/dashboard/learning
- * Manage proposals: approve, reject, apply
- * Body: { action: "approve" | "reject" | "apply", proposalId: string, notes?: string }
+ * Manage proposals and learning actions: approve, reject, apply, rollback, run_cycle, resolve_gap, run_regression
  */
 export async function POST(req: NextRequest) {
   try {
     const { organizationId, userId } = await requireOrganizationAccess();
 
     const body = await req.json();
-    const { action, proposalId, notes } = body;
+    const { action, proposalId, gapId, notes } = body;
 
-    if (!action || !proposalId) {
-      return NextResponse.json({ error: "Missing action or proposalId" }, { status: 400 });
+    if (!action) {
+      return NextResponse.json({ error: "Missing action" }, { status: 400 });
     }
 
-    // Verify proposal belongs to this org
+    const reviewer = userId || "admin";
+
+    // 1. Trigger Manual Learning Cycle
+    if (action === "run_cycle") {
+      const cycleResult = await learningEngine.runCycle(organizationId);
+      const summary = await learningEngine.getDashboardSummary(organizationId);
+      return NextResponse.json({ success: true, action: "run_cycle", cycleResult, ...summary });
+    }
+
+    // 2. Trigger Regression Test Suite
+    if (action === "run_regression") {
+      const regressionResult = await learningEngine.runRegressionCheck(organizationId);
+      return NextResponse.json({ success: true, action: "run_regression", regressionResult });
+    }
+
+    // 3. Resolve Knowledge Gap
+    if (action === "resolve_gap") {
+      if (!gapId) {
+        return NextResponse.json({ error: "Missing gapId" }, { status: 400 });
+      }
+      await knowledgeGapEngine.resolveGap(gapId, organizationId);
+      return NextResponse.json({ success: true, action: "resolve_gap", gapId });
+    }
+
+    // Proposal-specific actions require proposalId
+    if (!proposalId) {
+      return NextResponse.json({ error: "Missing proposalId" }, { status: 400 });
+    }
+
+    // Verify proposal belongs to this org (Strict Tenant Isolation)
     const [proposal] = await db
       .select()
       .from(aiImprovementProposals)
@@ -55,10 +84,8 @@ export async function POST(req: NextRequest) {
       );
 
     if (!proposal) {
-      return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
+      return NextResponse.json({ error: "Proposal not found or access denied" }, { status: 404 });
     }
-
-    const reviewer = userId || "admin";
 
     switch (action) {
       case "approve":
@@ -86,35 +113,21 @@ export async function POST(req: NextRequest) {
         break;
 
       case "apply":
-        const changes = proposal.proposedChanges as any;
-
-        if (changes?.type === "faq_addition" && changes.question && changes.suggestedAnswer) {
-          // Actually add the FAQ to the knowledge base
-          await db.insert(faqItems).values({
-            organizationId,
-            question: changes.question,
-            answer: changes.suggestedAnswer,
-            category: changes.category || "AI-Generated",
-            isActive: true,
-          });
+        const applyRes = await proposalApplicator.applyProposal(proposalId, organizationId, reviewer);
+        if (!applyRes.success) {
+          return NextResponse.json({ error: applyRes.error || "Failed to apply proposal" }, { status: 500 });
         }
+        break;
 
-        await db
-          .update(aiImprovementProposals)
-          .set({
-            status: "applied",
-            appliedAt: new Date(),
-            appliedBy: reviewer,
-            reviewedBy: reviewer,
-            reviewNotes: notes || "Applied via dashboard",
-            rollbackData: changes,
-            updatedAt: new Date(),
-          })
-          .where(eq(aiImprovementProposals.id, proposalId));
+      case "rollback":
+        const rollbackRes = await proposalApplicator.rollbackProposal(proposalId, organizationId, reviewer);
+        if (!rollbackRes.success) {
+          return NextResponse.json({ error: rollbackRes.error || "Failed to rollback proposal" }, { status: 500 });
+        }
         break;
 
       default:
-        return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+        return NextResponse.json({ error: `Invalid action: ${action}` }, { status: 400 });
     }
 
     return NextResponse.json({ success: true, action, proposalId });

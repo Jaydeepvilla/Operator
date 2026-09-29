@@ -3463,3 +3463,111 @@ export const aiImprovementProposalsRelations = relations(aiImprovementProposals,
     references: [aiLearningSignals.id],
   }),
 }));
+
+// ============================================================
+// CONTINUOUS LEARNING & KNOWLEDGE GAP ENGINE
+// ============================================================
+
+export const aiKnowledgeGaps = pgTable("ai_knowledge_gaps", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id")
+    .references(() => organizations.id, { onDelete: "cascade" })
+    .notNull(),
+  queryText: text("query_text").notNull(),
+  normalizedTopic: text("normalized_topic").notNull(),
+  frequency: integer("frequency").default(1).notNull(),
+  gapType: text("gap_type").default("unknown").notNull(), // unknown, conflicting, ambiguous, outdated
+  status: text("status").default("open").notNull(), // open, resolved, dismissed
+  resolvedFaqId: uuid("resolved_faq_id").references(() => faqItems.id, { onDelete: "set null" }),
+  sampleConversations: jsonb("sample_conversations").default([]).notNull(),
+  lastSeenAt: timestamp("last_seen_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_knowledge_gaps_org_topic").on(table.organizationId, table.normalizedTopic),
+  index("idx_knowledge_gaps_org_status").on(table.organizationId, table.status),
+]);
+
+export const aiKnowledgeConflicts = pgTable("ai_knowledge_conflicts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id")
+    .references(() => organizations.id, { onDelete: "cascade" })
+    .notNull(),
+  topic: text("topic").notNull(),
+  description: text("description").notNull(),
+  sourceA: text("source_a").notNull(),
+  sourceB: text("source_b").notNull(),
+  status: text("status").default("open").notNull(), // open, resolved, dismissed
+  severity: text("severity").default("medium").notNull(), // low, medium, high, critical
+  metadata: jsonb("metadata").default({}).notNull(),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_knowledge_conflicts_org_status").on(table.organizationId, table.status),
+]);
+
+export const aiRegressionTests = pgTable("ai_regression_tests", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id")
+    .references(() => organizations.id, { onDelete: "cascade" })
+    .notNull(),
+  name: text("name").notNull(),
+  query: text("query").notNull(),
+  expectedIntent: text("expected_intent").notNull(),
+  forbiddenKeywords: jsonb("forbidden_keywords").default([]).notNull(),
+  requiredKeywords: jsonb("required_keywords").default([]).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_regression_tests_org").on(table.organizationId, table.isActive),
+]);
+
+export const aiEvaluationRuns = pgTable("ai_evaluation_runs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id")
+    .references(() => organizations.id, { onDelete: "cascade" })
+    .notNull(),
+  runType: text("run_type").default("scheduled").notNull(), // scheduled, pre_deployment, manual
+  totalTests: integer("total_tests").default(0).notNull(),
+  passedCount: integer("passed_count").default(0).notNull(),
+  failedCount: integer("failed_count").default(0).notNull(),
+  accuracy: text("accuracy").default("0.0").notNull(),
+  groundednessScore: text("groundedness_score").default("1.0").notNull(),
+  results: jsonb("results").default([]).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_eval_runs_org").on(table.organizationId, table.createdAt),
+]);
+
+export const aiKnowledgeGapsRelations = relations(aiKnowledgeGaps, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [aiKnowledgeGaps.organizationId],
+    references: [organizations.id],
+  }),
+  resolvedFaq: one(faqItems, {
+    fields: [aiKnowledgeGaps.resolvedFaqId],
+    references: [faqItems.id],
+  }),
+}));
+
+export const aiKnowledgeConflictsRelations = relations(aiKnowledgeConflicts, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [aiKnowledgeConflicts.organizationId],
+    references: [organizations.id],
+  }),
+}));
+
+export const aiRegressionTestsRelations = relations(aiRegressionTests, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [aiRegressionTests.organizationId],
+    references: [organizations.id],
+  }),
+}));
+
+export const aiEvaluationRunsRelations = relations(aiEvaluationRuns, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [aiEvaluationRuns.organizationId],
+    references: [organizations.id],
+  }),
+}));
+

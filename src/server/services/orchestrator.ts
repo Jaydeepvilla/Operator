@@ -31,6 +31,8 @@ import { crmDeduplicationService } from "./crm/deduplication";
 import { bookingService } from "./booking";
 import { availabilityService } from "./availability";
 import { eq, and, desc } from "drizzle-orm";
+import { interactionEvaluator } from "./learning/evaluator";
+import { knowledgeGapEngine } from "./learning/knowledge-gap-engine";
 
 export interface OrchestratorInput {
   organizationId: string;
@@ -196,6 +198,38 @@ export const orchestratorService = {
 
       // 4. Load Conversation State (memory & history)
       const convState = await memoryService.getConversationState(activeConversationId);
+
+      // RUNTIME CONTINUOUS LEARNING: Evaluate turn for corrections, repetitions & implicit feedback
+      const turnEval = interactionEvaluator.evaluateTurn({
+        userMessage,
+        lastAssistantMessage: convState.lastAssistantMessage || undefined,
+        recentHistory: convState.messages,
+        businessProfileText: business.description || "",
+      });
+
+      if (turnEval.isCorrection) {
+        await db.insert(conversationEvents).values({
+          organizationId,
+          conversationId: activeConversationId,
+          eventType: "user_correction",
+          payload: {
+            correctionType: turnEval.correctionType,
+            userMessage: userMessage.substring(0, 300),
+            lastAssistantMessage: (convState.lastAssistantMessage || "").substring(0, 300),
+          },
+        }).catch(() => {});
+      }
+
+      if (turnEval.isRepetition) {
+        await db.insert(conversationEvents).values({
+          organizationId,
+          conversationId: activeConversationId,
+          eventType: "repetition_detected",
+          payload: {
+            userMessage: userMessage.substring(0, 200),
+          },
+        }).catch(() => {});
+      }
 
       // 5. Detect Intent with Contextual Resolution (handles entity extraction & follow-ups)
       const intentResult = await intentService.detectIntent(userMessage, {
@@ -1106,8 +1140,16 @@ export const orchestratorService = {
       // HALLUCINATION GUARD: Only fallback to knowledge gap if query is NOT answered by the business profile/catalog
       if (
         !isBusinessContextQuery &&
-        (!ragContextResult.contextText || ragContextResult.contextText.trim().length === 0)
+        (!ragContextResult.contextText || ragContextResult.contextText.trim().length === 0 || ragContextResult.contextText.includes("No relevant knowledge-base context found"))
       ) {
+        // Record structured knowledge gap with normalized topic & frequency
+        await knowledgeGapEngine.recordGap({
+          organizationId,
+          queryText: userMessage,
+          conversationId: activeConversationId,
+          gapType: "unknown",
+        });
+
         await db.insert(conversationEvents).values({
           organizationId,
           conversationId: activeConversationId,
