@@ -35,11 +35,12 @@ The knowledge base accepts three types of content:
 
 ### 1. File upload
 
-Upload a `.txt` or `.md` file (or paste text directly). The content is:
+Upload a `.pdf`, `.docx`, `.txt`, `.md`, or `.csv` file (max 10 MB, up to 500,000 characters). The content is:
 
-1. Analyzed by the AI (or heuristic fallback) to extract metadata
-2. Split into overlapping chunks
-3. Stored as `knowledge_chunks` records
+1. Parsed and extracted into clean text
+2. Analyzed by the AI (or heuristic fallback) to extract metadata
+3. Split into overlapping chunks
+4. Stored as `knowledge_chunks` records
 
 ### 2. Website import
 
