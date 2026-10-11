@@ -11,7 +11,7 @@ import { cn } from "@/components/shared/utils";
 import googleIcon from "@/assets/google.svg";
 import microsoftIcon from "@/assets/microsoft.svg";
 import calendlyIcon from "@/assets/calendly.svg";
-import openaiIcon from "@/assets/openai.svg";
+import geminiIcon from "@/assets/gemini.svg";
 import razorpayIcon from "@/assets/razorpay.svg";
 import slackIcon from "@/assets/slack-logo.svg";
 import whatsappIcon from "@/assets/whatsapp-text.svg";
@@ -86,8 +86,8 @@ const LOGOS = {
       <Phone className="h-4 w-4" />
     </div>
   ),
-  openai: (
-    <img src={openaiIcon.src || openaiIcon} alt="OpenAI" className="h-7 w-auto object-contain" />
+  gemini: (
+    <img src={geminiIcon.src || geminiIcon} alt="Google Gemini" className="h-7 w-auto object-contain" />
   ),
   razorpay: (
     <img src={razorpayIcon.src || razorpayIcon} alt="Razorpay" className="h-7 w-auto object-contain" />
@@ -220,12 +220,12 @@ const INTEGRATIONS: IntegrationData[] = [
     capabilities: "Checks Microsoft 365 calendars dynamically and blocks booked slots across the organization."
   },
   {
-    id: "openai",
-    name: "OpenAI Models",
+    id: "gemini",
+    name: "Google Gemini Models",
     category: "AI",
     status: "live",
-    logo: LOGOS.openai,
-    desc: "Underlying conversational reasoning models with custom system prompts tailored to your business domain.",
+    logo: LOGOS.gemini,
+    desc: "Production multimodal and conversational reasoning intelligence powering Operator's agents and context matching.",
     features: ["Domain adaptation", "Function calling", "Zero-shot classification", "Structured JSON output"],
     difficulty: "Setup Required",
     popularity: "Core",
@@ -477,7 +477,7 @@ export default function IntegrationsPage() {
     { id: "meta", label: "Meta", logo: LOGOS.meta, angle: 240, x: 31.5, y: 17.96 },
     { id: "calendly", label: "Calendly", logo: LOGOS.calendly, angle: 270, x: 50, y: 13 },
     { id: "twilio", label: "Twilio", logo: LOGOS.twilio, angle: 300, x: 68.5, y: 17.96 },
-    { id: "openai", label: "OpenAI", logo: LOGOS.openai, angle: 330, x: 82.04, y: 31.5 },
+    { id: "gemini", label: "Gemini", logo: LOGOS.gemini, angle: 330, x: 82.04, y: 31.5 },
   ];
 
   return (
@@ -577,7 +577,8 @@ export default function IntegrationsPage() {
                     const isConnected = connectedIds.includes(node.id);
 
                     return (
-                      <div
+                      <button
+                        type="button"
                         key={node.id}
                         onMouseEnter={() => setActiveVisualId(node.id)}
                         onClick={() => setActiveVisualId(node.id)}
@@ -587,7 +588,7 @@ export default function IntegrationsPage() {
                           transform: "translate(-50%, -50%)",
                         }}
                         className={cn(
-                          "absolute z-20 cursor-pointer transition-all duration-300",
+                          "absolute z-20 cursor-pointer transition-all duration-300 p-0 bg-transparent border-none text-left",
                           isHovered ? "scale-125 z-40" : "scale-100"
                         )}
                       >
@@ -608,7 +609,7 @@ export default function IntegrationsPage() {
                             )}
                           </div>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -782,7 +783,8 @@ export default function IntegrationsPage() {
                 {WORKFLOW_STEPS.map((step, idx) => {
                   const isActive = activeStep === idx;
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={step.id}
                       onClick={() => {
                         setActiveStep(idx);
@@ -807,7 +809,7 @@ export default function IntegrationsPage() {
                       <p className="text-caption text-muted-foreground leading-snug line-clamp-2">
                         {step.desc}
                       </p>
-                    </div>
+                    </button>
                   );
                 })}
               </div>

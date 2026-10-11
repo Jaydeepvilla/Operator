@@ -12,13 +12,13 @@ import { Loader2, Sparkles, AlertCircle } from "lucide-react";
 import { cn } from "@/components/shared/utils";
 import { OPERATOR_WIDGET_EVENTS, OperatorWidgetMessagePayload } from "@/lib/constants/widget-events";
 
-import { WidgetHeader } from "./components/WidgetHeader";
-import { WidgetWelcome } from "./components/WidgetWelcome";
-import { WidgetServiceCards } from "./components/WidgetServiceCards";
-import { WidgetScheduler } from "./components/WidgetScheduler";
-import { WidgetQuickActions, DynamicActionItem } from "./components/WidgetQuickActions";
-import { WidgetInputBar } from "./components/WidgetInputBar";
-import { OperatorAvatarOrb } from "./components/WidgetIcons3D";
+import { WidgetHeader } from "./_components/WidgetHeader";
+import { WidgetWelcome } from "./_components/WidgetWelcome";
+import { WidgetServiceCards } from "./_components/WidgetServiceCards";
+import { WidgetScheduler } from "./_components/WidgetScheduler";
+import { WidgetQuickActions, DynamicActionItem } from "./_components/WidgetQuickActions";
+import { WidgetInputBar } from "./_components/WidgetInputBar";
+import { OperatorAvatarOrb } from "./_components/WidgetIcons3D";
 
 interface Message {
   id: string;

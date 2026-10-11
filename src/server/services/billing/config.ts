@@ -170,7 +170,7 @@ function isValidSecretKey(key?: string | null): boolean {
  * Retrieves the unified payment provider configuration for the server and/or organization.
  */
 export async function getPaymentProviderConfig(
-  providerId = "stripe",
+  providerId = "razorpay",
   organizationId?: string
 ): Promise<PaymentProviderConfig> {
   const pid = providerId.toLowerCase();
@@ -185,7 +185,7 @@ export async function getPaymentProviderConfig(
       isSandbox: true,
       missingFields: ["PAYMENT_ENABLED is set to false"],
       environment: "test",
-      currency: "USD",
+      currency: pid === "razorpay" ? "INR" : "USD",
     };
   }
 
@@ -212,13 +212,13 @@ export async function getPaymentProviderConfig(
             isSandbox: settings.isSandbox,
             missingFields: ["Provider disconnected in tenant settings"],
             environment: settings.isSandbox ? "sandbox" : "production",
-            currency: "USD",
+            currency: pid === "razorpay" ? "INR" : "USD",
           };
         }
 
         const creds = (settings.credentials as Record<string, string>) || {};
-        const tenantSecret = creds.secretKey || creds.apiKey;
-        const tenantPublishable = creds.publishableKey || creds.publicKey;
+        const tenantSecret = creds.secretKey || creds.apiKey || creds.keySecret;
+        const tenantPublishable = creds.publishableKey || creds.publicKey || creds.keyId;
         const tenantWebhook = creds.webhookSecret;
 
         if (tenantSecret) {
@@ -230,7 +230,7 @@ export async function getPaymentProviderConfig(
               isSandbox: settings.isSandbox,
               missingFields: ["secretKey (invalid format)"],
               environment: settings.isSandbox ? "sandbox" : "production",
-              currency: "USD",
+              currency: pid === "razorpay" ? "INR" : "USD",
             };
           }
 
@@ -249,7 +249,7 @@ export async function getPaymentProviderConfig(
             webhookSecret: tenantWebhook,
             missingFields,
             environment: settings.isSandbox ? "sandbox" : "production",
-            currency: "USD",
+            currency: pid === "razorpay" ? "INR" : "USD",
           };
         }
       }
@@ -259,6 +259,60 @@ export async function getPaymentProviderConfig(
   }
 
   // 3. Environment Variable Fallback (Platform Master Configuration)
+  if (pid === "razorpay") {
+    const publishableKey = process.env.RAZORPAY_KEY_ID;
+    const secretKey = process.env.RAZORPAY_KEY_SECRET;
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    const isSandbox = publishableKey?.startsWith("rzp_test_") ?? true;
+    const environment = isSandbox ? "sandbox" : "production";
+
+    if (!publishableKey || !secretKey) {
+      if (!publishableKey) missingFields.push("RAZORPAY_KEY_ID");
+      if (!secretKey) missingFields.push("RAZORPAY_KEY_SECRET");
+      if (!webhookSecret) missingFields.push("RAZORPAY_WEBHOOK_SECRET");
+      return {
+        providerId: pid,
+        state: "NOT_CONFIGURED",
+        isAvailable: false,
+        isSandbox,
+        missingFields,
+        environment,
+        currency: "INR",
+      };
+    }
+
+    if (!isValidSecretKey(secretKey)) {
+      return {
+        providerId: pid,
+        state: "INVALID_CONFIGURATION",
+        isAvailable: false,
+        isSandbox,
+        missingFields: ["RAZORPAY_KEY_SECRET (invalid or placeholder format)"],
+        environment,
+        currency: "INR",
+      };
+    }
+
+    if (!webhookSecret) {
+      missingFields.push("RAZORPAY_WEBHOOK_SECRET");
+    }
+
+    const state: PaymentConfigState = missingFields.length > 0 ? "PARTIALLY_CONFIGURED" : "CONFIGURED";
+
+    return {
+      providerId: pid,
+      state,
+      isAvailable: state === "CONFIGURED",
+      isSandbox,
+      secretKey,
+      publishableKey,
+      webhookSecret,
+      missingFields,
+      environment,
+      currency: "INR",
+    };
+  }
+
   if (pid === "stripe") {
     const secretKey = process.env.STRIPE_SECRET_KEY;
     const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || process.env.STRIPE_PUBLISHABLE_KEY;
@@ -328,7 +382,7 @@ export async function getPaymentProviderConfig(
  * Returns public-safe payment provider status (no secret keys or tokens).
  */
 export async function getPaymentProviderStatus(
-  providerId = "stripe",
+  providerId = "razorpay",
   organizationId?: string
 ): Promise<PublicPaymentProviderStatus> {
   const config = await getPaymentProviderConfig(providerId, organizationId);
@@ -349,7 +403,7 @@ export async function getPaymentProviderStatus(
  * Throws a typed PaymentConfigurationError if missing or invalid.
  */
 export async function requirePaymentProviderConfiguration(
-  providerId = "stripe",
+  providerId = "razorpay",
   organizationId?: string
 ): Promise<PaymentProviderConfig> {
   const config = await getPaymentProviderConfig(providerId, organizationId);

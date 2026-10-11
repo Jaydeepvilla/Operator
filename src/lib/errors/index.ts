@@ -109,7 +109,7 @@ export function classifyErrorCategory(error: unknown): AppErrorCategory {
   if (lower.includes("econnrefused") || lower.includes("fetch failed") || lower.includes("network") || lower.includes("failed to fetch")) {
     return "NETWORK";
   }
-  if (lower.includes("stripe") || lower.includes("vapi") || lower.includes("elevenlabs") || lower.includes("deepgram") || lower.includes("twilio") || lower.includes("vonage") || lower.includes("sinch") || lower.includes("resend") || lower.includes("openai") || lower.includes("gemini")) {
+  if (lower.includes("stripe") || lower.includes("vapi") || lower.includes("elevenlabs") || lower.includes("deepgram") || lower.includes("twilio") || lower.includes("vonage") || lower.includes("sinch") || lower.includes("resend") || lower.includes("gemini")) {
     return "PROVIDER";
   }
   if (lower.includes("postgres") || lower.includes("drizzle") || lower.includes("pg_") || lower.includes("database") || lower.includes("sql") || lower.includes("violates foreign key")) {
@@ -192,7 +192,7 @@ export function formatUserErrorMessage(error: unknown, fallbackMessage = "We cou
   if (lower.includes("vonage") || lower.includes("sinch") || lower.includes("twilio")) {
     return "Could not send SMS notification. Check the phone number format.";
   }
-  if (lower.includes("openai") || lower.includes("gemini")) {
+  if (lower.includes("gemini")) {
     return "AI generation is temporarily busy. Try again in a moment.";
   }
 

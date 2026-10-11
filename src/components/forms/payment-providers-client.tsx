@@ -246,7 +246,7 @@ export function PaymentProvidersClient({
       {/* Modal Dialog Configuration Sheet */}
       {selectedProvider && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setSelectedProvider(null)} />
+          <button type="button" aria-label="Close dialog" className="absolute inset-0 bg-black/60 backdrop-blur-md cursor-default border-none p-0" onClick={() => setSelectedProvider(null)} />
           <div className="relative w-full max-w-md p-6 rounded-3xl border text-left overflow-hidden shadow-2xl animate-fade-in"
             style={{ 
               background: "linear-gradient(180deg, hsl(240,22%,10%) 0%, hsl(240,22%,5%) 100%)",

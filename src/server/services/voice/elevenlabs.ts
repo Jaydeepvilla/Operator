@@ -20,7 +20,7 @@ export class ElevenLabsTtsProvider implements TextToSpeechProvider {
         "Rachel": "21m00Tcm4TlvDq8ikWAM",
         "Adam": "pNInz6obpgqjVWtJ45IP",
         "Josh": "TxGEqn7nU37j8fWofm27",
-        "Antoni": "ErXwobaYiN019PkySvjV"
+        "Antoni": "ErXwobaYiN019PkySvjV",
       };
 
       const voiceId = (voiceName && voiceMap[voiceName]) || "21m00Tcm4TlvDq8ikWAM";
@@ -44,8 +44,7 @@ export class ElevenLabsTtsProvider implements TextToSpeechProvider {
 
       if (!response.ok) {
         const errText = await response.text().catch(() => "");
-        console.warn(`[ElevenLabs TTS] HTTP ${response.status} (${errText}). Falling back to OpenAI Voice TTS...`);
-        return await this.synthesizeWithOpenAI(text);
+        throw new Error(`ElevenLabs TTS returned HTTP ${response.status}: ${errText}`);
       }
 
       const arrayBuffer = await response.arrayBuffer();
@@ -56,39 +55,9 @@ export class ElevenLabsTtsProvider implements TextToSpeechProvider {
         mimeType: "audio/mpeg",
       };
     } catch (e: any) {
-      console.warn("[ElevenLabs TTS] Falling back to OpenAI Voice TTS due to error:", e.message);
-      return await this.synthesizeWithOpenAI(text);
+      console.error("[ElevenLabs TTS] Speech synthesis failed:", e.message || e);
+      throw e;
     }
-  }
-
-  private async synthesizeWithOpenAI(text: string): Promise<{ audioBuffer: Buffer; mimeType: string }> {
-    const openaiKey = process.env.OPENAI_API_KEY;
-    if (!openaiKey) {
-      throw new Error("Neither ElevenLabs nor OpenAI TTS key is available.");
-    }
-
-    const res = await fetch("https://api.openai.com/v1/audio/speech", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${openaiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "tts-1",
-        input: text,
-        voice: "alloy",
-      }),
-    });
-
-    if (!res.ok) {
-      throw new Error(`OpenAI TTS fallback returned HTTP ${res.status}`);
-    }
-
-    const arrayBuffer = await res.arrayBuffer();
-    return {
-      audioBuffer: Buffer.from(arrayBuffer),
-      mimeType: "audio/mpeg",
-    };
   }
 }
 

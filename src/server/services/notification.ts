@@ -62,9 +62,9 @@ async function sendEmailNotification(to: string, subject: string, html: string):
     }
   }
 
-  // Local zero-cost sandbox simulation
-  console.log(`[NotificationService Sandbox] Email simulated to ${to}: "${subject}"`);
-  return true;
+  // Provider not configured
+  console.warn(`[NotificationService] Email delivery skipped: No email provider (Resend, Postmark, or SMTP) configured.`);
+  return false;
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -116,9 +116,9 @@ async function sendSmsNotification(to: string, message: string): Promise<boolean
     }
   }
 
-  // Local zero-cost sandbox simulation
-  console.log(`[NotificationService Sandbox] SMS simulated to ${to}: "${message.substring(0, 50)}..."`);
-  return true;
+  // Provider not configured
+  console.warn(`[NotificationService] SMS delivery skipped: No SMS provider (Vonage or Sinch) configured.`);
+  return false;
 }
 
 

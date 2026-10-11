@@ -33,7 +33,7 @@ Conversation Orchestrator   src/server/services/orchestrator.ts
        │     Custom voice prompt (if configured)
        │
        ├─► LLM Completion   src/server/services/llm.ts
-       │     Primary: OpenAI gpt-4o-mini
+       │     Sole Provider: Google Gemini (@google/genai)
        │     Secondary: Google Gemini 2.5 Flash
        │     Fallback: MockLLMProvider
        │
@@ -163,9 +163,8 @@ All parts are joined with `\n\n`.
 The registry selects the active provider at request time based on environment variables:
 
 ```typescript
-if (OPENAI_API_KEY)  → OpenAIProvider  (gpt-4o-mini)
-if (GEMINI_API_KEY)  → GeminiProvider  (gemini-2.5-flash-preview-04-17)
-else                 → MockLLMProvider (deterministic fake responses)
+if (GEMINI_API_KEY)  → GeminiProvider (@google/genai: gemini-3.5-flash)
+else                 → operator_smart_engine (grounded deterministic rules)
 ```
 
 All providers implement the `LLMProvider` interface:

@@ -1,7 +1,7 @@
 import { useTransition } from "react";
 import { useToast } from "@/components/shared/toast";
 import { formatUserErrorMessage } from "@/lib/errors";
-import { dismissNotificationAction, markNotificationAsReadAction } from "@/app/actions/progress";
+import { dismissNotificationAction, markNotificationAsReadAction } from "@/server/actions/progress";
 
 export function useNotificationEngine() {
   const [isPending, startTransition] = useTransition();

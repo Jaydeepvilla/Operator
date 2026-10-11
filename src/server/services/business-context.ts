@@ -176,7 +176,7 @@ export const businessContextService = {
     const capabilities: BusinessCapabilities = {
       hasServices: cleanServices.length > 0,
       hasPricing: cleanServices.some((s) => s.price && s.price !== "0" && s.price !== "0.00"),
-      hasBooking: cleanServices.length > 0 && cleanStaff.length > 0,
+      hasBooking: cleanServices.length > 0 && cleanStaff.length > 0 && (bookingPrefs as Record<string, any>)?.publicBookingEnabled === true,
       hasBusinessHours: rawHours !== null && Object.keys(rawHours || {}).length > 0,
       hasLocation: Boolean(orgAddress && orgAddress.trim().length > 0),
       hasPhone: Boolean(orgPhone && orgPhone.trim().length > 0),

@@ -145,7 +145,7 @@ export default function TermsPage() {
               </Section>
 
               <Section id="third-party" title="9. Third-Party Services">
-                <p>The Service integrates with third-party services including Google Calendar, Microsoft Outlook, Twilio, OpenAI, Stripe, Razorpay, and others. Your use of these integrations is subject to the respective third parties' terms of service.</p>
+                <p>The Service integrates with third-party services including Google Calendar, Microsoft Outlook, Twilio, Google Gemini, Stripe, Razorpay, and others. Your use of these integrations is subject to the respective third parties' terms of service.</p>
                 <p>We are not responsible for the availability, accuracy, or content of third-party services. Integration disruptions caused by third-party service outages are not breaches of our Service Level Agreement.</p>
               </Section>
 

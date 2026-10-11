@@ -4,15 +4,30 @@ import { requireOrganizationAccess, assertResourceOwnership, AuthorizationError 
 import { revalidatePath } from "next/cache";
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "../db";
-import { staffMembers, serviceAssignments, staffSchedules, staffAvailability, services } from "../db/schema";
+import { staffMembers, serviceAssignments, staffSchedules, staffAvailability, services, memberships } from "../db/schema";
 import { staffRepository } from "../repositories/staff";
 
 export async function getStaffListAction(overrideOrgId?: string) {
   try {
-    let organizationId = overrideOrgId;
-    if (!organizationId) {
-      const authResult = await requireOrganizationAccess();
-      organizationId = authResult.organizationId;
+    const authResult = await requireOrganizationAccess();
+    let organizationId = authResult.organizationId;
+
+    if (overrideOrgId && overrideOrgId !== organizationId) {
+      const [membership] = await db
+        .select()
+        .from(memberships)
+        .where(
+          and(
+            eq(memberships.userId, authResult.userId),
+            eq(memberships.organizationId, overrideOrgId)
+          )
+        )
+        .limit(1);
+
+      if (!membership) {
+        throw new AuthorizationError("Access denied: You are not a member of this organization.");
+      }
+      organizationId = overrideOrgId;
     }
     const list = await staffRepository.list(organizationId);
     

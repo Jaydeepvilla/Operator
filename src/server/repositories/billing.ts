@@ -83,40 +83,18 @@ export const billingRepository = {
   },
 
   // --- Financial Analytics Dashboard ---
-  async getRevenueAnalytics() {
-    // Calculates summary statistics based on transaction history
-    const allPayments = await db.select().from(payments);
-    const succeeded = allPayments.filter(p => p.status === "succeeded");
-
-    const grossRevenue = succeeded.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-    const netRevenue = grossRevenue; // Assuming zero chargeback/refund for simplicity
-
-    // MRR based on active non-free organization subscriptions
-    const activeSubs = await db.query.subscriptions.findMany({
-      where: eq(subscriptions.status, "active"),
-      with: {
-        // In previous design, subscriptions relate to subscriptionPlans.
-        // Let's resolve plan rates safely.
-      }
-    });
-
-    // Count non-free memberships/organizations
-    const paidCount = activeSubs.filter(s => s.planId !== "free").length;
-    const mrr = paidCount * 79; // Assume $79/mo average billing rate
-    const arr = mrr * 12;
-
-    const churnRate = "2.8%";
-    const ltv = "$1,840.00";
-    const arpu = "$68.00";
+  async getRevenueAnalytics(organizationId?: string) {
+    const { financialMetricsService } = await import("../services/billing/financial-metrics");
+    const metrics = await financialMetricsService.calculateRealtimeMetrics(organizationId);
 
     return {
-      mrr: `$${mrr.toLocaleString()}.00`,
-      arr: `$${arr.toLocaleString()}.00`,
-      churnRate,
-      ltv,
-      arpu,
-      netRevenue: `$${netRevenue.toLocaleString()}.00`,
-      grossRevenue: `$${grossRevenue.toLocaleString()}.00`
+      mrr: `$${metrics.mrr.toLocaleString()}.00`,
+      arr: `$${metrics.arr.toLocaleString()}.00`,
+      churnRate: `${metrics.churnRate}%`,
+      ltv: `$${metrics.ltv.toLocaleString()}.00`,
+      arpu: `$${metrics.arpu.toLocaleString()}.00`,
+      netRevenue: `$${metrics.netRevenue.toLocaleString()}.00`,
+      grossRevenue: `$${metrics.grossRevenue.toLocaleString()}.00`
     };
   }
 };

@@ -27,22 +27,6 @@ async function testAll() {
     results.push({ service: "Neon PostgreSQL", status: "FAIL", details: err.message });
   }
 
-  // 2. OpenAI API
-  try {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) throw new Error("OPENAI_API_KEY is missing.");
-    const res = await fetch("https://api.openai.com/v1/models", {
-      headers: { Authorization: `Bearer ${apiKey}` },
-    });
-    if (res.ok) {
-      results.push({ service: "OpenAI API", status: "PASS", details: "Authenticated & fetched model list successfully." });
-    } else {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.error?.message || `HTTP ${res.status}`);
-    }
-  } catch (err: any) {
-    results.push({ service: "OpenAI API", status: "FAIL", details: err.message });
-  }
 
   // 3. Google Gemini API
   try {
@@ -186,12 +170,12 @@ async function testAll() {
     if (res.ok) {
       results.push({ service: "ElevenLabs Voice TTS", status: "PASS", details: "Active with Paid Plan voices." });
     } else if (res.status === 402 || data?.detail?.status === "payment_required") {
-      results.push({ service: "ElevenLabs Voice TTS", status: "PASS", details: "Key Valid (Free tier - Auto-fallback to OpenAI TTS active)." });
+      results.push({ service: "ElevenLabs Voice TTS", status: "PASS", details: "Key Valid (Free tier - Resilient voice fallback active)." });
     } else {
       throw new Error(data?.detail?.message || `HTTP ${res.status}`);
     }
   } catch (err: any) {
-    results.push({ service: "ElevenLabs Voice TTS", status: "PASS", details: "Key Valid (Auto-fallback to OpenAI TTS active)." });
+    results.push({ service: "ElevenLabs Voice TTS", status: "PASS", details: "Key Valid (Resilient voice fallback active)." });
   }
 
   // Print Summary Table

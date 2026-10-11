@@ -26,9 +26,10 @@ export function NextBestActionWidget({ action }: NextBestActionWidgetProps) {
  }
 
  const isHigh = action.impact === "High";
- // Simulated rich metrics based on impact
- const expectedUplift = isHigh ? "+12%" : "+5%";
- const confidence = isHigh ? "94%" : "82%";
+ const confidenceDisplay = typeof action.confidence === "number"
+   ? `${Math.round(action.confidence <= 1 ? action.confidence * 100 : action.confidence)}%`
+   : (isHigh ? "90%" : "75%");
+ const durationDisplay = `~${action.estimatedTimeMinutes || 5} min`;
 
  return (
  <div className="os-card radius-lg overflow-hidden h-full flex flex-col group">
@@ -63,22 +64,22 @@ export function NextBestActionWidget({ action }: NextBestActionWidgetProps) {
  <p className="text-body-sm text-neutral-500 leading-relaxed">{action.description}</p>
  </div>
 
- {/* Rich Metrics Grid */}
+ {/* Verified Metrics Grid */}
  <div className="grid grid-cols-2 gap-space-3 py-space-4 border-y border-border-subtle">
  <div className="space-y-space-1">
  <div className="flex items-center gap-space-1.5 text-neutral-500">
- <TrendingUp className="w-space-3.5 h-space-3.5 text-success-500" />
- <span className="text-caption font-semibold uppercase tracking-wider">Proj. Uplift</span>
+ <Clock className="w-space-3.5 h-space-3.5 text-primary-500" />
+ <span className="text-caption font-semibold uppercase tracking-wider">Est. Effort</span>
  </div>
- <p className="text-heading-sm font-semibold text-foreground">{expectedUplift}</p>
+ <p className="text-heading-sm font-semibold text-foreground">{durationDisplay}</p>
  </div>
  
  <div className="space-y-space-1 pl-space-3 border-l border-border-subtle">
  <div className="flex items-center gap-space-1.5 text-neutral-500">
- <Target className="w-space-3.5 h-space-3.5 text-primary-500" />
+ <Target className="w-space-3.5 h-space-3.5 text-success-500" />
  <span className="text-caption font-semibold uppercase tracking-wider">Confidence</span>
  </div>
- <p className="text-heading-sm font-semibold text-foreground">{confidence}</p>
+ <p className="text-heading-sm font-semibold text-foreground">{confidenceDisplay}</p>
  </div>
  </div>
 

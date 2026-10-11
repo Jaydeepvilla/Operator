@@ -5,7 +5,7 @@ import {
   dismissNotificationAction,
   markNotificationAsReadAction,
   snoozeNotificationAction,
-} from "@/app/actions/progress";
+} from "@/server/actions/progress";
 
 export function useSmartNotifications(initialNotifications: SmartNotification[]) {
   const [notifications, setNotifications] = useState<SmartNotification[]>(initialNotifications);

@@ -601,6 +601,37 @@ export const orchestratorService = {
 
       // --- INTERCEPT APPOINTMENT BOOKING STATE MACHINE FLOW ---
       if (intentResult.intent === "booking" || sessionState.bookingFlow) {
+        if (!business.capabilities.hasBooking) {
+          const responseText = `Online booking is currently disabled for ${business.name}. Please contact our front desk at ${business.phone || 'our team'} to schedule an appointment.`;
+          const dynamicActions = actionEngine.determineNextBestActions(business, {
+            intent: "booking",
+            lastUserMessage: userMessage,
+          });
+
+          await messagesRepository.create({
+            organizationId,
+            conversationId: activeConversationId,
+            sender: "assistant",
+            content: responseText,
+            intentDetected: "booking",
+            confidenceScore: "0.95",
+          });
+          sessionState.conversationContext.lastIntent = "booking";
+          sessionState.conversationContext.lastAssistantMessage = responseText;
+          sessionState.bookingFlow = null;
+          await sessionsRepository.upsert({ organizationId, conversationId: activeConversationId, state: sessionState });
+          return {
+            conversationId: activeConversationId,
+            assistantMessage: responseText,
+            citations: [],
+            intent: "booking",
+            confidence: 0.95,
+            entities: {},
+            actions: dynamicActions,
+            isEscalated: false,
+          };
+        }
+
         if (!sessionState.bookingFlow) {
           const allServices = business.services;
           const matchingService = allServices.find((s) =>
@@ -1030,18 +1061,48 @@ export const orchestratorService = {
           const start = new Date(targetDate);
           start.setHours(sh, sm, 0, 0);
 
-          const appointment = await bookingService.createAppointment({
-            organizationId,
-            leadProfileId,
-            serviceId,
-            staffMemberId: slot.staffId,
-            startTime: start,
-            customerName: profile?.name || "Guest Client",
-            customerEmail: profile?.email,
-            customerPhone: profile?.phone,
-          });
+          let appointment: any;
+          try {
+            appointment = await bookingService.createAppointment({
+              organizationId,
+              leadProfileId,
+              serviceId,
+              staffMemberId: slot.staffId,
+              startTime: start,
+              customerName: profile?.name || "Guest Client",
+              customerEmail: profile?.email,
+              customerPhone: profile?.phone,
+              isPublic: true,
+            });
+          } catch (bookingError: any) {
+            sessionState.bookingFlow = null;
+            const failMessage = bookingError?.message?.includes("Public booking is disabled")
+              ? `I apologize, but online booking is currently disabled for ${business.name}. Please contact our front desk at ${business.phone || 'our team'} to schedule.`
+              : `I was unable to complete your booking: ${bookingError?.message || "the requested time is no longer available"}. Please let me know another time that works for you.`;
 
-          const bookedServiceName = sessionState.bookingFlow.serviceName;
+            await messagesRepository.create({
+              organizationId,
+              conversationId: activeConversationId,
+              sender: "assistant",
+              content: failMessage,
+              intentDetected: "booking",
+              confidenceScore: "0.95",
+            });
+            sessionState.conversationContext.lastAssistantMessage = failMessage;
+            await sessionsRepository.upsert({ organizationId, conversationId: activeConversationId, state: sessionState });
+            return {
+              conversationId: activeConversationId,
+              assistantMessage: failMessage,
+              citations: [],
+              intent: "booking",
+              confidence: 0.95,
+              entities: {},
+              actions: [],
+              isEscalated: false,
+            };
+          }
+
+          const bookedServiceName = sessionState.bookingFlow?.serviceName || "Service";
           sessionState.bookingFlow = null;
 
           const responseText = `Wonderful! I have booked your appointment for ${dateLabel} at ${slot.startTime} with ${slot.staffName}. A confirmation has been recorded. We look forward to seeing you at ${business.name}!`;

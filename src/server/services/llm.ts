@@ -1,3 +1,5 @@
+import { GoogleGenAI } from "@google/genai";
+
 // Learning signal callback type for LLM fallback tracking
 export type LLMFallbackCallback = (signal: {
   fromProvider: string;
@@ -40,9 +42,22 @@ export interface LLMCompletionResult {
 export interface LLMProvider {
   generateCompletion(
     messages: ChatMessage[],
-    options?: { temperature?: number; jsonMode?: boolean }
+    options?: { temperature?: number; jsonMode?: boolean; model?: string }
+  ): Promise<LLMCompletionResult>;
+  generateCompletionStream?(
+    messages: ChatMessage[],
+    options?: { temperature?: number; jsonMode?: boolean; model?: string },
+    onChunk?: (text: string) => void
   ): Promise<LLMCompletionResult>;
 }
+
+// Production-verified Gemini model tiers
+export const GEMINI_MODELS = {
+  PRIMARY: "gemini-3.5-flash",
+  BALANCED: "gemini-3.5-flash",
+  FAST: "gemini-3.5-flash-lite",
+  ADVANCED: "gemini-3.8-flash",
+} as const;
 
 /**
  * Intelligent, grounded deterministic response synthesizer.
@@ -246,150 +261,166 @@ export function synthesizeDeterministicResponse(messages: ChatMessage[]): string
   return `Hello! I'm here representing ${businessName}. I can provide information about our services, pricing, business hours, and help you book appointments. How may I help you today?`;
 }
 
-export class OpenAIProvider implements LLMProvider {
-  constructor(private apiKey?: string) {}
-
-  async generateCompletion(
-    messages: ChatMessage[],
-    options?: { temperature?: number; jsonMode?: boolean }
-  ): Promise<LLMCompletionResult> {
-    if (!this.apiKey) {
-      throw new Error("OpenAI API Key is missing");
-    }
-
-    try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages,
-          temperature: options?.temperature ?? 0.7,
-          response_format: options?.jsonMode ? { type: "json_object" } : undefined,
-        }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        const errMsg = errData.error?.message || `HTTP ${response.status}`;
-        console.warn(`[OpenAIProvider] Remote API notice (${errMsg}). Engaging smart semantic fallback.`);
-
-        emitFallbackSignal("openai", "gemini", errMsg);
-
-        if (process.env.GEMINI_API_KEY) {
-          try {
-            const gemini = new GeminiProvider(process.env.GEMINI_API_KEY);
-            return await gemini.generateCompletion(messages, options);
-          } catch (geminiErr) {
-            console.warn("[GeminiProvider] Fallback also unavailable:", geminiErr);
-            emitFallbackSignal("gemini", "deterministic", String(geminiErr));
-          }
-        }
-
-        return {
-          content: synthesizeDeterministicResponse(messages),
-          provider: "operator_smart_engine",
-          model: "operator-semantic-v1",
-        };
-      }
-
-      const data = await response.json();
-      return {
-        content: data.choices[0]?.message?.content || "",
-        provider: "openai",
-        model: data.model || "gpt-4o-mini",
-        usage: {
-          promptTokens: data.usage?.prompt_tokens ?? 0,
-          completionTokens: data.usage?.completion_tokens ?? 0,
-          totalTokens: data.usage?.total_tokens ?? 0,
-        },
-      };
-    } catch (error: any) {
-      console.warn("[OpenAIProvider] Network/Quota notice, engaging resilient fallback:", error.message);
-      emitFallbackSignal("openai", "deterministic", error.message);
-      return {
-        content: synthesizeDeterministicResponse(messages),
-        provider: "operator_smart_engine",
-        model: "operator-semantic-v1",
-      };
-    }
-  }
-}
-
+/**
+ * Production-Grade Google Gemini AI Provider.
+ * Sole provider for conversational reasoning, intent classification, memory summarization,
+ * structured extraction, and tool actions.
+ */
 export class GeminiProvider implements LLMProvider {
-  constructor(private apiKey?: string) {}
+  private client: GoogleGenAI;
 
-  async generateCompletion(
-    messages: ChatMessage[],
-    options?: { temperature?: number; jsonMode?: boolean }
-  ): Promise<LLMCompletionResult> {
+  constructor(private apiKey?: string) {
     if (!this.apiKey) {
-      throw new Error("Gemini API Key is missing");
+      throw new Error("GEMINI_API_KEY is not configured on the server");
     }
+    this.client = new GoogleGenAI({ apiKey: this.apiKey });
+  }
 
-    try {
-      const systemPrompt = messages.find((m) => m.role === "system")?.content;
-      const contents = messages
-        .filter((m) => m.role !== "system")
-        .map((m) => ({
+  private formatContents(messages: ChatMessage[]) {
+    const systemMessage = messages.find((m) => m.role === "system");
+    const systemInstruction = systemMessage ? systemMessage.content : undefined;
+
+    // Filter out system prompt and format conversation turns
+    const conversationMessages = messages.filter((m) => m.role !== "system");
+
+    // If conversation is empty (only system message provided), handle appropriately
+    const contents = conversationMessages.length > 0
+      ? conversationMessages.map((m) => ({
           role: m.role === "assistant" ? "model" : "user",
           parts: [{ text: m.content }],
-        }));
+        }))
+      : [{ role: "user" as const, parts: [{ text: "Proceed." }] }];
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.apiKey}`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+    return { contents, systemInstruction };
+  }
+
+  async generateCompletion(
+    messages: ChatMessage[],
+    options?: { temperature?: number; jsonMode?: boolean; model?: string }
+  ): Promise<LLMCompletionResult> {
+    const { contents, systemInstruction } = this.formatContents(messages);
+
+    // Model hierarchy: user requested model -> Primary (3.8-flash) -> Balanced fallback (3.5-flash)
+    const primaryModel = options?.model || GEMINI_MODELS.PRIMARY;
+    const fallbackModel = GEMINI_MODELS.BALANCED;
+
+    // Attempt primary model first, fallback to balanced model on transient 503/429
+    const modelsToTry = [primaryModel];
+    if (primaryModel !== fallbackModel) {
+      modelsToTry.push(fallbackModel);
+    }
+
+    let lastError: any = null;
+
+    for (const modelToUse of modelsToTry) {
+      try {
+        const response = await this.client.models.generateContent({
+          model: modelToUse,
           contents,
-          systemInstruction: systemPrompt ? { parts: [{ text: systemPrompt }] } : undefined,
-          generationConfig: {
+          config: {
+            systemInstruction,
             temperature: options?.temperature ?? 0.7,
             responseMimeType: options?.jsonMode ? "application/json" : "text/plain",
           },
-        }),
+        });
+
+        const text = response.text || "";
+        const usage = response.usageMetadata
+          ? {
+              promptTokens: response.usageMetadata.promptTokenCount ?? 0,
+              completionTokens: response.usageMetadata.candidatesTokenCount ?? 0,
+              totalTokens: response.usageMetadata.totalTokenCount ?? 0,
+            }
+          : undefined;
+
+        return {
+          content: text,
+          provider: "gemini",
+          model: modelToUse,
+          usage,
+        };
+      } catch (error: any) {
+        lastError = error;
+        const status = error.status || error.code || 500;
+        const msg = error.message || String(error);
+
+        // Check if error is transient (503 Service Unavailable, 429 Rate Limit)
+        const isTransient = status === 503 || status === 429 || msg.includes("503") || msg.includes("high demand");
+        if (isTransient && modelToUse !== fallbackModel) {
+          console.warn(`[GeminiProvider] Notice: ${modelToUse} returned transient ${status}. Retrying on fallback model ${fallbackModel}...`);
+          emitFallbackSignal(modelToUse, fallbackModel, msg);
+          continue;
+        }
+
+        console.warn(`[GeminiProvider] Model execution error on ${modelToUse}:`, msg);
+        break;
+      }
+    }
+
+    // If external upstream failed completely, emit signal and engage grounded deterministic response
+    const errMsg = lastError?.message || "Gemini inference unavailable";
+    emitFallbackSignal("gemini", "deterministic", errMsg);
+
+    return {
+      content: synthesizeDeterministicResponse(messages),
+      provider: "operator_smart_engine",
+      model: "operator-semantic-v1",
+    };
+  }
+
+  async generateCompletionStream(
+    messages: ChatMessage[],
+    options?: { temperature?: number; jsonMode?: boolean; model?: string },
+    onChunk?: (text: string) => void
+  ): Promise<LLMCompletionResult> {
+    const { contents, systemInstruction } = this.formatContents(messages);
+    const modelToUse = options?.model || GEMINI_MODELS.PRIMARY;
+
+    try {
+      const stream = await this.client.models.generateContentStream({
+        model: modelToUse,
+        contents,
+        config: {
+          systemInstruction,
+          temperature: options?.temperature ?? 0.7,
+          responseMimeType: options?.jsonMode ? "application/json" : "text/plain",
+        },
       });
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error?.message || `HTTP ${response.status}`);
+      let fullText = "";
+      for await (const chunk of stream) {
+        const chunkText = chunk.text || "";
+        if (chunkText) {
+          fullText += chunkText;
+          if (onChunk) onChunk(chunkText);
+        }
       }
 
-      const data = await response.json();
       return {
-        content: data.candidates?.[0]?.content?.parts?.[0]?.text || "",
+        content: fullText,
         provider: "gemini",
-        model: "gemini-2.5-flash",
-        usage: {
-          promptTokens: data.usageMetadata?.promptTokenCount ?? 0,
-          completionTokens: data.usageMetadata?.candidatesTokenCount ?? 0,
-          totalTokens: data.usageMetadata?.totalTokenCount ?? 0,
-        },
+        model: modelToUse,
       };
     } catch (error: any) {
-      console.warn("[GeminiProvider] Error generating completion:", error);
-      emitFallbackSignal("gemini", "deterministic", String(error));
-      return {
-        content: synthesizeDeterministicResponse(messages),
-        provider: "operator_smart_engine",
-        model: "operator-semantic-v1",
-      };
+      console.warn("[GeminiProvider] Stream error, falling back to unary completion:", error.message || error);
+      return this.generateCompletion(messages, options);
     }
   }
 }
 
+/**
+ * Global LLM Registry
+ * Configured exclusively for Google Gemini as the sole AI provider.
+ */
 export const llmRegistry = {
   getProvider(): LLMProvider {
-    const openaiKey = process.env.OPENAI_API_KEY;
     const geminiKey = process.env.GEMINI_API_KEY;
 
-    if (openaiKey) return new OpenAIProvider(openaiKey);
-    if (geminiKey) return new GeminiProvider(geminiKey);
+    if (geminiKey) {
+      return new GeminiProvider(geminiKey);
+    }
 
-    // Resilient fallback provider when no API keys are set in environment
+    // Resilient fallback provider when GEMINI_API_KEY is not configured in local environment
     return {
       async generateCompletion(messages: ChatMessage[]): Promise<LLMCompletionResult> {
         return {

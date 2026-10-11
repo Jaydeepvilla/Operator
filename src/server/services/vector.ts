@@ -1,8 +1,9 @@
 import { db } from "../db";
 import { knowledgeChunks, knowledgeDocuments } from "../db/schema";
 import { eq, and, sql, inArray } from "drizzle-orm";
+import { GoogleGenAI } from "@google/genai";
 
-export const DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small";
+export const DEFAULT_EMBEDDING_MODEL = "gemini-embedding-001";
 export const DEFAULT_EMBEDDING_DIMENSIONS = 1536;
 export const MIN_VECTOR_SIMILARITY_THRESHOLD = 0.50;
 export const MIN_LEXICAL_MATCH_THRESHOLD = 0.25;
@@ -84,50 +85,48 @@ export interface RetrievalService {
   ): Promise<SearchMatch[]>;
 }
 
-export class OpenAIEmbeddingService implements EmbeddingService {
+/**
+ * Production Google Gemini Embedding Service.
+ * Generates 1536-dimensional embeddings natively aligned with Operator's pgvector schema.
+ */
+export class GeminiEmbeddingService implements EmbeddingService {
+  private client: GoogleGenAI | null = null;
   private apiKey: string;
 
   constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.OPENAI_API_KEY || "";
+    this.apiKey = apiKey !== undefined ? apiKey : (process.env.GEMINI_API_KEY || "");
+    if (this.apiKey) {
+      this.client = new GoogleGenAI({ apiKey: this.apiKey });
+    }
   }
 
   async generateEmbedding(text: string): Promise<EmbeddingResult> {
     const cleanText = text.trim();
     if (!cleanText) {
-      throw new Error("[OpenAI Embedding Service] Cannot generate embedding for empty text.");
+      throw new Error("[Gemini Embedding Service] Cannot generate embedding for empty text.");
     }
 
-    if (!this.apiKey) {
+    if (!this.apiKey || !this.client) {
       throw new Error(
-        "[OpenAI Embedding Service] Missing OPENAI_API_KEY. Real embeddings cannot be generated. Fallback to lexical retrieval required."
+        "[Gemini Embedding Service] Missing GEMINI_API_KEY. Real embeddings cannot be generated. Fallback to lexical retrieval required."
       );
     }
 
     try {
-      const response = await fetch("https://api.openai.com/v1/embeddings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
+      const response = await this.client.models.embedContent({
+        model: DEFAULT_EMBEDDING_MODEL,
+        contents: cleanText.replace(/\n/g, " "),
+        config: {
+          outputDimensionality: DEFAULT_EMBEDDING_DIMENSIONS,
         },
-        body: JSON.stringify({
-          input: cleanText.replace(/\n/g, " "),
-          model: DEFAULT_EMBEDDING_MODEL,
-        }),
       });
 
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`OpenAI Embeddings returned HTTP ${response.status}: ${errText}`);
-      }
-
-      const data = await response.json();
-      const embedding = data.data?.[0]?.embedding;
+      const embedding = response.embeddings?.[0]?.values;
       if (!embedding || !Array.isArray(embedding) || isSyntheticOrZeroVector(embedding)) {
-        throw new Error("Invalid or empty embedding returned from OpenAI");
+        throw new Error("Invalid or empty embedding returned from Gemini");
       }
 
-      const tokenCount = data.usage?.prompt_tokens || Math.ceil(cleanText.length / 4);
+      const tokenCount = Math.ceil(cleanText.length / 4);
 
       return {
         embedding,
@@ -136,7 +135,7 @@ export class OpenAIEmbeddingService implements EmbeddingService {
         dimension: embedding.length,
       };
     } catch (e: any) {
-      console.error("[OpenAI Embedding Service] Failed to generate embedding:", e?.message || e);
+      console.error("[Gemini Embedding Service] Failed to generate embedding:", e?.message || e);
       throw e;
     }
   }
@@ -144,51 +143,22 @@ export class OpenAIEmbeddingService implements EmbeddingService {
   async generateEmbeddings(texts: string[]): Promise<EmbeddingResult[]> {
     if (texts.length === 0) return [];
 
-    if (!this.apiKey) {
+    if (!this.apiKey || !this.client) {
       throw new Error(
-        "[OpenAI Embedding Service] Missing OPENAI_API_KEY. Bulk embeddings cannot be generated."
+        "[Gemini Embedding Service] Missing GEMINI_API_KEY. Bulk embeddings cannot be generated."
       );
     }
 
     try {
-      const response = await fetch("https://api.openai.com/v1/embeddings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          input: texts.map((t) => t.trim().replace(/\n/g, " ")),
-          model: DEFAULT_EMBEDDING_MODEL,
-        }),
-      });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`OpenAI Embeddings returned HTTP ${response.status}: ${errText}`);
+      const results: EmbeddingResult[] = [];
+      for (let i = 0; i < texts.length; i++) {
+        const item = texts[i];
+        const res = await this.generateEmbedding(item);
+        results.push(res);
       }
-
-      const data = await response.json();
-      const results = data.data;
-      if (!results || results.length !== texts.length) {
-        throw new Error("Invalid count of embeddings returned from OpenAI");
-      }
-
-      const sortedResults = [...results].sort((a, b) => a.index - b.index);
-
-      return sortedResults.map((r, idx) => {
-        if (isSyntheticOrZeroVector(r.embedding)) {
-          throw new Error(`Synthetic or zero vector returned for item ${idx}`);
-        }
-        return {
-          embedding: r.embedding,
-          tokenCount: Math.ceil(texts[idx].length / 4),
-          model: DEFAULT_EMBEDDING_MODEL,
-          dimension: r.embedding.length,
-        };
-      });
+      return results;
     } catch (e: any) {
-      console.error("[OpenAI Embedding Service] Failed to generate bulk embeddings:", e?.message || e);
+      console.error("[Gemini Embedding Service] Failed to generate bulk embeddings:", e?.message || e);
       throw e;
     }
   }
@@ -252,7 +222,7 @@ export class PostgresVectorStore implements VectorStore {
         : sql`${knowledgeChunks.embedding} IS NOT NULL`;
 
       // Clear zero vectors using pgvector magnitude check
-      const result = await db
+      await db
         .update(knowledgeChunks)
         .set({
           embedding: null,
@@ -431,6 +401,6 @@ export class PostgresRetrievalService implements RetrievalService {
 }
 
 // Default production instances
-export const embeddingService = new OpenAIEmbeddingService();
+export const embeddingService = new GeminiEmbeddingService();
 export const vectorStore = new PostgresVectorStore();
 export const retrievalService = new PostgresRetrievalService(embeddingService);

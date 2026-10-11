@@ -9,7 +9,8 @@ import {
   countries as countriesTable, 
   languages as languagesTable, 
   currencies as currenciesTable, 
-  businessLocalization as businessLocalizationTable 
+  businessLocalization as businessLocalizationTable,
+  organizations as organizationsTable
 } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 
@@ -203,6 +204,41 @@ export async function updateBusinessLocalizationAction(data: {
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to update localization settings" };
+  }
+}
+
+export async function updateOrganizationSettingsAction(data: {
+  name: string;
+  website?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  timezone?: string;
+}) {
+  try {
+    const { organizationId } = await requireOrganizationAccess();
+    if (!data.name?.trim()) {
+      return { success: false, error: "Business name is required." };
+    }
+
+    await db
+      .update(organizationsTable)
+      .set({
+        name: data.name.trim(),
+        website: data.website?.trim() || null,
+        email: data.email?.trim() || null,
+        phone: data.phone?.trim() || null,
+        address: data.address?.trim() || null,
+        timezone: data.timezone || "UTC",
+        updatedAt: new Date(),
+      })
+      .where(eq(organizationsTable.id, organizationId));
+
+    revalidatePath("/settings");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Failed to update business settings" };
   }
 }
 

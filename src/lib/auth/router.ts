@@ -13,8 +13,15 @@ export function validateIntendedDestination(url?: string | null): string | null 
 
   const trimmed = url.trim();
 
-  // Must start with '/' and must not start with '//' or contain protocol schemes
-  if (!trimmed.startsWith("/") || trimmed.startsWith("//") || trimmed.includes("://")) {
+  // Must start with exactly one '/', must not start with '//' or contain backslashes or protocol schemes
+  if (
+    !trimmed.startsWith("/") ||
+    trimmed.startsWith("//") ||
+    trimmed.startsWith("/\\") ||
+    trimmed.includes("\\") ||
+    trimmed.includes("://") ||
+    /[\x00-\x1f\x7f]/.test(trimmed)
+  ) {
     return null;
   }
 

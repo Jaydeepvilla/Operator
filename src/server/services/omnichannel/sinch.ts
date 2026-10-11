@@ -27,15 +27,11 @@ export class SinchProvider implements MessagingProvider, WebhookProvider {
       const fromNumber = connectionConfig.fromNumber || process.env.SINCH_FROM_NUMBER || "Operator";
 
       if (!servicePlanId || !apiToken) {
-        // Fallback for zero-cost sandbox / test mode
-        if (process.env.NODE_ENV !== "production" || !process.env.SINCH_SERVICE_PLAN_ID) {
-          console.log(`[SinchProvider Sandbox] SMS simulated to ${recipientId}: "${content.substring(0, 50)}..."`);
-          return {
-            success: true,
-            externalId: "sinch-sim-" + crypto.randomUUID()
-          };
-        }
-        throw new Error("Missing Sinch API credentials.");
+        return {
+          success: false,
+          errorCode: "SINCH_PROVIDER_NOT_CONFIGURED",
+          errorMessage: "Sinch API credentials (servicePlanId / apiToken) are not configured for this organization.",
+        };
       }
 
       const cleanPhone = recipientId.replace(/\D/g, "");

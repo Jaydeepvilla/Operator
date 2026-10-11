@@ -400,7 +400,7 @@ export default function ConversationsPage() {
  <Input
  value={testMessage}
  onChange={(e) => setTestMessage(e.target.value)}
- placeholder="Type a message to simulate customer response..."
+ placeholder="Type a message reply..."
  className="flex-1 bg-background text-caption border-[hsl(var(--foreground)/0.08)] focus-visible:ring-primary/20"
  disabled={sendingMessage || activeDetails.conversation.status === "closed"} />
  
@@ -410,7 +410,7 @@ export default function ConversationsPage() {
 
  <>
  <Send className="h-3.5 w-3.5 mr-space-1" />
- <span>Simulate</span>
+ <span>Send Reply</span>
  </>
  }
  </Button>

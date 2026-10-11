@@ -111,6 +111,10 @@ export async function resolveOrCreateOAuthIdentity(
       .limit(1);
 
     if (user) {
+      if (user.status === "suspended") {
+        throw new Error("Your account has been suspended by an administrator.");
+      }
+
       // Update tokens & avatar if changed
       await db
         .update(users)
@@ -159,6 +163,10 @@ export async function resolveOrCreateOAuthIdentity(
     .limit(1);
 
   if (existingUser) {
+    if (existingUser.status === "suspended") {
+      throw new Error("Your account has been suspended by an administrator.");
+    }
+
     // Link the new provider to the existing user via ON CONFLICT to handle races
     try {
       await db.transaction(async (tx) => {

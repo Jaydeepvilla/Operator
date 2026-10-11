@@ -25,7 +25,7 @@ export interface TelephonyProvider {
 }
 
 export interface SpeechToTextProvider {
-  id: string; // e.g., 'stt-deepgram', 'stt-openai-realtime', 'stt-assemblyai'
+  id: string; // e.g., 'stt-deepgram', 'stt-assemblyai'
   name: string;
   
   processAudioStream(
@@ -34,7 +34,7 @@ export interface SpeechToTextProvider {
 }
 
 export interface TextToSpeechProvider {
-  id: string; // e.g., 'tts-elevenlabs', 'tts-openai', 'tts-cartesia'
+  id: string; // e.g., 'tts-elevenlabs', 'tts-cartesia'
   name: string;
   
   synthesizeText(

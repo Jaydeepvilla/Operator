@@ -27,15 +27,11 @@ export class VonageProvider implements MessagingProvider, WebhookProvider {
       const fromNumber = connectionConfig.fromNumber || process.env.VONAGE_FROM_NUMBER || "Operator";
 
       if (!apiKey || !apiSecret) {
-        // Fallback for zero-cost sandbox / test mode
-        if (process.env.NODE_ENV !== "production" || !process.env.VONAGE_API_KEY) {
-          console.log(`[VonageProvider Sandbox] SMS simulated to ${recipientId}: "${content.substring(0, 50)}..."`);
-          return {
-            success: true,
-            externalId: "vonage-sim-" + crypto.randomUUID()
-          };
-        }
-        throw new Error("Missing Vonage API credentials.");
+        return {
+          success: false,
+          errorCode: "VONAGE_PROVIDER_NOT_CONFIGURED",
+          errorMessage: "Vonage API credentials (apiKey / apiSecret) are not configured for this organization.",
+        };
       }
 
       const cleanPhone = recipientId.replace(/\D/g, "");

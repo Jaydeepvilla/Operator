@@ -146,42 +146,14 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
     const slug = `${baseSlug}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     // 3. Resolve authenticated user
-    let { userId } = await auth();
-    let user: any = null;
-
-    if (userId) {
-      user = await userRepository.getById(userId);
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: "Authentication required. Please sign in to set up your business." };
     }
 
+    const user = await userRepository.getById(userId);
     if (!user) {
-      const targetEmail = (email || `owner@${baseSlug}.com`).toLowerCase().trim();
-      try {
-        const existingUsers = await db.select().from(users).where(eq(users.email, targetEmail)).limit(1);
-        let resolvedUser = existingUsers[0];
-        if (!resolvedUser) {
-          const newUserId = "usr_" + crypto.randomBytes(12).toString("hex");
-          resolvedUser = await userRepository.create({
-            id: newUserId,
-            email: targetEmail,
-            name: name || "Business Owner",
-            isVerified: true,
-            status: "active",
-            acceptTerms: true,
-            acceptPrivacy: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-        }
-        await createSession(resolvedUser.id, undefined, undefined, true);
-        user = resolvedUser;
-      } catch (dbErr: any) {
-        console.warn("DB user sync fallback:", dbErr.message);
-        user = {
-          id: "usr_" + crypto.randomBytes(8).toString("hex"),
-          email: targetEmail,
-          name: name || "Business Owner",
-        };
-      }
+      return { success: false, error: "User account not found. Please log in again." };
     }
 
     // 4. Check if user already has an organization to update into completed status

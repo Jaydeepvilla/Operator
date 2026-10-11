@@ -2,7 +2,7 @@
  * Error Architecture Automated Verification Script
  * Validates:
  * 1. Safe mapping and classification of raw DB / Drizzle errors (no leaks)
- * 2. Provider error sanitization (Stripe, Twilio, OpenAI, Gemini)
+ * 2. Provider error sanitization (Stripe, Twilio, Gemini)
  * 3. Auth categorization (UNAUTHENTICATED vs FORBIDDEN)
  * 4. toSafeErrorResponse output contracts
  * 5. AppError structured creation

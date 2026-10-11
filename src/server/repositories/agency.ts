@@ -142,19 +142,19 @@ export const agencyRepository = {
     return inserted;
   },
 
-  async deleteDomain(domainId: string) {
-    await db.delete(agencyDomains).where(eq(agencyDomains.id, domainId));
+  async deleteDomain(agencyId: string, domainId: string) {
+    await db.delete(agencyDomains).where(and(eq(agencyDomains.id, domainId), eq(agencyDomains.agencyId, agencyId)));
     return true;
   },
 
-  async verifyDomainSsl(domainId: string, status: "active" | "failed" | "pending") {
+  async verifyDomainSsl(agencyId: string, domainId: string, status: "active" | "failed" | "pending") {
     const [updated] = await db
       .update(agencyDomains)
       .set({
         sslStatus: status,
         updatedAt: new Date()
       })
-      .where(eq(agencyDomains.id, domainId))
+      .where(and(eq(agencyDomains.id, domainId), eq(agencyDomains.agencyId, agencyId)))
       .returning();
     return updated;
   },
@@ -177,9 +177,9 @@ export const agencyRepository = {
     return clientList;
   },
 
-  async getClientDetails(clientId: string) {
+  async getClientDetails(agencyId: string, clientId: string) {
     return db.query.agencyClients.findFirst({
-      where: eq(agencyClients.id, clientId),
+      where: and(eq(agencyClients.id, clientId), eq(agencyClients.agencyId, agencyId)),
       with: {
         workspaces: {
           with: {
@@ -224,8 +224,8 @@ export const agencyRepository = {
     return invite;
   },
 
-  async removeMember(memberId: string) {
-    await db.delete(agencyMembers).where(eq(agencyMembers.id, memberId));
+  async removeMember(agencyId: string, memberId: string) {
+    await db.delete(agencyMembers).where(and(eq(agencyMembers.id, memberId), eq(agencyMembers.agencyId, agencyId)));
     return true;
   },
 
@@ -263,8 +263,8 @@ export const agencyRepository = {
     return plan;
   },
 
-  async deleteResellerPlan(planId: string) {
-    await db.delete(resellerPlans).where(eq(resellerPlans.id, planId));
+  async deleteResellerPlan(agencyId: string, planId: string) {
+    await db.delete(resellerPlans).where(and(eq(resellerPlans.id, planId), eq(resellerPlans.agencyId, agencyId)));
     return true;
   }
 };

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { cache } from "react";
+import { AsyncLocalStorage } from "async_hooks";
 import { getSession, deleteSession } from "./session";
 import { db } from "@/server/db";
 import { users, memberships } from "@/server/db/schema";
@@ -10,6 +11,13 @@ export interface AuthResult {
   orgId: string | null;
 }
 
+export interface ServerAuthContext {
+  sessionToken?: string;
+  activeOrgId?: string;
+}
+
+export const serverAuthStorage = new AsyncLocalStorage<ServerAuthContext>();
+
 /**
  * Server-side authentication check returning the active userId and orgId.
  * Wrapped in React cache to avoid duplicate DB queries per request.
@@ -19,12 +27,18 @@ export const auth = cache(async (): Promise<AuthResult> => {
     let token: string | undefined;
     let activeOrgCookie: string | undefined;
 
-    try {
-      const cookieStore = await cookies();
-      token = cookieStore.get("session_token")?.value;
-      activeOrgCookie = cookieStore.get("active_org_id")?.value;
-    } catch {
-      // Running outside request context
+    const asyncContext = serverAuthStorage.getStore();
+    if (asyncContext?.sessionToken) {
+      token = asyncContext.sessionToken;
+      activeOrgCookie = asyncContext.activeOrgId;
+    } else {
+      try {
+        const cookieStore = await cookies();
+        token = cookieStore.get("session_token")?.value;
+        activeOrgCookie = cookieStore.get("active_org_id")?.value;
+      } catch {
+        // Running outside request context
+      }
     }
 
     if (!token) {

@@ -40,54 +40,42 @@ export function PhoneNumbersClient({ initialNumbers }: {initialNumbers: any[];})
  const [isPending, startTransition] = useTransition();
  const toast = useToast();
 
- // Search/purchase state
- const [searchQuery, setSearchQuery] = useState("");
+ // Phone line registration state
  const [lineName, setLineName] = useState("");
- const [selectedNumber, setSelectedNumber] = useState("");
- const [statusMessage, setStatusMessage] = useState<{type: "success" | "error";text: string;} | null>(null);
-
- // Simulated available lines matching templates
- const SIMULATED_AVAILABLE_NUMBERS = [
- "+1 (555) 819-2090",
- "+1 (555) 438-1982",
- "+1 (555) 609-3289",
- "+1 (555) 728-1123",
- "+1 (555) 238-4490"];
-
-
- const filteredSimulated = SIMULATED_AVAILABLE_NUMBERS.filter((num) =>
- num.includes(searchQuery)
- );
+ const [phoneNumberInput, setPhoneNumberInput] = useState("");
+ const [statusMessage, setStatusMessage] = useState<{type: "success" | "error"; text: string;} | null>(null);
 
  const handlePurchase = async () => {
  if (!lineName.trim()) {
  setStatusMessage({ type: "error", text: "Please enter a label for this phone line." });
  return;
  }
- if (!selectedNumber) {
- setStatusMessage({ type: "error", text: "Please select a phone number to claim." });
+ const cleanNumber = phoneNumberInput.trim().replace(/[()\s-]/g, "");
+ if (!cleanNumber || !/^\+?[1-9]\d{6,14}$/.test(cleanNumber)) {
+ setStatusMessage({ type: "error", text: "Please enter a valid international phone number in E.164 format (e.g., +15552345678)." });
  return;
  }
 
  setStatusMessage(null);
  startTransition(async () => {
+ const formattedNumber = cleanNumber.startsWith("+") ? cleanNumber : `+${cleanNumber}`;
  const res = await purchasePhoneNumberAction({
- name: lineName,
- phoneNumber: selectedNumber.replace(/[()-\s]/g, "") // clean format
+ name: lineName.trim(),
+ phoneNumber: formattedNumber,
  });
 
  if (res.success && res.number) {
  setStatusMessage({ type: "success", text: "Successfully linked phone line!" });
  setNumbers((prev) => [res.number as unknown as PhoneNumber, ...prev]);
  setLineName("");
- setSelectedNumber("");
- toast.success("Phone Line Connected", `Number ${selectedNumber} is now active.`);
+ setPhoneNumberInput("");
+ toast.success("Phone Line Connected", `Number ${formattedNumber} is now active.`);
  setTimeout(() => {
  setIsOpen(false);
  setStatusMessage(null);
  }, 1500);
  } else {
- const errorMsg = formatUserErrorMessage(res.error, "Purchase failed.");
+ const errorMsg = formatUserErrorMessage(res.error, "Failed to link phone line.");
  setStatusMessage({ type: "error", text: errorMsg });
  toast.error("Failed to connect phone line", errorMsg);
  }
@@ -146,38 +134,18 @@ export function PhoneNumbersClient({ initialNumbers }: {initialNumbers: any[];})
  </div>
 
  <div className="space-y-space-1.5">
- <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Search Numbers</Label>
+ <Label htmlFor="phone-input" className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Phone Number (E.164)</Label>
  <div className="relative">
- <Search className="absolute left-space-3 top-space-2.5 h-4 w-4 text-muted-foreground/50" />
+ <Phone className="absolute left-space-3 top-space-2.5 h-4 w-4 text-muted-foreground/50" />
  <Input
- placeholder="Search prefix (e.g. 555)..."
- className="pl-space-9 h-9.5 text-caption bg-background border-[hsl(var(--foreground)/0.08)] focus-visible:ring-primary/20"
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)} />
- 
+ id="phone-input"
+ placeholder="+1 555 234 5678"
+ className="pl-space-9 h-9.5 text-caption bg-background border-[hsl(var(--foreground)/0.08)] focus-visible:ring-primary/20 font-mono"
+ value={phoneNumberInput}
+ onChange={(e) => setPhoneNumberInput(e.target.value)} />
  </div>
+ <p className="text-caption text-muted-foreground/70 text-xs">Enter your designated telephony number provisioned in your carrier dashboard.</p>
  </div>
-
- {/* Number Results Grid */}
- <ScrollArea className="border border-[hsl(var(--foreground)/0.06)] radius-lg p-space-1.5 max-h-40 space-y-space-1 bg-[hsl(var(--foreground)/0.05)]" horizontal={false}>
- {filteredSimulated.length > 0 ?
- filteredSimulated.map((num) =>
- <Button key={num} type="button" variant="ghost" onClick={() => setSelectedNumber(num)}
- className={cn(
- "w-full flex items-center justify-between px-space-3 py-space-2 radius-md text-caption transition-colors cursor-pointer",
- selectedNumber === num ?
- "bg-[hsl(var(--primary)/0.08)] text-primary font-normal border border-[hsl(var(--primary)/0.15)]" :
- "hover:bg-[hsl(var(--foreground)/0.04)] text-foreground/90"
- )}>
- 
- <span className="font-mono">{num}</span>
- {selectedNumber === num && <Check className="h-3.5 w-3.5 text-primary" />}
- </Button>
- ) :
-
- <p className="text-caption text-muted-foreground/60 text-center py-space-4">No numbers match query</p>
- }
- </ScrollArea>
 
  {statusMessage &&
  <div className={cn(

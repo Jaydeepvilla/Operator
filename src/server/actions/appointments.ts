@@ -1,10 +1,10 @@
 "use server";
 
-import { requireOrganizationAccess, assertResourceOwnership } from "@/lib/auth/server";
+import { requireOrganizationAccess, assertResourceOwnership, auth, AuthorizationError } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { eq, and } from "drizzle-orm";
 import { db } from "../db";
-import { appointments, conversations } from "../db/schema";
+import { appointments, conversations, memberships, businessSettings } from "../db/schema";
 import { appointmentsRepository } from "../repositories/appointments";
 import { bookingService } from "../services/booking";
 import { leadsRepository } from "../repositories/leads";
@@ -113,10 +113,65 @@ export async function createAppointmentAction(data: {
   organizationId?: string;
 }) {
   try {
-    let organizationId = data.organizationId;
-    if (!organizationId) {
-      const authResult = await requireOrganizationAccess();
-      organizationId = authResult.organizationId;
+    const authContext = await auth();
+    let organizationId: string;
+
+    if (authContext.userId) {
+      // Authenticated caller: ensure organization access is enforced
+      const { organizationId: userOrgId } = await requireOrganizationAccess();
+      if (data.organizationId && data.organizationId !== userOrgId) {
+        // Verify user has membership in target organization
+        const [membership] = await db
+          .select()
+          .from(memberships)
+          .where(
+            and(
+              eq(memberships.userId, authContext.userId),
+              eq(memberships.organizationId, data.organizationId)
+            )
+          )
+          .limit(1);
+        if (!membership) {
+          throw new AuthorizationError("Access denied: You are not authorized to book appointments in this organization.");
+        }
+        organizationId = data.organizationId;
+      } else {
+        organizationId = userOrgId;
+      }
+    } else {
+      // Unauthenticated public widget caller: must provide valid organizationId
+      if (!data.organizationId) {
+        throw new Error("Organization identifier is required for public bookings.");
+      }
+      const targetOrg = await organizationRepository.getById(data.organizationId);
+      if (!targetOrg) {
+        throw new Error("Target organization not found.");
+      }
+
+      // Validate public booking configuration - FAIL CLOSED
+      // Public booking is strictly prohibited unless organization businessSettings exist
+      // and bookingPreferences explicitly and truthfully sets publicBookingEnabled === true.
+      const [settings] = await db
+        .select()
+        .from(businessSettings)
+        .where(eq(businessSettings.organizationId, data.organizationId))
+        .limit(1);
+
+      if (
+        !settings ||
+        !settings.bookingPreferences ||
+        typeof settings.bookingPreferences !== "object" ||
+        Array.isArray(settings.bookingPreferences)
+      ) {
+        throw new Error("Public booking is disabled for this organization.");
+      }
+
+      const bookingPreferences = settings.bookingPreferences as Record<string, any>;
+      if (bookingPreferences.publicBookingEnabled !== true) {
+        throw new Error("Public booking is disabled for this organization.");
+      }
+
+      organizationId = data.organizationId;
     }
     const org = await organizationRepository.getById(organizationId);
     const timezone = org?.timezone || "UTC";
@@ -134,9 +189,14 @@ export async function createAppointmentAction(data: {
       customerName: data.customerName,
       customerEmail: data.customerEmail,
       customerPhone: data.customerPhone,
+      isPublic: !authContext.userId,
     });
 
-    revalidatePath("/appointments");
+    try {
+      revalidatePath("/appointments");
+    } catch {
+      // Invariant: static generation store missing when running in non-HTTP background/CLI context
+    }
     return { success: true, appointment };
   } catch (error: any) {
     return { success: false, error: error?.message || "We couldn't book this appointment. Try again." };
@@ -167,7 +227,11 @@ export async function rescheduleAppointmentAction(data: {
       "staff"
     );
 
-    revalidatePath("/appointments");
+    try {
+      revalidatePath("/appointments");
+    } catch {
+      // Invariant: static generation store missing when running in non-HTTP background/CLI context
+    }
     return { success: true, appointment: updated };
   } catch (error: any) {
     return { success: false, error: error?.message || "We couldn't reschedule this appointment. Try again." };
@@ -188,7 +252,11 @@ export async function cancelAppointmentAction(data: {
       "staff"
     );
 
-    revalidatePath("/appointments");
+    try {
+      revalidatePath("/appointments");
+    } catch {
+      // Invariant: static generation store missing when running in non-HTTP background/CLI context
+    }
     return { success: true, appointment: updated };
   } catch (error: any) {
     return { success: false, error: error?.message || "We couldn't cancel this appointment. Try again." };
@@ -339,8 +407,12 @@ export async function quickCreateAppointmentAction(data: {
       impact: data.price ? `+$${data.price} scheduled revenue` : "Confirmed booking on calendar",
     });
 
-    revalidatePath("/appointments");
-    revalidatePath("/dashboard");
+    try {
+      revalidatePath("/appointments");
+      revalidatePath("/dashboard");
+    } catch {
+      // Invariant: static generation store missing in non-HTTP background/CLI execution
+    }
     return { success: true, appointment };
   } catch (error: any) {
     console.error("quickCreateAppointmentAction error:", error);

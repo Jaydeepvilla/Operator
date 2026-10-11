@@ -9,8 +9,9 @@ import { ruleEngine } from "./automations/rule-engine";
 import { notificationService } from "./notification";
 import { identityResolverService } from "./identity";
 import { db } from "../db";
-import { services, staffMembers, appointmentEvents, organizations, appointments, appointmentWaitlist } from "../db/schema";
-import { eq, and, lt, gt, notInArray, sql, asc, desc } from "drizzle-orm";
+import { services, staffMembers, serviceAssignments, appointmentEvents, organizations, appointments, appointmentWaitlist, businessSettings, memberships } from "../db/schema";
+import { eq, and, lt, gt, inArray, notInArray, sql, asc, desc } from "drizzle-orm";
+import { auth } from "@/lib/auth/server";
 
 export interface CreateBookingInput {
   organizationId: string;
@@ -21,6 +22,7 @@ export interface CreateBookingInput {
   customerName: string;
   customerEmail?: string | null;
   customerPhone?: string | null;
+  isPublic?: boolean;
 }
 
 export const bookingService = {
@@ -34,31 +36,117 @@ export const bookingService = {
     if (!org) throw new Error("Organization not found");
     const timezone = org.timezone || "UTC";
 
+    // Authoritative Server-Side Trust Boundary:
+    // Determine whether the calling execution context represents an authorized internal staff member of this organization.
+    // Do NOT rely solely on caller-controlled flags (like input.isPublic).
+    let isAuthorizedInternalStaff = false;
+    try {
+      const authContext = await auth();
+      if (authContext.userId) {
+        const [membership] = await db
+          .select({ id: memberships.id })
+          .from(memberships)
+          .where(
+            and(
+              eq(memberships.userId, authContext.userId),
+              eq(memberships.organizationId, organizationId)
+            )
+          )
+          .limit(1);
+
+        if (membership) {
+          isAuthorizedInternalStaff = true;
+        }
+      }
+    } catch {
+      // Invariant: outside request context or auth error -> default to unauthenticated public request
+      isAuthorizedInternalStaff = false;
+    }
+
+    // A request is treated as public if it is explicitly flagged as public OR if the caller
+    // lacks verified internal staff membership in the target organization.
+    const isPublicRequest = input.isPublic === true || !isAuthorizedInternalStaff;
+
+    if (isPublicRequest) {
+      const [settings] = await db
+        .select()
+        .from(businessSettings)
+        .where(eq(businessSettings.organizationId, organizationId))
+        .limit(1);
+
+      if (
+        !settings ||
+        !settings.bookingPreferences ||
+        typeof settings.bookingPreferences !== "object" ||
+        Array.isArray(settings.bookingPreferences)
+      ) {
+        throw new Error("Public booking is disabled for this organization.");
+      }
+
+      const bookingPreferences = settings.bookingPreferences as Record<string, any>;
+      if (bookingPreferences.publicBookingEnabled !== true) {
+        throw new Error("Public booking is disabled for this organization.");
+      }
+    }
+
     // 1. Fetch Service duration & verify tenant isolation
     const [service] = await db
       .select()
       .from(services)
       .where(and(eq(services.id, serviceId), eq(services.organizationId, organizationId)));
     if (!service) throw new Error("Service not found or unauthorized");
+    if (!service.isActive || service.isArchived) {
+      throw new Error("Service is unavailable or unpublished.");
+    }
 
-    // 1b. Verify Staff Member belongs to organization with multi-tier fallback
-    let staff = null;
+    // 1b. Verify Staff Member belongs to organization and is assigned to the service
+    let staff: any = null;
     if (staffMemberId && staffMemberId.trim()) {
       const [foundStaff] = await db
         .select()
         .from(staffMembers)
         .where(and(eq(staffMembers.id, staffMemberId), eq(staffMembers.organizationId, organizationId)));
+      if (!foundStaff) {
+        throw new Error("Staff member not found or access denied.");
+      }
+      if (!foundStaff.isActive) {
+        throw new Error("Selected staff member is not currently active.");
+      }
       staff = foundStaff;
     }
 
+    // Verify service eligibility if service assignments exist
+    const assignments = await db
+      .select()
+      .from(serviceAssignments)
+      .where(and(eq(serviceAssignments.serviceId, serviceId), eq(serviceAssignments.organizationId, organizationId)));
+
+    if (assignments.length > 0 && staff) {
+      const isEligible = assignments.some((a) => a.staffMemberId === staff.id);
+      if (!isEligible) {
+        throw new Error("The selected staff member is not eligible to provide this service.");
+      }
+    }
+
     if (!staff) {
-      // Find an active staff member in the organization
-      const activeStaffList = await db
-        .select()
-        .from(staffMembers)
-        .where(and(eq(staffMembers.organizationId, organizationId), eq(staffMembers.isActive, true)))
-        .limit(1);
-      staff = activeStaffList[0] || null;
+      if (assignments.length > 0) {
+        const assignedStaffIds = assignments.map((a) => a.staffMemberId);
+        const [assignedStaff] = await db
+          .select()
+          .from(staffMembers)
+          .where(and(inArray(staffMembers.id, assignedStaffIds), eq(staffMembers.isActive, true)))
+          .limit(1);
+        staff = assignedStaff || null;
+      }
+      if (!staff) {
+        // Find an active staff member in the organization
+        const activeStaffList = await db
+          .select()
+          .from(staffMembers)
+          .where(and(eq(staffMembers.organizationId, organizationId), eq(staffMembers.isActive, true)))
+          .limit(1);
+        staff = activeStaffList[0] || null;
+      }
     }
 
     if (!staff) {
@@ -102,14 +190,12 @@ export const bookingService = {
       effectiveStaffId
     );
     const norm = (t: string) => t.replace(/^0/, "").trim();
-    const isSlotAvailable =
-      availableSlots.length === 0 ||
-      availableSlots.some(
-        (s) => norm(s.startTime) === norm(slotTimeStr)
-      );
+    const isSlotAvailable = availableSlots.some(
+      (s) => norm(s.startTime) === norm(slotTimeStr)
+    );
 
-    if (!isSlotAvailable && availableSlots.length > 0) {
-      throw new Error(`Requested time slot ${slotTimeStr} is no longer available for booking.`);
+    if (!isSlotAvailable) {
+      throw new Error(`Requested time slot ${slotTimeStr} is outside business hours or no longer available for booking.`);
     }
 
     // 3. Concurrency Protection & Transactional Lock

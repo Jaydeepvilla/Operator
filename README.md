@@ -11,7 +11,7 @@ Operator enables businesses to deploy a 24/7 Operator AI that handles inbound co
 - **Omnichannel conversations** — WhatsApp, SMS, Facebook Messenger, Instagram, email, web widget, voice (Vapi + Twilio + Deepgram + ElevenLabs)
 - **Lead qualification** — Configurable multi-step qualification flows with answer types: text, single-select, multi-select, number
 - **Appointment booking** — Natural-language date parsing, staff availability checks, Google Calendar sync, reminder scheduling
-- **Operator AI** — RAG-augmented context retrieval, LLM completion (OpenAI gpt-4o-mini primary, Gemini 2.5 Flash secondary), hallucination prevention rules
+- **Operator AI** — RAG-augmented context retrieval, LLM completion (Google Gemini sole AI provider), hallucination prevention rules
 - **Escalation management** — Five trigger reasons, conversation status transitions, human agent handoff
 - **Multi-tenant** — Organizations, memberships, role-based access (owner / admin / manager / staff)
 - **Billing** — Stripe, Razorpay, LemonSqueezy, Paddle, PayPal
@@ -28,7 +28,7 @@ Operator enables businesses to deploy a 24/7 Operator AI that handles inbound co
 | Auth | Custom session tokens (`src/lib/auth/`) — not Clerk |
 | Styling | Tailwind CSS v4 + custom design system tokens |
 | Animation | Framer Motion 12 |
-| AI | OpenAI gpt-4o-mini / Google Gemini 2.5 Flash |
+| AI | Google Gemini (sole AI provider: gemini-3.5-flash / gemini-embedding-001) |
 | Voice | Vapi AI, Twilio, Deepgram, ElevenLabs |
 | Calendar | Google Calendar API (OAuth, direct HTTP) |
 | Testing | Playwright |
@@ -57,7 +57,7 @@ npm install
 # 3. Copy environment file
 cp .env.example .env
 
-# 4. Edit .env — fill in DATABASE_URL and at minimum OPENAI_API_KEY or GEMINI_API_KEY
+# 4. Edit .env — fill in DATABASE_URL and GEMINI_API_KEY
 # See docs/developer-guide/environment-variables.md for the full reference
 
 # 5. Push the schema to your database
@@ -168,8 +168,7 @@ Quick summary:
 |---|---|---|
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `NEXT_PUBLIC_APP_URL` | Yes | Base URL of the app (e.g. `http://localhost:3000`) |
-| `OPENAI_API_KEY` | One of these two | LLM provider (primary) |
-| `GEMINI_API_KEY` | One of these two | LLM provider (secondary) |
+| `GEMINI_API_KEY` | Recommended | Google Gemini AI provider (sole AI engine & embeddings) |
 | `GOOGLE_CLIENT_ID` | Google Calendar only | OAuth for calendar integration |
 | `GOOGLE_CLIENT_SECRET` | Google Calendar only | OAuth for calendar integration |
 | `VAPI_API_KEY` | Voice only | Vapi AI voice calls |
@@ -188,7 +187,7 @@ Quick summary:
 | `SMTP_PASS` | Email only | SMTP password |
 | `CRON_SECRET` | Cron only | Bearer token for `/api/cron/jobs` |
 
-If neither `OPENAI_API_KEY` nor `GEMINI_API_KEY` is set, the system falls back to `MockLLMProvider`, which returns deterministic test responses. This is acceptable for UI development but will not produce real AI responses.
+If `GEMINI_API_KEY` is not set, the system engages the grounded `operator_smart_engine`, which extracts facts from the active business configuration without hallucinating. Setting `GEMINI_API_KEY` enables live Gemini generation and vector search.
 
 ---
 

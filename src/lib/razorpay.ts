@@ -38,5 +38,14 @@ export function verifyRazorpaySignature({
     .update(`${orderId}|${paymentId}`)
     .digest("hex");
 
-  return generatedSignature === signature;
+  try {
+    const genBuf = Buffer.from(generatedSignature, "hex");
+    const sigBuf = Buffer.from(signature, "hex");
+    if (genBuf.length !== sigBuf.length) {
+      return false;
+    }
+    return crypto.timingSafeEqual(genBuf, sigBuf);
+  } catch {
+    return false;
+  }
 }

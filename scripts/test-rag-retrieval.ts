@@ -1,6 +1,6 @@
 import {
   isSyntheticOrZeroVector,
-  OpenAIEmbeddingService,
+  GeminiEmbeddingService,
   PostgresRetrievalService,
   MIN_VECTOR_SIMILARITY_THRESHOLD,
   MIN_LEXICAL_MATCH_THRESHOLD,
@@ -41,9 +41,9 @@ async function runTests() {
   const validVector = new Array(1536).fill(0.025);
   assert(isSyntheticOrZeroVector(validVector) === false, "Valid non-zero embedding vector accepted");
 
-  // 2. OpenAI Embedding Service Guard
-  console.log("\n2. Testing OpenAI Embedding Service Without API Key...");
-  const noKeyService = new OpenAIEmbeddingService("");
+  // 2. Gemini Embedding Service Guard
+  console.log("\n2. Testing Gemini Embedding Service Without API Key...");
+  const noKeyService = new GeminiEmbeddingService("");
   let caughtError = false;
   try {
     // Must reject and throw, NEVER return synthetic new Array(1536).fill(0)
@@ -51,7 +51,7 @@ async function runTests() {
   } catch (e: any) {
     caughtError = true;
     assert(
-      e.message.includes("OPENAI_API_KEY") || e.message.includes("Embeddings"),
+      e.message.includes("GEMINI_API_KEY") || e.message.includes("Embedding"),
       "Throws explicit error when API key missing rather than returning fake vector"
     );
   }

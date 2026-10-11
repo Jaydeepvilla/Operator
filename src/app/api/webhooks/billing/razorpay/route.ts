@@ -7,8 +7,8 @@ export async function POST(req: Request) {
     const rawBody = await req.text();
     const signature = req.headers.get("x-razorpay-signature");
 
-    if (signature && !razorpayProvider.verifyWebhookSignature(rawBody, signature)) {
-      return new NextResponse("Invalid Razorpay webhook signature", { status: 400 });
+    if (!signature || !razorpayProvider.verifyWebhookSignature(rawBody, signature)) {
+      return new NextResponse("Invalid or missing Razorpay webhook signature", { status: 400 });
     }
 
     const event = JSON.parse(rawBody);

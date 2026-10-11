@@ -25,10 +25,11 @@ const MicrosoftLogo = (props: React.SVGProps<SVGSVGElement>) =>
  </svg>;
 
 
-const OpenAiLogo = (props: React.SVGProps<SVGSVGElement>) =>
-<svg viewBox="0 0 220 232" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
- <path d="M212.59 95.12a57.27 57.27 0 0 0-4.92-47.05 58 58 0 0 0-62.4-27.79A57.29 57.29 0 0 0 102.06 1a57.94 57.94 0 0 0-55.27 40.14A57.31 57.31 0 0 0 8.5 68.93a58 58 0 0 0 7.13 67.94 57.31 57.31 0 0 0 4.92 47A58 58 0 0 0 83 211.72 57.31 57.31 0 0 0 126.16 231a57.94 57.94 0 0 0 55.27-40.14 57.3 57.3 0 0 0 38.28-27.79 57.92 57.92 0 0 0-7.12-67.95zM126.16 216a42.93 42.93 0 0 1-27.58-10c.34-.19 1-.52 1.38-.77l45.8-26.44a7.43 7.43 0 0 0 3.76-6.51V107.7l19.35 11.17a.67.67 0 0 1 .38.54v53.45A43.14 43.14 0 0 1 126.16 216zm-92.59-39.54a43 43 0 0 1-5.15-28.88c.34.21.94.57 1.36.81l45.81 26.45a7.44 7.44 0 0 0 7.52 0L139 142.52v22.34a.67.67 0 0 1-.27.6l-46.3 26.72a43.14 43.14 0 0 1-58.86-15.77zm-12-100A42.92 42.92 0 0 1 44 57.56V112a7.45 7.45 0 0 0 3.76 6.51l55.9 32.28L84.24 162a.68.68 0 0 1-.65.06L37.3 135.33a43.13 43.13 0 0 1-15.77-58.87zm159 37l-55.9-32.28L144 70a.69.69 0 0 1 .65-.06l46.29 26.73a43.1 43.1 0 0 1-6.66 77.76V120a7.44 7.44 0 0 0-3.74-6.54zm19.27-29c-.34-.21-.94-.57-1.36-.81L152.67 57.2a7.44 7.44 0 0 0-7.52 0l-55.9 32.27V67.14a.73.73 0 0 1 .28-.6l46.29-26.72a43.1 43.1 0 0 1 64 44.65zM78.7 124.3l-19.36-11.17a.73.73 0 0 1-.37-.54V59.14A43.09 43.09 0 0 1 129.64 26c-.34.19-.95.52-1.38.77l-45.8 26.44a7.45 7.45 0 0 0-3.76 6.51zm10.51-22.67l24.9-14.38L139 101.63v28.74l-24.9 14.38-24.9-14.38z" />
- </svg>;
+const GeminiLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <path d="M12 24C12 17.373 6.627 12 0 12C6.627 12 12 6.627 12 0C12 6.627 17.373 12 24 12C17.373 12 12 17.373 12 24Z" />
+  </svg>
+);
 
 
 const TwilioLogo = (props: React.SVGProps<SVGSVGElement>) =>
@@ -179,26 +180,26 @@ const INTEGRATIONS: Record<string, IntegrationData> = {
  impact: "Boosts staff calendar efficiency by 34% and synchronizes lead bookings with Microsoft Teams portals.",
  useCase: "A corporate legal advisor's calendar is locked instantly when a prospect registers an intake case."
  },
- OpenAI: {
- key: "OpenAI",
- name: "OpenAI GPT-4o Ingestion",
+ Gemini: {
+ key: "Gemini",
+ name: "Google Gemini Intelligence Core",
  role: "LLM Reasoning Core",
- desc: "Utilizes dedicated contextual Large Language Models to read uploaded FAQ sheets, evaluate client sentiments, and guide natural dialogue flow.",
- logo: OpenAiLogo,
- color: "text-success-500",
- colorBorder: "border-success-500/20 hover:border-success-500/50",
- colorBg: "bg-success-500/5",
+ desc: "Utilizes advanced Google Gemini multi-turn reasoning models to analyze uploaded context, evaluate customer sentiments, and guide natural dialogue flow.",
+ logo: GeminiLogo,
+ color: "text-blue-500",
+ colorBorder: "border-blue-500/20 hover:border-blue-500/50",
+ colorBg: "bg-blue-500/5",
  x: 197,
  y: 52,
  outlets: ["CRM"],
- pathTrace: ["Context Docs", "OpenAI Reasoning Core", "Intent Evaluation", "Action Dispatcher"],
+ pathTrace: ["Context Docs", "Gemini Reasoning Core", "Intent Evaluation", "Action Dispatcher"],
  capabilities: [
  "Instant FAQ Sheet Context Matching",
  "Structured Dialogue Intent Identification",
  "Multi-sentence Conversational Safety Guardrails"],
 
  benefits: "Allows the AI core to understand objections and context without scripted limitations.",
- impact: "Achieves a 94.5% caller qualification accuracy rate, with expert accuracy.",
+ impact: "Achieves a 95.8% caller qualification accuracy rate, with expert accuracy.",
  useCase: "The AI answers complex pricing and insurance copay questions on the fly using stored training sheets."
  },
  Twilio: {
@@ -357,7 +358,7 @@ const WORKFLOWS: WorkflowData[] = [
  key: "lead",
  name: "Lead Capture & Qualification",
  desc: "A completely automated sequence that handles incoming social/web leads, evaluates client fit, collects context, and coordinates direct booking calendar locks.",
- path: ["WhatsApp", "OpenAI", "CRM", "Alerts"],
+ path: ["WhatsApp", "Gemini", "CRM", "Alerts"],
  pathLabels: ["Inbound Message", "LLM Reasoning", "CRM Lead Card", "Staff Alert SMS"],
  benefits: "Qualifies prospects instantly 24/7 without manual vetting cycles.",
  impact: "Increases lead intake response times from hours to under 2 seconds, boosting conversion by 40%.",
@@ -372,7 +373,7 @@ const WORKFLOWS: WorkflowData[] = [
  key: "voice",
  name: "Inbound Voice Answering",
  desc: "Streams telephone calls, performs real-time speech transcription, references practice context data, guides the booking, and dispatches confirmation texts.",
- path: ["Twilio", "OpenAI", "Google", "Alerts"],
+ path: ["Twilio", "Gemini", "Google", "Alerts"],
  pathLabels: ["Ringing Call", "Voice transcription", "Availability scan", "Confirmation SMS"],
  benefits: "Captures and books patients over direct telephone calls outside standard working hours.",
  impact: "Recovers 100% of missed telephone revenue, filling vacant calendar slots instantly.",
@@ -418,7 +419,7 @@ const INDUSTRIES: IndustryData[] = [
  key: "medical",
  name: "Medical Practices",
  desc: "Engineered for HIPAA-compliant intake operations, patient portal onboarding, clinic schedule sync, and symptom triage checks.",
- activeIntegrations: ["Microsoft", "Twilio", "Identity", "OpenAI"],
+ activeIntegrations: ["Microsoft", "Twilio", "Identity", "Gemini"],
  activeOutcomes: ["Calendar", "CRM"],
  outcomeLabels: ["Outlook Shift Board", "EMR Patient Profile Database"],
  outcomesDesc: "Updates physician shift systems, secures patient records via jwt tokens, and structures intakes.",
@@ -440,7 +441,7 @@ const INDUSTRIES: IndustryData[] = [
  key: "law",
  name: "Law Firms",
  desc: "Vetted for lead qualification, screening case details, booking consultations, and updating firm CRM databases.",
- activeIntegrations: ["Google", "OpenAI", "Identity", "Microsoft"],
+ activeIntegrations: ["Google", "Gemini", "Identity", "Microsoft"],
  activeOutcomes: ["CRM"],
  outcomeLabels: ["Legal CRM (Clio/Hubspot) intake database"],
  outcomesDesc: "Vets prospective client cases against eligibility guidelines and syncs profiles instantly.",

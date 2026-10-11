@@ -11,6 +11,8 @@ import { Label } from "@/components/shared/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shared/select";
 import { TIMEZONES } from "@/lib/constants";
 import { onboardingStep2Schema, onboardingStep3Schema } from "@/lib/validators";
+import { updateOrganizationSettingsAction } from "@/server/actions/settings";
+import { useToast } from "@/components/shared/toast";
 import { z } from "zod";
 
 const settingsSchema = onboardingStep2Schema.merge(onboardingStep3Schema);
@@ -33,6 +35,8 @@ interface SettingsFormProps {
 export function SettingsForm({ organization }: SettingsFormProps) {
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveSuccess, setSaveSuccess] = React.useState(false);
+  const [saveError, setSaveError] = React.useState<string | null>(null);
+  const toast = useToast();
 
   const {
     register,
@@ -54,15 +58,27 @@ export function SettingsForm({ organization }: SettingsFormProps) {
   const onSubmit = async (data: SettingsInput) => {
     setIsSaving(true);
     setSaveSuccess(false);
+    setSaveError(null);
 
-    // Simulate saving changes
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const res = await updateOrganizationSettingsAction({
+      name: data.name,
+      website: data.website,
+      email: data.email,
+      phone: data.phone,
+      address: data.address,
+      timezone: data.timezone,
+    });
 
     setIsSaving(false);
-    setSaveSuccess(true);
 
-    // Reset success banner after 3 seconds
-    setTimeout(() => setSaveSuccess(false), 3000);
+    if (res.success) {
+      setSaveSuccess(true);
+      toast.success("Settings saved", "Business details have been updated.");
+      setTimeout(() => setSaveSuccess(false), 4000);
+    } else {
+      setSaveError(res.error || "Failed to update business settings");
+      toast.error("Failed to save", res.error || "Please try again.");
+    }
   };
 
   return (

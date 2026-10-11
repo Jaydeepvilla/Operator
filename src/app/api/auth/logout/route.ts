@@ -31,9 +31,23 @@ export async function GET(request: NextRequest) {
     console.error("API /api/auth/logout GET error:", error);
   }
 
-  let redirectUrl = request.nextUrl.searchParams.get("redirect") || "/sign-in?logout=true";
-  if (redirectUrl.startsWith("/sign-in") && !redirectUrl.includes("logout=true")) {
-    redirectUrl += (redirectUrl.includes("?") ? "&" : "?") + "logout=true";
+  const rawRedirect = request.nextUrl.searchParams.get("redirect");
+  let redirectUrl = "/sign-in?logout=true";
+
+  if (rawRedirect) {
+    const trimmed = rawRedirect.trim();
+    if (
+      trimmed.startsWith("/") &&
+      !trimmed.startsWith("//") &&
+      !trimmed.startsWith("/\\") &&
+      !trimmed.includes("\\") &&
+      !trimmed.includes("://")
+    ) {
+      redirectUrl = trimmed;
+      if (redirectUrl.startsWith("/sign-in") && !redirectUrl.includes("logout=true")) {
+        redirectUrl += (redirectUrl.includes("?") ? "&" : "?") + "logout=true";
+      }
+    }
   }
 
   const response = NextResponse.redirect(new URL(redirectUrl, request.url));

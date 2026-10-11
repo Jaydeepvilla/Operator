@@ -36,4 +36,3 @@ export async function snoozeNotificationAction(notificationId: string, minutes: 
     return { success: false, error: error.message };
   }
 }
-

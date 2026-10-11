@@ -554,13 +554,18 @@ export function IntelligenceDashboardClient({
       </section>
       {/* ─── PROGRESSIVE DISCLOSURE MODAL (Centered overlay) ─── */}
       {isDrawerOpen && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-space-4 animate-fade-in"
-          onClick={() => setIsDrawerOpen(false)}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-space-4 animate-fade-in">
+          <button
+            type="button"
+            aria-label="Close dialog"
+            className="absolute inset-0 bg-black/60 backdrop-blur-xs cursor-default border-none p-0"
+            onClick={() => setIsDrawerOpen(false)}
+          />
           <div 
-            className="w-full max-w-2xl max-h-[80vh] bg-card border border-border-default p-space-6 rounded-xl flex flex-col space-y-space-5 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="AI Intelligence Findings"
+            className="w-full max-w-2xl max-h-[80vh] bg-card border border-border-default p-space-6 rounded-xl flex flex-col space-y-space-5 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-10"
           >
             {/* Modal Header */}
             <div className="flex justify-between items-center pb-space-4 border-b border-border-default shrink-0">

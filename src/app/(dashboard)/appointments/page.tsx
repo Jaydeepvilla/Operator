@@ -507,10 +507,11 @@ export default function AppointmentsPage() {
  )}
  >
  {/* Clickable Header Row */}
- <div
+ <button
+ type="button"
  onClick={() => setSelectedAptId(isSelected ? null : item.appointment.id)}
  className={cn(
- "p-space-5 flex gap-space-4 items-center relative select-none transition-all duration-300 ease-out",
+ "w-full text-left p-space-5 flex gap-space-4 items-center relative select-none transition-all duration-300 ease-out cursor-pointer",
  isSelected ? "border-b border-slate-200/30 " : "bg-transparent"
  )}
  >
@@ -539,7 +540,7 @@ export default function AppointmentsPage() {
  </div>
  <ChevronRight className={cn("h-4 w-4 text-muted-foreground/40 transition-transform duration-200", isSelected && "rotate-90")} />
  </div>
- </div>
+ </button>
 
  {/* Inline expanded details */}
  {isSelected && (

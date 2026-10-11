@@ -91,11 +91,11 @@ export class ResendEmailProvider implements MessagingProvider, WebhookProvider {
         };
       }
 
-      // Zero-cost local fallback (SMTP or Console simulation)
-      console.log(`[Resend/Postmark Sandbox] Email simulated to ${recipientId}: "${content.substring(0, 50)}..."`);
+      // Provider not configured
       return {
-        success: true,
-        externalId: "email-sim-" + crypto.randomUUID()
+        success: false,
+        errorCode: "EMAIL_PROVIDER_NOT_CONFIGURED",
+        errorMessage: "No email provider (Resend or Postmark) credentials configured for this organization.",
       };
     } catch (e: any) {
       return {

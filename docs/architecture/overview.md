@@ -43,7 +43,7 @@ This document maps the complete Operator system architecture — how the pieces 
            ▼              ▼              ▼
     RAG Service     Prompt Builder    LLM Registry
     (rag.ts)        (prompt.ts)      (llm.ts)
-    SQL LIKE        Assembles         OpenAI / Gemini
+    SQL / Vector    Assembles         Google Gemini  
     keyword         system prompt     / MockLLM
     search          from 8 parts
            │
@@ -105,7 +105,7 @@ Pure business logic, no HTTP concerns. Services call repositories or the databas
 | `orchestrator.ts` | Central AI conversation brain — coordinates all services |
 | `rag.ts` | Context retrieval from business profile, services, FAQs, knowledge chunks |
 | `prompt.ts` | Constructs the system prompt from dynamic organization data |
-| `llm.ts` | LLM provider registry (OpenAI, Gemini, Mock) |
+| `llm.ts` | LLM provider registry (Google Gemini, operator_smart_engine) |
 | `intent.ts` | Extracts intent from conversation messages |
 | `qualification.ts` | Manages lead qualification question flows |
 | `scoring.ts` | Computes lead quality score |
@@ -253,7 +253,7 @@ Organizations are created during onboarding. One organization can have multiple 
 | Service | Capability | Status | Target Market / Role |
 |---|---|---|---|
 | PostgreSQL | Primary database | Active | Core database (149 tables) |
-| OpenAI / Gemini | LLM Orchestration & Prompting | Active | Conversational AI core |
+| Google Gemini | LLM Orchestration & Prompting | Active | Conversational AI core |
 | Stripe | SaaS Billing & Subscriptions | Active | Primary US & EU payments |
 | Vonage | Voice Telephony & SMS | Active | Primary US & EU Voice & SMS gateway |
 | Sinch | Voice Telephony & SMS | Optional | Fallback US & EU carrier integration |

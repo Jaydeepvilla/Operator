@@ -498,7 +498,7 @@ export async function getAdminUserProfileDetailAction(targetUserId: string) {
  */
 export async function suspendUserAction(targetUserId: string) {
   try {
-    const { userId: adminUserId, organizationId } = await assertAdmin();
+    const { userId: adminUserId, organizationId, role: actorRole } = await assertAdmin();
 
     // Verify target membership and prevent self-suspension
     if (targetUserId === adminUserId) {
@@ -513,6 +513,10 @@ export async function suspendUserAction(targetUserId: string) {
 
     if (!membershipRecord) {
       return { success: false, error: "User not found in your business account" };
+    }
+
+    if (membershipRecord.role === "owner" && actorRole !== "owner") {
+      return { success: false, error: "Administrators cannot suspend the organization Owner" };
     }
 
     await db
@@ -582,7 +586,7 @@ export async function activateUserAction(targetUserId: string) {
  */
 export async function deleteUserAction(targetUserId: string) {
   try {
-    const { userId: adminUserId, organizationId } = await assertAdmin();
+    const { userId: adminUserId, organizationId, role: actorRole } = await assertAdmin();
 
     if (targetUserId === adminUserId) {
       return { success: false, error: "You cannot delete your own administrative account" };
@@ -596,6 +600,10 @@ export async function deleteUserAction(targetUserId: string) {
 
     if (!membershipRecord) {
       return { success: false, error: "User not found in your business account" };
+    }
+
+    if (membershipRecord.role === "owner" && actorRole !== "owner") {
+      return { success: false, error: "Administrators cannot delete the organization Owner" };
     }
 
     await db
@@ -664,7 +672,7 @@ export async function restoreUserAction(targetUserId: string) {
  */
 export async function resetUserPasswordAction(targetUserId: string, newPasswordVal: string) {
   try {
-    const { userId: adminUserId, organizationId } = await assertAdmin();
+    const { userId: adminUserId, organizationId, role: actorRole } = await assertAdmin();
 
     const [membershipRecord] = await db
       .select()
@@ -674,6 +682,10 @@ export async function resetUserPasswordAction(targetUserId: string, newPasswordV
 
     if (!membershipRecord) {
       return { success: false, error: "User not found in your business account" };
+    }
+
+    if (membershipRecord.role === "owner" && actorRole !== "owner") {
+      return { success: false, error: "Administrators cannot reset the password of the organization Owner" };
     }
 
     const [user] = await db.select().from(users).where(eq(users.id, targetUserId)).limit(1);
@@ -871,10 +883,24 @@ export async function updateOrgMemberRoleAction(data: {
   role: "admin" | "manager" | "staff";
 }) {
   try {
-    const { userId: adminUserId, organizationId } = await assertAdmin();
+    const { userId: adminUserId, organizationId, role: actorRole } = await assertAdmin();
 
     if (adminUserId === data.targetUserId && data.role !== "admin") {
       return { success: false, error: "You cannot downgrade your own administrator role." };
+    }
+
+    const [targetMembership] = await db
+      .select()
+      .from(memberships)
+      .where(and(eq(memberships.userId, data.targetUserId), eq(memberships.organizationId, organizationId)))
+      .limit(1);
+
+    if (!targetMembership) {
+      return { success: false, error: "Member not found in organization." };
+    }
+
+    if (targetMembership.role === "owner" && actorRole !== "owner") {
+      return { success: false, error: "Administrators cannot modify the role of an Owner." };
     }
 
     const [updated] = await db
@@ -914,10 +940,24 @@ export async function updateOrgMemberRoleAction(data: {
  */
 export async function removeOrgMemberAction(targetUserId: string) {
   try {
-    const { userId: adminUserId, organizationId } = await assertAdmin();
+    const { userId: adminUserId, organizationId, role: actorRole } = await assertAdmin();
 
     if (adminUserId === targetUserId) {
       return { success: false, error: "You cannot remove yourself from the organization." };
+    }
+
+    const [targetMembership] = await db
+      .select()
+      .from(memberships)
+      .where(and(eq(memberships.userId, targetUserId), eq(memberships.organizationId, organizationId)))
+      .limit(1);
+
+    if (!targetMembership) {
+      return { success: false, error: "Member not found in organization." };
+    }
+
+    if (targetMembership.role === "owner" && actorRole !== "owner") {
+      return { success: false, error: "Administrators cannot remove the organization Owner." };
     }
 
     await db

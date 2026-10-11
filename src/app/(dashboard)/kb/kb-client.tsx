@@ -197,6 +197,21 @@ export function KnowledgeCenterClient({
  const [isSettingsSaving, setIsSettingsSaving] = React.useState(false);
  const [settingsSuccess, setSettingsSuccess] = React.useState(false);
 
+ const handleSaveSettings = async (e: React.FormEvent) => {
+ e.preventDefault();
+ setIsSettingsSaving(true);
+ setSettingsSuccess(false);
+ try {
+ if (typeof window !== "undefined") {
+ localStorage.setItem("operator_kb_storage_provider", storageProvider);
+ }
+ setSettingsSuccess(true);
+ setTimeout(() => setSettingsSuccess(false), 3000);
+ } finally {
+ setIsSettingsSaving(false);
+ }
+ };
+
  // Sync state effects
  React.useEffect(() => {
  setCategories(initialCategories);
@@ -287,7 +302,7 @@ export function KnowledgeCenterClient({
  reader.onload = (e) => {
  const text = e.target?.result as string;
  if (fileExt ==="pdf"|| fileExt ==="docx") {
- setDocContent(`[SIMULATED EXTRACTION: ${file.name}]\n\nThis is a simulated textual extraction of the uploaded ${fileExt.toUpperCase()} file (${(file.size / 1024).toFixed(1)} KB) for training Operator AI. The server-side background job will parse the complete raw text, index it, and chunk it into vector databases.`);
+ setDocContent(`[QUEUED FOR EXTRACTION: ${file.name}]\n\nUploaded binary file ${file.name} (${(file.size / 1024).toFixed(1)} KB). Document text extraction and vector chunking will be processed server-side upon saving.`);
  } else {
  setDocContent(text ||"");
  }
@@ -558,17 +573,7 @@ const handleExecuteIngestion = async () => {
  }
  };
 
- const handleSaveSettings = async (e: React.FormEvent) => {
- e.preventDefault();
- setIsSettingsSaving(true);
- setSettingsSuccess(false);
 
- // Simulate saving settings
- await new Promise((resolve) => setTimeout(resolve, 800));
- setIsSettingsSaving(false);
- setSettingsSuccess(true);
- setTimeout(() => setSettingsSuccess(false), 3000);
- };
 
  const formatBytes = (bytes: number) => {
  if (bytes === 0) return"0 Bytes";

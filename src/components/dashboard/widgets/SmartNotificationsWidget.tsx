@@ -144,6 +144,10 @@ function NotificationRow({
               </NativeButton>
               {snoozeMenuId === notif.id && (
                 <div
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") setSnoozeMenuId(null);
+                  }}
                   className="absolute left-0 mt-space-1 z-50 radius-lg border border-border-subtle bg-bg-layer-1 p-space-1 min-w-space-32 shadow-lg animate-in fade-in slide-in-from-top-1 duration-150"
                   onClick={(e) => e.stopPropagation()}
                 >

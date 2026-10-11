@@ -46,12 +46,11 @@ DATABASE_URL="postgres://postgres:postgres@localhost:5432/operator_dev"
 # Required: Public base URL (used for OAuth redirects)
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
-# Required for real AI: set at least one
-OPENAI_API_KEY="sk-proj-..."
-# GEMINI_API_KEY="AIzaSy..."
+# AI Provider: Google Gemini API
+GEMINI_API_KEY="AIzaSy..."
 ```
 
-If neither `OPENAI_API_KEY` nor `GEMINI_API_KEY` is set, the system runs with a `MockLLMProvider` — the app works but AI responses are fake. Acceptable for UI development.
+If `GEMINI_API_KEY` is not set, the system engages the grounded `operator_smart_engine` to answer based strictly on business configuration data.
 
 For the complete variable reference (voice, calendar, billing, SMTP, etc.) see [`environment-variables.md`](environment-variables.md).
 
@@ -147,9 +146,9 @@ npx drizzle-kit push  # re-applies schema (idempotent for unchanged tables)
 npx tsx scripts/seed/index.ts
 ```
 
-### The app loads but AI responses are fake
+### The app loads but AI responses are offline
 
-You have not set `OPENAI_API_KEY` or `GEMINI_API_KEY`. The `MockLLMProvider` is active. Add one of these keys to `.env` and restart the server.
+You have not set `GEMINI_API_KEY`. The grounded `operator_smart_engine` is active. Add your key to `.env` or `.env.local` and restart the server to enable live Google Gemini completions and vector search.
 
 ### Port 3000 is already in use
 

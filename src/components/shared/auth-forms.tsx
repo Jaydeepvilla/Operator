@@ -285,7 +285,6 @@ export function SignInForm() {
         }, 300);
       } else {
         setErrorMsg(result.error || "Incorrect email or password. Check your details and try again.");
-        if (result.code === "USER_NOT_FOUND") setUserNotFound(true);
       }
     } catch (err: any) {
       setErrorMsg(err.message || "We couldn't sign you in. Check your credentials and try again.");

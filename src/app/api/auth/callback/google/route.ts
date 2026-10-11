@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get("code");
   const error = searchParams.get("error");
+  const state = searchParams.get("state");
   const intendedRedirect = searchParams.get("redirect") || request.cookies.get("intended_redirect")?.value;
   const oauthIntent = request.cookies.get("google_oauth_intent")?.value || "login"; // "login" | "signup"
 
@@ -16,6 +17,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(
       new URL(`/sign-in?error=${encodeURIComponent(error || "Google authorization was cancelled")}`, request.url)
     );
+  }
+
+  // SECURITY: Validate OAuth state parameter to prevent CSRF attacks
+  const storedState = request.cookies.get("google_oauth_state")?.value;
+  if (!state || !storedState || state !== storedState) {
+    console.warn("[Google OAuth] State mismatch — potential CSRF attack blocked.");
+    const errRedirect = NextResponse.redirect(
+      new URL("/sign-in?error=Invalid+OAuth+state.+Please+try+again.", request.url)
+    );
+    errRedirect.cookies.delete("google_oauth_state");
+    errRedirect.cookies.delete("google_oauth_intent");
+    errRedirect.cookies.delete("intended_redirect");
+    return errRedirect;
   }
 
   const { clientId, clientSecret } = getGoogleOAuthConfig();

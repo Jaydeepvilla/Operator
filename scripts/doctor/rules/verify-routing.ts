@@ -22,22 +22,33 @@ export const verifyRouting: DoctorRule = {
       const directories = await glob(["src/app/**/"], { cwd, onlyDirectories: true, absolute: true });
       
       for (const dir of directories) {
-        // We only flag folders that don't have ANY special next.js files (page, layout, route, default)
-        // Some folders are just organizational (like (dashboard)), but they usually don't matter unless they are leaf routes.
-        // Actually, checking if a folder has page.tsx is too aggressive since Next.js allows layout-only or api routes.
-        // Let's refine: if a folder has no page.tsx, layout.tsx, route.ts, default.tsx, loading.tsx, error.tsx, it's a dead folder.
-        
-        const filesInDir = fs.readdirSync(dir);
-        const hasNextFile = filesInDir.some(f => 
-          /^(page|layout|route|default|loading|error|not-found)\.tsx?$/.test(f)
+        // Ignore private folders (folders or subfolders starting with _)
+        const relativePath = path.relative(appDir, dir);
+        const pathSegments = relativePath.split(/[\\/]/);
+        if (pathSegments.some(seg => seg.startsWith("_"))) {
+          continue;
+        }
+
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        const files = entries.filter(e => e.isFile()).map(e => e.name);
+
+        // If directory has no files (only subdirectories), it is a valid intermediate route segment
+        if (files.length === 0) {
+          continue;
+        }
+
+        const hasNextFile = files.some(f => 
+          /^(page|layout|route|default|loading|error|not-found|template)\.(tsx?|jsx?)$/.test(f)
         );
 
-        if (!hasNextFile && filesInDir.length > 0) {
-           // It might be a component folder inside app, which is a bad practice.
+        // If it has code files (.ts, .tsx, .js, .jsx) but no Next.js route file, flag it
+        const hasCodeFiles = files.some(f => /\.(tsx?|jsx?)$/.test(f));
+        if (!hasNextFile && hasCodeFiles) {
            violations.push({
              file: dir,
-             message: `Directory in app router contains no Next.js route files. Suggestion: Move non-route files outside of src/app/.`,
-           severity: 'Error' });
+             message: `Directory in app router contains non-route code files without a Next.js route file. Suggestion: Use private folders (_folder) or move code outside of src/app/.`,
+             severity: 'Error'
+           });
         }
       }
     }

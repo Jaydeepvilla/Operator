@@ -7,6 +7,7 @@ import {
   invoices,
   invoiceItems,
   payments,
+  refunds,
 } from "../../db/schema";
 import { subscriptionEngine } from "./subscription-engine";
 import { getPlan } from "@/lib/billing/plans";
@@ -88,7 +89,12 @@ export class WebhookProcessor {
     switch (eventType) {
       case "payment.captured":
       case "order.paid": {
-        const paymentObj = event.payload?.payment?.entity || event.payload?.order?.entity;
+        const paymentObj = 
+          event.payload?.payment?.entity || 
+          event.payment?.entity || 
+          event.payload?.order?.entity || 
+          event.order?.entity || 
+          event;
         const orgId = paymentObj?.notes?.organizationId;
         const planId = (paymentObj?.notes?.planId || "starter").toLowerCase();
         const amount = ((paymentObj?.amount || 0) / 100).toFixed(2);
@@ -151,7 +157,10 @@ export class WebhookProcessor {
 
       case "subscription.activated":
       case "subscription.charged": {
-        const subObj = event.payload?.subscription?.entity;
+        const subObj = 
+          event.payload?.subscription?.entity || 
+          event.subscription?.entity || 
+          event;
         const orgId = subObj?.notes?.organizationId;
         const planId = (subObj?.notes?.planId || "starter").toLowerCase();
 
@@ -167,7 +176,10 @@ export class WebhookProcessor {
       }
 
       case "payment.failed": {
-        const paymentObj = event.payload?.payment?.entity;
+        const paymentObj = 
+          event.payload?.payment?.entity || 
+          event.payment?.entity || 
+          event;
         const orgId = paymentObj?.notes?.organizationId;
         if (orgId) {
           await subscriptionEngine.recordPaymentFailure(orgId, paymentObj.error_description || "Payment authorization failed");
@@ -177,10 +189,68 @@ export class WebhookProcessor {
 
       case "subscription.halted":
       case "subscription.cancelled": {
-        const subObj = event.payload?.subscription?.entity;
+        const subObj = 
+          event.payload?.subscription?.entity || 
+          event.subscription?.entity || 
+          event;
         const orgId = subObj?.notes?.organizationId;
         if (orgId) {
           await subscriptionEngine.requestCancellation(orgId);
+        }
+        break;
+      }
+
+      case "refund.processed":
+      case "refund.created":
+      case "payment.refunded": {
+        const refundObj = 
+          event.payload?.refund?.entity || 
+          event.refund?.entity || 
+          event.payload?.payment?.entity || 
+          event.payment?.entity || 
+          event;
+        const providerPaymentId = refundObj?.payment_id || refundObj?.id;
+        const refundAmount = ((refundObj?.amount || 0) / 100).toFixed(2);
+        const refundStatus = refundObj?.status === "processed" || refundObj?.status === "refunded" ? "succeeded" : "pending";
+
+        if (providerPaymentId) {
+          const [payment] = await db
+            .select()
+            .from(payments)
+            .where(eq(payments.providerPaymentId, providerPaymentId))
+            .limit(1);
+
+          if (payment) {
+            const existingRefunds = await db
+              .select()
+              .from(refunds)
+              .where(eq(refunds.paymentId, payment.id));
+
+            const totalRefunded = existingRefunds
+              .filter((r) => r.status === "succeeded" || r.status === "completed")
+              .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+
+            const paymentAmt = parseFloat(payment.amount) || 0;
+            const remainingRefundable = Math.max(0, paymentAmt - totalRefunded);
+            const rAmtNum = parseFloat(refundAmount) || 0;
+
+            if (rAmtNum <= (remainingRefundable + 0.001) && rAmtNum > 0) {
+              await db.insert(refunds).values({
+                paymentId: payment.id,
+                amount: refundAmount,
+                status: refundStatus,
+                providerRefundId: refundObj?.id || eventId,
+                reason: refundObj?.notes?.reason || "Processed refund",
+              });
+
+              if ((totalRefunded + rAmtNum) >= (paymentAmt - 0.001) && payment.invoiceId) {
+                await db
+                  .update(invoices)
+                  .set({ status: "refunded" })
+                  .where(eq(invoices.id, payment.invoiceId));
+              }
+            }
+          }
         }
         break;
       }

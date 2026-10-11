@@ -569,11 +569,12 @@ export default function UnifiedInboxPage() {
                 const isPaused = t.aiAutonomy === "paused";
 
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={t.id}
                     onClick={() => handleSelectThread(t)}
                     className={cn(
-                      "p-space-3 radius-lg cursor-pointer transition-all duration-150 relative border flex gap-space-3 items-start select-none mb-space-1",
+                      "w-full text-left p-space-3 radius-lg cursor-pointer transition-all duration-150 relative border flex gap-space-3 items-start select-none mb-space-1",
                       isSelected
                         ? "bg-bg-layer-2 border-border-hover shadow-xs"
                         : "bg-transparent border-transparent hover:bg-bg-layer-1/50 hover:border-border-subtle"
@@ -620,7 +621,7 @@ export default function UnifiedInboxPage() {
                         {t.unreadCount}
                       </span>
                     )}
-                  </div>
+                  </button>
                 );
               })
             )}

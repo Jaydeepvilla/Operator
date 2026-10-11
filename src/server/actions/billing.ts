@@ -14,6 +14,7 @@ import {
   organizations 
 } from "../db/schema";
 import { ProviderRegistry } from "../services/billing/providers/registry";
+import "../services/billing/providers/razorpay"; // Load Razorpay provider registration
 import "../services/billing/providers/stripe"; // Load provider registration
 import { 
   getPaymentProviderStatus, 
@@ -23,17 +24,22 @@ import {
   CheckoutValidationError,
   PaymentUnavailableError
 } from "../services/billing/config";
-import { requireOrganizationAccess } from "@/lib/auth/server";
+import { requireOrganizationAccess, requireAdminAccess } from "@/lib/auth/server";
 
 async function getVerifiedOrgContext() {
   const { organizationId, userId } = await requireOrganizationAccess();
   return { organizationId, userId };
 }
 
+async function getVerifiedAdminContext() {
+  const { organizationId, userId, role } = await requireAdminAccess();
+  return { organizationId, userId, role };
+}
+
 /**
  * Returns public-safe configuration status for the organization's billing provider.
  */
-export async function getPaymentConfigStatusAction(providerId = "stripe") {
+export async function getPaymentConfigStatusAction(providerId = "razorpay") {
   try {
     const { organizationId } = await getVerifiedOrgContext();
     const status = await getPaymentProviderStatus(providerId, organizationId);
@@ -63,14 +69,14 @@ export async function getBillingPortalDataAction() {
       account = await billingRepository.createBillingAccount({
         organizationId,
         email: "billing@customer.com",
-        currency: "USD",
+        currency: "INR",
       });
     }
 
     const invoicesList = await billingRepository.getInvoices(account.id);
     const paymentsList = await billingRepository.getPayments(account.id);
     const counters = await billingRepository.getUsageCounters(organizationId);
-    const paymentStatus = await getPaymentProviderStatus("stripe", organizationId);
+    const paymentStatus = await getPaymentProviderStatus("razorpay", organizationId);
 
     return {
       success: true,
@@ -301,6 +307,7 @@ export async function getDynamicSubscriptionStatusAction() {
 // --- Coupons & Analytics ---
 export async function getCouponsAction() {
   try {
+    await getVerifiedAdminContext();
     const couponsList = await billingRepository.getCoupons();
     return { success: true, coupons: couponsList };
   } catch (error: any) {
@@ -315,6 +322,7 @@ export async function createCouponAction(data: {
   expirationDays?: number;
 }) {
   try {
+    await getVerifiedAdminContext();
     const expirationDate = data.expirationDays 
       ? new Date(Date.now() + data.expirationDays * 24 * 60 * 60 * 1000) 
       : null;
@@ -336,7 +344,8 @@ export async function createCouponAction(data: {
 
 export async function getRevenueMetricsAction() {
   try {
-    const metrics = await financialMetricsService.calculateRealtimeMetrics();
+    const { organizationId } = await getVerifiedAdminContext();
+    const metrics = await financialMetricsService.calculateRealtimeMetrics(organizationId);
     return { 
       success: true, 
       metrics: {
@@ -403,7 +412,7 @@ export async function getPaymentProvidersAction() {
     });
 
     // 5. Get system status
-    const status = await getPaymentProviderStatus("stripe", organizationId);
+    const status = await getPaymentProviderStatus("razorpay", organizationId);
 
     return {
       success: true,

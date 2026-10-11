@@ -1,21 +1,36 @@
 "use server";
 
-import { requireOrganizationAccess, assertResourceOwnership } from "@/lib/auth/server";
+import { requireOrganizationAccess, assertResourceOwnership, AuthorizationError } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { servicesRepository, NewService } from "../repositories/services";
 import { syncService } from "../services/sync";
 import { db } from "../db";
-import { services, serviceCategories } from "../db/schema";
+import { services, serviceCategories, memberships } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { verificationEngine } from "../services/verification/engine";
 import { settingsRepository } from "../repositories/settings";
 
 export async function getServicesAction(overrideOrgId?: string) {
   try {
-    let organizationId = overrideOrgId;
-    if (!organizationId) {
-      const authResult = await requireOrganizationAccess();
-      organizationId = authResult.organizationId;
+    const authResult = await requireOrganizationAccess();
+    let organizationId = authResult.organizationId;
+
+    if (overrideOrgId && overrideOrgId !== organizationId) {
+      const [membership] = await db
+        .select()
+        .from(memberships)
+        .where(
+          and(
+            eq(memberships.userId, authResult.userId),
+            eq(memberships.organizationId, overrideOrgId)
+          )
+        )
+        .limit(1);
+
+      if (!membership) {
+        throw new AuthorizationError("Access denied: You are not a member of this organization.");
+      }
+      organizationId = overrideOrgId;
     }
     const list = await servicesRepository.list(organizationId);
     const categories = await servicesRepository.listCategories(organizationId);

@@ -32,7 +32,7 @@ import { Label } from "@/components/shared/label";
 import { cn } from "@/components/shared/utils";
 import { useToast } from "@/components/shared/toast";
 import { formatUserErrorMessage } from "@/lib/errors";
-import { updateVoicemailStatusAction } from "@/server/actions/voice";
+import { updateVoicemailStatusAction, initiateOutboundCallAction } from "@/server/actions/voice";
 import { AreaChartCard, LineChartCard } from "@/components/charts";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -168,20 +168,75 @@ export function VoiceCockpitClient({
  }
  };
 
- const handleTriggerCampaign = async () => {
- if (!outboundTo.trim()) {
- toast.error("Invalid Phone Number", "Please enter a destination phone number.");
- return;
- }
- setOutboundStatus("initiating");
- // Simulate campaign dial trigger
- setTimeout(() => {
- setOutboundStatus("success");
- setOutboundTo("");
- toast.success("Call Initiated", `Outbound test call triggered to ${outboundTo.trim()}.`);
- setTimeout(() => setOutboundStatus(null), 3000);
- }, 1500);
- };
+ const totalCallsHandled = useMemo(() => {
+    if (initialAnalytics && initialAnalytics.length > 0) {
+      return initialAnalytics.reduce((acc: number, a: any) => acc + (a.callsAnswered || 0) + (a.callsMissed || 0), 0);
+    }
+    return (sessions || []).length;
+  }, [initialAnalytics, sessions]);
+
+  const conversionRateDisplay = useMemo(() => {
+    if (initialAnalytics && initialAnalytics.length > 0) {
+      const total = initialAnalytics.reduce((acc: number, a: any) => acc + (a.callsAnswered || 0) + (a.callsMissed || 0), 0);
+      const answered = initialAnalytics.reduce((acc: number, a: any) => acc + (a.callsAnswered || 0), 0);
+      return total > 0 ? `${Math.round((answered / total) * 1000) / 10}%` : "0.0%";
+    }
+    if (sessions && sessions.length > 0) {
+      const completed = sessions.filter((s: any) => s.status === "completed").length;
+      return `${Math.round((completed / sessions.length) * 1000) / 10}%`;
+    }
+    return "0.0%";
+  }, [initialAnalytics, sessions]);
+
+  const avgDurationDisplay = useMemo(() => {
+    if (initialAnalytics && initialAnalytics.length > 0) {
+      const durList = initialAnalytics.filter((a: any) => a.averageDurationSeconds > 0);
+      if (durList.length > 0) {
+        const avg = Math.round(durList.reduce((acc: number, a: any) => acc + a.averageDurationSeconds, 0) / durList.length);
+        return `${Math.floor(avg / 60)}m ${avg % 60}s`;
+      }
+    }
+    if (sessions && sessions.length > 0) {
+      const durSum = sessions.reduce((acc: number, s: any) => acc + (s.durationSeconds || 0), 0);
+      const avg = Math.round(durSum / sessions.length);
+      return `${Math.floor(avg / 60)}m ${avg % 60}s`;
+    }
+    return "0s";
+  }, [initialAnalytics, sessions]);
+
+  const avgCsatDisplay = useMemo(() => {
+    if (initialAnalytics && initialAnalytics.length > 0) {
+      const csatList = initialAnalytics.filter((a: any) => parseFloat(a.csatAverage || "0") > 0);
+      if (csatList.length > 0) {
+        const avg = csatList.reduce((acc: number, a: any) => acc + parseFloat(a.csatAverage), 0) / csatList.length;
+        return `${avg.toFixed(1)} / 5`;
+      }
+    }
+    return "N/A";
+  }, [initialAnalytics]);
+
+  const handleTriggerCampaign = async () => {
+    if (!outboundTo.trim()) {
+      toast.error("Invalid Phone Number", "Please enter a destination phone number.");
+      return;
+    }
+    setOutboundStatus("initiating");
+    startTransition(async () => {
+      const res = await initiateOutboundCallAction({
+        toPhoneNumber: outboundTo.trim(),
+        phoneNumberId: selectedLineId || undefined,
+      });
+      if (res.success) {
+        setOutboundStatus("success");
+        setOutboundTo("");
+        toast.success("Call Initiated", `Outbound test call triggered to ${outboundTo.trim()}.`);
+        setTimeout(() => setOutboundStatus(null), 3000);
+      } else {
+        setOutboundStatus(null);
+        toast.error("Failed to Place Call", formatUserErrorMessage(res.error, "Could not dial outbound call."));
+      }
+    });
+  };
 
  return (
  <div className="flex-1 min-h-0 flex flex-col gap-space-4">
@@ -191,7 +246,7 @@ export function VoiceCockpitClient({
  <div className="bg-card border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
  <div className="space-y-space-0.5">
  <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">Calls Handled</span>
- <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">148</span>
+ <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">{totalCallsHandled}</span>
  <span className="text-caption text-muted-foreground/80 flex items-center gap-space-1">
  <Clock className="h-3 w-3 text-indigo-500 shrink-0"/> Lifetime calls log
  </span>
@@ -205,7 +260,7 @@ export function VoiceCockpitClient({
  <div className="bg-card border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
  <div className="space-y-space-0.5">
  <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">Conversion Rate</span>
- <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">78.4%</span>
+ <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">{conversionRateDisplay}</span>
  <span className="text-caption text-emerald-500 font-semibold flex items-center gap-space-1">
  <TrendingUp className="h-3 w-3 shrink-0 text-emerald-500"/> Booking confirmations
  </span>
@@ -219,7 +274,7 @@ export function VoiceCockpitClient({
  <div className="bg-card border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
  <div className="space-y-space-0.5">
  <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">Avg Duration</span>
- <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">2m 14s</span>
+ <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">{avgDurationDisplay}</span>
  <span className="text-caption text-muted-foreground/80 flex items-center gap-space-1">
  <Clock className="h-3 w-3 text-amber-500 shrink-0"/> Call length metrics
  </span>
@@ -233,7 +288,7 @@ export function VoiceCockpitClient({
  <div className="bg-card border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
  <div className="space-y-space-0.5">
  <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">Avg CSAT Rating</span>
- <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">4.8 / 5</span>
+ <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">{avgCsatDisplay}</span>
  <span className="text-caption text-muted-foreground/80 flex items-center gap-space-1">
  <Award className="h-3 w-3 text-purple-500 shrink-0"/> AI-generated reviews
  </span>

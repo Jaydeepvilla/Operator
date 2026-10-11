@@ -47,31 +47,16 @@ Affects:
 
 ## AI / LLM
 
-### `OPENAI_API_KEY`
-
-**Required for real AI responses (primary).** OpenAI secret key for gpt-4o-mini completions.
-
-```
-OPENAI_API_KEY="sk-proj-..."
-```
-
-Read by: `src/server/services/llm.ts` — `llmRegistry.getProvider()`  
-What happens if missing: Falls back to `GEMINI_API_KEY`. If that is also missing, `MockLLMProvider` is used, which returns deterministic fake responses. The app runs but no real AI completions occur.
-
----
-
 ### `GEMINI_API_KEY`
 
-**Required for real AI responses (secondary).** Google Gemini API key for Gemini 2.5 Flash completions.
+**Required for real AI responses and embeddings.** Google Gemini API key used by the official `@google/genai` SDK for model generation and 1536-dimensional vector embeddings (`gemini-embedding-001`).
 
 ```
 GEMINI_API_KEY="AIzaSy..."
 ```
 
-Read by: `src/server/services/llm.ts` — `llmRegistry.getProvider()`  
-What happens if missing: Falls back to `MockLLMProvider` if `OPENAI_API_KEY` is also absent.
-
-**LLM priority order:** `OPENAI_API_KEY` → `GEMINI_API_KEY` → `MockLLMProvider`
+Read by: `src/server/services/llm.ts` (`llmRegistry.getProvider()`) and `src/server/services/vector.ts` (`GeminiEmbeddingService`).  
+What happens if missing: The system engages the grounded `operator_smart_engine`, extracting factual knowledge directly from the business configuration without hallucinations. Setting `GEMINI_API_KEY` enables live Gemini generation and vector similarity search.
 
 ---
 
@@ -415,7 +400,7 @@ Before deploying:
 
 - [ ] `DATABASE_URL` points to the production PostgreSQL database
 - [ ] `NEXT_PUBLIC_APP_URL` is the production domain
-- [ ] `OPENAI_API_KEY` or `GEMINI_API_KEY` is set
+- [ ] `GEMINI_API_KEY` is set
 - [ ] `RAZORPAY_KEY_ID` + `RAZORPAY_KEY_SECRET` are set (Live or Test mode)
 - [ ] `RAZORPAY_WEBHOOK_SECRET` is configured for the `/api/webhooks/billing/razorpay` endpoint
 - [ ] `VONAGE_API_KEY` + `VONAGE_API_SECRET` are configured

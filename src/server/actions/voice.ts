@@ -240,3 +240,126 @@ export async function saveVoicePromptAction(promptText: string) {
   }
 }
 
+export async function initiateOutboundCallAction(params: {
+  toPhoneNumber: string;
+  phoneNumberId?: string;
+}) {
+  try {
+    const { organizationId } = await requireOrganizationAccess();
+    const cleanNumber = params.toPhoneNumber.trim().replace(/[()\s-]/g, "");
+    if (!cleanNumber || !/^\+?[1-9]\d{6,14}$/.test(cleanNumber)) {
+      return { success: false, error: "Please enter a valid destination phone number in E.164 format (e.g. +15551234567)." };
+    }
+
+    // Check telephony carrier configuration
+    const twilioConfigured = Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN);
+    const vonageConfigured = Boolean(process.env.VONAGE_API_KEY && process.env.VONAGE_API_SECRET);
+
+    if (!twilioConfigured && !vonageConfigured) {
+      return {
+        success: false,
+        error: "Telephony provider is not configured. Please set up Twilio or Vonage credentials to dial outbound calls.",
+      };
+    }
+
+    // Resolve caller line
+    let lineId = params.phoneNumberId;
+    if (!lineId) {
+      const existingLines = await voiceRepository.getPhoneNumbers(organizationId);
+      if (existingLines.length > 0) {
+        lineId = existingLines[0].id;
+      }
+    }
+
+    if (!lineId) {
+      return {
+        success: false,
+        error: "No active phone lines found. Please link a phone line in Phone Numbers before placing outbound calls.",
+      };
+    }
+
+    let externalSessionId: string | null = null;
+    let callerNumber = "Operator AI";
+
+    const [callerPhoneRecord] = await db
+      .select()
+      .from(phoneNumbers)
+      .where(and(eq(phoneNumbers.id, lineId), eq(phoneNumbers.organizationId, organizationId)))
+      .limit(1);
+
+    if (callerPhoneRecord) {
+      callerNumber = callerPhoneRecord.phoneNumber;
+    }
+
+    if (twilioConfigured) {
+      const accountSid = process.env.TWILIO_ACCOUNT_SID!;
+      const authToken = process.env.TWILIO_AUTH_TOKEN!;
+      const authHeader = "Basic " + Buffer.from(`${accountSid}:${authToken}`).toString("base64");
+      const appBaseUrl = process.env.NEXTAUTH_URL || "https://app.operator.com";
+      const twimlUrl = `${appBaseUrl}/api/voice/twiml`;
+
+      try {
+        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`, {
+          method: "POST",
+          headers: {
+            Authorization: authHeader,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            To: cleanNumber,
+            From: callerNumber,
+            Url: twimlUrl,
+          }),
+        });
+
+        if (!response.ok) {
+          const errBody = await response.text();
+          return {
+            success: false,
+            error: `Carrier dispatch rejected by Twilio (${response.status}): ${errBody}`,
+          };
+        }
+
+        const callData = await response.json();
+        externalSessionId = callData.sid;
+      } catch (err: any) {
+        return {
+          success: false,
+          error: `Telephony network dispatch failed: ${err?.message || "Network error"}`,
+        };
+      }
+    } else if (vonageConfigured) {
+      return {
+        success: false,
+        error: "Vonage outbound dialing requires configured VONAGE_APPLICATION_ID and private key credentials.",
+      };
+    }
+
+    if (!externalSessionId) {
+      return {
+        success: false,
+        error: "Carrier did not return a valid call identifier. Call was not placed.",
+      };
+    }
+
+    const [session] = await db
+      .insert(callSessions)
+      .values({
+        organizationId,
+        phoneNumberId: lineId,
+        direction: "outbound",
+        externalSessionId,
+        callerNumber,
+        recipientNumber: cleanNumber,
+        status: "in-progress",
+        durationSeconds: 0,
+      })
+      .returning();
+
+    revalidatePath("/voice");
+    return { success: true, sessionId: session.id };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Failed to initiate outbound call." };
+  }
+}
+

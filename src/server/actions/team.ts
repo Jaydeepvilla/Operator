@@ -1,6 +1,6 @@
 "use server";
 
-import { requireOrganizationAccess } from "@/lib/auth/server";
+import { requireOrganizationAccess, requireAdminAccess } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { db } from "../db";
 import { users, memberships } from "../db/schema";
@@ -50,7 +50,13 @@ export async function inviteTeamMemberAction(data: {
   role: "owner" | "admin" | "manager" | "staff";
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId, role: actorRole } = await requireAdminAccess();
+
+    // Only owners can invite someone with the owner role
+    if (data.role === "owner" && actorRole !== "owner") {
+      return { success: false, error: "Only the organization Owner can invite new owners." };
+    }
+
     const email = data.email.toLowerCase().trim();
     const name = data.name.trim();
 
@@ -97,7 +103,25 @@ export async function inviteTeamMemberAction(data: {
 
 export async function removeTeamMemberAction(membershipId: string) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId, role: actorRole, userId: actorUserId } = await requireAdminAccess();
+
+    const [target] = await db
+      .select()
+      .from(memberships)
+      .where(and(eq(memberships.id, membershipId), eq(memberships.organizationId, organizationId)))
+      .limit(1);
+
+    if (!target) {
+      return { success: false, error: "Team member not found" };
+    }
+
+    if (target.userId === actorUserId) {
+      return { success: false, error: "You cannot remove yourself from the organization." };
+    }
+
+    if (target.role === "owner" && actorRole !== "owner") {
+      return { success: false, error: "Administrators cannot remove the organization Owner." };
+    }
 
     await db
       .delete(memberships)
@@ -115,7 +139,29 @@ export async function updateTeamMemberRoleAction(
   role: "owner" | "admin" | "manager" | "staff"
 ) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId, role: actorRole, userId: actorUserId } = await requireAdminAccess();
+
+    const [target] = await db
+      .select()
+      .from(memberships)
+      .where(and(eq(memberships.id, membershipId), eq(memberships.organizationId, organizationId)))
+      .limit(1);
+
+    if (!target) {
+      return { success: false, error: "Team member not found" };
+    }
+
+    if (target.userId === actorUserId && role !== actorRole) {
+      return { success: false, error: "You cannot modify your own role." };
+    }
+
+    if (target.role === "owner" && actorRole !== "owner") {
+      return { success: false, error: "Administrators cannot modify the role of an Owner." };
+    }
+
+    if (role === "owner" && actorRole !== "owner") {
+      return { success: false, error: "Only the organization Owner can transfer or grant the Owner role." };
+    }
 
     await db
       .update(memberships)

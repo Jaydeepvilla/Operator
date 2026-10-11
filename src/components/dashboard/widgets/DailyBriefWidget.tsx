@@ -186,7 +186,7 @@ export function DailyBriefWidget({
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link
-                    href="/settings/voice"
+                    href="/voice/settings"
                     className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-accent/80 text-[12px] font-medium text-foreground flex items-center justify-between transition-colors cursor-pointer focus:bg-accent/80"
                   >
                     <div className="flex items-center gap-2">

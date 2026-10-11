@@ -72,11 +72,14 @@ export async function loginAction(input: any) {
       .limit(1);
 
     if (!user) {
+      // Mitigate timing-based user enumeration attacks with dummy hash verification
+      try {
+        await verifyPassword(password, "$argon2id$v=19$m=65536,t=3,p=4$1PAO1l04bdFb8Pz2Tg7lZw$HldwXI6gkl7VEkvgriyHa3fCRngVGE6AbCePZ5wrKWQ");
+      } catch {}
       await recordLoginAttempt(email, false, ipAddress, userAgent);
       return {
         success: false,
-        code: "USER_NOT_FOUND",
-        error: "No account found.",
+        error: "Invalid email or password",
       };
     }
 

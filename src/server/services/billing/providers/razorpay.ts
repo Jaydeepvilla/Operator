@@ -73,10 +73,28 @@ export class RazorpayProvider
     organizationId?: string
   ): Promise<{ id: string; status: "succeeded" | "failed" | "pending"; amount: number }> {
     if (!this.isConfigured()) {
-      return { id: paymentIntentId, status: "succeeded", amount: 100 };
+      throw new Error("Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in environment variables.");
     }
 
-    return { id: paymentIntentId, status: "succeeded", amount: 100 };
+    const response = await fetch(`https://api.razorpay.com/v1/payments/${paymentIntentId}/capture`, {
+      method: "POST",
+      headers: {
+        Authorization: this.getAuthHeader(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ currency: "INR" }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Razorpay capture failed with status ${response.status}`);
+    }
+
+    const captured = await response.json();
+    return {
+      id: captured.id,
+      status: captured.status === "captured" ? "succeeded" : "pending",
+      amount: (captured.amount || 0) / 100,
+    };
   }
 
   async refundPayment(
@@ -345,12 +363,22 @@ export class RazorpayProvider
    * Validates inbound Razorpay webhook HMAC signature
    */
   verifyWebhookSignature(payload: string, signature: string): boolean {
-    if (!this.webhookSecret) return true; // allow in sandbox/dev
+    if (!this.webhookSecret) {
+      console.warn("[RazorpayProvider] Webhook verification failed: RAZORPAY_WEBHOOK_SECRET is not configured.");
+      return false;
+    }
     const expected = crypto
       .createHmac("sha256", this.webhookSecret)
       .update(payload)
       .digest("hex");
-    return expected === signature;
+    try {
+      const expBuf = Buffer.from(expected, "hex");
+      const sigBuf = Buffer.from(signature, "hex");
+      if (expBuf.length !== sigBuf.length) return false;
+      return crypto.timingSafeEqual(expBuf, sigBuf);
+    } catch {
+      return false;
+    }
   }
 }
 
