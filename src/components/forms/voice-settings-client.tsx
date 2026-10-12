@@ -268,19 +268,25 @@ export function VoiceSettingsClient({
  <Label className="text-caption font-semibold text-foreground">Voicemail Inbox Active</Label>
  <p className="text-caption text-muted-foreground/80">Capture messages if lines are busy</p>
  </div>
- <Button type="button" role="switch" aria-checked={settings.voicemailActive} onClick={() => setSettings({ ...settings, voicemailActive: !settings.voicemailActive })}
+ <button
+              type="button"
+              role="switch"
+              aria-checked={settings.voicemailActive}
+              onClick={() => setSettings({ ...settings, voicemailActive: !settings.voicemailActive })}
               className={cn(
-                "relative inline-flex h-5.5 w-9.5 shrink-0 cursor-pointer items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
-                settings.voicemailActive ? "bg-primary" : "bg-[hsl(var(--foreground)/0.12)]"
-              )}>
-                
- <span
-                  className={cn(
-                    "pointer-events-none block h-4 w-4 rounded-full bg-background ring-0 transition-transform",
-                    settings.voicemailActive ? "translate-x-space-4" : "translate-x-space-0.5"
-                  )} />
-                
- </Button>
+                "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                settings.voicemailActive ? "bg-primary" : "bg-neutral-300 dark:bg-neutral-700"
+              )}
+            >
+              <span className="sr-only">Toggle voicemail inbox</span>
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-md transform ring-0 transition duration-200 ease-in-out",
+                  settings.voicemailActive ? "translate-x-5" : "translate-x-0"
+                )}
+              />
+            </button>
  </div>
 
  {settingsStatus &&
