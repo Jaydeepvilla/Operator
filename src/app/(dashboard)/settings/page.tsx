@@ -5,6 +5,8 @@ import { BusinessSettingsForm } from "@/components/forms/business-settings-form"
 import { getBookingRulesAction } from "@/server/actions/calendar";
 import { PageTitle } from "@/components/shared/page-title";
 
+import Link from "next/link";
+
 export default async function SettingsPage() {
   const { hasOrg } = await checkUserOrganization();
   if (!hasOrg) {
@@ -38,12 +40,34 @@ export default async function SettingsPage() {
   };
 
   return (
-    <div className="space-y-space-8 animate-fade-in w-full">
+    <div className="space-y-space-6 animate-fade-in w-full pb-space-12">
       {/* Page Header */}
       <PageTitle
-        title="Hours & Booking"
-        description="Business hours, holidays, and booking preferences."
+        title="Business & Booking Settings"
+        description="Configure your business operating hours, booking rules, and AI front-desk settings."
       />
+
+      {/* Settings Navigation Tabs */}
+      <div className="flex items-center gap-space-2 border-b border-border-default pb-space-3">
+        <Link
+          href="/settings"
+          className="px-space-3.5 py-space-1.5 radius-md text-body-sm font-semibold bg-primary text-primary-foreground shadow-sm"
+        >
+          Hours & Booking
+        </Link>
+        <Link
+          href="/settings/ai"
+          className="px-space-3.5 py-space-1.5 radius-md text-body-sm font-medium text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.04)] transition-colors"
+        >
+          AI Persona & Prompts
+        </Link>
+        <Link
+          href="/voice/settings"
+          className="px-space-3.5 py-space-1.5 radius-md text-body-sm font-medium text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.04)] transition-colors"
+        >
+          Voice Audio & Routing
+        </Link>
+      </div>
 
       <BusinessSettingsForm 
         settings={settingsMapped} 

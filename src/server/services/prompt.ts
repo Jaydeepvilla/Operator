@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { organizations, businessProfiles, businessSettings, voicePrompts } from "../db/schema";
+import { organizations, businessProfiles, businessSettings, voicePrompts, voiceSettings } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { BusinessContext, businessContextService } from "./business-context";
 
@@ -35,15 +35,46 @@ export const promptService = {
       console.warn("[PromptService] DB fallback for custom prompt:", e.message);
     }
 
+    let voiceSetting: any = null;
+    try {
+      const vsList = await db
+        .select()
+        .from(voiceSettings)
+        .where(eq(voiceSettings.organizationId, organizationId));
+      voiceSetting = vsList[0];
+    } catch (e: any) {
+      console.warn("[PromptService] DB fallback for voice settings:", e.message);
+    }
+
+    const assistantName = voiceSetting?.voiceName?.trim() || "Ava";
+    let toneKey = "professional";
+    if (customPrompt?.name && customPrompt.name.startsWith("tone:")) {
+      toneKey = customPrompt.name.replace("tone:", "");
+    }
+
+    const TONE_DIRECTIVES: Record<string, string> = {
+      professional: "Professional, polished, courteous, and respectful. Speaks with calm executive clarity, pristine grammar, and polite reassurance.",
+      warm: "Warm, welcoming, friendly, and empathetic. Makes every customer feel valued, comfortable, and personally cared for.",
+      concise: "Direct, efficient, and concise. Answers immediately without fluff, minimizes small talk, and gets straight to helpful action.",
+      luxury: "High-touch, refined, white-glove concierge tone. Speaks with sophisticated poise, attentiveness, and bespoke care.",
+      casual: "Casual, relaxed, approachable, and conversational. Speaks like a friendly, helpful team member in plain language.",
+    };
+
+    const toneDescription = TONE_DIRECTIVES[toneKey] || TONE_DIRECTIVES.professional;
+
     const promptParts: string[] = [];
 
-    promptParts.push(`You are the official AI receptionist and front desk assistant for "${business.name}" (powered by Operator AI).
-Your identity in conversation is "${business.name}". Always represent "${business.name}".
+    promptParts.push(`You are "${assistantName}", the official AI receptionist and front desk assistant for "${business.name}" (powered by Operator AI).
+Your identity in conversation is "${assistantName}" representing "${business.name}". Always represent "${business.name}".
 Industry: ${business.industry}
 Timezone: ${business.timezone}
 Website: ${business.website ?? "Not provided"}
 Phone: ${business.phone ?? "Not provided"}
 Address: ${business.address ?? "Not provided"}`);
+
+    promptParts.push(`TONE OF VOICE & CONVERSATION STYLE:
+Tone Profile: ${toneKey.toUpperCase()}
+Style Guidelines: ${toneDescription}`);
 
     if (business.description) {
       promptParts.push(`Business Description:

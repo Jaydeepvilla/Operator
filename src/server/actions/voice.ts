@@ -3,6 +3,7 @@
 import { requireOrganizationAccess, assertResourceOwnership } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { voiceRepository } from "../repositories/voice";
+import { profileRepository } from "../repositories/profile";
 import { db } from "../db";
 import { voicePrompts, phoneNumbers, callSessions, voicemailMessages, callRoutingRules } from "../db/schema";
 import { eq, and } from "drizzle-orm";
@@ -199,7 +200,7 @@ export async function getVoiceAnalyticsAction() {
   }
 }
 
-// --- Voice Prompts / System Instructions ---
+// --- Voice Prompts / System Instructions / AI Persona ---
 export async function getVoicePromptAction() {
   try {
     const { organizationId } = await requireOrganizationAccess();
@@ -210,6 +211,89 @@ export async function getVoicePromptAction() {
     return { success: true, prompt: prompt || null };
   } catch (error: any) {
     return { success: false, error: error?.message || "We couldn't load your custom prompt. Try again." };
+  }
+}
+
+export async function getAIPersonaSettingsAction() {
+  try {
+    const { organizationId } = await requireOrganizationAccess();
+    const [prompt] = await db
+      .select()
+      .from(voicePrompts)
+      .where(and(eq(voicePrompts.organizationId, organizationId), eq(voicePrompts.isActive, true)));
+
+    const voiceSetting = await voiceRepository.getVoiceSettings(organizationId);
+    const profile = await profileRepository.getByOrg(organizationId);
+
+    let tone = "professional";
+    if (prompt?.name && prompt.name.startsWith("tone:")) {
+      tone = prompt.name.replace("tone:", "");
+    }
+
+    return {
+      success: true,
+      data: {
+        assistantName: voiceSetting?.voiceName?.trim() || "Ava",
+        tone,
+        businessDescription: profile?.description || "",
+        customInstructions: prompt?.promptText || "",
+      },
+    };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Failed to load AI persona settings" };
+  }
+}
+
+export async function saveAIPersonaAction(data: {
+  assistantName: string;
+  tone: string;
+  businessDescription: string;
+  customInstructions: string;
+}) {
+  try {
+    const { organizationId } = await requireOrganizationAccess();
+
+    // 1. Update/Upsert Voice Settings (Assistant Name)
+    await voiceRepository.upsertVoiceSettings(organizationId, {
+      voiceName: data.assistantName.trim() || "Ava",
+    });
+
+    // 2. Update Business Profile (Description)
+    const existingProfile = await profileRepository.getByOrg(organizationId);
+    if (existingProfile) {
+      await profileRepository.update(organizationId, {
+        description: data.businessDescription.trim(),
+      });
+    } else {
+      await profileRepository.create({
+        organizationId,
+        description: data.businessDescription.trim(),
+      });
+    }
+
+    // 3. Deactivate old prompts and insert new active prompt with tone tag in name
+    await db
+      .update(voicePrompts)
+      .set({ isActive: false })
+      .where(eq(voicePrompts.organizationId, organizationId));
+
+    const [inserted] = await db
+      .insert(voicePrompts)
+      .values({
+        organizationId,
+        name: `tone:${data.tone.trim() || "professional"}`,
+        promptText: data.customInstructions.trim(),
+        isActive: true,
+      })
+      .returning();
+
+    revalidatePath("/settings/ai");
+    revalidatePath("/settings");
+    revalidatePath("/voice/settings");
+    revalidatePath("/dashboard");
+    return { success: true, prompt: inserted };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "We couldn't save your AI persona settings." };
   }
 }
 

@@ -41,6 +41,7 @@ const OPERATIONS_LINKS = [
 ];
 
 const AI_LINKS = [
+  { href: "/settings/ai", icon: "Brain" as const, label: "AI Persona & Prompts" },
   { href: "/kb", icon: "BookOpen" as const, label: "Business Knowledge" },
   { href: "/voice/dashboard", icon: "PhoneCall" as const, label: "Voice AI Lines" },
   { href: "/channels", icon: "Radio" as const, label: "Channels & Integrations" },
@@ -74,6 +75,7 @@ const BREADCRUMB_MAP: Record<string, { group: string; label: string }> = {
   "/contacts": { group: "Operations", label: "Customers & Activity" },
   "/leads": { group: "Operations", label: "Customers & Activity" },
   "/escalations": { group: "Operations", label: "Tasks & Exceptions" },
+  "/settings/ai": { group: "Operator AI", label: "AI Persona & Prompts" },
   "/kb": { group: "Operator AI", label: "Business Knowledge" },
   "/faqs": { group: "Operator AI", label: "Business Knowledge" },
   "/voice": { group: "Operator AI", label: "Phone Lines" },

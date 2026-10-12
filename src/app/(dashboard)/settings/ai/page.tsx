@@ -1,15 +1,14 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { checkUserOrganization } from "@/server/actions/onboarding";
-import { getVoicePromptAction } from "@/server/actions/voice";
+import { getAIPersonaSettingsAction } from "@/server/actions/voice";
 import { PageTitle } from "@/components/shared/page-title";
 import { PromptSettingsClient } from "./prompt-settings-client";
-import { profileRepository } from "@/server/repositories/profile";
-import { settingsRepository } from "@/server/repositories/settings";
 import { promptService } from "@/server/services/prompt";
 
 export const metadata = {
-  title: "AI Prompt Configuration | Settings",
-  description: "Customize prompt system instructions, constraints, and tone profiles for Operator AI.",
+  title: "AI Persona & Prompts | Settings",
+  description: "Customize your AI receptionist name, tone of voice, business description, and custom behavioral rules.",
 };
 
 export default async function AIPromptSettingsPage() {
@@ -18,14 +17,14 @@ export default async function AIPromptSettingsPage() {
     redirect("/onboarding");
   }
 
-  // Load active prompt and business details for preview
-  const [promptRes, profile, settings] = await Promise.all([
-    getVoicePromptAction(),
-    profileRepository.getByOrg(org.id),
-    settingsRepository.getByOrg(org.id),
-  ]);
-
-  const initialPromptText = promptRes.success && promptRes.prompt ? promptRes.prompt.promptText : "";
+  // Load active persona, prompt, and business details
+  const personaRes = await getAIPersonaSettingsAction();
+  const personaData = personaRes.success && personaRes.data ? personaRes.data : {
+    assistantName: "Ava",
+    tone: "professional",
+    businessDescription: "",
+    customInstructions: "",
+  };
 
   // Compile a live preview of the system prompt
   const previewPrompt = await promptService.buildSystemPrompt({
@@ -37,14 +36,38 @@ export default async function AIPromptSettingsPage() {
   return (
     <div className="space-y-space-6 animate-fade-in w-full pb-space-12">
       <PageTitle
-        title="AI Prompt Configuration"
-        description="Fine-tune Operator AI's system instructions, general guidelines, and core answering persona."
+        title="AI Persona & Prompts"
+        description="Fine-tune your AI receptionist's identity, tone of voice, core business description, and custom guardrails."
       />
 
+      {/* Settings Navigation Tabs */}
+      <div className="flex items-center gap-space-2 border-b border-border-default pb-space-3">
+        <Link
+          href="/settings"
+          className="px-space-3.5 py-space-1.5 radius-md text-body-sm font-medium text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.04)] transition-colors"
+        >
+          Hours & Booking
+        </Link>
+        <Link
+          href="/settings/ai"
+          className="px-space-3.5 py-space-1.5 radius-md text-body-sm font-semibold bg-primary text-primary-foreground shadow-sm"
+        >
+          AI Persona & Prompts
+        </Link>
+        <Link
+          href="/voice/settings"
+          className="px-space-3.5 py-space-1.5 radius-md text-body-sm font-medium text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.04)] transition-colors"
+        >
+          Voice Audio & Routing
+        </Link>
+      </div>
+
       <PromptSettingsClient 
-        initialPromptText={initialPromptText}
+        initialAssistantName={personaData.assistantName}
+        initialTone={personaData.tone}
+        initialBusinessDescription={personaData.businessDescription}
+        initialPromptText={personaData.customInstructions}
         previewPrompt={previewPrompt}
-        businessDescription={profile?.description || ""}
         orgName={org.name}
       />
     </div>
