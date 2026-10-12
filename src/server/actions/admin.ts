@@ -181,6 +181,7 @@ export async function updateLeadStatusAction(leadId: string, status: string) {
     await leadsRepository.updateProfile(leadId, { status });
     
     revalidatePath("/leads");
+    revalidatePath("/contacts");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to update lead status" };
@@ -235,6 +236,7 @@ export async function resolveEscalationAction(escalationId: string, notes?: stri
     
     revalidatePath("/escalations");
     revalidatePath("/conversations");
+    revalidatePath("/inbox");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to resolve escalation" };

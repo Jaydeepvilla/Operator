@@ -10,6 +10,8 @@ export const APP_ROUTES = {
   conversations: "/conversations",
   analytics: "/analytics",
   health: "/health",
+  academy: "/academy",
+  demoCenter: "/demo-center",
 
   // ── Customers & Booking ──
   contacts: "/contacts",
@@ -69,6 +71,7 @@ export const APP_ROUTES = {
 
   // ── Public & Onboarding ──
   home: "/",
+  book: "/book",
   onboarding: "/onboarding",
   pricing: "/pricing",
   integrations: "/integrations",

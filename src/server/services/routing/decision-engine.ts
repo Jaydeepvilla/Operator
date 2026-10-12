@@ -37,6 +37,7 @@ const PUBLIC_ROUTES = new Set([
   "/changelog",
   "/privacy",
   "/terms",
+  "/book",
   "/sign-in",
   "/sign-up",
   "/forgot-password",
@@ -51,7 +52,12 @@ const PUBLIC_ROUTES = new Set([
 function isPublicPath(path: string): boolean {
   const cleanPath = path.split("?")[0];
   if (PUBLIC_ROUTES.has(cleanPath)) return true;
-  if (cleanPath.startsWith("/api/") || cleanPath.startsWith("/_next") || cleanPath.startsWith("/widget-frame")) {
+  if (
+    cleanPath.startsWith("/api/") || 
+    cleanPath.startsWith("/_next") || 
+    cleanPath.startsWith("/widget-frame") ||
+    cleanPath.startsWith("/book")
+  ) {
     return true;
   }
   return false;
@@ -283,7 +289,26 @@ export class RouteDecisionEngine {
       return RouteDecisionEngine.finalize(context, decision);
     }
 
-    // ── 8. EXPLICIT USER DESTINATION ────────────────────────────────────────
+    // ── 8. EXPLICIT USER DESTINATION & CONSOLIDATION REDIRECTS ──────────────
+    // Consolidate redundant/duplicate routes to authoritative single implementations
+    const CANONICAL_REDIRECTS: Record<string, string> = {
+      "/conversations": "/inbox",
+      "/leads": "/contacts",
+      "/faqs": "/kb",
+      "/team": "/staff",
+    };
+
+    if (CANONICAL_REDIRECTS[requestedBase]) {
+      decision = {
+        destination: CANONICAL_REDIRECTS[requestedBase],
+        reason: "EXPLICIT_DESTINATION_ALLOWED",
+        priority: "EXPLICIT_DESTINATION",
+        priorityLevel: ROUTE_DECISION_PRIORITY.EXPLICIT_DESTINATION,
+        replace: true,
+      };
+      return RouteDecisionEngine.finalize(context, decision);
+    }
+
     // If the user explicitly requested a valid internal route (other than generic landing)
     if (!isEntryRoute && isValidAppRoute(requestedBase)) {
       decision = {

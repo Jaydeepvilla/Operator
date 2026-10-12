@@ -26,72 +26,75 @@ import { getButtonClasses } from '@/design-system/button-tokens';
 // ─── Sidebar Section Definitions ─────────────────────────────────────────────
 // 4 clear groups that map to how business owners think.
 
-const HOME_LINKS = [
-  { href: "/dashboard", icon: "LayoutDashboard" as const, label: "Dashboard" },
-  { href: "/intelligence", icon: "Brain" as const, label: "Intelligence" },
-  { href: "/inbox", icon: "Inbox" as const, label: "Inbox" },
-  { href: "/analytics", icon: "LineChart" as const, label: "Analytics" },
+// ─── Sidebar Section Definitions ─────────────────────────────────────────────
+// 4 clear task-oriented groups adhering to Hick's Law and Jakob's Law:
+
+const OVERVIEW_LINKS = [
+  { href: "/dashboard", icon: "LayoutDashboard" as const, label: "Overview" },
+  { href: "/inbox", icon: "Inbox" as const, label: "Omnichannel Inbox" },
 ];
 
-const CUSTOMERS_LINKS = [
-  { href: "/contacts", icon: "Users" as const, label: "Contacts" },
-  { href: "/appointments", icon: "Calendar" as const, label: "Appointments" },
-  { href: "/escalations", icon: "AlertTriangle" as const, label: "Escalations" },
+const OPERATIONS_LINKS = [
+  { href: "/appointments", icon: "Calendar" as const, label: "Bookings & Calendar" },
+  { href: "/contacts", icon: "Users" as const, label: "Customers & Activity" },
+  { href: "/escalations", icon: "AlertTriangle" as const, label: "Tasks & Exceptions" },
 ];
 
 const AI_LINKS = [
-  { href: "/widget", icon: "MessageSquare" as const, label: "Website Widget" },
-  { href: "/channels", icon: "Radio" as const, label: "Channels" },
-  { href: "/voice/dashboard", icon: "PhoneCall" as const, label: "Voice" },
-  { href: "/kb", icon: "BookOpen" as const, label: "Knowledge" },
-  { href: "/faqs", icon: "HelpCircle" as const, label: "FAQs" },
+  { href: "/kb", icon: "BookOpen" as const, label: "Business Knowledge" },
+  { href: "/voice/dashboard", icon: "PhoneCall" as const, label: "Voice AI Lines" },
+  { href: "/channels", icon: "Radio" as const, label: "Channels & Integrations" },
   { href: "/automations", icon: "Zap" as const, label: "Automations" },
-  { href: "/flows", icon: "ClipboardList" as const, label: "Intake Questions" },
-  { href: "/templates", icon: "LayoutTemplate" as const, label: "Templates" },
+  { href: "/widget", icon: "MessageSquare" as const, label: "Website Widget" },
 ];
 
-const SETTINGS_LINKS = [
-  { href: "/profile", icon: "Building" as const, label: "Business Profile" },
-  { href: "/settings/account", icon: "UserCog" as const, label: "Account Settings" },
-  { href: "/admin/users", icon: "Contact" as const, label: "User Directory" },
-  { href: "/services", icon: "Briefcase" as const, label: "Services" },
-  { href: "/staff", icon: "UserCheck" as const, label: "Staff" },
-  { href: "/settings", icon: "Clock" as const, label: "Hours & Booking" },
-  { href: "/team", icon: "Users" as const, label: "Team" },
-  { href: "/billing", icon: "CreditCard" as const, label: "Billing" },
+const LEARNING_LINKS = [
+  { href: "/academy", icon: "GraduationCap" as const, label: "Founder Academy" },
+  { href: "/demo-center", icon: "PlayCircle" as const, label: "Demo Center" },
+];
+
+const BUSINESS_LINKS = [
+  { href: "/services", icon: "Briefcase" as const, label: "Services & Pricing" },
+  { href: "/staff", icon: "UserCheck" as const, label: "Staff & Schedules" },
+  { href: "/analytics", icon: "LineChart" as const, label: "Analytics & Reports" },
+  { href: "/settings", icon: "Settings" as const, label: "Business Settings" },
+  { href: "/billing", icon: "CreditCard" as const, label: "Billing & Plans" },
 ];
 
 // ─── Breadcrumb Mapping ──────────────────────────────────────────────────────
 // Maps pathnames to human-readable breadcrumb segments.
 
 const BREADCRUMB_MAP: Record<string, { group: string; label: string }> = {
-  "/dashboard": { group: "Home", label: "Dashboard" },
-  "/inbox": { group: "Home", label: "Inbox" },
-  "/conversations": { group: "Home", label: "Conversations" },
-  "/analytics": { group: "Home", label: "Analytics" },
-  "/contacts": { group: "Customers", label: "Contacts" },
-  "/leads": { group: "Customers", label: "Leads" },
-  "/appointments": { group: "Customers", label: "Appointments" },
-  "/escalations": { group: "Customers", label: "Escalations" },
-  "/channels": { group: "Operator AI", label: "Channels" },
-  "/widget": { group: "Operator AI", label: "Website Widget" },
+  "/dashboard": { group: "Overview", label: "Dashboard" },
+  "/inbox": { group: "Overview", label: "Omnichannel Inbox" },
+  "/conversations": { group: "Overview", label: "Omnichannel Inbox" },
+  "/academy": { group: "Learning", label: "Founder Academy" },
+  "/demo-center": { group: "Learning", label: "Demo Control Center" },
+  "/appointments": { group: "Operations", label: "Bookings & Calendar" },
+  "/contacts": { group: "Operations", label: "Customers & Activity" },
+  "/leads": { group: "Operations", label: "Customers & Activity" },
+  "/escalations": { group: "Operations", label: "Tasks & Exceptions" },
+  "/kb": { group: "Operator AI", label: "Business Knowledge" },
+  "/faqs": { group: "Operator AI", label: "Business Knowledge" },
   "/voice": { group: "Operator AI", label: "Phone Lines" },
-  "/voice/dashboard": { group: "Operator AI", label: "Voice" },
+  "/voice/dashboard": { group: "Operator AI", label: "Voice AI Lines" },
   "/voice/settings": { group: "Operator AI", label: "Voice Settings" },
   "/voice/history": { group: "Operator AI", label: "Call Logs" },
-  "/kb": { group: "Operator AI", label: "Knowledge" },
-  "/faqs": { group: "Operator AI", label: "FAQs" },
+  "/channels": { group: "Operator AI", label: "Channels & Integrations" },
   "/automations": { group: "Operator AI", label: "Automations" },
-  "/flows": { group: "Operator AI", label: "Intake Questions" },
+  "/flows": { group: "Operator AI", label: "Automations" },
   "/templates": { group: "Operator AI", label: "Templates" },
-  "/profile": { group: "Settings", label: "Business Profile" },
-  "/settings/account": { group: "Settings", label: "Account Settings" },
-  "/admin/users": { group: "Settings", label: "User Directory" },
-  "/services": { group: "Settings", label: "Services" },
-  "/staff": { group: "Settings", label: "Staff" },
-  "/settings": { group: "Settings", label: "Hours & Booking" },
-  "/team": { group: "Settings", label: "Team" },
-  "/billing": { group: "Settings", label: "Billing" },
+  "/widget": { group: "Operator AI", label: "Website Widget" },
+  "/services": { group: "Business", label: "Services & Pricing" },
+  "/staff": { group: "Business", label: "Staff & Schedules" },
+  "/team": { group: "Business", label: "Staff & Schedules" },
+  "/analytics": { group: "Business", label: "Analytics & Reports" },
+  "/intelligence": { group: "Business", label: "Intelligence" },
+  "/settings": { group: "Business", label: "Business Settings" },
+  "/profile": { group: "Business", label: "Business Profile" },
+  "/settings/account": { group: "Business", label: "Account Settings" },
+  "/admin/users": { group: "Business", label: "User Directory" },
+  "/billing": { group: "Business", label: "Billing & Plans" },
 };
 
 const AGENCY_LINKS = [
@@ -217,9 +220,11 @@ export function DashboardShell({
               collapsed ? "px-1" : "px-2"
             )}
           >
-            <SidebarNavGroup title="Home" links={HOME_LINKS} />
-            <SidebarNavGroup title="Customers" links={CUSTOMERS_LINKS} />
+            <SidebarNavGroup title="Overview" links={OVERVIEW_LINKS} />
+            <SidebarNavGroup title="Operations" links={OPERATIONS_LINKS} />
             <SidebarNavGroup title="Operator AI" links={AI_LINKS} />
+            <SidebarNavGroup title="Business" links={BUSINESS_LINKS} />
+            <SidebarNavGroup title="Learning & Demo" links={LEARNING_LINKS} />
 
             {isAgency && (
               <>

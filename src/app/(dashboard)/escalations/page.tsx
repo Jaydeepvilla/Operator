@@ -4,334 +4,572 @@ import { Badge } from "@/components/shared/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
 import {
- getEscalationsAction,
- resolveEscalationAction
-} from"@/server/actions/admin";
+  getEscalationsAction,
+  resolveEscalationAction,
+} from "@/server/actions/admin";
 import {
- AlertTriangle,
- CheckCircle,
- Clock,
- MessageSquare,
- User,
- Mail,
- Phone,
- FileText,
- CornerDownRight,
- ShieldCheck,
- AlertCircle,
- RotateCw,
- Loader2,
-} from"lucide-react";
-import { Button } from"@/components/shared/button";
-import { Card, CardHeader, CardTitle, CardContent } from"@/components/shared/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from"@/components/shared/dialog";
-import { Input } from"@/components/shared/input";
-import { Label } from"@/components/shared/label";
-import { PageTitle } from"@/components/shared/page-title";
-import { StatCard } from"@/components/shared/stat-card";
-import { EmptyState } from"@/components/shared/empty-state";
-import { LoadingState } from"@/components/shared/loading-state";
-import { cn } from"@/components/shared/utils";
+  getOperationalExceptionsAction,
+  resolveOperationalExceptionAction,
+  retryOperationalExceptionAction,
+} from "@/server/actions/exceptions";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  MessageSquare,
+  User,
+  Mail,
+  Phone,
+  FileText,
+  CornerDownRight,
+  ShieldCheck,
+  AlertCircle,
+  RotateCw,
+  Loader2,
+  RefreshCw,
+  Layers,
+  Activity,
+  ArrowRight,
+  ExternalLink,
+} from "lucide-react";
+import { Button } from "@/components/shared/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/shared/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/shared/dialog";
+import { Label } from "@/components/shared/label";
+import { PageTitle } from "@/components/shared/page-title";
+import { StatCard } from "@/components/shared/stat-card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { LoadingState } from "@/components/shared/loading-state";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/shared/tabs";
+import { cn } from "@/components/shared/utils";
 
 interface EscalationItem {
- id: string;
- conversationId: string;
- reason: string;
- status: string;
- notes: string | null;
- createdAt: Date;
- updatedAt: Date;
- conversation: any;
- leadProfile: {
- id: string;
- name: string | null;
- email: string | null;
- phone: string | null;
- status: string;
- leadScore: number;
- } | null;
+  id: string;
+  conversationId: string;
+  reason: string;
+  status: string;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  conversation: any;
+  leadProfile: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    phone: string | null;
+    status: string;
+    leadScore: number;
+  } | null;
+}
+
+interface OperationalExceptionItem {
+  id: string;
+  category: string;
+  severity: "critical" | "high" | "medium" | "low";
+  status: "pending" | "investigating" | "resolved" | "ignored";
+  title: string;
+  explanation: string;
+  correlationId: string | null;
+  relatedRecordType: string | null;
+  relatedRecordId: string | null;
+  safeNextAction: string | null;
+  retryCount: number;
+  retryHistory: any[];
+  metadata: any;
+  resolutionNotes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export default function EscalationsPage() {
- const [escalations, setEscalations] = useState<EscalationItem[]>([]);
- const [loading, setLoading] = useState(true);
- const [selectedEsc, setSelectedEsc] = useState<EscalationItem | null>(null);
- const [resolutionNotes, setResolutionNotes] = useState("");
- const [resolvingId, setResolvingId] = useState<string | null>(null);
- const [dialogOpen, setDialogOpen] = useState(false);
- const [errorMsg, setErrorMsg] = useState("");
+  const [activeTab, setActiveTab] = useState("exceptions");
+  const [escalations, setEscalations] = useState<EscalationItem[]>([]);
+  const [exceptions, setExceptions] = useState<OperationalExceptionItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Dialog state for customer escalation
+  const [selectedEsc, setSelectedEsc] = useState<EscalationItem | null>(null);
+  const [escResolutionNotes, setEscResolutionNotes] = useState("");
+  const [escDialogOpen, setEscDialogOpen] = useState(false);
+  const [resolvingEscId, setResolvingEscId] = useState<string | null>(null);
 
- const loadEscalations = async () => {
- try {
- setLoading(true);
- const res = await getEscalationsAction();
- if (res.success && res.data) {
- setEscalations(res.data as any[]);
- } else {
- setErrorMsg(res.error ||"Failed to load escalations");
- }
- } catch (e: any) {
- setErrorMsg(e.message ||"An unexpected error occurred");
- } finally {
- setLoading(false);
- }
- };
+  // Dialog state for operational exception
+  const [selectedExc, setSelectedExc] = useState<OperationalExceptionItem | null>(null);
+  const [excResolutionNotes, setExcResolutionNotes] = useState("");
+  const [excDialogOpen, setExcDialogOpen] = useState(false);
+  const [resolvingExcId, setResolvingExcId] = useState<string | null>(null);
+  const [retryingExcId, setRetryingExcId] = useState<string | null>(null);
 
- useEffect(() => {
- loadEscalations();
- }, []);
+  const [errorMsg, setErrorMsg] = useState("");
 
- const openResolveDialog = (esc: EscalationItem) => {
- setSelectedEsc(esc);
- setResolutionNotes("");
- setDialogOpen(true);
- };
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setErrorMsg("");
+      const [escRes, excRes] = await Promise.all([
+        getEscalationsAction(),
+        getOperationalExceptionsAction(),
+      ]);
 
- const handleResolve = async () => {
- if (!selectedEsc) return;
+      if (escRes.success && escRes.data) {
+        setEscalations(escRes.data as any[]);
+      }
+      if (excRes.success && excRes.data) {
+        setExceptions(excRes.data as any[]);
+      }
+    } catch (e: any) {
+      setErrorMsg(e.message || "An unexpected error occurred loading exceptions.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
- try {
- setResolvingId(selectedEsc.id);
- const res = await resolveEscalationAction(selectedEsc.id, resolutionNotes);
- if (res.success) {
- setDialogOpen(false);
- await loadEscalations();
- } else {
- setErrorMsg(res.error ||"Failed to resolve escalation");
- }
- } catch (e: any) {
- setErrorMsg(e.message ||"Failed to resolve escalation");
- } finally {
- setResolvingId(null);
- }
- };
+  useEffect(() => {
+    loadData();
+  }, []);
 
- const getReasonBadge = (reason: string) => {
- switch (reason) {
- case"emergency":
- return <span className="badge-status badge-error text-caption px-space-1.5 py-space-0.5 rounded uppercase font-semibold tracking-wider">Emergency</span>;
- case"user_request":
- return <span className="badge-status badge-primary text-caption px-space-1.5 py-space-0.5 rounded uppercase font-semibold tracking-wider">User Request</span>;
- case"repeated_failure":
- return <span className="badge-status badge-warning text-caption px-space-1.5 py-space-0.5 rounded uppercase font-semibold tracking-wider">Repeated Failure</span>;
- default:
- return <span className="badge-status badge-neutral text-caption px-space-1.5 py-space-0.5 rounded uppercase font-semibold tracking-wider">{reason}</span>;
- }
- };
+  const handleResolveEscalation = async () => {
+    if (!selectedEsc) return;
+    try {
+      setResolvingEscId(selectedEsc.id);
+      const res = await resolveEscalationAction(selectedEsc.id, escResolutionNotes);
+      if (res.success) {
+        setEscDialogOpen(false);
+        await loadData();
+      } else {
+        setErrorMsg(res.error || "Failed to resolve escalation");
+      }
+    } catch (e: any) {
+      setErrorMsg(e.message || "Failed to resolve escalation");
+    } finally {
+      setResolvingEscId(null);
+    }
+  };
 
- const getStatusBadge = (status: string) => {
- switch (status) {
- case"pending":
- return <span className="badge-status badge-error text-caption px-space-1.5 py-space-0.5 rounded flex items-center gap-space-1"><Clock className="h-3 w-3 animate-pulse"/> Pending Triage</span>;
- case"resolved":
- return <span className="badge-status badge-success text-caption px-space-1.5 py-space-0.5 rounded flex items-center gap-space-1"><CheckCircle className="h-3 w-3"/> Resolved</span>;
- default:
- return <span className="badge-status badge-neutral text-caption px-space-1.5 py-space-0.5 rounded">{status}</span>;
- }
- };
+  const handleResolveException = async () => {
+    if (!selectedExc) return;
+    try {
+      setResolvingExcId(selectedExc.id);
+      const res = await resolveOperationalExceptionAction(selectedExc.id, excResolutionNotes);
+      if (res.success) {
+        setExcDialogOpen(false);
+        await loadData();
+      } else {
+        setErrorMsg(res.error || "Failed to resolve operational exception");
+      }
+    } catch (e: any) {
+      setErrorMsg(e.message || "Failed to resolve operational exception");
+    } finally {
+      setResolvingExcId(null);
+    }
+  };
 
- const getInitials = (name: string) => {
- if (!name) return"ES";
- const parts = name.trim().split(/\s+/);
- if (parts.length >= 2 && parts[0] && parts[1]) {
- return (parts[0][0] + parts[1][0]).toUpperCase();
- }
- return name.slice(0, 2).toUpperCase();
- };
+  const handleRetryException = async (exc: OperationalExceptionItem) => {
+    try {
+      setRetryingExcId(exc.id);
+      const res = await retryOperationalExceptionAction(exc.id);
+      if (res.success) {
+        await loadData();
+      } else {
+        setErrorMsg(res.error || "Retry failed");
+      }
+    } catch (e: any) {
+      setErrorMsg(e.message || "Retry failed");
+    } finally {
+      setRetryingExcId(null);
+    }
+  };
 
- const getAvatarGradient = (name: string) => {
- const hash = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
- const gradients = [
- "from-indigo-500 to-purple-500",
- "from-blue-500 to-cyan-500",
- "from-purple-500 to-pink-500",
- "from-emerald-500 to-teal-500",
- "from-amber-500 to-orange-500",
- ];
- return gradients[hash % gradients.length];
- };
+  const getSeverityBadge = (severity: string) => {
+    switch (severity) {
+      case "critical":
+        return <Badge variant="destructive" className="uppercase font-semibold text-caption tracking-wider">Critical</Badge>;
+      case "high":
+        return <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 uppercase font-semibold text-caption">High</Badge>;
+      case "medium":
+        return <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 uppercase font-semibold text-caption">Medium</Badge>;
+      default:
+        return <Badge variant="secondary" className="uppercase font-semibold text-caption">Low</Badge>;
+    }
+  };
 
- const pendingCount = escalations.filter((e) => e.status ==="pending").length;
- const resolvedCount = escalations.filter((e) => e.status ==="resolved").length;
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case "booking_failure": return "Booking Concurrency";
+      case "payment_reconciliation": return "Payment Reconcile";
+      case "webhook_failure": return "Webhook Processing";
+      case "delivery_failure": return "Message Delivery";
+      case "channel_disconnected": return "Integration Health";
+      case "calendar_sync": return "Calendar Sync";
+      case "knowledge_gap": return "Knowledge Coverage";
+      case "human_escalation": return "Customer Handoff";
+      default: return category.replace(/_/g, " ");
+    }
+  };
 
- return (
- <div className="space-y-space-4 animate-fade-in w-full h-full flex flex-col">
- {/* Header */}
- <PageTitle
- title="Escalations"
- description="Conversations the AI couldn't handle. Review and respond to these first."
- />
+  // Metrics
+  const pendingExceptions = exceptions.filter((e) => e.status === "pending" || e.status === "investigating");
+  const criticalExceptions = pendingExceptions.filter((e) => e.severity === "critical" || e.severity === "high");
+  const pendingEscalations = escalations.filter((e) => e.status === "pending");
 
- {errorMsg && (
- <div className="flex items-center gap-space-2 radius-lg bg-state-error-bg border border-state-error-text/15 px-space-4 py-space-2.5 text-caption text-state-error-text shrink-0 animate-fade-in">
- <AlertCircle className="h-4 w-4 shrink-0"/>
- <span className="flex-1 font-medium">{errorMsg}</span>
- <Button className="hover:opacity-70 transition-opacity font-semibold px-space-1 text-body-sm cursor-pointer"onClick={() => setErrorMsg("")}>×</Button>
- </div>
- )}
+  return (
+    <div className="space-y-space-5 animate-fade-in w-full h-full flex flex-col pb-space-12">
+      {/* Header */}
+      <PageTitle
+        title="Tasks & Exceptions"
+        description="Unified incident management queue for autonomous recovery, payment discrepancies, and human escalations."
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={loadData}
+            disabled={loading}
+            className="flex items-center gap-space-2"
+          >
+            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+            <span>Refresh Queue</span>
+          </Button>
+        }
+      />
 
- {/* Triage Overview Metrics */}
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-4 shrink-0">
- <StatCard label="Pending Escalations"value={pendingCount} icon={AlertTriangle} />
- <StatCard label="Resolved Handoffs"value={resolvedCount} icon={ShieldCheck} />
- </div>
-
- {/* Escalation Queue List Container */}
- <div className="flex-1 min-h-0 flex flex-col bg-card border border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft-">
- <div className="p-space-4 border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)] flex items-center justify-between shrink-0">
- <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">Triage Tickets Queue ({escalations.length})</span>
- <Button 
- size="icon"
- variant="ghost"
- className="h-8.5 w-8.5 radius-full hover:bg-[hsl(var(--foreground)/0.05)] cursor-pointer"
- onClick={loadEscalations}
- title="Refresh queue"
- >
- <RotateCw className={cn("h-4 w-4 text-muted-foreground/65 transition-transform duration-500", loading &&"animate-spin")} />
- </Button>
- </div>
-
- <ScrollArea className="flex-1 bg-[hsl(var(--foreground)/0.002)]" horizontal={false} vertical={escalations.length > 2}>
-    <div className="p-space-4 space-y-space-3">
-      {loading ? (
-        <LoadingState message="Loading triage queue"/>
-      ) : escalations.length === 0 ? (
-        <EmptyState
-          icon={ShieldCheck}
-          title="Queue is clean!"
-          description="No customer escalations requiring human attention found."
-          className="border-none bg-transparent"
-        />
-      ) : (
-        escalations.map((esc) => {
-          const leadName = esc.leadProfile?.name ||"Anonymous Guest";
-          const isPending = esc.status ==="pending";
-          const initials = getInitials(leadName);
-          const gradient = getAvatarGradient(leadName);
-
-          return (
-            <div 
-              key={esc.id} 
-              className={cn(
-                "p-space-4 radius-lg border transition-all duration-200 bg-background/50",
-                isPending 
-                  ?"border-[hsl(var(--primary)/0.12)] hover:border-[hsl(var(--primary)/0.25)]"
-                  :"border-[hsl(var(--foreground)/0.05)] hover:border-[hsl(var(--foreground)/0.1)]"
-              )}
-            >
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-4">
-                <div className="space-y-space-3 flex-1 min-w-0">
-                  {/* Badge / Status Row */}
-                  <div className="flex flex-wrap items-center gap-space-2">
-                    {getReasonBadge(esc.reason)}
-                    {getStatusBadge(esc.status)}
-                    <span className="text-caption text-muted-foreground/60 flex items-center gap-space-1">
-                      <Clock className="h-3 w-3"/>
-                      {new Date(esc.createdAt).toLocaleString([], { dateStyle:'short', timeStyle:'short'})}
-                    </span>
-                  </div>
-
-                  {/* Content details */}
-                  <div className="space-y-space-2">
-                    <div className="flex items-center gap-space-2 text-caption font-semibold text-foreground">
-                      <div className={`h-6.5 w-6.5 radius-full bg-gradient-to-br ${gradient} text-white text-caption font-semibold flex items-center justify-center shrink-0`}>
-                        {initials}
-                      </div>
-                      <span>Customer: {leadName}</span>
-                    </div>
-                    
-                    {esc.notes && (
-                      <div className="bg-background border border-[hsl(var(--foreground)/0.05)] radius-md p-space-3 text-caption text-muted-foreground/90 max-w-2xl leading-relaxed">
-                        <span className="text-caption font-semibold uppercase tracking-wider text-foreground/50 block mb-space-1">Issue Details</span>
-                        "{esc.notes}"
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Contact metadata profile */}
-                  {esc.leadProfile && (
-                    <div className="flex flex-wrap gap-x-space-4 gap-y-space-1 pt-space-2.5 border-t border-[hsl(var(--foreground)/0.04)] text-caption text-muted-foreground/75 leading-none">
-                      {esc.leadProfile.email && <span className="flex items-center gap-space-1.5"><Mail className="h-3 w-3 text-muted-foreground/45"/>{esc.leadProfile.email}</span>}
-                      {esc.leadProfile.phone && <span className="flex items-center gap-space-1.5"><Phone className="h-3 w-3 text-muted-foreground/45"/>{esc.leadProfile.phone}</span>}
-                      <span className="font-medium">Score: <strong className="text-primary">{esc.leadProfile.leadScore}/100</strong></span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-space-2 shrink-0 md:pl-space-4">
-                  {isPending ? (
-                    <>
-                      <Button
-                        onClick={() => openResolveDialog(esc)}
-                        size="sm"
-                        className="text-caption font-semibold px-space-3 h-8"
-                      >
-                        <ShieldCheck className="h-3.5 w-3.5 mr-space-1"/> Mark Resolved
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-caption font-semibold px-space-3 h-8 border-[hsl(var(--foreground)/0.06)] opacity-40 cursor-not-allowed"
-                        disabled
-                      >
-                        Ignore
-                      </Button>
-                    </>
-                  ) : (
-                    <span className="text-caption text-muted-foreground/80 font-semibold italic flex items-center gap-space-1 bg-emerald-500/10 text-emerald-600 border border-emerald-500/15 py-space-1 px-space-2.5 radius-full">
-                      <CheckCircle className="h-3.5 w-3.5 text-emerald-500"/> Resolved Action Saved
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })
+      {errorMsg && (
+        <div className="p-space-4 bg-destructive/10 border border-destructive/20 text-destructive text-body-sm rounded-card flex items-center justify-between">
+          <div className="flex items-center gap-space-2">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => setErrorMsg("")}>Dismiss</Button>
+        </div>
       )}
-    </div>
-  </ScrollArea>
- </div>
 
- {/* Resolution notes dialog popup */}
- <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
- <DialogContent className="sm:max-w-md bg-card border-[hsl(var(--foreground)/0.08)] radius-xl">
- <DialogHeader>
- <DialogTitle className="text-body-sm font-semibold text-foreground">Resolve Escalation Ticket</DialogTitle>
- <DialogDescription className="text-caption text-muted-foreground mt-space-1 leading-normal">
- Add review notes outlining what actions were taken. This returns Operator AI back to active.
- </DialogDescription>
- </DialogHeader>
- <div className="space-y-space-4 py-space-3 text-caption">
- <div className="space-y-space-1.5">
- <Label htmlFor="notes"className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Resolution Notes</Label>
- <Input
- id="notes"
- value={resolutionNotes}
- onChange={(e) => setResolutionNotes(e.target.value)}
- placeholder="e.g. Called client directly, booked appointment for tomorrow at 10 AM."
- className="text-caption bg-background border-[hsl(var(--foreground)/0.08)] focus-visible:ring-primary/20 h-9.5"
- disabled={resolvingId !== null}
- />
- </div>
- </div>
- <DialogFooter className="flex gap-space-2 border-t border-[hsl(var(--foreground)/0.05)] pt-space-3">
- <Button variant="outline"size="sm"onClick={() => setDialogOpen(false)} disabled={resolvingId !== null} className="h-8.5 text-caption font-semibold">
- Cancel
- </Button>
- <Button size="sm"onClick={handleResolve} disabled={resolvingId !== null || !resolutionNotes.trim()} className="h-8.5 text-caption font-semibold">
- {resolvingId ? (
- <>
- <Loader2 className="h-3.5 w-3.5 animate-spin mr-space-1"/>
- <span>Resolving...</span>
- </>
- ) : (
- <span>Confirm Resolve</span>
- )}
- </Button>
- </DialogFooter>
- </DialogContent>
- </Dialog>
- </div>
- );
+      {/* KPI Headline Bar */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-space-4">
+        <StatCard
+          label="Pending Operational Exceptions"
+          value={pendingExceptions.length}
+          subtitle="Automated system incidents"
+          icon={AlertTriangle}
+        />
+        <StatCard
+          label="High / Critical Severity"
+          value={criticalExceptions.length}
+          subtitle="Requires immediate triage"
+          icon={AlertCircle}
+        />
+        <StatCard
+          label="Customer Handoffs"
+          value={pendingEscalations.length}
+          subtitle="Awaiting staff contact"
+          icon={MessageSquare}
+        />
+        <StatCard
+          label="Resolved Today"
+          value={exceptions.filter((e) => e.status === "resolved").length + escalations.filter((e) => e.status === "resolved").length}
+          subtitle="Audited and cleared"
+          icon={ShieldCheck}
+        />
+      </div>
+
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-space-4">
+          <TabsTrigger value="exceptions" className="flex items-center gap-space-2">
+            <Activity className="h-4 w-4" />
+            <span>Operational Exceptions</span>
+            {pendingExceptions.length > 0 && (
+              <Badge variant="destructive" className="ml-1 text-caption px-1.5 py-0.2">
+                {pendingExceptions.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="escalations" className="flex items-center gap-space-2">
+            <User className="h-4 w-4" />
+            <span>Customer Escalations</span>
+            {pendingEscalations.length > 0 && (
+              <Badge variant="secondary" className="ml-1 text-caption px-1.5 py-0.2">
+                {pendingEscalations.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Tab 1: Operational Exceptions */}
+        <TabsContent value="exceptions" className="space-y-space-4">
+          {loading ? (
+            <LoadingState message="Inspecting operational exception queue..." />
+          ) : exceptions.length === 0 ? (
+            <EmptyState
+              title="All systems operational"
+              description="No unresolved operational exceptions. Bookings, payments, and background jobs are running smoothly."
+              icon={ShieldCheck}
+            />
+          ) : (
+            <div className="space-y-space-3">
+              {exceptions.map((exc) => (
+                <Card
+                  key={exc.id}
+                  className={cn(
+                    "transition-all border-l-4",
+                    exc.status === "resolved"
+                      ? "border-l-emerald-500 opacity-75"
+                      : exc.severity === "critical"
+                      ? "border-l-destructive shadow-sm"
+                      : exc.severity === "high"
+                      ? "border-l-amber-500"
+                      : "border-l-blue-500"
+                  )}
+                >
+                  <CardContent className="p-space-5">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-4">
+                      <div className="space-y-space-2 flex-1">
+                        <div className="flex flex-wrap items-center gap-space-2">
+                          {getSeverityBadge(exc.severity)}
+                          <Badge variant="outline" className="text-caption">
+                            {getCategoryLabel(exc.category)}
+                          </Badge>
+                          <span className="text-caption text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {new Date(exc.createdAt).toLocaleString()}
+                          </span>
+                          {exc.status === "resolved" && (
+                            <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-caption">
+                              Resolved
+                            </Badge>
+                          )}
+                        </div>
+
+                        <div>
+                          <h3 className="font-semibold text-body text-foreground">
+                            {exc.title}
+                          </h3>
+                          <p className="text-body-sm text-muted-foreground mt-0.5">
+                            {exc.explanation}
+                          </p>
+                        </div>
+
+                        {exc.safeNextAction && (
+                          <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md text-caption text-foreground">
+                            <span className="font-semibold text-primary">Recommended Action:</span>
+                            <span>{exc.safeNextAction}</span>
+                          </div>
+                        )}
+
+                        {exc.correlationId && (
+                          <div className="text-caption text-muted-foreground font-mono">
+                            Ref: {exc.relatedRecordType ? `${exc.relatedRecordType} / ` : ""}{exc.correlationId}
+                          </div>
+                        )}
+
+                        {exc.resolutionNotes && (
+                          <div className="text-caption bg-emerald-500/5 text-emerald-700 dark:text-emerald-400 p-2 rounded">
+                            <span className="font-semibold">Resolution Note:</span> {exc.resolutionNotes}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex items-center gap-space-2 shrink-0">
+                        {exc.status !== "resolved" && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleRetryException(exc)}
+                              disabled={retryingExcId === exc.id}
+                              className="flex items-center gap-1.5"
+                            >
+                              {retryingExcId === exc.id ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <RotateCw className="h-3.5 w-3.5" />
+                              )}
+                              <span>Safe Retry</span>
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setSelectedExc(exc);
+                                setExcResolutionNotes("");
+                                setExcDialogOpen(true);
+                              }}
+                            >
+                              Resolve
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Tab 2: Customer Escalations */}
+        <TabsContent value="escalations" className="space-y-space-4">
+          {loading ? (
+            <LoadingState message="Loading customer escalations..." />
+          ) : escalations.length === 0 ? (
+            <EmptyState
+              title="No customer escalations"
+              description="All inbound customer conversations have been resolved autonomously or completed successfully."
+              icon={ShieldCheck}
+            />
+          ) : (
+            <div className="space-y-space-3">
+              {escalations.map((esc) => (
+                <Card
+                  key={esc.id}
+                  className={cn(
+                    "transition-all border-l-4",
+                    esc.status === "resolved" ? "border-l-emerald-500 opacity-75" : "border-l-primary"
+                  )}
+                >
+                  <CardContent className="p-space-5">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-4">
+                      <div className="space-y-space-2 flex-1">
+                        <div className="flex flex-wrap items-center gap-space-2">
+                          <Badge variant={esc.reason === "emergency" ? "destructive" : "secondary"} className="uppercase text-caption font-semibold">
+                            {esc.reason.replace(/_/g, " ")}
+                          </Badge>
+                          <span className="text-caption text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {new Date(esc.createdAt).toLocaleString()}
+                          </span>
+                          {esc.status === "resolved" ? (
+                            <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-caption">
+                              Resolved
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-caption text-amber-600 border-amber-500/20">
+                              Pending Triage
+                            </Badge>
+                          )}
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-space-2">
+                            <h3 className="font-semibold text-body text-foreground">
+                              {esc.leadProfile?.name || "Customer Caller"}
+                            </h3>
+                            {esc.leadProfile?.phone && (
+                              <span className="text-caption font-mono text-muted-foreground">
+                                {esc.leadProfile.phone}
+                              </span>
+                            )}
+                            {esc.leadProfile?.email && (
+                              <span className="text-caption text-muted-foreground">
+                                • {esc.leadProfile.email}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-body-sm text-muted-foreground mt-0.5">
+                            {esc.notes || "Customer requested human front-desk contact during conversation."}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-space-2 shrink-0">
+                        {esc.status !== "resolved" && (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setSelectedEsc(esc);
+                              setEscResolutionNotes("");
+                              setEscDialogOpen(true);
+                            }}
+                          >
+                            Mark Handled
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Exception Resolution Dialog */}
+      <Dialog open={excDialogOpen} onOpenChange={setExcDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Resolve Operational Exception</DialogTitle>
+            <DialogDescription>
+              Record the corrective action taken to verify and clear this operational incident.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-space-4 py-space-2">
+            <div>
+              <Label className="text-caption">Incident Summary</Label>
+              <p className="text-body-sm font-medium mt-1">{selectedExc?.title}</p>
+              <p className="text-caption text-muted-foreground">{selectedExc?.explanation}</p>
+            </div>
+            <div className="space-y-space-2">
+              <Label htmlFor="exc-notes">Resolution Notes</Label>
+              <textarea
+                id="exc-notes"
+                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="e.g. Manually verified payment captured in Stripe and confirmed booking on calendar..."
+                value={excResolutionNotes}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setExcResolutionNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExcDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleResolveException} disabled={Boolean(resolvingExcId)}>
+              {resolvingExcId ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : null}
+              Confirm Resolution
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Escalation Resolution Dialog */}
+      <Dialog open={escDialogOpen} onOpenChange={setEscDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Complete Customer Handoff</DialogTitle>
+            <DialogDescription>
+              Mark this customer handoff as handled and record notes for your team.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-space-4 py-space-2">
+            <div>
+              <Label className="text-caption">Customer</Label>
+              <p className="text-body-sm font-medium mt-1">{selectedEsc?.leadProfile?.name || "Customer Caller"}</p>
+              <p className="text-caption text-muted-foreground">{selectedEsc?.notes}</p>
+            </div>
+            <div className="space-y-space-2">
+              <Label htmlFor="esc-notes">Notes</Label>
+              <textarea
+                id="esc-notes"
+                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="e.g. Called client back, answered pricing query, booked appointment..."
+                value={escResolutionNotes}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEscResolutionNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEscDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleResolveEscalation} disabled={Boolean(resolvingEscId)}>
+              {resolvingEscId ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : null}
+              Mark Resolved
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }

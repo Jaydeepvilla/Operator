@@ -1105,10 +1105,13 @@ export const orchestratorService = {
           const bookedServiceName = sessionState.bookingFlow?.serviceName || "Service";
           sessionState.bookingFlow = null;
 
-          const responseText = `Wonderful! I have booked your appointment for ${dateLabel} at ${slot.startTime} with ${slot.staffName}. A confirmation has been recorded. We look forward to seeing you at ${business.name}!`;
+          const isPaymentRequired = appointment?.status === "pending_payment" && appointment?.payment?.paymentLink;
+          const responseText = isPaymentRequired
+            ? `I have reserved your appointment for ${dateLabel} at ${slot.startTime} with ${slot.staffName}. To complete and confirm your booking, please finalize your deposit securely here: ${appointment.payment.paymentLink}. We look forward to seeing you at ${business.name}!`
+            : `Wonderful! I have booked your appointment for ${dateLabel} at ${slot.startTime} with ${slot.staffName}. A confirmation has been recorded. We look forward to seeing you at ${business.name}!`;
           
           const dynamicActions = actionEngine.determineNextBestActions(business, {
-            intent: "cancel",
+            intent: isPaymentRequired ? "booking" : "cancel",
             hasActiveAppointment: true,
             lastUserMessage: userMessage,
           });

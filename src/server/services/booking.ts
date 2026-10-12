@@ -12,6 +12,7 @@ import { db } from "../db";
 import { services, staffMembers, serviceAssignments, appointmentEvents, organizations, appointments, appointmentWaitlist, businessSettings, memberships } from "../db/schema";
 import { eq, and, lt, gt, inArray, notInArray, sql, asc, desc } from "drizzle-orm";
 import { auth } from "@/lib/auth/server";
+import { customerPaymentService } from "./billing/customer-payment-service";
 
 export interface CreateBookingInput {
   organizationId: string;
@@ -23,6 +24,7 @@ export interface CreateBookingInput {
   customerEmail?: string | null;
   customerPhone?: string | null;
   isPublic?: boolean;
+  requirePayment?: boolean;
 }
 
 export const bookingService = {
@@ -67,23 +69,17 @@ export const bookingService = {
     // lacks verified internal staff membership in the target organization.
     const isPublicRequest = input.isPublic === true || !isAuthorizedInternalStaff;
 
+    const [settings] = await db
+      .select()
+      .from(businessSettings)
+      .where(eq(businessSettings.organizationId, organizationId))
+      .limit(1);
+
+    const bookingPreferences = (settings?.bookingPreferences && typeof settings.bookingPreferences === "object" && !Array.isArray(settings.bookingPreferences))
+      ? (settings.bookingPreferences as Record<string, any>)
+      : {};
+
     if (isPublicRequest) {
-      const [settings] = await db
-        .select()
-        .from(businessSettings)
-        .where(eq(businessSettings.organizationId, organizationId))
-        .limit(1);
-
-      if (
-        !settings ||
-        !settings.bookingPreferences ||
-        typeof settings.bookingPreferences !== "object" ||
-        Array.isArray(settings.bookingPreferences)
-      ) {
-        throw new Error("Public booking is disabled for this organization.");
-      }
-
-      const bookingPreferences = settings.bookingPreferences as Record<string, any>;
       if (bookingPreferences.publicBookingEnabled !== true) {
         throw new Error("Public booking is disabled for this organization.");
       }
@@ -237,13 +233,19 @@ export const bookingService = {
         targetLeadProfileId = resolved.leadProfileId;
       }
 
+      const shouldRequirePayment = input.requirePayment !== undefined
+        ? input.requirePayment
+        : (bookingPreferences.depositEnabled === true && parseFloat(service.price || "0") > 0);
+
+      const initialStatus = shouldRequirePayment ? "pending_payment" : "confirmed";
+
       // Insert Appointment atomically in DB
       return await appointmentsRepository.create({
         organizationId,
         leadProfileId: targetLeadProfileId || input.leadProfileId,
         serviceId,
         staffMemberId: effectiveStaffId,
-        status: "confirmed",
+        status: initialStatus,
         startTime,
         endTime,
         customerName: input.customerName,
@@ -316,7 +318,23 @@ export const bookingService = {
       endTime: endTime.toISOString(),
     }).catch((err) => console.error("Error executing ruleEngine on appointment_created:", err));
 
-    return appointment;
+    let paymentSession: any = null;
+    if (appointment.status === "pending_payment" || input.requirePayment) {
+      paymentSession = await customerPaymentService.createCustomerPaymentSession({
+        organizationId,
+        serviceId,
+        appointmentId: appointment.id,
+        leadProfileId: appointment.leadProfileId,
+        customerName: input.customerName,
+        customerEmail: input.customerEmail,
+        customerPhone: input.customerPhone,
+      });
+    }
+
+    return {
+      ...appointment,
+      payment: paymentSession,
+    };
   },
 
   async rescheduleAppointment(

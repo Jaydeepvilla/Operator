@@ -38,6 +38,8 @@ import {
   Contact,
   UserCheck,
   Clock,
+  GraduationCap,
+  PlayCircle,
 } from "lucide-react";
 
 const IconMap = {
@@ -71,6 +73,8 @@ const IconMap = {
   Contact,
   UserCheck,
   Clock,
+  GraduationCap,
+  PlayCircle,
 };
 
 interface SidebarLinkProps {

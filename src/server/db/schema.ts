@@ -2491,6 +2491,41 @@ export const refunds = pgTable("refunds", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// ── Business Customer Payments (Distinct from Operator SaaS Billing) ────────
+export const customerPayments = pgTable(
+  "customer_payments",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organizationId: uuid("organization_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    appointmentId: uuid("appointment_id").references(() => appointments.id, { onDelete: "set null" }),
+    leadProfileId: uuid("lead_profile_id").references(() => leadProfiles.id, { onDelete: "set null" }),
+    serviceId: uuid("service_id").references(() => services.id, { onDelete: "set null" }),
+    amount: text("amount").notNull(), // Exact monetary string e.g. "50.00"
+    currency: text("currency").default("USD").notNull(),
+    type: text("type").default("deposit").notNull(), // 'deposit', 'full_payment', 'balance', 'cancellation_fee'
+    status: text("status").default("pending").notNull(), // 'pending', 'authorized', 'captured', 'failed', 'refunded'
+    provider: text("provider").default("stripe").notNull(), // 'stripe', 'razorpay', 'manual'
+    providerPaymentId: text("provider_payment_id"),
+    providerOrderId: text("provider_order_id"),
+    paymentLink: text("payment_link"),
+    idempotencyKey: text("idempotency_key"),
+    customerEmail: text("customer_email"),
+    customerPhone: text("customer_phone"),
+    metadata: jsonb("metadata").default({}).notNull(),
+    failureReason: text("failure_reason"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("customer_payments_org_idx").on(table.organizationId),
+    index("customer_payments_appointment_idx").on(table.appointmentId),
+    index("customer_payments_status_idx").on(table.status),
+    index("customer_payments_provider_id_idx").on(table.provider, table.providerPaymentId),
+  ]
+);
+
 export const invoices = pgTable("invoices", {
   id: uuid("id").defaultRandom().primaryKey(),
   billingAccountId: uuid("billing_account_id").references(() => billingAccounts.id, { onDelete: "cascade" }).notNull(),
@@ -2798,6 +2833,25 @@ export const refundsRelations = relations(refunds, ({ one }) => ({
   payment: one(payments, {
     fields: [refunds.paymentId],
     references: [payments.id],
+  }),
+}));
+
+export const customerPaymentsRelations = relations(customerPayments, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [customerPayments.organizationId],
+    references: [organizations.id],
+  }),
+  appointment: one(appointments, {
+    fields: [customerPayments.appointmentId],
+    references: [appointments.id],
+  }),
+  leadProfile: one(leadProfiles, {
+    fields: [customerPayments.leadProfileId],
+    references: [leadProfiles.id],
+  }),
+  service: one(services, {
+    fields: [customerPayments.serviceId],
+    references: [services.id],
   }),
 }));
 
@@ -3567,6 +3621,83 @@ export const aiRegressionTestsRelations = relations(aiRegressionTests, ({ one })
 export const aiEvaluationRunsRelations = relations(aiEvaluationRuns, ({ one }) => ({
   organization: one(organizations, {
     fields: [aiEvaluationRuns.organizationId],
+    references: [organizations.id],
+  }),
+}));
+
+// ── Operational Exceptions Queue (Unified incident & recovery management) ────
+export const operationalExceptions = pgTable("operational_exceptions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id")
+    .references(() => organizations.id, { onDelete: "cascade" })
+    .notNull(),
+  category: text("category").notNull(), // 'booking_failure', 'payment_reconciliation', 'webhook_failure', 'delivery_failure', 'channel_disconnected', 'calendar_sync', 'knowledge_gap', 'human_escalation'
+  severity: text("severity").default("medium").notNull(), // 'critical', 'high', 'medium', 'low'
+  status: text("status").default("pending").notNull(), // 'pending', 'investigating', 'resolved', 'ignored'
+  title: text("title").notNull(),
+  explanation: text("explanation").notNull(),
+  correlationId: text("correlation_id"),
+  relatedRecordType: text("related_record_type"), // 'appointment', 'customer_payment', 'conversation', 'channel', 'knowledge'
+  relatedRecordId: text("related_record_id"),
+  safeNextAction: text("safe_next_action"),
+  retryCount: integer("retry_count").default(0).notNull(),
+  retryHistory: jsonb("retry_history").default([]).notNull(),
+  metadata: jsonb("metadata").default({}).notNull(),
+  resolutionNotes: text("resolution_notes"),
+  resolvedBy: text("resolved_by").references(() => users.id, { onDelete: "set null" }),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("operational_exceptions_org_idx").on(table.organizationId),
+  index("operational_exceptions_status_idx").on(table.status),
+  index("operational_exceptions_severity_idx").on(table.severity),
+  index("operational_exceptions_category_idx").on(table.category),
+]);
+
+export const operationalExceptionsRelations = relations(operationalExceptions, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [operationalExceptions.organizationId],
+    references: [organizations.id],
+  }),
+  resolver: one(users, {
+    fields: [operationalExceptions.resolvedBy],
+    references: [users.id],
+  }),
+}));
+
+// ── Founder Academy & Learning Progress ──────────────────────────────────────
+export const founderLearningProgress = pgTable("founder_learning_progress", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  organizationId: uuid("organization_id")
+    .references(() => organizations.id, { onDelete: "cascade" })
+    .notNull(),
+  currentModuleId: text("current_module_id").default("module-1").notNull(),
+  modulesStarted: text("modules_started").array().default(["module-1"]).notNull(),
+  lessonsCompleted: text("lessons_completed").array().default([]).notNull(),
+  exercisesPassed: text("exercises_passed").array().default([]).notNull(),
+  workflowsPracticed: text("workflows_practiced").array().default([]).notNull(),
+  unresolvedBlockers: jsonb("unresolved_blockers").default([]).notNull(),
+  recommendedNextLesson: text("recommended_next_lesson").default("module-1-lesson-1").notNull(),
+  simulatorResults: jsonb("simulator_results").default({}).notNull(),
+  lastActivityAt: timestamp("last_activity_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("founder_progress_user_org_idx").on(table.userId, table.organizationId),
+  index("founder_progress_org_idx").on(table.organizationId),
+]);
+
+export const founderLearningProgressRelations = relations(founderLearningProgress, ({ one }) => ({
+  user: one(users, {
+    fields: [founderLearningProgress.userId],
+    references: [users.id],
+  }),
+  organization: one(organizations, {
+    fields: [founderLearningProgress.organizationId],
     references: [organizations.id],
   }),
 }));

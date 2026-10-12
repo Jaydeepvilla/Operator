@@ -15,6 +15,7 @@ const PUBLIC_PATHS = [
   "/changelog",
   "/privacy",
   "/terms",
+  "/book",
   "/sign-in",
   "/sign-up",
   "/login-success",
@@ -40,13 +41,15 @@ const PUBLIC_PATHS = [
 const AUTH_PAGES = ["/sign-in", "/sign-up", "/forgot-password", "/reset-password"];
 
 function isPublicRoute(pathname: string): boolean {
-  // Always pass through: static assets, auth APIs, webhooks, widget, Next.js internals
+  // Always pass through: static assets, auth APIs, webhooks, widget, hosted booking, Next.js internals
   if (
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/webhooks") ||
     pathname.startsWith("/api/widget") ||
     pathname.startsWith("/widget-frame") ||
     pathname.startsWith("/widget.js") ||
+    pathname.startsWith("/book") ||
+    pathname.startsWith("/api/book") ||
     pathname.startsWith("/_next") ||
     pathname.includes(".")
   ) {
