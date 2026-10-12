@@ -35,9 +35,8 @@ import {
   getDemoStatusAction,
   switchDemoIndustryAction,
   resetDemoDataAction,
-  DEMO_SCRIPTS,
-  type DemoIndustryScript,
 } from "@/server/actions/demo";
+import { DEMO_SCRIPTS, type DemoIndustryScript } from "@/lib/constants/demo-scripts";
 
 export default function DemoCenterPage() {
   const [selectedScriptId, setSelectedScriptId] = useState<string>("salon-spa");

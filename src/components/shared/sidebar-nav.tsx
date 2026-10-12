@@ -112,11 +112,13 @@ export function SidebarNavGroup({ title, links }: SidebarGroupProps) {
 
         {links.map((link) => {
           const Icon = IconMap[link.icon];
-          const isActive =
-            pathname === link.href ||
-            (link.href !== "/dashboard" &&
-             link.href !== "/voice" &&
-             pathname.startsWith(link.href + "/"));
+          const isExact = pathname === link.href;
+          const isChild =
+            link.href !== "/dashboard" &&
+            link.href !== "/voice" &&
+            link.href !== "/settings" &&
+            pathname.startsWith(link.href + "/");
+          const isActive = isExact || isChild;
 
           if (!Icon) return null;
 
