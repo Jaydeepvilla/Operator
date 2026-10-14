@@ -276,7 +276,7 @@ For voice channels (inbound calls via Vapi or Twilio):
 1. Vapi/Twilio webhook fires to `/api/webhooks/voice/*`
 2. Audio is transcribed by Deepgram → text
 3. Text enters the same orchestrator pipeline above
-4. AI text response is synthesized by ElevenLabs → audio
+4. AI text response is synthesized by Kokoro TTS (82M ONNX) → audio
 5. Audio is played back to the caller via Vapi/Twilio
 
 This means the Operator AI uses the identical RAG → Prompt → LLM pipeline for both text and voice channels.

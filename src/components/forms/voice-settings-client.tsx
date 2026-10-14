@@ -18,7 +18,9 @@ import {
   ToggleRight,
   Info,
   ArrowRight,
-  Loader2 } from
+  Loader2,
+  Play,
+  Square } from
 "lucide-react";
 import { Button } from "@/components/shared/button";
 import { Input } from "@/components/shared/input";
@@ -31,7 +33,7 @@ import {
   SelectValue } from
 "@/components/shared/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/shared/dialog";
-import { saveVoiceSettingsAction, createRoutingRuleAction, updateRoutingRuleAction, deleteRoutingRuleAction } from "@/server/actions/voice";
+import { saveVoiceSettingsAction, previewVoiceAction, createRoutingRuleAction, updateRoutingRuleAction, deleteRoutingRuleAction } from "@/server/actions/voice";
 import { useToast } from "@/components/shared/toast";
 import { formatUserErrorMessage } from "@/lib/errors";
 import { cn } from "@/components/shared/utils";
@@ -66,13 +68,17 @@ export function VoiceSettingsClient({
 
 }: {initialSettings: any;initialRules: any[];}) {
   const [settings, setSettings] = useState<VoiceSettings>({
-    voiceName: initialSettings?.voiceName || "Rachel",
+    voiceName: initialSettings?.voiceName || "af_heart",
     speakingSpeed: initialSettings?.speakingSpeed || "1.0",
     greetingMessage: initialSettings?.greetingMessage || "Hello! Thank you for calling. How can I help you today?",
     fallbackNumber: initialSettings?.fallbackNumber || "",
     businessHoursMode: initialSettings?.businessHoursMode || "ai-only",
     voicemailActive: initialSettings?.voicemailActive ?? true
   });
+
+  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
 
   const [rules, setRules] = useState<RoutingRule[]>(initialRules as RoutingRule[]);
   const [isSavingSettings, startSaveSettings] = useTransition();
@@ -103,6 +109,54 @@ export function VoiceSettingsClient({
         toast.error("Failed to save settings", errorMsg);
       }
     });
+  };
+
+  const handleTogglePreview = async () => {
+    if (isPlayingPreview && currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      setIsPlayingPreview(false);
+      setCurrentAudio(null);
+      return;
+    }
+
+    setIsPreviewLoading(true);
+    try {
+      const res = await previewVoiceAction({
+        voiceName: settings.voiceName,
+        speakingSpeed: settings.speakingSpeed,
+        text: settings.greetingMessage || "Hello! Thank you for calling.",
+      });
+
+      if (!res.success || !res.audioDataUrl) {
+        toast.error("Preview Failed", res.error || "Could not synthesize audio sample.");
+        setIsPreviewLoading(false);
+        return;
+      }
+
+      const audio = new Audio(res.audioDataUrl);
+      setCurrentAudio(audio);
+      setIsPlayingPreview(true);
+      setIsPreviewLoading(false);
+
+      audio.onended = () => {
+        setIsPlayingPreview(false);
+        setCurrentAudio(null);
+      };
+
+      audio.onerror = () => {
+        toast.error("Playback Error", "Failed to play synthesized audio preview.");
+        setIsPlayingPreview(false);
+        setCurrentAudio(null);
+      };
+
+      await audio.play();
+    } catch (err: any) {
+      toast.error("Preview Error", err?.message || "Failed to initiate preview.");
+      setIsPlayingPreview(false);
+      setIsPreviewLoading(false);
+      setCurrentAudio(null);
+    }
   };
 
   const handleCreateRule = () => {
@@ -188,7 +242,34 @@ export function VoiceSettingsClient({
 
  <div className="p-space-4 space-y-space-4 bg-[hsl(var(--foreground)/0.002)]">
  <div className="space-y-space-1.5">
- <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Speaking Voice</Label>
+ <div className="flex items-center justify-between">
+   <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">Speaking Voice (Kokoro TTS)</Label>
+   <Button
+     type="button"
+     variant="outline"
+     size="sm"
+     onClick={handleTogglePreview}
+     disabled={isPreviewLoading}
+     className="h-7 px-space-2 text-[11px] gap-space-1 font-medium border-[hsl(var(--foreground)/0.1)] hover:bg-primary/5 hover:text-primary transition-colors"
+   >
+     {isPreviewLoading ? (
+       <>
+         <Loader2 className="h-3 w-3 animate-spin text-primary" />
+         <span>Generating...</span>
+       </>
+     ) : isPlayingPreview ? (
+       <>
+         <Square className="h-3 w-3 fill-current text-rose-500" />
+         <span>Stop</span>
+       </>
+     ) : (
+       <>
+         <Play className="h-3 w-3 fill-current text-primary" />
+         <span>Listen Sample</span>
+       </>
+     )}
+   </Button>
+ </div>
  <Select
                 value={settings.voiceName}
                 onValueChange={(val) => setSettings({ ...settings, voiceName: val })}>
@@ -196,12 +277,35 @@ export function VoiceSettingsClient({
  <SelectTrigger className="h-9.5 text-caption bg-background border-[hsl(var(--foreground)/0.08)]">
  <SelectValue placeholder="Select Speaking Voice" />
  </SelectTrigger>
- <SelectContent>
- <SelectItem value="Rachel">Rachel (Professional Female)</SelectItem>
- <SelectItem value="Drew">Drew (Energetic Male)</SelectItem>
- <SelectItem value="Clyde">Clyde (Medical Specialist Male)</SelectItem>
- <SelectItem value="Bella">Bella (Friendly Female)</SelectItem>
- <SelectItem value="Dom">Dom (Authoritative Male)</SelectItem>
+ <SelectContent className="max-h-80">
+ <div className="px-space-2 py-space-1 text-[10px] font-semibold text-muted-foreground/80 uppercase tracking-wider">American Female</div>
+ <SelectItem value="af_heart">Heart (Warm & Executive)</SelectItem>
+ <SelectItem value="af_bella">Bella (Expressive & Friendly)</SelectItem>
+ <SelectItem value="af_nicole">Nicole (Clear & Balanced)</SelectItem>
+ <SelectItem value="af_sarah">Sarah (Casual & Approachable)</SelectItem>
+ <SelectItem value="af_sky">Sky (Bright & Engaging)</SelectItem>
+ <SelectItem value="af_jessica">Jessica (Conversational)</SelectItem>
+ 
+ <div className="px-space-2 py-space-1 text-[10px] font-semibold text-muted-foreground/80 uppercase tracking-wider mt-space-1 border-t border-[hsl(var(--foreground)/0.04)] pt-space-1">American Male</div>
+ <SelectItem value="am_adam">Adam (Energetic & Confident)</SelectItem>
+ <SelectItem value="am_michael">Michael (Polished Executive)</SelectItem>
+ <SelectItem value="am_onyx">Onyx (Deep Authoritative)</SelectItem>
+ <SelectItem value="am_eric">Eric (Casual Conversational)</SelectItem>
+ 
+ <div className="px-space-2 py-space-1 text-[10px] font-semibold text-muted-foreground/80 uppercase tracking-wider mt-space-1 border-t border-[hsl(var(--foreground)/0.04)] pt-space-1">British Voices</div>
+ <SelectItem value="bf_emma">Emma (British Professional Female)</SelectItem>
+ <SelectItem value="bf_isabella">Isabella (British Elegant Female)</SelectItem>
+ <SelectItem value="bm_george">George (British Classic Male)</SelectItem>
+ <SelectItem value="bm_lewis">Lewis (British Warm Male)</SelectItem>
+
+ <div className="px-space-2 py-space-1 text-[10px] font-semibold text-muted-foreground/80 uppercase tracking-wider mt-space-1 border-t border-[hsl(var(--foreground)/0.04)] pt-space-1">Inworld Voices (inworld-tts-2)</div>
+ <SelectItem value="Ashley">Ashley (Inworld Conversational Female)</SelectItem>
+ <SelectItem value="Sarah">Sarah (Inworld Expressive Female)</SelectItem>
+ <SelectItem value="Hana">Hana (Inworld Gentle Female)</SelectItem>
+ <SelectItem value="Luna">Luna (Inworld Bright Female)</SelectItem>
+ <SelectItem value="Dennis">Dennis (Inworld Executive Male)</SelectItem>
+ <SelectItem value="Blake">Blake (Inworld Natural Male)</SelectItem>
+ <SelectItem value="Edward">Edward (Inworld British Male)</SelectItem>
  </SelectContent>
  </Select>
  </div>

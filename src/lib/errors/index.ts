@@ -109,7 +109,7 @@ export function classifyErrorCategory(error: unknown): AppErrorCategory {
   if (lower.includes("econnrefused") || lower.includes("fetch failed") || lower.includes("network") || lower.includes("failed to fetch")) {
     return "NETWORK";
   }
-  if (lower.includes("stripe") || lower.includes("vapi") || lower.includes("elevenlabs") || lower.includes("deepgram") || lower.includes("twilio") || lower.includes("vonage") || lower.includes("sinch") || lower.includes("resend") || lower.includes("gemini")) {
+  if (lower.includes("stripe") || lower.includes("vapi") || lower.includes("kokoro") || lower.includes("deepgram") || lower.includes("twilio") || lower.includes("vonage") || lower.includes("sinch") || lower.includes("resend") || lower.includes("gemini")) {
     return "PROVIDER";
   }
   if (lower.includes("postgres") || lower.includes("drizzle") || lower.includes("pg_") || lower.includes("database") || lower.includes("sql") || lower.includes("violates foreign key")) {
@@ -186,7 +186,7 @@ export function formatUserErrorMessage(error: unknown, fallbackMessage = "We cou
     if (lower.includes("insufficient_funds")) return "Your card has insufficient funds. Try another payment method.";
     return "Payment processing is temporarily unavailable. Try again shortly.";
   }
-  if (lower.includes("vapi") || lower.includes("elevenlabs") || lower.includes("deepgram")) {
+  if (lower.includes("vapi") || lower.includes("kokoro") || lower.includes("deepgram")) {
     return "Voice service is temporarily unavailable. Try again shortly.";
   }
   if (lower.includes("vonage") || lower.includes("sinch") || lower.includes("twilio")) {

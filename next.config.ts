@@ -46,6 +46,12 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: [
+    "kokoro-js",
+    "@huggingface/transformers",
+    "phonemizer",
+    "onnxruntime-node",
+  ],
   async headers() {
     return [
       {

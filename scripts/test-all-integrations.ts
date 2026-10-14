@@ -151,31 +151,17 @@ async function testAll() {
     results.push({ service: "Deepgram Speech-to-Text", status: "FAIL", details: err.message });
   }
 
-  // 9. ElevenLabs TTS
+  // 9. Kokoro Voice TTS (82M ONNX)
   try {
-    const apiKey = process.env.ELEVENLABS_API_KEY;
-    if (!apiKey) throw new Error("ELEVENLABS_API_KEY is missing.");
-    const res = await fetch("https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM", {
-      method: "POST",
-      headers: {
-        "xi-api-key": apiKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        text: "Test",
-        model_id: "eleven_monolingual_v1",
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (res.ok) {
-      results.push({ service: "ElevenLabs Voice TTS", status: "PASS", details: "Active with Paid Plan voices." });
-    } else if (res.status === 402 || data?.detail?.status === "payment_required") {
-      results.push({ service: "ElevenLabs Voice TTS", status: "PASS", details: "Key Valid (Free tier - Resilient voice fallback active)." });
+    const { kokoroTts } = await import("../src/server/services/voice/kokoro");
+    const synth = await kokoroTts.synthesizeText("Testing Kokoro audio synthesis.", "af_heart", "1.0");
+    if (synth && synth.audioBuffer && synth.audioBuffer.length > 0) {
+      results.push({ service: "Kokoro Voice TTS", status: "PASS", details: `Active (Real inference: ${synth.audioBuffer.length} bytes WAV)` });
     } else {
-      throw new Error(data?.detail?.message || `HTTP ${res.status}`);
+      throw new Error("Kokoro returned empty audio buffer.");
     }
   } catch (err: any) {
-    results.push({ service: "ElevenLabs Voice TTS", status: "PASS", details: "Key Valid (Resilient voice fallback active)." });
+    results.push({ service: "Kokoro Voice TTS", status: "FAIL", details: err.message });
   }
 
   // Print Summary Table

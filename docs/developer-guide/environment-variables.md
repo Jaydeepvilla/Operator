@@ -149,15 +149,15 @@ Read by: `src/server/services/voice/deepgram.ts`
 
 ---
 
-### `ELEVENLABS_API_KEY`
+### `KOKORO_TTS_URL`
 
-**Required for text-to-speech in voice calls.** ElevenLabs API key from [elevenlabs.io](https://elevenlabs.io).
+**Optional for text-to-speech in voice calls.** By default, Kokoro runs 100% locally in-process via ONNX runtime weights (`Kokoro-82M-ONNX`), requiring no external keys or cloud costs. If deploying to serverless or container clusters that prefer offloading inference to a dedicated GPU or microservice, set this to the external Kokoro HTTP endpoint (e.g., OpenAI-compatible speech endpoint).
 
 ```
-ELEVENLABS_API_KEY="..."
+KOKORO_TTS_URL="http://localhost:8880"
 ```
 
-Read by: `src/server/services/voice/elevenlabs.ts`
+Read by: `src/server/services/voice/kokoro.ts`
 
 ---
 

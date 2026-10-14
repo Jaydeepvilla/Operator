@@ -2605,7 +2605,7 @@
     "replacement": ""
   },
   {
-    "file": "D:/AI  PRojects/Nexx Services/receptionist/dynamicos/src/server/services/voice/elevenlabs.ts",
+    "file": "D:/AI  PRojects/Nexx Services/receptionist/dynamicos/src/server/services/voice/kokoro.ts",
     "line": 14,
     "message": "AI left console.log in code.",
     "severity": "Error",

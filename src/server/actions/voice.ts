@@ -98,7 +98,7 @@ export async function getVoiceSettingsAction() {
     let settings = await voiceRepository.getVoiceSettings(organizationId);
     if (!settings) {
       settings = await voiceRepository.upsertVoiceSettings(organizationId, {
-        voiceName: "Rachel",
+        voiceName: "af_heart",
         speakingSpeed: "1.0",
         greetingMessage: "Hello! Thank you for calling. How can I help you today?",
         businessHoursMode: "ai-only",
@@ -126,6 +126,50 @@ export async function saveVoiceSettingsAction(data: {
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error?.message || "We couldn't save voice settings. Try again." };
+  }
+}
+
+export async function previewVoiceAction(data: {
+  voiceName?: string;
+  speakingSpeed?: string;
+  text?: string;
+}) {
+  try {
+    await requireOrganizationAccess();
+    const previewText = data.text?.trim() || "Hello! Thank you for calling. How can I help you today?";
+    const voiceName = data.voiceName || "af_heart";
+
+    const { INWORLD_VOICE_IDS, inworldTts } = await import("../services/voice/inworld");
+    const isInworld = INWORLD_VOICE_IDS.some((v) => v.toLowerCase() === voiceName.toLowerCase());
+
+    let result: { audioBuffer: Buffer; mimeType: string };
+    if (isInworld) {
+      result = await inworldTts.synthesizeText(
+        previewText,
+        voiceName,
+        data.speakingSpeed
+      );
+    } else {
+      const { kokoroTts } = await import("../services/voice/kokoro");
+      result = await kokoroTts.synthesizeText(
+        previewText,
+        voiceName,
+        data.speakingSpeed || "1.0"
+      );
+    }
+
+    const base64Audio = result.audioBuffer.toString("base64");
+    return {
+      success: true,
+      audioDataUrl: `data:${result.mimeType};base64,${base64Audio}`,
+      mimeType: result.mimeType,
+    };
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : "Failed to generate speech preview. Try again.";
+    return {
+      success: false,
+      error: errorMsg,
+    };
   }
 }
 

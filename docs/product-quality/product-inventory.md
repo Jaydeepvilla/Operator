@@ -17,7 +17,7 @@ Operator is an autonomous AI receptionist and omnichannel customer interaction S
 | **Styling** | Tailwind CSS & Design System | Semantic token architecture (`src/design-system/tokens/`) |
 | **Icons & Motion** | Lucide React & Framer Motion | Accessible SVGs, reduced-motion fallbacks |
 | **AI Runtime** | Google Gemini (@google/genai) / Local Engine | Hybrid memory, structured JSON tools, grounding guards |
-| **Telephony / Voice** | Twilio / WebRTC / ElevenLabs | WebSocket audio streaming, telephony state machine |
+| **Telephony / Voice** | Twilio / WebRTC / Kokoro TTS | WebSocket audio streaming, Kokoro-82M ONNX speech synthesis, telephony state machine |
 | **Payments & Billing**| Stripe API & Webhooks | Dynamic subscription engine, usage metering, trial-to-paid lifecycle |
 
 ---

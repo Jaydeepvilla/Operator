@@ -7,15 +7,17 @@ import {
   conversations, 
   conversationMessages,
   organizations,
+  voiceSettings,
 } from "../../db/schema";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 import { orchestratorService } from "../orchestrator";
 import { VoiceProviderRegistry } from "./types";
 import { llmRegistry } from "../llm";
 import { sanitizeVoiceResponse } from "../../../lib/voice/sanitizer";
 
 import "./deepgram";
-import "./elevenlabs";
+import "./kokoro";
+import "./inworld";
 import "./vapi";
 
 export const voiceOrchestrator = {
@@ -132,12 +134,21 @@ export const voiceOrchestrator = {
         { businessName: org?.name }
       );
 
-      // Synthesize audio reply via TextToSpeech Provider
-      const tts = VoiceProviderRegistry.getTTS("tts-elevenlabs");
+      // Fetch organization voice settings
+      const voiceSetting = await db.query.voiceSettings.findFirst({
+        where: eq(voiceSettings.organizationId, organizationId),
+      });
+
+      // Synthesize audio reply via TextToSpeech Provider (Kokoro TTS)
+      const tts = VoiceProviderRegistry.getTTS("tts-kokoro");
       let audioBuffer: Buffer | undefined = undefined;
 
       if (tts) {
-        const synth = await tts.synthesizeText(responseText);
+        const synth = await tts.synthesizeText(
+          responseText,
+          voiceSetting?.voiceName,
+          voiceSetting?.speakingSpeed
+        );
         audioBuffer = synth.audioBuffer;
       }
 

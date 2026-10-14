@@ -8,7 +8,7 @@ Operator enables businesses to deploy a 24/7 Operator AI that handles inbound co
 
 ## What it does
 
-- **Omnichannel conversations** — WhatsApp, SMS, Facebook Messenger, Instagram, email, web widget, voice (Vapi + Twilio + Deepgram + ElevenLabs)
+- **Omnichannel conversations** — WhatsApp, SMS, Facebook Messenger, Instagram, email, web widget, voice (Vapi + Twilio + Deepgram + Kokoro TTS)
 - **Lead qualification** — Configurable multi-step qualification flows with answer types: text, single-select, multi-select, number
 - **Appointment booking** — Natural-language date parsing, staff availability checks, Google Calendar sync, reminder scheduling
 - **Operator AI** — RAG-augmented context retrieval, LLM completion (Google Gemini sole AI provider), hallucination prevention rules
@@ -29,7 +29,7 @@ Operator enables businesses to deploy a 24/7 Operator AI that handles inbound co
 | Styling | Tailwind CSS v4 + custom design system tokens |
 | Animation | Framer Motion 12 |
 | AI | Google Gemini (sole AI provider: gemini-3.5-flash / gemini-embedding-001) |
-| Voice | Vapi AI, Twilio, Deepgram, ElevenLabs |
+| Voice | Vapi AI, Twilio, Deepgram, Kokoro TTS (82M ONNX) |
 | Calendar | Google Calendar API (OAuth, direct HTTP) |
 | Testing | Playwright |
 | Quality | Operator Doctor (custom static analysis CLI) |
@@ -106,7 +106,7 @@ dynamicos/
 │       │   ├── prompt.ts        # System prompt builder
 │       │   ├── llm.ts           # LLM provider registry
 │       │   ├── omnichannel/     # Channel providers (WhatsApp, SMS, Facebook, Instagram, Email)
-│       │   ├── voice/           # Voice providers (Vapi, Twilio, Deepgram, ElevenLabs)
+│       │   ├── voice/           # Voice providers (Vapi, Twilio, Deepgram, Kokoro TTS)
 │       │   ├── billing/         # Billing providers (Stripe, Razorpay, LemonSqueezy, Paddle, PayPal)
 │       │   └── ingestion/       # Knowledge base ingestion pipeline
 │       └── actions/             # Next.js Server Actions
@@ -178,7 +178,7 @@ Quick summary:
 | `TWILIO_AUTH_TOKEN` | SMS/Voice only | Twilio integration |
 | `TWILIO_PHONE_NUMBER` | SMS/Voice only | Outbound caller ID |
 | `DEEPGRAM_API_KEY` | Voice only | Speech-to-text |
-| `ELEVENLABS_API_KEY` | Voice only | Text-to-speech |
+| `KOKORO_TTS_URL` | Optional | External dedicated Kokoro TTS worker URL (defaults to local ONNX) |
 | `STRIPE_SECRET_KEY` | Billing only | Stripe payment processing |
 | `STRIPE_WEBHOOK_SECRET` | Billing only | Stripe webhook validation |
 | `SMTP_HOST` | Email only | Outbound email host |

@@ -28,7 +28,7 @@ Following the initial October 9, 2026 local release gate audit, an adversarial s
 - **Target Deployment Platform:** Node.js 20+ container / Vercel Edge & Serverless Runtime.
 - **Database Target:** Neon PostgreSQL (cloud serverless cluster). Connection established and active.
 - **Environment Isolation:**
-  - `.env.local`: Contains active test and sandbox credentials for Neon, Razorpay Sandbox, Google Gemini, Vonage, Vapi, Deepgram, ElevenLabs, and Resend.
+  - `.env.local`: Contains active test and sandbox credentials for Neon, Razorpay Sandbox, Google Gemini, Vonage, Vapi, Deepgram, Kokoro TTS, and Resend.
   - `.env.production`: Configured with base production URL (`NEXT_PUBLIC_APP_URL`). Secrets are never committed to version control.
   - Zero secrets printed or leaked in build logs or generated artifacts.
 

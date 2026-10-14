@@ -91,7 +91,7 @@ export const agencyProvisioning = {
         .insert(voiceSettings)
         .values({
           organizationId: org.id,
-          voiceName: "Rachel",
+          voiceName: "af_heart",
           speakingSpeed: "1.0",
           greetingMessage: `Hello, thanks for calling ${clientName}. How can I assist you today?`,
           businessHoursMode: "ai-only",

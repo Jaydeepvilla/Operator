@@ -31,7 +31,7 @@ export async function seedActivity(): Promise<void> {
       offsetDays: -5
     },
     {
-      task: "Configured custom ElevenLabs voice (Jessica clone) for main line",
+      task: "Configured custom Kokoro TTS voice (Jessica) for main line",
       category: "voice",
       impact: "high",
       offsetDays: -3

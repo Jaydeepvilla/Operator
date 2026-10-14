@@ -125,7 +125,7 @@ export const voiceRepository = {
         .values({
           ...data,
           organizationId,
-          voiceName: data.voiceName || "Rachel",
+          voiceName: data.voiceName || "af_heart",
           speakingSpeed: data.speakingSpeed || "1.0",
           greetingMessage: data.greetingMessage || "Hello! Thanks for calling. How can I assist you today?",
           businessHoursMode: data.businessHoursMode || "ai-only",

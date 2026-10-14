@@ -122,7 +122,7 @@ Pure business logic, no HTTP concerns. Services call repositories or the databas
 | `voice/vapi.ts` | Vapi AI voice call management |
 | `voice/twilio.ts` | Twilio voice/SMS |
 | `voice/deepgram.ts` | Speech-to-text |
-| `voice/elevenlabs.ts` | Text-to-speech |
+| `voice/kokoro.ts` | Text-to-speech (Kokoro-82M ONNX) |
 | `voice/campaign.ts` | Outbound call campaigns |
 | `billing/` | Stripe, Razorpay, LemonSqueezy, Paddle, PayPal |
 | `notification.ts` | SMTP email, Twilio SMS, MSG91 SMS |

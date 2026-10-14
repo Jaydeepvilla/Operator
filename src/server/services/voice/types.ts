@@ -34,7 +34,7 @@ export interface SpeechToTextProvider {
 }
 
 export interface TextToSpeechProvider {
-  id: string; // e.g., 'tts-elevenlabs', 'tts-cartesia'
+  id: string; // e.g., 'tts-kokoro'
   name: string;
   
   synthesizeText(

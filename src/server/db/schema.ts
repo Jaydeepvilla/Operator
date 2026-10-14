@@ -2003,7 +2003,7 @@ export const voiceSettings = pgTable("voice_settings", {
   organizationId: uuid("organization_id")
     .references(() => organizations.id, { onDelete: "cascade" })
     .notNull(),
-  voiceName: text("voice_name").default("Rachel").notNull(), // ElevenLabs / Cartesia speaking voice name
+  voiceName: text("voice_name").default("af_heart").notNull(), // Kokoro TTS speaking voice name (e.g. af_heart, af_bella, am_adam)
   speakingSpeed: text("speaking_speed").default("1.0").notNull(), // e.g. "0.9", "1.0", "1.1"
   greetingMessage: text("greeting_message").notNull(),
   fallbackNumber: text("fallback_number"),

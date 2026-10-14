@@ -28,7 +28,31 @@ export async function GET() {
     };
   }
 
-  // 2. Overall status
+  // 2. Kokoro TTS Engine check
+  try {
+    const { checkKokoroStatus } = await import("@/server/services/voice/kokoro");
+    const kokoroStatus = await checkKokoroStatus();
+    if (kokoroStatus.ready) {
+      checks.tts = { status: "ok" };
+    } else {
+      checks.tts = { status: "error", error: kokoroStatus.error || "Kokoro TTS engine unready" };
+    }
+  } catch (err: any) {
+    checks.tts = { status: "error", error: err.message || "Failed checking TTS" };
+  }
+
+  // 3. Inworld TTS Provider check
+  try {
+    const { checkInworldStatus } = await import("@/server/services/voice/inworld");
+    const inworldStatus = await checkInworldStatus();
+    checks.inworldTts = inworldStatus.configured
+      ? { status: "ok" }
+      : { status: "ok", error: "Not configured (optional)" };
+  } catch (err: any) {
+    checks.inworldTts = { status: "error", error: err.message || "Failed checking Inworld TTS" };
+  }
+
+  // 3. Overall status
   const allHealthy = Object.values(checks).every((c) => c.status === "ok");
 
   const payload = {
