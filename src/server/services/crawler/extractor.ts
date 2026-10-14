@@ -13,16 +13,87 @@ export interface ExtractedPageData {
   tags: string[];
   contentHash: string;
   links: string[];
+  jsonLd?: any[];
+  contactInfo?: {
+    email?: string;
+    phone?: string;
+    address?: string;
+    hours?: string;
+  };
 }
 
 export class ContentExtractor {
   /**
-   * Extracts clean structured Markdown content, metadata, and internal links from raw HTML.
+   * Extracts clean structured Markdown content, metadata, JSON-LD, and internal links from raw HTML.
    */
   static extract(html: string, pageUrl: string): ExtractedPageData {
     const $ = cheerio.load(html);
 
-    // Extract all links before stripping elements
+    // 1. Extract JSON-LD structured data BEFORE stripping <script>
+    const jsonLd: any[] = [];
+    $('script[type="application/ld+json"]').each((_, el) => {
+      try {
+        const raw = $(el).html();
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            jsonLd.push(...parsed);
+          } else if (parsed && typeof parsed === "object") {
+            if (Array.isArray(parsed["@graph"])) {
+              jsonLd.push(...parsed["@graph"]);
+            } else {
+              jsonLd.push(parsed);
+            }
+          }
+        }
+      } catch {
+        // Ignore malformed JSON-LD blocks
+      }
+    });
+
+    // 2. Extract telephone, email, and address from explicit markup & attributes
+    let extractedPhone = "";
+    const telLink = $('a[href^="tel:"]').first().attr("href");
+    if (telLink) {
+      extractedPhone = telLink.replace(/^tel:\s*/i, "").trim();
+    } else {
+      const itemPhone = $('[itemprop="telephone"]').first().text().trim();
+      if (itemPhone) extractedPhone = itemPhone;
+    }
+
+    let extractedEmail = "";
+    const mailtoLink = $('a[href^="mailto:"]').first().attr("href");
+    if (mailtoLink) {
+      extractedEmail = mailtoLink.replace(/^mailto:\s*/i, "").split("?")[0].trim();
+    } else {
+      const itemEmail = $('[itemprop="email"]').first().text().trim();
+      if (itemEmail) extractedEmail = itemEmail;
+    }
+
+    let extractedAddress = "";
+    const itemAddress = $('[itemprop="address"]').first().text().replace(/\s+/g, " ").trim();
+    if (itemAddress) {
+      extractedAddress = itemAddress;
+    } else {
+      const addressTag = $("address").first().text().replace(/\s+/g, " ").trim();
+      if (addressTag) extractedAddress = addressTag;
+    }
+
+    let itemHours = $('[itemprop="openingHours"]').first().text().replace(/\s+/g, " ").trim();
+    if (!itemHours) {
+      const hoursEl = $('.hours, #hours, [class*="hours"], [id*="hours"]').first().text().replace(/\s+/g, " ").trim();
+      if (hoursEl && hoursEl.length < 150) {
+        itemHours = hoursEl;
+      }
+    }
+    if (!itemHours) {
+      // Check for textual patterns like "Clinical Hours: Mon-Fri 08:00-17:00 CST" or "Office Hours: Mon-Fri 9:00 AM - 6:00 PM EST"
+      const bodyText = $("body").text();
+      const hoursMatch = bodyText.match(/(?:Office|Business|Opening|Clinical|Operating)?\s*Hours:\s*([A-Za-z0-9–—\-:., ]+(?:AM|PM|am|pm|\d{2}:\d{2})[^\n\r]*)/i);
+      if (hoursMatch) {
+        itemHours = hoursMatch[1].replace(/\s+/g, " ").trim();
+      }
+    }
     const links: string[] = [];
     $("a[href]").each((_, el) => {
       const href = $(el).attr("href");
@@ -45,7 +116,7 @@ export class ContentExtractor {
       }
     });
 
-    // 1. Extract Metadata
+    // 3. Extract Metadata
     const pageTitle =
       $('meta[property="og:title"]').attr("content") ||
       $("title").text().trim() ||
@@ -60,14 +131,20 @@ export class ContentExtractor {
     const canonicalUrl =
       $('link[rel="canonical"]').attr("href") || pageUrl;
 
-    // 2. Remove boilerplate and noise tags
+    // 4. Capture header/footer text before removal for contact/hours context
+    const headerFooterText = $("header, footer, nav, .header, .footer, #footer, #header")
+      .text()
+      .replace(/\s+/g, " ")
+      .trim();
+
+    // 5. Remove boilerplate and noise tags
     $(
       "script, style, noscript, iframe, svg, canvas, nav, header, footer, aside, form, " +
       ".nav, .navbar, .menu, .footer, .header, .sidebar, .cookie-banner, #cookie-consent, " +
       ".ad, .advertisement, .modal, .popup, [aria-hidden='true']"
     ).remove();
 
-    // 3. Structured Content Conversion to Markdown
+    // 6. Structured Content Conversion to Markdown
     const markdownLines: string[] = [];
 
     // Title & Description
@@ -81,7 +158,7 @@ export class ContentExtractor {
     // Process main content containers (or body if no main)
     const container = $("main").length > 0 ? $("main") : $("body");
 
-    container.find("h1, h2, h3, h4, h5, h6, p, ul, ol, table, blockquote").each((_, el) => {
+    container.find("h1, h2, h3, h4, h5, h6, p, ul, ol, table, blockquote, span, div").each((_, el) => {
       const tagName = el.tagName.toLowerCase();
       const element = $(el);
 
@@ -152,6 +229,16 @@ export class ContentExtractor {
           if (text) markdownLines.push(`> ${text}\n`);
           break;
         }
+        case "span":
+        case "div": {
+          if (element.parents("p, li, blockquote, table, h1, h2, h3, h4, h5, h6").length === 0) {
+            const text = element.text().trim().replace(/\s+/g, " ");
+            if (text && (/\$\d+/.test(text) || /\b\d+\s*(?:min|mins|minutes|hour|hr)\b/i.test(text))) {
+              markdownLines.push(`${text}\n`);
+            }
+          }
+          break;
+        }
       }
     });
 
@@ -184,6 +271,13 @@ export class ContentExtractor {
       tags,
       contentHash,
       links: Array.from(new Set(links)),
+      jsonLd,
+      contactInfo: {
+        email: extractedEmail || undefined,
+        phone: extractedPhone || undefined,
+        address: extractedAddress || undefined,
+        hours: itemHours || undefined,
+      },
     };
   }
 

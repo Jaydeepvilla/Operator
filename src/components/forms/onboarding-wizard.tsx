@@ -59,7 +59,7 @@ interface GeneratedData {
  phone: string;
  address: string;
  website: string;
- services: { name: string; duration: number; accepted: boolean }[];
+ services: { name: string; duration: number; accepted: boolean; price?: string; description?: string; category?: string }[];
  hours: string;
  greeting: string;
 }
@@ -362,17 +362,17 @@ function ScreenGenerating({
  onComplete({
  businessName: scrapedData.businessName || "My Business",
  industry: scrapedData.industry || "Other",
- timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+ timezone: scrapedData.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York",
  email: scrapedData.email || "",
  phone: scrapedData.phone || "",
  address: scrapedData.address || "",
  website: scrapedData.website || (url === "no-website" ? "" : url),
  services:
- scrapedData.services && scrapedData.services.length > 0
+ Array.isArray(scrapedData.services) && scrapedData.services.length > 0
  ? scrapedData.services
  : [],
- hours: "Mon–Fri 9:00 AM – 5:00 PM",
- greeting: `Hi, thank you for contacting ${scrapedData.businessName || "us"}. I'm Operator, your automated assistant. How can I help you today?`,
+ hours: scrapedData.hours || "Mon–Fri 9:00 AM – 5:00 PM",
+ greeting: scrapedData.greeting || `Hi, thank you for contacting ${scrapedData.businessName || "us"}. I'm Operator, your automated assistant. How can I help you today?`,
  });
  } else {
  const fallback = buildGeneratedData(
@@ -796,7 +796,10 @@ function ScreenVerify({
  </button>
  <div className="flex-1 min-w-0">
  <p className="text-body-sm font-medium text-foreground">{svc.name}</p>
- <p className="text-caption text-muted-foreground">{svc.duration} min</p>
+ <p className="text-caption text-muted-foreground">
+ {svc.duration ? `${svc.duration} min` : "Duration not specified"}
+ {svc.price ? ` • $${svc.price.replace(/^\$/, "")}` : " • Price on request"}
+ </p>
  </div>
  <button
  type="button"

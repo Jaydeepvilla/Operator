@@ -241,14 +241,18 @@ export async function getSession(token: string): Promise<SessionData | null> {
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     await db.update(sessions).set({ expiresAt }).where(eq(sessions.id, token));
     
-    const cookieStore = await cookies();
-    cookieStore.set("session_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      expires: expiresAt,
-      path: "/",
-    });
+    try {
+      const cookieStore = await cookies();
+      cookieStore.set("session_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        expires: expiresAt,
+        path: "/",
+      });
+    } catch {
+      // Running outside Next.js request scope (e.g. Playwright test runner, CLI, or background task)
+    }
     session.expiresAt = expiresAt;
   }
   

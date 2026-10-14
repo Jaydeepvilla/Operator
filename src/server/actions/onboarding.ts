@@ -16,7 +16,7 @@ import { Organization } from "../../lib/types";
 import { INDUSTRY_TEMPLATES, DEFAULT_BUSINESS_HOURS } from "../../lib/constants/templates";
 import { syncService } from "../services/sync";
 import { db } from "@/server/db";
-import { users, organizations, memberships } from "@/server/db/schema";
+import { users, organizations, memberships, services, serviceCategories } from "@/server/db/schema";
 import { eq, and } from "drizzle-orm";
 import { createSession } from "@/lib/auth/session";
 import { userRepository } from "../repositories/user";
@@ -24,6 +24,7 @@ import crypto from "crypto";
 import { cookies } from "next/headers";
 import { validateSafeUrl, safeFetch } from "../services/crawler/ssrf";
 import { ContentExtractor } from "../services/crawler/extractor";
+import { BusinessWebsiteIntelligenceService } from "../services/crawler/intelligence";
 import { sourcesRepository } from "../repositories/sources";
 import { documentsRepository } from "../repositories/documents";
 import { chunksRepository } from "../repositories/chunks";
@@ -44,8 +45,13 @@ export async function checkUserOrganization(): Promise<OnboardingStateResult> {
       return { hasOrg: false, org: null, isCompleted: false, currentStep: "url", draftData: {} };
     }
 
-    const cookieStore = await cookies();
-    const activeOrgCookie = cookieStore.get("active_org_id")?.value;
+    let activeOrgCookie: string | undefined;
+    try {
+      const cookieStore = await cookies();
+      activeOrgCookie = cookieStore.get("active_org_id")?.value;
+    } catch {
+      // Outside HTTP request context (e.g. tests or server jobs)
+    }
     const targetOrgId = orgId || activeOrgCookie;
 
     let targetOrg: any = null;
@@ -63,7 +69,10 @@ export async function checkUserOrganization(): Promise<OnboardingStateResult> {
         targetOrg = await organizationRepository.getById(userMemberships[0].organizationId);
         if (targetOrg) {
           try {
-            cookieStore.set("active_org_id", targetOrg.id, {
+            const cookieStore = await cookies();
+            cookieStore.set({
+              name: "active_org_id",
+              value: targetOrg.id,
               httpOnly: true,
               secure: process.env.NODE_ENV === "production",
               sameSite: "lax",
@@ -284,18 +293,24 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
       const template = INDUSTRY_TEMPLATES[industry];
       const desc = `${name} — Professional Front Desk & Automated Receptionist`;
 
-      await profileRepository.create({
-        organizationId: organization.id,
-        description: desc,
-        socialLinks: {},
-      });
+      const existingProfile = await profileRepository.getByOrg(organization.id);
+      if (existingProfile) {
+        await profileRepository.update(organization.id, { description: desc });
+      } else {
+        await profileRepository.create({
+          organizationId: organization.id,
+          description: desc,
+          socialLinks: {},
+        });
+      }
 
-      const inputServices: Array<{ name: string; duration: number; accepted?: boolean }> =
-        (input as any)?.services || [];
+      const inputServices: Array<{ name: string; duration: number; accepted?: boolean; price?: string; description?: string }> =
+        parsed.data.services || (input as any)?.services || [];
       const validServices = inputServices.filter((s) => s.accepted !== false && s.name?.trim());
       const hasCustomServices = validServices.length > 0;
 
-      await settingsRepository.create({
+      const existingSettings = await settingsRepository.getByOrg(organization.id);
+      const settingsPayload = {
         organizationId: organization.id,
         businessHours: template?.businessHours || DEFAULT_BUSINESS_HOURS,
         holidays: [],
@@ -304,16 +319,22 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
           slotIntervalMinutes: 30,
           bufferMinutes: 10,
           autoApprove: false,
-          hoursConfigured: false,
-          servicesConfigured: false,
+          hoursConfigured: !!parsed.data.hours,
+          servicesConfigured: hasCustomServices,
           faqsConfigured: false,
           flowsConfigured: false,
-          confirmedTasks: [],
+          confirmedTasks: hasCustomServices ? ["services"] : [],
           uncompletedTasks: [],
         },
         notificationPreferences: { channels: ["email"] },
         leadAssignmentRules: { type: "round_robin" },
-      });
+      };
+
+      if (existingSettings) {
+        await settingsRepository.update(organization.id, settingsPayload);
+      } else {
+        await settingsRepository.create(settingsPayload);
+      }
 
       // Real Website Ingestion: If user provided a website, crawl & ingest it into Knowledge Base
       if (website && website !== "no-website") {
@@ -378,12 +399,12 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
                   slotIntervalMinutes: 30,
                   bufferMinutes: 10,
                   autoApprove: false,
-                  hoursConfigured: false,
-                  servicesConfigured: false,
+                  hoursConfigured: !!parsed.data.hours,
+                  servicesConfigured: hasCustomServices,
                   faqsConfigured: false,
                   flowsConfigured: false,
-                  confirmedTasks: ["kb"],
-                  uncompletedTasks: [],
+                  confirmedTasks: hasCustomServices ? ["services", "kb"] : ["kb"],
+                  uncompletedTasks: validServices.some((s) => !s.duration) ? ["confirm_service_durations"] : [],
                 },
               });
             }
@@ -395,6 +416,10 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
 
       // Insert services if user verified them during onboarding
       if (hasCustomServices) {
+        // Idempotency: Clean up previously created onboarding services for this organization to prevent duplicates on retry
+        await db.delete(services).where(eq(services.organizationId, organization.id));
+        await db.delete(serviceCategories).where(eq(serviceCategories.organizationId, organization.id));
+
         let cat = await servicesRepository.createCategory({
           organizationId: organization.id,
           name: "Main Services",
@@ -403,10 +428,10 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
           await servicesRepository.create({
             organizationId: organization.id,
             categoryId: cat.id,
-            name: s.name,
-            description: `Appointment for ${s.name}`,
-            duration: s.duration || 30,
-            price: "0",
+            name: s.name.trim(),
+            description: s.description || `Appointment for ${s.name.trim()}`,
+            duration: (s.duration && s.duration > 0) ? s.duration : 30,
+            price: (s.price && s.price.trim().length > 0) ? String(s.price).replace(/[^0-9.]/g, "") : "",
             isActive: true,
           });
         }
@@ -418,7 +443,9 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
     // 8. Set active org cookie
     try {
       const cookieStore = await cookies();
-      cookieStore.set("active_org_id", organization.id, {
+      cookieStore.set({
+        name: "active_org_id",
+        value: organization.id,
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
@@ -444,96 +471,33 @@ export async function scrapeAndAnalyzeWebsiteAction(rawUrl: string) {
       };
     }
 
-    const trimmed = rawUrl.trim();
-    const fullUrl = trimmed.startsWith("http://") || trimmed.startsWith("https://")
-      ? trimmed
-      : `https://${trimmed}`;
-
-    // 1. Validate URL
-    const validation = await validateSafeUrl(fullUrl);
-    if (!validation.valid || !validation.parsedUrl) {
-      return {
-        success: false,
-        error: validation.error || "Invalid URL format or restricted host",
-      };
-    }
-
-    // 2. Fetch real website content
-    const fetchRes = await safeFetch(fullUrl, { timeoutMs: 12000 });
-    if (!fetchRes.ok || !fetchRes.html) {
-      return {
-        success: false,
-        error: `Could not reach website (HTTP ${fetchRes.status || "timeout"})`,
-      };
-    }
-
-    // 3. Extract structured page data
-    const extracted = ContentExtractor.extract(fetchRes.html, fullUrl);
-
-    // 4. Extract Contact info (Email & Phone)
-    const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
-    const phoneRegex = /(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})/g;
-
-    const allText = `${extracted.title} ${extracted.description || ""} ${extracted.content}`;
-    const foundEmails = Array.from(new Set(allText.match(emailRegex) || []));
-    const foundPhones = Array.from(new Set(allText.match(phoneRegex) || []));
-
-    const validEmail = foundEmails.find(e => !e.endsWith(".png") && !e.endsWith(".jpg") && !e.includes("example.com")) || "";
-    const validPhone = foundPhones[0] || "";
-
-    // 5. Derive Business Name
-    let businessName = extracted.title.split(/[-|–•]/)[0].trim();
-    if (!businessName || businessName.length > 50 || businessName.toLowerCase() === "home") {
-      const hostname = validation.parsedUrl.hostname.replace(/^www\./, "");
-      const base = hostname.split(".")[0];
-      businessName = base.charAt(0).toUpperCase() + base.slice(1);
-    }
-
-    // 6. Detect Industry Vertical accurately from real keywords
-    const lowerText = allText.toLowerCase();
-    let detectedIndustry = "Other";
-    if (lowerText.includes("dentist") || lowerText.includes("dental") || lowerText.includes("teeth") || lowerText.includes("orthodont")) {
-      detectedIndustry = "Dental Clinic";
-    } else if (lowerText.includes("doctor") || lowerText.includes("clinic") || lowerText.includes("patient") || lowerText.includes("medical") || lowerText.includes("health") || lowerText.includes("hospital")) {
-      detectedIndustry = "Medical Clinic";
-    } else if (lowerText.includes("salon") || lowerText.includes("haircut") || lowerText.includes("stylist") || lowerText.includes("barber") || lowerText.includes("nails")) {
-      detectedIndustry = "Salon";
-    } else if (lowerText.includes("spa") || lowerText.includes("massage") || lowerText.includes("facial") || lowerText.includes("wellness")) {
-      detectedIndustry = "Spa";
-    } else if (lowerText.includes("lawyer") || lowerText.includes("attorney") || lowerText.includes("law firm") || lowerText.includes("litigation") || lowerText.includes("legal")) {
-      detectedIndustry = "Law Firm";
-    } else if (lowerText.includes("consult") || lowerText.includes("advisory") || lowerText.includes("strategy") || lowerText.includes("management")) {
-      detectedIndustry = "Consultant";
-    } else if (lowerText.includes("realt") || lowerText.includes("real estate") || lowerText.includes("property") || lowerText.includes("homes for sale")) {
-      detectedIndustry = "Real Estate";
-    } else if (lowerText.includes("gym") || lowerText.includes("fitness") || lowerText.includes("workout") || lowerText.includes("trainer") || lowerText.includes("crossfit")) {
-      detectedIndustry = "Gym";
-    }
-
-    // 7. Do NOT auto-generate fake services from website headings or bullet points
-    // Services must only be created if explicitly configured by the business owner
-    const extractedServices: { name: string; duration: number; accepted: boolean }[] = [];
+    const profile = await BusinessWebsiteIntelligenceService.extractBusinessProfile(rawUrl);
 
     return {
       success: true,
       scraped: {
-        businessName,
-        industry: detectedIndustry,
-        website: fullUrl,
-        email: validEmail,
-        phone: validPhone,
-        address: "",
-        services: extractedServices,
-        summary: extracted.description || extracted.content.slice(0, 300),
-        wordCount: extracted.wordCount,
-        title: extracted.title,
+        businessName: profile.businessName,
+        industry: profile.industry,
+        website: profile.website,
+        email: profile.email,
+        phone: profile.phone,
+        address: profile.address,
+        hours: profile.hours,
+        timezone: profile.timezone,
+        services: profile.services,
+        faqs: profile.faqs,
+        greeting: profile.greeting,
+        summary: profile.summary,
+        wordCount: profile.wordCount,
+        title: profile.businessName,
+        pagesInspected: profile.pagesInspected,
       },
     };
   } catch (error: any) {
     console.error("[Scraper Action Error]:", error);
     return {
       success: false,
-      error: error?.message || "Failed to scrape website",
+      error: error?.message || "Failed to analyze website",
     };
   }
 }

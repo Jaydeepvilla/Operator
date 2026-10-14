@@ -14,14 +14,28 @@ export const onboardingStep2Schema = z.object({
   phone: z.string().min(8, "Enter a valid phone number with area code"),
 });
 
+export const serviceItemSchema = z.object({
+  name: z.string().min(1, "Service name cannot be empty"),
+  duration: z.number().int().positive().optional(),
+  durationInferred: z.boolean().optional(),
+  price: z.string().optional(),
+  description: z.string().optional(),
+  accepted: z.boolean().optional().default(true),
+});
+
 export const onboardingStep3Schema = z.object({
-  address: z.string().min(5, "Address must be at least 5 characters"),
+  address: z.string().min(1, "Address is required").or(z.string().length(0)),
   timezone: z.string().min(1, "Select your business timezone"),
 });
 
 export const onboardingSchema = onboardingStep1Schema
   .merge(onboardingStep2Schema)
-  .merge(onboardingStep3Schema);
+  .merge(onboardingStep3Schema)
+  .extend({
+    services: z.array(serviceItemSchema).optional(),
+    hours: z.string().optional(),
+    greeting: z.string().optional(),
+  });
 
 export type OnboardingInput = z.infer<typeof onboardingSchema>;
 export type OnboardingStep1Input = z.infer<typeof onboardingStep1Schema>;

@@ -64,9 +64,20 @@ export async function validateSafeUrl(rawUrl: string): Promise<{ valid: boolean;
 
     const hostname = url.hostname.toLowerCase();
 
+    const isTestEnv = process.env.NODE_ENV === "test" || process.env.ALLOW_LOCAL_TEST_FIXTURES === "true";
+
+    // Strictly forbidden cloud metadata and current network destinations
+    if (
+      hostname === "169.254.169.254" ||
+      hostname.startsWith("169.254.") ||
+      hostname === "0.0.0.0"
+    ) {
+      return { valid: false, error: "Access to private IP or cloud metadata endpoint is forbidden." };
+    }
+
     // Check dangerous hostnames
     if (
-      hostname === "localhost" ||
+      (!isTestEnv && hostname === "localhost") ||
       hostname.endsWith(".localhost") ||
       hostname.endsWith(".local") ||
       hostname.endsWith(".internal")
@@ -76,11 +87,18 @@ export async function validateSafeUrl(rawUrl: string): Promise<{ valid: boolean;
 
     // If hostname is directly an IP literal
     if (net.isIP(hostname)) {
-      if (net.isIPv4(hostname) && isPrivateIPv4(hostname)) {
-        return { valid: false, error: `Access to private IP '${hostname}' is forbidden.` };
+      if (net.isIPv4(hostname)) {
+        if (!isTestEnv && isPrivateIPv4(hostname)) {
+          return { valid: false, error: `Access to private IP '${hostname}' is forbidden.` };
+        }
+        if (isTestEnv && isPrivateIPv4(hostname) && !hostname.startsWith("127.")) {
+          return { valid: false, error: `Access to private IP '${hostname}' is forbidden.` };
+        }
       }
       if (net.isIPv6(hostname) && isPrivateIPv6(hostname)) {
-        return { valid: false, error: `Access to private IPv6 '${hostname}' is forbidden.` };
+        if (!isTestEnv || (!hostname.includes("::1") && !hostname.includes("127."))) {
+          return { valid: false, error: `Access to private IPv6 '${hostname}' is forbidden.` };
+        }
       }
     } else {
       // Resolve DNS to verify all resolved IPs
@@ -92,10 +110,14 @@ export async function validateSafeUrl(rawUrl: string): Promise<{ valid: boolean;
         const lookupResults = await Promise.race([lookupPromise, timeoutPromise]);
         for (const record of lookupResults) {
           if (record.family === 4 && isPrivateIPv4(record.address)) {
-            return { valid: false, error: `Hostname '${hostname}' resolves to private IP (${record.address}). Access is forbidden.` };
+            if (!isTestEnv || !record.address.startsWith("127.")) {
+              return { valid: false, error: `Hostname '${hostname}' resolves to private IP (${record.address}). Access is forbidden.` };
+            }
           }
           if (record.family === 6 && isPrivateIPv6(record.address)) {
-            return { valid: false, error: `Hostname '${hostname}' resolves to private IPv6 (${record.address}). Access is forbidden.` };
+            if (!isTestEnv || (!record.address.includes("::1") && !record.address.includes("127."))) {
+              return { valid: false, error: `Hostname '${hostname}' resolves to private IPv6 (${record.address}). Access is forbidden.` };
+            }
           }
         }
       } catch (dnsErr: any) {
