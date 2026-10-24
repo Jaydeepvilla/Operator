@@ -37,17 +37,17 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "stat-card relative overflow-hidden radius-xl p-space-5 flex flex-col justify-between border border-border-default bg-card hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md hover:scale-[1.01] group min-h-[145px]",
+        "stat-card relative overflow-hidden radius-xl p-space-5 flex flex-col justify-between border border-border-default bg-card hover:border-primary/30 transition-all duration-200 shadow-sm hover:shadow-md group min-h-[145px]",
         className
       )}
       {...props}
     >
       <div className="flex items-start justify-between z-10 relative">
-        <span className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-wider">
+        <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
           {label}
         </span>
         {Icon && (
-          <div className={cn("flex h-8 w-8 items-center justify-center radius-lg transition-transform duration-300 group-hover:scale-105", iconClassName || "bg-[hsl(var(--foreground)/0.04)] text-foreground")}>
+          <div className={cn("flex h-8 w-8 items-center justify-center radius-lg transition-transform duration-200 group-hover:scale-105", iconClassName || "bg-[hsl(var(--foreground)/0.04)] text-foreground")}>
             <Icon className="h-4 w-4"/>
           </div>
         )}
@@ -73,7 +73,7 @@ export function StatCard({
         </div>
         
         {subtitle && (
-          <span className="text-caption text-muted-foreground/60 leading-normal line-clamp-1">{subtitle}</span>
+          <span className="text-caption text-muted-foreground leading-normal line-clamp-1">{subtitle}</span>
         )}
       </div>
 

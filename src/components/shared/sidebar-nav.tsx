@@ -128,7 +128,7 @@ export function SidebarNavGroup({ title, links }: SidebarGroupProps) {
               href={link.href}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex items-center radius-md transition-all duration-150 group relative select-none w-full my-0.5",
+                "flex items-center radius-md transition-all duration-150 group relative select-none w-full my-0.5 cursor-pointer",
                 isCollapsed
                   ? "justify-center mx-1 px-0 py-1.5"
                   : "gap-2.5 px-2.5 py-1.5",

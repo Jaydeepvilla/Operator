@@ -108,7 +108,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
   return (
     <div
       className={cn(
-        "group relative flex w-full max-w-sm items-start gap-space-3 radius-lg border bg-card backdrop-blur-md p-space-4 overflow-hidden",
+        "group relative flex w-full max-w-sm items-start gap-space-3 radius-lg border bg-card backdrop-blur-md p-space-4 overflow-hidden shadow-xl shadow-black/5 dark:shadow-black/30",
         config.border
       )}
       role="alert"
@@ -136,7 +136,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
         variant="ghost"
         size="icon-xs"
         aria-label="Dismiss notification"
-        className="shrink-0 text-muted-foreground/40 hover:text-foreground"
+        className="shrink-0 text-muted-foreground hover:text-foreground"
       >
         <X className="h-3.5 w-3.5" />
       </Button>

@@ -120,10 +120,10 @@ export function NotificationsDropdown({ initialNotifications }: NotificationsDro
             {filteredNotifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
                 <div className="w-10 h-10 rounded-full bg-[hsl(var(--foreground)/0.04)] flex items-center justify-center mb-3">
-                  <Check className="w-5 h-5 text-muted-foreground/60" />
+                  <Check className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <p className="text-body-sm font-semibold text-foreground">No notifications</p>
-                <p className="text-[11px] text-muted-foreground/60 mt-1 max-w-[240px]">
+                <p className="text-[11px] text-muted-foreground mt-1 max-w-[240px]">
                   {activeTab === "unread" 
                     ? "You don't have any unread notifications."
                     : activeTab === "read"

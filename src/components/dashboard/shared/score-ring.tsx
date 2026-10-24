@@ -67,7 +67,7 @@ export function ScoreRing({
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="var(--neutral-100, #f1f3f5)"
+          stroke="hsl(var(--foreground) / 0.08)"
           strokeWidth={strokeWidth}
         />
         {/* Solid value arc */}
@@ -95,7 +95,7 @@ export function ScoreRing({
           {displayValue ?? `${score}%`}
         </span>
         {label && (
-          <span className="text-caption text-neutral-500 mt-space-0.5">
+          <span className="text-caption text-muted-foreground mt-space-0.5">
             {label}
           </span>
         )}

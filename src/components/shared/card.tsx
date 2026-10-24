@@ -9,7 +9,7 @@ const Card = React.forwardRef<
   ref={ref}
   className={cn(
   "radius-lg border border-primary/[0.15] bg-card text-card-foreground transition-all duration-200 shadow-[0_0_12px_-3px_rgba(124,58,237,0.04)]",
-  interactive && "cursor-pointer hover:border-primary/40 active:scale-[0.995]",
+  interactive && "cursor-pointer hover:border-primary/40 hover:shadow-md hover:bg-card/95 active:scale-[0.995]",
   !interactive && "hover:border-primary/30",
   className
   )}

@@ -55,7 +55,7 @@ export function KPICard({
       href={href}
       className={cn(
         "relative flex flex-col overflow-hidden rounded-xl border border-[hsl(var(--foreground)/0.07)] bg-card cursor-pointer group",
-        "hover:border-[hsl(var(--foreground)/0.14)] hover:shadow-xl transition-all duration-300",
+        "hover:border-primary/30 hover:shadow-md transition-all duration-200",
         className
       )}
     >
@@ -72,11 +72,11 @@ export function KPICard({
             )}>
               <Icon className={cn("w-3.5 h-3.5", empty ? "text-primary" : resolvedStatusTextClass)} />
             </div>
-            <p className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
               {title}
             </p>
           </div>
-          <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-muted-foreground/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
+          <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground/60 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
         </div>
 
         {/* Score Ring + Primary Stats */}
@@ -95,7 +95,7 @@ export function KPICard({
               {resolvedStatusLabel}
             </span>
             {metaText && (
-              <p className="text-[11px] text-muted-foreground/60 leading-snug">
+              <p className="text-[11px] text-muted-foreground leading-snug">
                 {metaText}
               </p>
             )}

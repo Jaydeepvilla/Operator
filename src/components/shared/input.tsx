@@ -15,7 +15,7 @@ export interface InputProps extends React.ComponentProps<"input"> {
         className={cn(
           "flex h-9 w-full radius-md border border-border-default bg-transparent px-space-3 py-space-1 text-body-sm text-foreground transition-all duration-200",
           "file:border-0 file:bg-transparent file:text-body-sm file:text-foreground",
-          "placeholder:text-muted-foreground/50",
+          "placeholder:text-muted-foreground/70",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring)/0.25)] focus-visible:border-primary",
           // Disabled: use foreground opacity rather than dark: prefix
           "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--foreground)/0.04)]",

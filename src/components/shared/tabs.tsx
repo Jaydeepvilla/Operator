@@ -124,10 +124,10 @@ const triggerVariants = cva(
  {
  variants: {
  variant: {
- default: "text-muted-foreground/80 hover:text-foreground data-[state=active]:text-primary font-semibold border-transparent",
+ default: "text-muted-foreground hover:text-foreground data-[state=active]:text-primary font-semibold border-transparent",
  pills: "border-transparent text-muted-foreground hover:bg-[hsl(var(--foreground)/0.04)] hover:text-foreground data-[state=active]:text-primary-foreground font-semibold radius-full",
- underline: "text-muted-foreground/85 hover:text-foreground data-[state=active]:text-primary data-[state=active]:font-semibold border-transparent",
- segmented: "border-none text-muted-foreground/80 hover:text-foreground data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:font-semibold radius-md",
+ underline: "text-muted-foreground hover:text-foreground data-[state=active]:text-primary data-[state=active]:font-semibold border-transparent",
+ segmented: "border-none text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:font-semibold radius-md",
  },
  orientation: {
  horizontal: "",
