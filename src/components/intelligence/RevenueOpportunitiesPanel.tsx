@@ -67,17 +67,17 @@ function OpportunityRow({ opp }: { opp: RevenueOpportunity }) {
           </div>
           <p className="text-[13px] font-semibold text-foreground leading-snug">{opp.title}</p>
         </div>
-        <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0", typeColor[opp.type])}>
+        <span className={cn("text-caption font-bold px-2 py-0.5 rounded-full shrink-0", typeColor[opp.type])}>
           {typeLabel[opp.type]}
         </span>
       </div>
 
-      <p className="text-[11px] text-muted-foreground/70 leading-relaxed pl-9">
+      <p className="text-caption text-muted-foreground/70 leading-relaxed pl-9">
         {opp.description}
       </p>
 
       <div className="flex items-center justify-between pl-9">
-        <p className="text-[11px] text-muted-foreground/50 italic flex items-center gap-1 truncate mr-2">
+        <p className="text-caption text-muted-foreground/50 italic flex items-center gap-1 truncate mr-2">
           <TrendingUp className="h-3 w-3 text-emerald-500 shrink-0" />
           {opp.businessImpact}
         </p>
@@ -108,7 +108,7 @@ export function RevenueOpportunitiesPanel({ revenue }: RevenueOpportunitiesPanel
       <div className="flex items-start gap-4 p-5 pb-4 border-b border-border/50">
         <div className={cn("flex flex-col items-center justify-center w-16 h-16 rounded-2xl bg-muted/40 ring-2 shrink-0", ring)}>
           <span className={cn("text-2xl font-bold tabular-nums leading-none", scoreColor)}>{score}</span>
-          <span className="text-[9px] text-muted-foreground/60 font-semibold uppercase tracking-wide mt-0.5">
+          <span className="text-caption text-muted-foreground/60 font-semibold uppercase tracking-wide mt-0.5">
             Ready
           </span>
         </div>
@@ -119,7 +119,7 @@ export function RevenueOpportunitiesPanel({ revenue }: RevenueOpportunitiesPanel
             </div>
             <h2 className="text-[13px] font-bold text-foreground">Revenue Optimization</h2>
           </div>
-          <p className="text-[11px] text-muted-foreground/65 leading-snug">
+          <p className="text-caption text-muted-foreground/65 leading-snug">
             Gaps that are limiting your earning potential
           </p>
         </div>

@@ -100,7 +100,7 @@ export default function PricingPage() {
           <GsapScrollSection animation="fade-up" className="relative mx-auto max-w-4xl px-space-6 text-center">
             <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Transparent Pricing</span>
+              <span className="text-caption uppercase tracking-widest font-semibold text-primary">Transparent Pricing</span>
             </div>
 
             <h1 className="text-display-lg md:text-display-xl font-bold tracking-tight leading-display text-foreground mb-space-5">
@@ -117,7 +117,7 @@ export default function PricingPage() {
 
             {/* Monthly / Annual Toggle Switch */}
             <div className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--foreground)/0.08)] bg-card/60 backdrop-blur-xs p-1.5 shadow-xs mb-space-8">
-              <button
+              <Button
                 type="button"
                 onClick={() => setYearly(false)}
                 className={cn(
@@ -128,8 +128,8 @@ export default function PricingPage() {
                 )}
               >
                 Monthly
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setYearly(true)}
                 className={cn(
@@ -142,13 +142,13 @@ export default function PricingPage() {
                 <span>Annual</span>
                 <span
                   className={cn(
-                    "px-2 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-tight uppercase transition-colors",
+                    "px-2 py-0.5 rounded-full text-caption font-mono font-bold tracking-tight uppercase transition-colors",
                     yearly ? "bg-primary text-primary-foreground" : "bg-primary/15 text-primary"
                   )}
                 >
                   Save 20%
                 </span>
-              </button>
+              </Button>
             </div>
           </GsapScrollSection>
         </section>
@@ -181,7 +181,7 @@ export default function PricingPage() {
                   {/* Floating Popular Pill Badge */}
                   {plan.badge && (
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
-                      <span className="inline-flex items-center gap-1.5 px-space-3.5 py-space-1 rounded-full text-[11px] font-mono uppercase font-bold tracking-wider bg-gradient-to-r from-primary to-[hsl(280_75%_55%)] text-primary-foreground shadow-md shadow-primary/20">
+                      <span className="inline-flex items-center gap-1.5 px-space-3.5 py-space-1 rounded-full text-caption font-mono uppercase font-bold tracking-wider bg-gradient-to-r from-primary to-[hsl(280_75%_55%)] text-primary-foreground shadow-md shadow-primary/20">
                         <Sparkles className="h-3 w-3" />
                         {plan.badge}
                       </span>
@@ -204,7 +204,7 @@ export default function PricingPage() {
                       </div>
 
                       {yearly && (
-                        <div className="text-[11px] font-mono text-emerald-500 font-semibold mt-space-1">
+                        <div className="text-caption font-mono text-emerald-500 font-semibold mt-space-1">
                           Save ${savings}/year with annual billing
                         </div>
                       )}
@@ -212,7 +212,7 @@ export default function PricingPage() {
 
                     {/* Quick highlights list */}
                     <div className="space-y-space-2.5 mb-space-8">
-                      <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/70 font-semibold block mb-space-2">
+                      <span className="text-caption font-mono uppercase tracking-widest text-muted-foreground/70 font-semibold block mb-space-2">
                         Included capabilities:
                       </span>
                       {Object.entries(plan.features).slice(0, 7).map(([featName, featVal]) => {
@@ -226,7 +226,7 @@ export default function PricingPage() {
                             )}
                           >
                             {isExcluded ? (
-                              <span className="text-muted-foreground/30 font-mono text-[11px] mt-0.5">—</span>
+                              <span className="text-muted-foreground/30 font-mono text-caption mt-0.5">—</span>
                             ) : (
                               <Check className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                             )}
@@ -260,7 +260,7 @@ export default function PricingPage() {
                       description={`Subscription for Operator AI ${plan.name} Plan`}
                       variant="ghost"
                       size="sm"
-                      className="w-full text-[11px] text-muted-foreground hover:text-foreground border border-border/40 hover:border-primary/40 hover:bg-primary/5 transition-all"
+                      className="w-full text-caption text-muted-foreground hover:text-foreground border border-border/40 hover:border-primary/40 hover:bg-primary/5 transition-all"
                       onSuccess={(payment) => {
                         window.location.href = `/onboarding?plan=${plan.id}&payment_id=${payment.payment_id}`;
                       }}
@@ -270,7 +270,7 @@ export default function PricingPage() {
                       </span>
                     </RazorpayCheckoutButton>
 
-                    <p className="text-center text-[10px] font-mono text-muted-foreground/60">
+                    <p className="text-center text-caption font-mono text-muted-foreground/60">
                       No credit card required for trial · Cancel anytime
                     </p>
                   </div>
@@ -292,7 +292,7 @@ export default function PricingPage() {
                   <Building2 className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-primary font-bold mb-1">
+                  <div className="inline-flex items-center gap-1.5 text-caption font-mono uppercase tracking-wider text-primary font-bold mb-1">
                     <Shield className="h-3 w-3" /> Custom Volume & HIPAA SLA
                   </div>
                   <h3 className="text-title-lg font-bold text-foreground mb-1">Enterprise & Multi-Clinic Networks</h3>
@@ -319,7 +319,7 @@ export default function PricingPage() {
             <div className="text-center mb-space-12">
               <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
                 <Zap className="h-3.5 w-3.5 text-primary" />
-                <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Granular Audit</span>
+                <span className="text-caption uppercase tracking-widest font-semibold text-primary">Granular Audit</span>
               </div>
               <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
                 Detailed Breakdown.
@@ -391,7 +391,7 @@ export default function PricingPage() {
           <GsapScrollSection animation="fade-up" className="mx-auto max-w-3xl px-space-6">
             <div className="text-center mb-space-16">
               <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
-                <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">Answers & Clarity</span>
+                <span className="text-caption uppercase tracking-widest font-semibold text-primary">Answers & Clarity</span>
               </div>
               <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
                 Pricing FAQ.

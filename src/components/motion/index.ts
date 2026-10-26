@@ -7,7 +7,7 @@ export * from "./hover";
 export * from "./tooltip";
 export * from "./popover";
 export * from "./dropdown";
-export * from "./page";
+export * from "./page-transitions";
 export * from "./modal";
 export * from "./drawer";
 export * from "./scroll";

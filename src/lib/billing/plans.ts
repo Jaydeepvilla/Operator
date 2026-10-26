@@ -155,6 +155,52 @@ export const PLAN_CATALOG: Record<string, PlanConfig> = {
 };
 
 /**
+ * Regional pricing catalog ensuring currency integrity across international markets.
+ */
+export const REGIONAL_PRICING: Record<
+  string,
+  Record<string, { price: number; monthlyPrice: number; yearlyPrice: number }>
+> = {
+  USD: {
+    starter: { price: 49, monthlyPrice: 49, yearlyPrice: 39 },
+    professional: { price: 149, monthlyPrice: 149, yearlyPrice: 119 },
+    business: { price: 349, monthlyPrice: 349, yearlyPrice: 279 },
+  },
+  INR: {
+    starter: { price: 3999, monthlyPrice: 3999, yearlyPrice: 3199 },
+    professional: { price: 11999, monthlyPrice: 11999, yearlyPrice: 9599 },
+    business: { price: 27999, monthlyPrice: 27999, yearlyPrice: 22399 },
+  },
+  EUR: {
+    starter: { price: 45, monthlyPrice: 45, yearlyPrice: 35 },
+    professional: { price: 139, monthlyPrice: 139, yearlyPrice: 109 },
+    business: { price: 319, monthlyPrice: 319, yearlyPrice: 259 },
+  },
+  GBP: {
+    starter: { price: 39, monthlyPrice: 39, yearlyPrice: 29 },
+    professional: { price: 119, monthlyPrice: 119, yearlyPrice: 95 },
+    business: { price: 279, monthlyPrice: 279, yearlyPrice: 219 },
+  },
+};
+
+export const SUPPORTED_BILLING_CURRENCIES = ["USD", "INR", "EUR", "GBP"] as const;
+export type SupportedCurrency = (typeof SUPPORTED_BILLING_CURRENCIES)[number];
+
+/**
+ * Resolves standard billing currency from ISO country code.
+ */
+export function getCurrencyForCountry(countryCode?: string | null): SupportedCurrency {
+  if (!countryCode) return "USD";
+  const upper = countryCode.toUpperCase().trim();
+  if (upper === "IN") return "INR";
+  if (upper === "GB" || upper === "UK") return "GBP";
+  if (["DE", "FR", "IT", "ES", "NL", "BE", "AT", "PT", "IE", "FI", "GR"].includes(upper)) {
+    return "EUR";
+  }
+  return "USD";
+}
+
+/**
  * Returns a plan configuration record by ID with safe fallback to Starter.
  */
 export function getPlan(planId: string | null | undefined): PlanConfig {
@@ -169,7 +215,43 @@ export function getPlan(planId: string | null | undefined): PlanConfig {
 }
 
 /**
- * Returns all active commercial plans in order of hierarchy.
+ * Returns a localized plan configuration strictly derived from authoritative regional pricing.
+ * Preserves checkout currency integrity by forbidding client-side price tampering.
+ */
+export function getLocalizedPlan(
+  planId: string | null | undefined,
+  currency?: string | null,
+  countryCode?: string | null
+): PlanConfig {
+  const basePlan = getPlan(planId);
+  const targetCurrency: SupportedCurrency = (
+    currency && SUPPORTED_BILLING_CURRENCIES.includes(currency.toUpperCase() as SupportedCurrency)
+      ? currency.toUpperCase()
+      : getCurrencyForCountry(countryCode)
+  ) as SupportedCurrency;
+
+  const normalizedPlanId = basePlan.id.toLowerCase();
+  const regionalRates = REGIONAL_PRICING[targetCurrency]?.[normalizedPlanId] || REGIONAL_PRICING.USD[normalizedPlanId];
+
+  return {
+    ...basePlan,
+    price: regionalRates.price,
+    monthlyPrice: regionalRates.monthlyPrice,
+    yearlyPrice: regionalRates.yearlyPrice,
+    currency: targetCurrency,
+  };
+}
+
+/**
+ * Returns all active commercial plans localized to a specific currency/country.
+ */
+export function getLocalizedPlans(currency?: string | null, countryCode?: string | null): PlanConfig[] {
+  const planIds = ["starter", "professional", "business"];
+  return planIds.map((id) => getLocalizedPlan(id, currency, countryCode));
+}
+
+/**
+ * Returns all active commercial plans in order of hierarchy (USD default).
  */
 export function getAllPlans(): PlanConfig[] {
   return [PLAN_CATALOG.starter, PLAN_CATALOG.professional, PLAN_CATALOG.business];

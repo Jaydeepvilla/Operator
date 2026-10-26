@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/components/shared/utils";
+import { Button } from "@/components/shared/button";
 
 // ── Google "G" logo ───────────────────────────────────────────────────────
 function GoogleIcon({ className }: { className?: string }) {
@@ -121,7 +122,7 @@ export function SocialButton({
  }
 
  return (
- <button
+ <Button
  type="button"
  disabled={isLoading}
  aria-label={label}
@@ -138,7 +139,7 @@ export function SocialButton({
  <Icon className={cn("shrink-0", iconClass)} />
  )}
  <span>{label}</span>
- </button>
+ </Button>
  );
 }
 

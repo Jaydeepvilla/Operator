@@ -376,7 +376,7 @@ function WidgetFrameContent() {
       <div className="flex h-dvh flex-col items-center justify-center bg-background text-muted-foreground text-xs gap-2 p-6 text-center">
         <AlertCircle className="h-6 w-6 text-amber-500" />
         <div className="font-semibold text-foreground">Unable to load widget configuration</div>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-caption text-muted-foreground">
           Please verify your organization ID or check that the widget is enabled in your settings.
         </p>
       </div>
@@ -448,7 +448,7 @@ function WidgetFrameContent() {
                 >
                   {msg.content}
                 </div>
-                <span className="text-[10px] text-muted-foreground/60 px-1 mt-0.5">
+                <span className="text-caption text-muted-foreground/60 px-1 mt-0.5">
                   {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </span>
               </div>

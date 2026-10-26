@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { cn } from "@/components/shared/utils";
@@ -434,12 +435,12 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  <div className="relative group w-20 h-20 rounded-full bg-primary/10 border-primary/20 flex items-center justify-center overflow-hidden shrink-0 text-xl text-primary font-bold uppercase transition-all duration-300 shadow-md">
  {avatar ? (
  // eslint-disable-next-line @next/next/no-img-element
- <img src={avatar} alt="Avatar" className="h-full w-full object-cover" />
+ <Image src={avatar} alt="Avatar" width={80} height={80} className="h-full w-full object-cover" unoptimized />
  ) : (
  `${firstName.charAt(0)}${lastName.charAt(0)}`
  )}
  {/* Hover Edit Overlay */}
- <label htmlFor="avatar-upload" className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-semibold transition-opacity duration-200 cursor-pointer uppercase tracking-wider">
+ <label htmlFor="avatar-upload" className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-caption font-semibold transition-opacity duration-200 cursor-pointer uppercase tracking-wider">
  Change
  </label>
  </div>
@@ -468,7 +469,7 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  </button>
  )}
  </div>
- <p className="text-[10px] text-muted-foreground leading-normal max-w-xs">
+ <p className="text-caption text-muted-foreground leading-normal max-w-xs">
  Support JPG, PNG, GIF. Max file size of 2MB.
  </p>
  </div>
@@ -775,7 +776,7 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  {/* Password strength meter */}
  {newPassword.length > 0 && (
  <div className="space-y-2 mt-2 p-3 bg-[hsl(var(--foreground)/0.01)] border-border/50 rounded-xl animate-fade-in text-left">
- <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider">
+ <div className="flex justify-between items-center text-caption font-bold uppercase tracking-wider">
  <span className="text-muted-foreground/80">Password Strength</span>
  <span className="text-primary font-bold">{strength.label}</span>
  </div>
@@ -791,7 +792,7 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  ))}
  </div>
 
- <div className="space-y-1 pt-1 text-[10px] text-muted-foreground/75">
+ <div className="space-y-1 pt-1 text-caption text-muted-foreground/75">
  <div className="flex items-center gap-1.5">
  {newPassword.length >= 12 ? (
  <Check className="h-3 w-3 text-emerald-400" />
@@ -873,7 +874,7 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  <div className="flex items-center justify-between">
  <div>
  <h3 className="text-sm font-bold text-foreground">Active Device Sessions</h3>
- <p className="text-[11px] text-muted-foreground">These devices are currently logged in with your account credentials.</p>
+ <p className="text-caption text-muted-foreground">These devices are currently logged in with your account credentials.</p>
  </div>
  {sessionsList.length > 1 && (
  <Button 
@@ -907,12 +908,12 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  ) : "Unknown Device"}
  </span>
  {session.isCurrent && (
- <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">
+ <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-caption uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">
  Current Session
  </Badge>
  )}
  </div>
- <p className="text-[10px] text-muted-foreground mt-1 leading-normal">
+ <p className="text-caption text-muted-foreground mt-1 leading-normal">
  IP Address: <strong>{session.ipAddress || "Unknown"}</strong> • Created: {new Date(session.createdAt).toLocaleDateString()}
  </p>
  </div>

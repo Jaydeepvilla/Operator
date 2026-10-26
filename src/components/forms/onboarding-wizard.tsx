@@ -285,7 +285,7 @@ function ScreenUrl({
  </div>
  )}
 
- <button
+ <Button
  type="button"
  onClick={() => {
  setNoWebsite((v) => !v);
@@ -295,7 +295,7 @@ function ScreenUrl({
  className="text-caption text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
  >
  {noWebsite ? "I have a website" : "I don't have a website yet"}
- </button>
+ </Button>
  </div>
 
  {/* Stats */}
@@ -416,7 +416,7 @@ function ScreenGenerating({
  <div className="h-2.5 w-2.5 rounded-full bg-amber-400/60" />
  <div className="h-2.5 w-2.5 rounded-full bg-emerald-400/60" />
  </div>
- <span className="text-[11px] text-muted-foreground font-medium ml-space-1">operator — ai-config</span>
+ <span className="text-caption text-muted-foreground font-medium ml-space-1">operator — ai-config</span>
  </div>
  <div className="p-space-4 space-y-space-2 min-h-[200px] font-mono">
  {GENERATION_LOGS.map((log, idx) => {
@@ -513,7 +513,7 @@ function HoursField({
  <div className="flex-1 min-w-0">
  <p className="text-caption text-muted-foreground mb-0.5">Business hours</p>
  {editing ? (
- <input
+ <Input
  ref={inputRef}
  value={draft}
  onChange={(e) => setDraft(e.target.value)}
@@ -534,29 +534,29 @@ function HoursField({
 
  {editing ? (
  <div className="flex items-center gap-space-2 shrink-0">
- <button
+ <Button
  type="button"
  onClick={save}
  className="text-caption font-semibold text-primary hover:opacity-70 transition-opacity"
  >
  Save
- </button>
- <button
+ </Button>
+ <Button
  type="button"
  onClick={cancel}
  className="text-caption text-muted-foreground hover:text-foreground transition-colors"
  >
  Cancel
- </button>
+ </Button>
  </div>
  ) : (
- <button
+ <Button
  type="button"
  onClick={() => setEditing(true)}
  className="ml-auto text-caption text-primary hover:opacity-70 transition-opacity shrink-0"
  >
  Edit →
- </button>
+ </Button>
  )}
  </div>
  );
@@ -608,7 +608,7 @@ function ScreenVerify({
  </div>
  <div className="flex items-center gap-space-1.5 px-space-2.5 py-space-1 rounded-full bg-emerald-500/10 border-emerald-500/20 shrink-0">
  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
- <span className="text-[11px] font-medium text-emerald-600">AI Ready</span>
+ <span className="text-caption font-medium text-emerald-600">AI Ready</span>
  </div>
  </div>
 
@@ -626,7 +626,7 @@ function ScreenVerify({
  {tabs.map((t) => {
  const TIcon = t.icon;
  return (
- <button
+ <Button
  key={t.id}
  type="button"
  onClick={() => setActiveTab(t.id)}
@@ -639,7 +639,7 @@ function ScreenVerify({
  >
  <TIcon className="h-4 w-4" />
  {t.label}
- </button>
+ </Button>
  );
  })}
  </div>
@@ -762,7 +762,7 @@ function ScreenVerify({
  These services were detected from your website. Toggle off any you don't offer.
  </p>
  {services.length === 0 ? (
- <div className="py-6 px-4 text-center border border-dashed border-border/80 rounded-xl bg-muted/10 space-y-1.5">
+ <div className="py-6 px-4 text-center border-border/80 rounded-xl bg-muted/10 space-y-1.5">
  <p className="text-body-sm font-semibold text-foreground">No services detected from website</p>
  <p className="text-caption text-muted-foreground max-w-sm mx-auto">
  Add your services below to enable automated booking, or configure them later in Services settings.
@@ -780,7 +780,7 @@ function ScreenVerify({
  : "border-border/60 bg-muted/20 opacity-50"
  )}
  >
- <button
+ <Button
  type="button"
  onClick={() =>
  setServices((prev) =>
@@ -793,7 +793,7 @@ function ScreenVerify({
  )}
  >
  {svc.accepted && <Check className="h-3 w-3" strokeWidth={3} />}
- </button>
+ </Button>
  <div className="flex-1 min-w-0">
  <p className="text-body-sm font-medium text-foreground">{svc.name}</p>
  <p className="text-caption text-muted-foreground">
@@ -801,14 +801,14 @@ function ScreenVerify({
  {svc.price ? ` • $${svc.price.replace(/^\$/, "")}` : " • Price on request"}
  </p>
  </div>
- <button
+ <Button
  type="button"
  onClick={() => setServices((prev) => prev.filter((_, i) => i !== idx))}
  className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
  title="Remove service"
  >
  <Trash2 className="h-4 w-4" />
- </button>
+ </Button>
  <Zap className="h-3.5 w-3.5 text-primary/40 shrink-0" />
  </div>
  ))}
@@ -819,7 +819,7 @@ function ScreenVerify({
  <div className="p-space-4 rounded-xl border-primary/30 bg-primary/5 space-y-space-3 animate-fade-up">
  <div className="flex items-center justify-between">
  <span className="text-body-sm font-bold text-foreground">Add New Service</span>
- <button
+ <Button
  type="button"
  onClick={() => {
  setIsAddingService(false);
@@ -828,7 +828,7 @@ function ScreenVerify({
  className="text-muted-foreground hover:text-foreground"
  >
  <X className="h-4 w-4" />
- </button>
+ </Button>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-2">
@@ -899,14 +899,14 @@ function ScreenVerify({
  </div>
  </div>
  ) : (
- <button
+ <Button
  type="button"
  onClick={() => setIsAddingService(true)}
  className="flex items-center gap-space-2 text-body-sm text-primary hover:opacity-80 transition-opacity font-medium py-space-1"
  >
  <span className="flex h-5 w-5 items-center justify-center rounded-full border-primary/40 text-caption font-semibold">+</span>
  <span>Add a service</span>
- </button>
+ </Button>
  )}
  </div>
  )}

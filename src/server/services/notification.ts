@@ -147,67 +147,125 @@ export const notificationService = {
       scheduledFor,
     });
   },
+  /**
+   * Processes an appointment reminder job executed durably by the BackgroundWorker.
+   * Enforces tenant isolation, verifies appointment lifecycle status, and updates reminder records.
+   */
+  async processReminderJob(params: {
+    reminderId: string;
+    appointmentId: string;
+    organizationId: string;
+    type: string;
+  }): Promise<boolean> {
+    const { reminderId, appointmentId, organizationId, type } = params;
+
+    const reminder = await remindersRepository.getById(reminderId);
+    if (!reminder) {
+      console.warn(`[NotificationService] Reminder ${reminderId} no longer exists. Skipping.`);
+      return true;
+    }
+
+    // If already marked sent or cancelled, avoid duplicate dispatch
+    if (reminder.status === "sent" || reminder.status === "cancelled") {
+      console.info(`[NotificationService] Reminder ${reminderId} is already '${reminder.status}'. Skipping.`);
+      return true;
+    }
+
+    const appointmentDetails = await appointmentsRepository.findById(appointmentId);
+    if (!appointmentDetails) {
+      console.warn(`[NotificationService] Appointment ${appointmentId} not found. Marking reminder ${reminderId} as failed.`);
+      await remindersRepository.update(reminderId, { status: "failed" });
+      return true;
+    }
+
+    const { appointment, service } = appointmentDetails;
+
+    // Enforce tenant boundary
+    if (appointment.organizationId !== organizationId) {
+      console.error(`[NotificationService] Tenant mismatch on reminder ${reminderId}. Expected ${organizationId}, got ${appointment.organizationId}.`);
+      await remindersRepository.update(reminderId, { status: "failed" });
+      return true;
+    }
+
+    // Check appointment lifecycle status: if cancelled, completed, or no-show, do not send
+    const inactiveStatuses = ["cancelled", "completed", "no_show"];
+    if (inactiveStatuses.includes(appointment.status.toLowerCase())) {
+      console.info(`[NotificationService] Appointment ${appointmentId} is '${appointment.status}'. Cancelling reminder ${reminderId}.`);
+      await remindersRepository.update(reminderId, { status: "cancelled" });
+      await appointmentsRepository.logEvent(organizationId, appointmentId, "reminder_cancelled", {
+        reminderId,
+        reason: `Appointment status is '${appointment.status}'`,
+      });
+      return true;
+    }
+
+    // Format message with authoritative appointment details
+    const dateStr = new Date(appointment.startTime).toLocaleString("en-US", {
+      dateStyle: "full",
+      timeStyle: "short",
+    });
+    const serviceName = service?.name || "Appointment";
+    const customerName = appointment.customerName || "Customer";
+    const messageBody = `Hi ${customerName}, this is a reminder for your upcoming appointment: ${serviceName} on ${dateStr}.`;
+
+    let sentSuccess = false;
+
+    if (type === "email") {
+      if (!appointment.customerEmail) {
+        console.warn(`[NotificationService] No email address for appointment ${appointmentId}.`);
+        await remindersRepository.update(reminderId, { status: "failed" });
+        return true;
+      }
+
+      const subject = `Reminder: ${serviceName} on ${dateStr}`;
+      const htmlContent = `
+        <h2>Appointment Reminder</h2>
+        <p>Hi ${customerName},</p>
+        <p>This is a reminder for your upcoming appointment:</p>
+        <ul>
+          <li><strong>Service:</strong> ${serviceName}</li>
+          <li><strong>Time:</strong> ${dateStr}</li>
+        </ul>
+        <p>We look forward to seeing you!</p>
+      `;
+      sentSuccess = await sendEmailNotification(appointment.customerEmail, subject, htmlContent);
+    } else if (type === "sms") {
+      if (!appointment.customerPhone) {
+        console.warn(`[NotificationService] No phone number for appointment ${appointmentId}.`);
+        await remindersRepository.update(reminderId, { status: "failed" });
+        return true;
+      }
+      sentSuccess = await sendSmsNotification(appointment.customerPhone, messageBody);
+    }
+
+    if (sentSuccess) {
+      await remindersRepository.update(reminderId, { status: "sent" });
+      await appointmentsRepository.logEvent(organizationId, appointmentId, "reminder_sent", {
+        reminderId,
+        type,
+        status: "sent",
+        recipient: type === "email" ? appointment.customerEmail : appointment.customerPhone,
+      });
+      return true;
+    } else {
+      console.error(`[NotificationService] Provider delivery failed for reminder ${reminderId}`);
+      return false;
+    }
+  },
+
   async sendReminder(reminderId: string): Promise<boolean> {
     try {
-      const now = new Date();
-      const list = await remindersRepository.listPending(now);
-      const activeReminder = list.find((r) => r.id === reminderId);
-      if (!activeReminder) {
+      const reminder = await remindersRepository.getById(reminderId);
+      if (!reminder) {
         console.warn(`[NotificationService] Reminder ${reminderId} is not active or pending.`);
         return false;
       }
-
-      const appointmentDetails = await appointmentsRepository.findById(activeReminder.appointmentId);
-      if (!appointmentDetails) {
-        await remindersRepository.update(reminderId, { status: "failed" });
-        return false;
-      }
-
-      const { appointment, service } = appointmentDetails;
-      const type = activeReminder.type;
-      let sentSuccess = false;
-
-      const dateStr = new Date(appointment.startTime).toLocaleString();
-      const serviceName = service?.name || "Appointment";
-      const messageBody = `Hi ${appointment.customerName || "Customer"}, this is a reminder for your upcoming appointment: ${serviceName} on ${dateStr}. Location: ${appointment.organizationId}.`;
-
-      if (type === "email") {
-        if (appointment.customerEmail) {
-          const subject = `Reminder: ${serviceName} appointment`;
-          const htmlContent = `
-            <h2>Appointment Reminder</h2>
-            <p>Hi ${appointment.customerName || "Customer"},</p>
-            <p>This is a reminder for your upcoming appointment:</p>
-            <ul>
-              <li><strong>Service:</strong> ${serviceName}</li>
-              <li><strong>Time:</strong> ${dateStr}</li>
-            </ul>
-            <p>We look forward to seeing you!</p>
-          `;
-          sentSuccess = await sendEmailNotification(appointment.customerEmail, subject, htmlContent);
-        } else {
-          console.warn(`[NotificationService] Customer email not found for email reminder.`);
-        }
-      } else if (type === "sms") {
-        if (appointment.customerPhone) {
-          sentSuccess = await sendSmsNotification(appointment.customerPhone, messageBody);
-        } else {
-          console.warn(`[NotificationService] Customer phone not found for SMS reminder.`);
-        }
-      }
-
-      // Update status
-      const finalStatus = sentSuccess ? "sent" : "failed";
-      await remindersRepository.update(reminderId, { status: finalStatus });
-
-      await appointmentsRepository.logEvent(appointment.organizationId, appointment.id, "reminder_sent", {
-        reminderId,
-        type,
-        status: finalStatus,
-        recipient: type === "email" ? appointment.customerEmail : appointment.customerPhone,
+      return this.processReminderJob({
+        reminderId: reminder.id,
+        appointmentId: reminder.appointmentId,
+        organizationId: reminder.organizationId,
+        type: reminder.type,
       });
-
-      return sentSuccess;
     } catch (err) {
       console.error(`[NotificationService] Failed to dispatch reminder ${reminderId}:`, err);
       await remindersRepository.update(reminderId, { status: "failed" });

@@ -781,7 +781,7 @@ export function SignUpForm() {
 
       {/* ── Footer disclaimer and links ── */}
       <div className="space-y-space-4 text-center mt-space-4">
-        <p className="text-[11px] text-foreground/45 leading-normal max-w-[340px] mx-auto">
+        <p className="text-caption text-foreground/45 leading-normal max-w-[340px] mx-auto">
           By registering, you agree to the{" "}
           <Link href="/terms" target="_blank" className="font-semibold text-primary hover:underline hover:opacity-80 transition-opacity">
             Terms of Service

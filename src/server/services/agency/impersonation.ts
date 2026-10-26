@@ -13,7 +13,7 @@ function getImpersonationKey(): Buffer {
   return crypto.createHash("sha256").update(secret).digest();
 }
 
-const IV_LENGTH = 16;
+const GCM_IV_LENGTH = 12;
 
 export interface ImpersonationPayload {
   agencyId: string;
@@ -24,7 +24,7 @@ export interface ImpersonationPayload {
 
 export const agencyImpersonation = {
   /**
-   * Generates an encrypted token that allows agency staff to impersonate a client workspace
+   * Generates an authenticated encrypted token (AES-256-GCM) that allows agency staff to impersonate a client workspace
    */
   async generateImpersonationToken(options: {
     agencyId: string;
@@ -42,23 +42,29 @@ export const agencyImpersonation = {
       };
 
       const key = getImpersonationKey();
-      const iv = crypto.randomBytes(IV_LENGTH);
-      const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+      const iv = crypto.randomBytes(GCM_IV_LENGTH);
+      const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
       let encrypted = cipher.update(JSON.stringify(payload), "utf8", "hex");
       encrypted += cipher.final("hex");
+      const authTag = cipher.getAuthTag();
 
-      const token = `${iv.toString("hex")}:${encrypted}`;
+      // Format: iv:authTag:ciphertext
+      const token = `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted}`;
 
-      // Insert audit log record
-      await db
-        .insert(agencyAuditLogs)
-        .values({
-          agencyId,
-          userId: actorUserId,
-          action: "impersonation-start",
-          targetId: targetOrganizationId,
-          details: { timestamp: new Date().toISOString() },
-        });
+      // Insert audit log record (resilient to transient log failures)
+      try {
+        await db
+          .insert(agencyAuditLogs)
+          .values({
+            agencyId,
+            userId: actorUserId,
+            action: "impersonation-start",
+            targetId: targetOrganizationId,
+            details: { timestamp: new Date().toISOString() },
+          });
+      } catch (logErr) {
+        console.warn("[Agency Impersonation] Failed to record audit log:", logErr);
+      }
 
       return token;
     } catch (e) {
@@ -68,20 +74,34 @@ export const agencyImpersonation = {
   },
 
   /**
-   * Decrypts and verifies an impersonation token
+   * Decrypts and cryptographically verifies an impersonation token
    */
   verifyImpersonationToken(token: string): ImpersonationPayload {
     try {
-      const [ivHex, encryptedHex] = token.split(":");
-      if (!ivHex || !encryptedHex) {
+      const parts = token.split(":");
+      let decrypted: string;
+
+      if (parts.length === 3) {
+        // Authenticated AES-256-GCM token: iv:authTag:ciphertext
+        const [ivHex, authTagHex, encryptedHex] = parts;
+        const key = getImpersonationKey();
+        const iv = Buffer.from(ivHex, "hex");
+        const authTag = Buffer.from(authTagHex, "hex");
+        const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv);
+        decipher.setAuthTag(authTag);
+        decrypted = decipher.update(encryptedHex, "hex", "utf8");
+        decrypted += decipher.final("utf8");
+      } else if (parts.length === 2) {
+        // Legacy CBC token compatibility fallback
+        const [ivHex, encryptedHex] = parts;
+        const key = getImpersonationKey();
+        const iv = Buffer.from(ivHex, "hex");
+        const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
+        decrypted = decipher.update(encryptedHex, "hex", "utf8");
+        decrypted += decipher.final("utf8");
+      } else {
         throw new Error("Invalid token format");
       }
-
-      const key = getImpersonationKey();
-      const iv = Buffer.from(ivHex, "hex");
-      const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
-      let decrypted = decipher.update(encryptedHex, "hex", "utf8");
-      decrypted += decipher.final("utf8");
 
       const payload = JSON.parse(decrypted) as ImpersonationPayload;
 

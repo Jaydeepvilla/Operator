@@ -64,7 +64,7 @@ export const signalAggregator = {
     const window = getAggregationWindow();
     const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
 
-    console.log(`[LearningEngine] Processing signals for window: ${window}${targetOrgId ? ` (Org: ${targetOrgId})` : ""}`);
+    console.info(`[LearningEngine] Processing signals for window: ${window}${targetOrgId ? ` (Org: ${targetOrgId})` : ""}`);
 
     // Query conversation events
     const whereConditions = [gte(conversationEvents.createdAt, sixHoursAgo)];
@@ -190,7 +190,7 @@ export const signalAggregator = {
       }
     }
 
-    console.log(`[LearningEngine] Processed ${signals.length} new signals`);
+    console.info(`[LearningEngine] Processed ${signals.length} new signals`);
     return signals;
   },
 };
@@ -244,7 +244,7 @@ export const patternDetector = {
     const gapProposals = await this.processKnowledgeGapsIntoProposals(targetOrgId);
     proposalCount += gapProposals;
 
-    console.log(`[LearningEngine] Generated ${proposalCount} improvement proposals`);
+    console.info(`[LearningEngine] Generated ${proposalCount} improvement proposals`);
     return proposalCount;
   },
 
@@ -569,7 +569,7 @@ export const proposalApplicator = {
       })
       .where(eq(aiImprovementProposals.id, proposalId));
 
-    console.log(`[ProposalApplicator] Successfully applied proposal ${proposalId} for org ${organizationId}`);
+    console.info(`[ProposalApplicator] Successfully applied proposal ${proposalId} for org ${organizationId}`);
     return { success: true };
   },
 
@@ -621,7 +621,7 @@ export const proposalApplicator = {
       })
       .where(eq(aiImprovementProposals.id, proposalId));
 
-    console.log(`[ProposalApplicator] Successfully rolled back proposal ${proposalId} for org ${organizationId}`);
+    console.info(`[ProposalApplicator] Successfully rolled back proposal ${proposalId} for org ${organizationId}`);
     return { success: true };
   },
 
@@ -684,7 +684,7 @@ export const learningEngine = {
     autoApplied: number;
     conflictsFound: number;
   }> {
-    console.log(`[LearningEngine] === Starting learning cycle${organizationId ? ` for org ${organizationId}` : ""} ===`);
+    console.info(`[LearningEngine] === Starting learning cycle${organizationId ? ` for org ${organizationId}` : ""} ===`);
     const startTime = Date.now();
 
     // Step 1: Aggregate signals
@@ -704,7 +704,7 @@ export const learningEngine = {
     const autoApplied = await proposalApplicator.applyAutoSafe(organizationId);
 
     const duration = Date.now() - startTime;
-    console.log(
+    console.info(
       `[LearningEngine] === Cycle complete in ${duration}ms: ${signals.length} signals, ${proposalCount} proposals, ${autoApplied} auto-applied ===`
     );
 

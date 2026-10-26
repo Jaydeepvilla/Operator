@@ -72,7 +72,7 @@ export function RecentActivityWidget({ activity }: RecentActivityWidgetProps) {
           </div>
           <div>
             <p className="text-body-sm font-bold text-foreground">Live Telemetry Active</p>
-            <p className="text-[11px] text-muted-foreground/70 mt-1 max-w-md leading-relaxed">
+            <p className="text-caption text-muted-foreground/70 mt-1 max-w-md leading-relaxed">
               Operator AI is standing by 24/7. Inbound calls, customer chats, and appointment bookings will stream here in real time.
             </p>
           </div>
@@ -90,11 +90,11 @@ export function RecentActivityWidget({ activity }: RecentActivityWidgetProps) {
             <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
               <Activity className="w-3.5 h-3.5 text-primary" />
             </div>
-            <p className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">
+            <p className="text-caption font-bold text-muted-foreground/70 uppercase tracking-widest">
               Recent Activity
             </p>
           </div>
-          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[hsl(var(--state-success-text))] bg-[hsl(var(--state-success-bg))] px-2 py-0.5 rounded-full">
+          <span className="inline-flex items-center gap-1 text-caption font-semibold text-[hsl(var(--state-success-text))] bg-[hsl(var(--state-success-bg))] px-2 py-0.5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--state-success-text))] animate-pulse" />
             Live Stream
           </span>
@@ -146,12 +146,12 @@ export function RecentActivityWidget({ activity }: RecentActivityWidgetProps) {
                       {item.description}
                     </p>
                     <span
-                      className={`shrink-0 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${meta.iconBg}`}
+                      className={`shrink-0 text-caption font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${meta.iconBg}`}
                     >
                       {meta.label}
                     </span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground/55 mt-0.5">
+                  <p className="text-caption text-muted-foreground/55 mt-0.5">
                     {formattedTime}
                   </p>
                 </div>

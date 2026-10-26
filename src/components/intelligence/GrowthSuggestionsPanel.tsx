@@ -38,10 +38,10 @@ function GrowthIdeaCard({ idea }: { idea: GrowthIdea }) {
           <Icon className={cn("h-4 w-4", cfg.textColor)} />
         </div>
         <div className="flex gap-1.5 flex-wrap justify-end">
-          <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", effort.badge)}>
+          <span className={cn("text-caption font-bold px-2 py-0.5 rounded-full border", effort.badge)}>
             {effort.label}
           </span>
-          <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", cfg.iconBg, cfg.textColor)}>
+          <span className={cn("text-caption font-bold px-2 py-0.5 rounded-full", cfg.iconBg, cfg.textColor)}>
             {cfg.label}
           </span>
         </div>
@@ -50,12 +50,12 @@ function GrowthIdeaCard({ idea }: { idea: GrowthIdea }) {
       {/* Content */}
       <div className="space-y-1 flex-1">
         <p className="text-[13px] font-semibold text-foreground leading-snug">{idea.title}</p>
-        <p className="text-[11px] text-muted-foreground/70 leading-relaxed">{idea.description}</p>
+        <p className="text-caption text-muted-foreground/70 leading-relaxed">{idea.description}</p>
       </div>
 
       {/* Footer */}
       <div className="flex items-center justify-between pt-1 border-t border-border/40">
-        <p className="text-[11px] text-muted-foreground/55 italic truncate mr-2 flex items-center gap-1">
+        <p className="text-caption text-muted-foreground/55 italic truncate mr-2 flex items-center gap-1">
           <TrendingUp className="h-3 w-3 text-emerald-500 shrink-0" />
           {idea.businessImpact}
         </p>
@@ -84,7 +84,7 @@ export function GrowthSuggestionsPanel({ growth }: GrowthSuggestionsPanelProps) 
           </div>
           <div>
             <h2 className="text-[13px] font-bold text-foreground">AI Growth Suggestions</h2>
-            <p className="text-[11px] text-muted-foreground/60">
+            <p className="text-caption text-muted-foreground/60">
               {growth.industryName} industry
             </p>
           </div>
@@ -93,7 +93,7 @@ export function GrowthSuggestionsPanel({ growth }: GrowthSuggestionsPanelProps) 
           <div className="text-2xl font-bold tabular-nums text-emerald-500">
             {growth.ideas.length}
           </div>
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+          <div className="text-caption font-semibold uppercase tracking-widest text-muted-foreground/60">
             Ideas
           </div>
         </div>

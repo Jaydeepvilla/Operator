@@ -90,7 +90,7 @@ function SectionLabel({ icon: Icon, children }: { icon: any; children: React.Rea
  <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
  <Icon className="h-3.5 w-3.5 text-primary" />
  </div>
- <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">
+ <span className="text-caption font-bold uppercase tracking-widest text-muted-foreground/70">
  {children}
  </span>
  </div>
@@ -262,12 +262,12 @@ export default function StaffPage() {
  <div className="flex items-center gap-3 rounded-xl bg-rose-500/8 border-rose-500/20 px-4 py-3 text-caption text-[hsl(var(--state-error-text))] shrink-0">
  <AlertCircle className="h-4 w-4 shrink-0" />
  <span className="flex-1 font-medium">{errorMsg}</span>
- <button onClick={() => setErrorMsg("")} className={getButtonClasses(
+ <Button onClick={() => setErrorMsg("")} className={getButtonClasses(
  'primary',
  'filled',
  'medium',
  'hover:opacity-70 transition-opacity text-base leading-none'
- )}>×</button>
+ )}>×</Button>
  </div>
  )}
  {/* ── Main 3-column grid ── */}
@@ -279,21 +279,21 @@ export default function StaffPage() {
  {/* Stats strip */}
  <div className="grid grid-cols-2 gap-space-2">
  <div className="bg-card border-[hsl(var(--foreground)/0.06)] rounded-xl p-3 flex flex-col gap-1">
- <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/55">Total</span>
+ <span className="text-caption font-bold uppercase tracking-widest text-muted-foreground/55">Total</span>
  <span className="text-2xl font-bold text-foreground tabular-nums">{staffList.length}</span>
- <span className="text-[11px] text-muted-foreground/60">members</span>
+ <span className="text-caption text-muted-foreground/60">members</span>
  </div>
  <div className="bg-card border-[hsl(var(--foreground)/0.06)] rounded-xl p-3 flex flex-col gap-1">
- <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/55">Active</span>
+ <span className="text-caption font-bold uppercase tracking-widest text-muted-foreground/55">Active</span>
  <span className="text-2xl font-bold text-emerald-500 tabular-nums">{activeCount}</span>
- <span className="text-[11px] text-muted-foreground/60">on roster</span>
+ <span className="text-caption text-muted-foreground/60">on roster</span>
  </div>
  </div>
 
  {/* Roster list */}
  <div className="flex-1 bg-card border-[hsl(var(--foreground)/0.06)] rounded-xl overflow-hidden flex flex-col min-h-0">
  <div className="px-4 py-3 border-b border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.005)] shrink-0 flex items-center justify-between">
- <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">Team Roster</span>
+ <span className="text-caption font-bold uppercase tracking-widest text-muted-foreground/60">Team Roster</span>
  <Users className="h-3.5 w-3.5 text-muted-foreground/40" />
  </div>
 
@@ -315,7 +315,7 @@ export default function StaffPage() {
  {staffList.map((staff) => {
  const isSelected = staff.id === selectedStaffId;
  return (
- <button
+ <Button
  key={staff.id}
  onClick={() => setSelectedStaffId(staff.id)}
  className={cn(
@@ -328,14 +328,14 @@ export default function StaffPage() {
  {isSelected && (
  <span className="absolute left-0 top-3 bottom-3 w-[3px] bg-primary rounded-r-full" />
  )}
- <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${getGradient(staff.name)} text-white text-[11px] font-bold flex items-center justify-center shrink-0 shadow-sm`}>
+ <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${getGradient(staff.name)} text-white text-caption font-bold flex items-center justify-center shrink-0 shadow-sm`}>
  {getInitials(staff.name)}
  </div>
  <div className="flex-1 min-w-0">
  <div className="flex items-center justify-between gap-1 mb-0.5">
  <span className="text-[13px] font-semibold text-foreground truncate leading-tight">{staff.name}</span>
  <span className={cn(
- "text-[9px] uppercase font-bold tracking-wider rounded-full px-1.5 py-0.5 border shrink-0",
+ "text-caption uppercase font-bold tracking-wider rounded-full px-1.5 py-0.5 border shrink-0",
  staff.isActive
  ? "bg-emerald-500/10 text-[hsl(var(--state-success-text))] border-emerald-500/20"
  : "bg-neutral-500/8 text-muted-foreground/60 border-neutral-500/15"
@@ -343,9 +343,9 @@ export default function StaffPage() {
  {staff.isActive ? "Active" : "Off"}
  </span>
  </div>
- <p className="text-[11px] text-muted-foreground/65 truncate">{staff.role}</p>
+ <p className="text-caption text-muted-foreground/65 truncate">{staff.role}</p>
  </div>
- </button>
+ </Button>
  );
  })}
  </div>
@@ -385,7 +385,7 @@ export default function StaffPage() {
  <div className="flex items-center gap-2.5 flex-wrap">
  <h2 className="text-base font-bold text-foreground truncate leading-tight">{activeDetails.staff.name}</h2>
  <span className={cn(
- "text-[9px] uppercase font-bold tracking-wider rounded-full px-2 py-0.5 border",
+ "text-caption uppercase font-bold tracking-wider rounded-full px-2 py-0.5 border",
  activeDetails.staff.isActive
  ? "bg-emerald-500/10 text-[hsl(var(--state-success-text))] border-emerald-500/20"
  : "bg-neutral-500/8 text-muted-foreground/60 border-neutral-500/15"
@@ -396,12 +396,12 @@ export default function StaffPage() {
  <div className="flex items-center gap-3 mt-1 flex-wrap">
  <span className="text-[12px] text-muted-foreground/70 font-medium">{activeDetails.staff.role}</span>
  {activeDetails.staff.email && (
- <span className="flex items-center gap-1 text-[11px] text-muted-foreground/50">
+ <span className="flex items-center gap-1 text-caption text-muted-foreground/50">
  <Mail className="h-3 w-3" />{activeDetails.staff.email}
  </span>
  )}
  {activeDetails.staff.bufferTime > 0 && (
- <span className="flex items-center gap-1 text-[11px] text-muted-foreground/50">
+ <span className="flex items-center gap-1 text-caption text-muted-foreground/50">
  <Timer className="h-3 w-3" />{activeDetails.staff.bufferTime}m buffer
  </span>
  )}
@@ -479,7 +479,7 @@ export default function StaffPage() {
  )}>
  {isAssigned && <CheckCircle2 className="h-3 w-3 text-white" />}
  </div>
- <input
+ <Input
  type="checkbox" id={id} checked={isAssigned}
  onChange={() => handleToggleAssignment(service.id)}
  className="sr-only"
@@ -487,7 +487,7 @@ export default function StaffPage() {
  <div className="flex-1 min-w-0">
  <span className="text-[12px] font-medium text-foreground truncate block leading-tight">{service.name}</span>
  </div>
- <span className="text-[11px] font-bold text-primary shrink-0">${service.price}</span>
+ <span className="text-caption font-bold text-primary shrink-0">${service.price}</span>
  </label>
  );
  })}
@@ -497,7 +497,7 @@ export default function StaffPage() {
 
  {servicesList.length > 0 && (
  <div className="mt-3 pt-3 border-t border-[hsl(var(--foreground)/0.04)] flex items-center justify-between">
- <span className="text-[11px] text-muted-foreground/60">
+ <span className="text-caption text-muted-foreground/60">
  {activeDetails.assignments.length} of {servicesList.length} assigned
  </span>
  <div className="h-1.5 flex-1 mx-3 bg-[hsl(var(--foreground)/0.06)] rounded-full overflow-hidden">
@@ -517,7 +517,7 @@ export default function StaffPage() {
  <Button
  size="sm"
  variant="outline"
- className="text-[11px] h-7 px-2.5 border-[hsl(var(--foreground)/0.08)] hover:bg-primary/5 hover:border-primary/20 font-semibold gap-1 shrink-0 -mt-0.5"
+ className="text-caption h-7 px-2.5 border-[hsl(var(--foreground)/0.08)] hover:bg-primary/5 hover:border-primary/20 font-semibold gap-1 shrink-0 -mt-0.5"
  onClick={() => setExceptionOpen(true)}
  >
  <Plus className="h-3 w-3" /> Add
@@ -552,7 +552,7 @@ export default function StaffPage() {
  <span className="text-[12px] font-semibold text-foreground block leading-tight">{exc.exceptionDate}</span>
  <div className="flex items-center gap-1.5 mt-0.5">
  <span className={cn(
- "text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded border",
+ "text-caption uppercase font-bold tracking-wider px-1.5 py-0.5 rounded border",
  exc.isAvailable
  ? "bg-blue-500/10 text-[hsl(var(--state-info-text))] border-blue-500/20"
  : "bg-rose-500/10 text-[hsl(var(--state-error-text))] border-rose-500/20"
@@ -560,11 +560,11 @@ export default function StaffPage() {
  {exc.isAvailable ? "Custom Hours" : "Closed"}
  </span>
  {exc.reason && (
- <span className="text-[11px] text-muted-foreground/60 italic truncate">{exc.reason}</span>
+ <span className="text-caption text-muted-foreground/60 italic truncate">{exc.reason}</span>
  )}
  </div>
  </div>
- <button
+ <Button
  type="button"
  onClick={() => handleDeleteException(exc.id)}
  className={getButtonClasses(
@@ -575,7 +575,7 @@ export default function StaffPage() {
  )}
  >
  <X className="h-3.5 w-3.5" />
- </button>
+ </Button>
  </div>
  ))}
  </div>
@@ -608,7 +608,7 @@ export default function StaffPage() {
  )}
  >
  {/* Day toggle */}
- <button
+ <Button
  onClick={() => {
  if (isWorking) handleRemoveDay(dayNum);
  else handleSaveSchedule(dayNum, "09:00", "17:00");
@@ -619,7 +619,7 @@ export default function StaffPage() {
  )}
  >
  {isWorking && <CheckCircle2 className="h-3 w-3 text-white" />}
- </button>
+ </Button>
 
  {/* Day name */}
  <span className={cn(
@@ -633,14 +633,14 @@ export default function StaffPage() {
  {isWorking ? (
  <div className="flex items-center gap-2 flex-1">
  <div className="flex items-center gap-1.5 bg-[hsl(var(--foreground)/0.04)] border-[hsl(var(--foreground)/0.06)] rounded-lg px-2 py-1.5 flex-1">
- <input
+ <Input
  type="time"
  value={shiftStart}
  className="bg-transparent border-0 focus:outline-none p-0 text-[12px] font-mono text-foreground flex-1 min-w-0 cursor-pointer"
  onChange={(e) => handleSaveSchedule(dayNum, e.target.value, shiftEnd)}
  />
- <span className="text-[10px] text-muted-foreground/40 font-semibold uppercase px-0.5">–</span>
- <input
+ <span className="text-caption text-muted-foreground/40 font-semibold uppercase px-0.5">–</span>
+ <Input
  type="time"
  value={shiftEnd}
  className="bg-transparent border-0 focus:outline-none p-0 text-[12px] font-mono text-foreground flex-1 min-w-0 cursor-pointer"
@@ -650,7 +650,7 @@ export default function StaffPage() {
  </div>
  ) : (
  <span className={cn(
- "text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md flex-1",
+ "text-caption font-bold uppercase tracking-wider px-2 py-1 rounded-md flex-1",
  isWeekend
  ? "text-[hsl(var(--state-warning-text))]/70 bg-amber-500/5"
  : "text-muted-foreground/40 bg-[hsl(var(--foreground)/0.02)]"
@@ -684,23 +684,23 @@ export default function StaffPage() {
  <div className="space-y-4 py-4">
  <div className="grid grid-cols-2 gap-4">
  <div className="col-span-2 space-y-1.5">
- <label htmlFor="staff-name" className="text-[10px] uppercase font-bold text-muted-foreground/60 tracking-wider">Full Name *</label>
+ <label htmlFor="staff-name" className="text-caption uppercase font-bold text-muted-foreground/60 tracking-wider">Full Name *</label>
  <Input id="staff-name" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Dr. Sarah Jenkins" className="bg-background" required />
  </div>
  <div className="space-y-1.5">
- <label htmlFor="staff-role" className="text-[10px] uppercase font-bold text-muted-foreground/60 tracking-wider">Role Title *</label>
+ <label htmlFor="staff-role" className="text-caption uppercase font-bold text-muted-foreground/60 tracking-wider">Role Title *</label>
  <Input id="staff-role" value={newRole} onChange={(e) => setNewRole(e.target.value)} placeholder="e.g. Lead Dentist" className="bg-background" required />
  </div>
  <div className="space-y-1.5">
- <label htmlFor="staff-buffer" className="text-[10px] uppercase font-bold text-muted-foreground/60 tracking-wider">Buffer Time (min)</label>
+ <label htmlFor="staff-buffer" className="text-caption uppercase font-bold text-muted-foreground/60 tracking-wider">Buffer Time (min)</label>
  <Input id="staff-buffer" type="number" value={newBuffer} onChange={(e) => setNewBuffer(e.target.value)} placeholder="15" className="bg-background" />
  </div>
  <div className="space-y-1.5">
- <label htmlFor="staff-email" className="text-[10px] uppercase font-bold text-muted-foreground/60 tracking-wider">Email</label>
+ <label htmlFor="staff-email" className="text-caption uppercase font-bold text-muted-foreground/60 tracking-wider">Email</label>
  <Input id="staff-email" type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="sarah@clinic.com" className="bg-background" />
  </div>
  <div className="space-y-1.5">
- <label htmlFor="staff-phone" className="text-[10px] uppercase font-bold text-muted-foreground/60 tracking-wider">Phone</label>
+ <label htmlFor="staff-phone" className="text-caption uppercase font-bold text-muted-foreground/60 tracking-wider">Phone</label>
  <Input id="staff-phone" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="+1 555-0199" className="bg-background" />
  </div>
  </div>
@@ -726,11 +726,11 @@ export default function StaffPage() {
  <form onSubmit={handleAddException}>
  <div className="space-y-4 py-4">
  <div className="space-y-1.5">
- <label htmlFor="exc-date" className="text-[10px] uppercase font-bold text-muted-foreground/60 tracking-wider">Target Date *</label>
+ <label htmlFor="exc-date" className="text-caption uppercase font-bold text-muted-foreground/60 tracking-wider">Target Date *</label>
  <Input id="exc-date" type="date" value={excDate} onChange={(e) => setExcDate(e.target.value)} className="bg-background" required />
  </div>
  <label className="flex items-start gap-3 p-3 rounded-lg border-[hsl(var(--foreground)/0.06)] hover:bg-[hsl(var(--foreground)/0.02)] cursor-pointer transition-colors select-none">
- <input
+ <Input
  type="checkbox"
  checked={excAvailable}
  onChange={(e) => setExcAvailable(e.target.checked)}
@@ -738,11 +738,11 @@ export default function StaffPage() {
  />
  <div>
  <span className="text-[12px] font-semibold text-foreground block">Custom working hours</span>
- <span className="text-[11px] text-muted-foreground/60 leading-relaxed">Check to set custom shift hours; leave unchecked to mark as closed/holiday.</span>
+ <span className="text-caption text-muted-foreground/60 leading-relaxed">Check to set custom shift hours; leave unchecked to mark as closed/holiday.</span>
  </div>
  </label>
  <div className="space-y-1.5">
- <label htmlFor="exc-reason" className="text-[10px] uppercase font-bold text-muted-foreground/60 tracking-wider">Reason (optional)</label>
+ <label htmlFor="exc-reason" className="text-caption uppercase font-bold text-muted-foreground/60 tracking-wider">Reason (optional)</label>
  <Input id="exc-reason" value={excReason} onChange={(e) => setExcReason(e.target.value)} placeholder="e.g. Family vacation, Conference" className="bg-background" />
  </div>
  </div>

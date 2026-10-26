@@ -4,6 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/components/shared/utils";
+import { Button } from "@/components/shared/button";
 
 export interface AccordionItem {
   q: string;
@@ -53,7 +54,7 @@ export function AnimatedAccordion({
             )}
           >
             {/* Question Header Button */}
-            <button
+            <Button
               id={itemId}
               type="button"
               aria-expanded={isOpen}
@@ -79,7 +80,7 @@ export function AnimatedAccordion({
               >
                 <ChevronDown className="h-4 w-4" />
               </div>
-            </button>
+            </Button>
 
             {/* Smooth Animated Height Panel via Grid Transition */}
             <div

@@ -48,7 +48,7 @@ export function DashboardHeaderActions({
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
         </span>
-        <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 group-hover:underline">
+        <span className="text-caption font-semibold text-emerald-600 dark:text-emerald-400 group-hover:underline">
           Operator AI Active (24/7)
         </span>
         <Radio className="h-3 w-3 text-emerald-500/70 shrink-0 ml-0.5" />
@@ -64,7 +64,7 @@ export function DashboardHeaderActions({
         <Search className="h-3.5 w-3.5 text-muted-foreground/70" />
         <span className="hidden xl:inline">Search contacts, leads, calls...</span>
         <span className="xl:hidden">Search...</span>
-        <kbd className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-mono bg-background/80 px-1.5 py-0.5 rounded border border-border/80 text-muted-foreground/80 shadow-2xs">
+        <kbd className="hidden sm:inline-flex items-center gap-0.5 text-caption font-mono bg-background/80 px-1.5 py-0.5 rounded border border-border/80 text-muted-foreground/80 shadow-2xs">
           ⌘K
         </kbd>
       </button>

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/components/shared/utils";
+import { Button } from "@/components/shared/button";
 
 /* ════════════════════════════════════════════════════════════════════════════
    SHARED CARD SHELL
@@ -144,7 +145,7 @@ function RingChart({
         />
       </svg>
       {label && (
-        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white">
+        <span className="absolute inset-0 flex items-center justify-center text-caption font-black text-white">
           {label}
         </span>
       )}
@@ -253,7 +254,7 @@ function RevenueCard() {
         </div>
       </div>
       <p className="mt-2 text-[19px] font-black text-white leading-none tracking-tight">
-        <span className="text-[11px] font-semibold text-white/45 mr-px">$</span>24,830
+        <span className="text-caption font-semibold text-white/45 mr-px">$</span>24,830
       </p>
       <p className="mt-1.5 text-[7px] text-white/30 leading-relaxed">
         Your revenue decreased this month by about{" "}
@@ -296,10 +297,10 @@ function AppointmentsCard() {
         <p className="text-[8px] font-semibold text-white/35 uppercase tracking-wider">
           Appointments Booked
         </p>
-        <span className="text-[9px] text-white/20">›</span>
+        <span className="text-caption text-white/20">›</span>
       </div>
       <p className="text-[19px] font-black text-white leading-none tracking-tight">
-        <span className="text-[11px] font-semibold text-white/45 mr-px">$</span>11,680
+        <span className="text-caption font-semibold text-white/45 mr-px">$</span>11,680
       </p>
       <p className="mt-1.5 text-[7px] text-white/30 leading-relaxed">
         this month&apos;s total booking value increased<br />
@@ -346,7 +347,7 @@ function SegmentationCard() {
         <p className="text-[8px] font-semibold text-white/35 uppercase tracking-wider">
           Customer Segmentation
         </p>
-        <span className="text-[9px] text-white/20">›</span>
+        <span className="text-caption text-white/20">›</span>
       </div>
 
       {/* Large centered donut */}
@@ -376,12 +377,12 @@ function SegmentationCard() {
       </div>
 
       {/* Pill "More details" button */}
-      <button
+      <Button
         type="button"
         className="mt-3 w-full rounded-full border border-white/[0.08] py-1.5 text-[7.5px] font-semibold text-white/35 hover:text-white/55 hover:border-white/15 transition-all"
       >
         More details
-      </button>
+      </Button>
     </DashCard>
   );
 }
@@ -394,7 +395,7 @@ function TaskCard() {
         <p className="text-[8px] font-semibold text-white/35 uppercase tracking-wider">
           AI Resolution Rate
         </p>
-        <span className="text-[9px] text-white/20">›</span>
+        <span className="text-caption text-white/20">›</span>
       </div>
       <div className="flex items-end justify-between">
         <div className="flex items-baseline gap-1.5">
@@ -402,7 +403,7 @@ function TaskCard() {
           <span className="text-[7px] text-emerald-400 font-semibold">↑ 3%</span>
         </div>
         {/* Avatar stack — mirrors the face-bubbles in reference */}
-        <div className="flex -space-x-1.5">
+        <div className="flex -space-x-space-1.5">
           {["#7C5CFC", "#60A5FA", "#34D399"].map((c, i) => (
             <div
               key={i}
@@ -430,7 +431,7 @@ function ConversionCard() {
         <p className="text-[8px] font-semibold text-white/35 uppercase tracking-wider">
           Conversion Rates
         </p>
-        <span className="text-[9px] text-white/20">›</span>
+        <span className="text-caption text-white/20">›</span>
       </div>
       <div className="space-y-3.5">
         {rows.map((r) => (
@@ -509,7 +510,7 @@ export function MobileShowcaseCarousel() {
 
   return (
     <div className="relative overflow-hidden px-6 py-8 text-center" style={{ background: "#0F1120" }}>
-      <p className="text-[10px] font-black tracking-widest uppercase mb-2" style={{ color: "#7C5CFC" }}>
+      <p className="text-caption font-black tracking-widest uppercase mb-2" style={{ color: "#7C5CFC" }}>
         AI Business Operating System
       </p>
       <p className="text-xl font-bold tracking-tight text-white leading-snug min-h-[50px]">
@@ -579,7 +580,7 @@ export function AuthShowcasePanel() {
                   <h2 className="text-[17px] xl:text-[19px] font-black text-white tracking-tight leading-tight max-w-xs mx-auto">
                     {h.headline}
                   </h2>
-                  <p className="text-[10px] text-white/35 leading-relaxed max-w-[260px] mx-auto mt-1.5">
+                  <p className="text-caption text-white/35 leading-relaxed max-w-[260px] mx-auto mt-1.5">
                     {h.sub}
                   </p>
                 </div>
@@ -593,7 +594,7 @@ export function AuthShowcasePanel() {
             aria-label="Showcase slides"
           >
             {HEADLINES.map((_, i) => (
-              <button
+              <Button
                 key={i}
                 type="button"
                 role="tab"

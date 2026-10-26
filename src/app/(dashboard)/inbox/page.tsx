@@ -491,9 +491,9 @@ export default function UnifiedInboxPage() {
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{errorMsg}</span>
           </div>
-          <button onClick={() => setErrorMsg("")} className="hover:opacity-70">
+          <Button onClick={() => setErrorMsg("")} className="hover:opacity-70">
             <X className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       )}
 
@@ -509,7 +509,7 @@ export default function UnifiedInboxPage() {
                 <Inbox className="h-4 w-4 text-primary" />
                 <span>Inbox</span>
               </h3>
-              <span className="text-[11px] font-semibold text-muted-foreground bg-bg-layer-2 px-space-2 py-space-0.5 radius-full border border-border-subtle">
+              <span className="text-caption font-semibold text-muted-foreground bg-bg-layer-2 px-space-2 py-space-0.5 radius-full border border-border-subtle">
                 {filteredThreads.length} threads
               </span>
             </div>
@@ -569,7 +569,7 @@ export default function UnifiedInboxPage() {
                 const isPaused = t.aiAutonomy === "paused";
 
                 return (
-                  <button
+                  <Button
                     type="button"
                     key={t.id}
                     onClick={() => handleSelectThread(t)}
@@ -593,7 +593,7 @@ export default function UnifiedInboxPage() {
                         <span className={cn("text-caption truncate", isUnread ? "font-bold text-foreground" : "font-medium text-foreground/80")}>
                           {clientName}
                         </span>
-                        <span className="text-[10px] text-neutral-400 whitespace-nowrap shrink-0">
+                        <span className="text-caption text-neutral-400 whitespace-nowrap shrink-0">
                           {new Date(t.updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </span>
                       </div>
@@ -601,27 +601,27 @@ export default function UnifiedInboxPage() {
                       <div className="flex items-center gap-space-1.5 mb-space-1">
                         <ChannelBadge type={t.channel?.type} />
                         {isPaused ? (
-                          <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.2 radius-sm border border-amber-500/20">
+                          <span className="text-caption bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.2 radius-sm border border-amber-500/20">
                             Human Takeover
                           </span>
                         ) : (
-                          <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium px-1.5 py-0.2 radius-sm border border-emerald-500/20 flex items-center gap-1">
+                          <span className="text-caption bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium px-1.5 py-0.2 radius-sm border border-emerald-500/20 flex items-center gap-1">
                             <span className="h-1.5 w-1.5 radius-full bg-emerald-500" />
                             AI Active
                           </span>
                         )}
                       </div>
-                      <p className={cn("text-[11px] truncate leading-snug", isUnread ? "font-semibold text-foreground" : "text-neutral-500")}>
+                      <p className={cn("text-caption truncate leading-snug", isUnread ? "font-semibold text-foreground" : "text-neutral-500")}>
                         {t.lastMessage?.content || "No messages yet..."}
                       </p>
                     </div>
 
                     {isUnread && (
-                      <span className="h-4 min-w-4 px-space-1 radius-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center shrink-0">
+                      <span className="h-4 min-w-4 px-space-1 radius-full bg-primary text-caption font-bold text-primary-foreground flex items-center justify-center shrink-0">
                         {t.unreadCount}
                       </span>
                     )}
-                  </button>
+                  </Button>
                 );
               })
             )}
@@ -645,7 +645,7 @@ export default function UnifiedInboxPage() {
                       </h4>
                       <ChannelBadge type={selectedThread.channel?.type} />
                     </div>
-                    <p className="text-[11px] text-neutral-500 truncate">
+                    <p className="text-caption text-neutral-500 truncate">
                       {selectedThread.conversation?.leadProfile?.phone || selectedThread.conversation?.leadProfile?.email || "Connected via " + selectedThread.channel?.type}
                     </p>
                   </div>
@@ -658,7 +658,7 @@ export default function UnifiedInboxPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 text-[11px] font-semibold gap-1.5 shadow-xs"
+                      className="h-8 border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 text-caption font-semibold gap-1.5 shadow-xs"
                       onClick={() => handleToggleAutonomy("paused")}
                       disabled={togglingAutonomy}
                       title="Click to pause AI and take over this conversation manually"
@@ -671,7 +671,7 @@ export default function UnifiedInboxPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 text-[11px] font-bold gap-1.5 shadow-xs animate-fade-in"
+                      className="h-8 border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 text-caption font-bold gap-1.5 shadow-xs animate-fade-in"
                       onClick={() => handleToggleAutonomy("active")}
                       disabled={togglingAutonomy}
                       title="Click to resume autonomous AI responses for this thread"
@@ -700,17 +700,17 @@ export default function UnifiedInboxPage() {
 
               {/* Sticky Human Takeover Notice Banner */}
               {!isAiAutopilotActive && (
-                <div className="bg-amber-500/10 border-b border-amber-500/20 px-space-4 py-space-2 flex items-center justify-between text-[11px] text-amber-800 dark:text-amber-300 font-medium shrink-0 animate-fade-in">
+                <div className="bg-amber-500/10 border-b border-amber-500/20 px-space-4 py-space-2 flex items-center justify-between text-caption text-amber-800 dark:text-amber-300 font-medium shrink-0 animate-fade-in">
                   <div className="flex items-center gap-space-2">
                     <ShieldAlert className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                     <span><strong>Human Mode:</strong> AI assistant is paused. Staff manual replies active.</span>
                   </div>
-                  <button
+                  <Button
                     onClick={() => handleToggleAutonomy("active")}
                     className="underline hover:text-amber-900 dark:hover:text-amber-100 font-bold ml-2 cursor-pointer"
                   >
                     Resume AI
-                  </button>
+                  </Button>
                 </div>
               )}
 
@@ -765,18 +765,18 @@ export default function UnifiedInboxPage() {
                           {/* RAG Citations Strip */}
                           {isAi && hasCitations && (
                             <div className="mt-space-2 pt-space-1.5 border-t border-primary/10 flex flex-wrap items-center gap-1.5">
-                              <span className="text-[10px] font-bold text-primary/80 uppercase tracking-wider flex items-center gap-1">
+                              <span className="text-caption font-bold text-primary/80 uppercase tracking-wider flex items-center gap-1">
                                 <BookOpen className="h-2.5 w-2.5" /> Source:
                               </span>
                               {citations.map((c: any, idx: number) => (
-                                <button
+                                <Button
                                   key={idx}
                                   onClick={() => setExpandedCitationId(expandedCitationId === `${msg.id}-${idx}` ? null : `${msg.id}-${idx}`)}
-                                  className="text-[10px] bg-background/80 hover:bg-background border border-primary/20 text-primary font-semibold px-1.5 py-0.5 radius-sm transition-all"
+                                  className="text-caption bg-background/80 hover:bg-background border border-primary/20 text-primary font-semibold px-1.5 py-0.5 radius-sm transition-all"
                                 >
                                   {c.documentName || c.title || `KB Source ${idx + 1}`}
                                   {c.score && ` (${Math.round(c.score * 100)}%)`}
-                                </button>
+                                </Button>
                               ))}
                             </div>
                           )}
@@ -788,20 +788,20 @@ export default function UnifiedInboxPage() {
                           return (
                             <div
                               key={`cite-pop-${idx}`}
-                              className="mt-1 p-space-2.5 bg-background border border-primary/30 radius-lg max-w-[80%] text-[11px] shadow-sm text-foreground space-y-1 animate-fade-in"
+                              className="mt-1 p-space-2.5 bg-background border border-primary/30 radius-lg max-w-[80%] text-caption shadow-sm text-foreground space-y-1 animate-fade-in"
                             >
                               <div className="flex items-center justify-between font-semibold text-primary">
                                 <span>📄 {c.documentName || "Knowledge Base Citation"}</span>
-                                <span className="text-[10px] text-muted-foreground">{c.chunkIndex ? `Chunk #${c.chunkIndex}` : "Verified Reference"}</span>
+                                <span className="text-caption text-muted-foreground">{c.chunkIndex ? `Chunk #${c.chunkIndex}` : "Verified Reference"}</span>
                               </div>
-                              <p className="text-neutral-600 dark:text-neutral-300 text-[11px] italic bg-bg-layer-1 p-1.5 radius-md border border-border-subtle">
+                              <p className="text-neutral-600 dark:text-neutral-300 text-caption italic bg-bg-layer-1 p-1.5 radius-md border border-border-subtle">
                                 "{c.content || c.snippet || "Standard business knowledge base ground truth."}"
                               </p>
                             </div>
                           );
                         })}
 
-                        <span className="text-[10px] text-neutral-400 mt-space-1 px-space-1 block">
+                        <span className="text-caption text-neutral-400 mt-space-1 px-space-1 block">
                           {isIncoming
                             ? "Client"
                             : isInternal
@@ -829,7 +829,7 @@ export default function UnifiedInboxPage() {
                       type="button"
                       variant="outline"
                       size="xs"
-                      className="text-[11px] font-semibold gap-1 border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 h-7"
+                      className="text-caption font-semibold gap-1 border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 h-7"
                       onClick={handleGenerateAiDraft}
                       disabled={generatingDraft}
                     >
@@ -841,7 +841,7 @@ export default function UnifiedInboxPage() {
                       <span>{generatingDraft ? "Synthesizing Draft..." : "Suggest AI Reply"}</span>
                     </Button>
                     
-                    <span className="text-[10px] text-neutral-400 hidden sm:inline">
+                    <span className="text-caption text-neutral-400 hidden sm:inline">
                       Generates verified draft grounded on your Knowledge Base.
                     </span>
                   </div>
@@ -855,10 +855,10 @@ export default function UnifiedInboxPage() {
                       className="w-auto"
                     >
                       <TabsList className="bg-bg-layer-2 border border-border-subtle p-0.5 radius-md h-7">
-                        <TabsTrigger value="message" className="px-space-2 py-0.5 text-[11px] font-semibold">
+                        <TabsTrigger value="message" className="px-space-2 py-0.5 text-caption font-semibold">
                           Staff Reply
                         </TabsTrigger>
-                        <TabsTrigger value="note" className="px-space-2 py-0.5 text-[11px] font-semibold">
+                        <TabsTrigger value="note" className="px-space-2 py-0.5 text-caption font-semibold">
                           Internal Note
                         </TabsTrigger>
                       </TabsList>
@@ -901,7 +901,7 @@ export default function UnifiedInboxPage() {
                   </div>
 
                   <div className="flex items-center justify-between px-space-3 py-space-2 bg-bg-layer-1/10 border-t border-border-subtle radius-b-xl">
-                    <span className="text-[10px] text-neutral-400 font-mono">Press Enter to send</span>
+                    <span className="text-caption text-neutral-400 font-mono">Press Enter to send</span>
                     <div className="flex items-center gap-space-2">
                       <Button
                         type="submit"
@@ -947,15 +947,15 @@ export default function UnifiedInboxPage() {
               className="w-full"
             >
               <TabsList className="grid grid-cols-3 w-full bg-bg-layer-2 border border-border-subtle p-0.5 radius-md h-8">
-                <TabsTrigger value="copilot" className="text-[11px] font-bold py-1 flex items-center gap-1">
+                <TabsTrigger value="copilot" className="text-caption font-bold py-1 flex items-center gap-1">
                   <Brain className="h-3 w-3 text-primary" />
                   <span>Copilot</span>
                 </TabsTrigger>
-                <TabsTrigger value="profile" className="text-[11px] font-bold py-1 flex items-center gap-1">
+                <TabsTrigger value="profile" className="text-caption font-bold py-1 flex items-center gap-1">
                   <User className="h-3 w-3" />
                   <span>Profile</span>
                 </TabsTrigger>
-                <TabsTrigger value="notes" className="text-[11px] font-bold py-1 flex items-center gap-1">
+                <TabsTrigger value="notes" className="text-caption font-bold py-1 flex items-center gap-1">
                   <FileText className="h-3 w-3" />
                   <span>Notes</span>
                 </TabsTrigger>
@@ -973,20 +973,20 @@ export default function UnifiedInboxPage() {
                     {/* Autonomy Card */}
                     <div className="p-space-3 bg-background border border-border-subtle radius-lg shadow-xs space-y-space-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                        <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                           <Brain className="h-3 w-3 text-primary" /> Autopilot Status
                         </span>
                         {isAiAutopilotActive ? (
-                          <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 radius-full border border-emerald-500/20">
+                          <span className="text-caption bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 radius-full border border-emerald-500/20">
                             Active
                           </span>
                         ) : (
-                          <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-2 py-0.5 radius-full border border-amber-500/20">
+                          <span className="text-caption bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-2 py-0.5 radius-full border border-amber-500/20">
                             Paused (Human Mode)
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-neutral-500">
+                      <p className="text-caption text-neutral-500">
                         {isAiAutopilotActive
                           ? "AI is autonomously answering customer questions using your Knowledge Base."
                           : "AI responses are paused so you can handle this dialogue manually without interruptions."}
@@ -995,7 +995,7 @@ export default function UnifiedInboxPage() {
                         variant={isAiAutopilotActive ? "outline" : "default"}
                         size="xs"
                         width="full"
-                        className="text-[11px] font-semibold mt-1"
+                        className="text-caption font-semibold mt-1"
                         onClick={() => handleToggleAutonomy(isAiAutopilotActive ? "paused" : "active")}
                       >
                         {isAiAutopilotActive ? "⏸️ Pause AI & Take Over" : "▶️ Resume AI Autopilot"}
@@ -1004,18 +1004,18 @@ export default function UnifiedInboxPage() {
 
                     {/* Detected Intent & Confidence */}
                     <div className="p-space-3 bg-background border border-border-subtle radius-lg shadow-xs space-y-space-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                      <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground block">
                         Intent Intelligence
                       </span>
                       <div className="flex items-center justify-between bg-bg-layer-1 p-space-2 radius-md border border-border-subtle">
                         <div>
-                          <span className="text-[10px] text-neutral-400 block uppercase">Detected Intent</span>
+                          <span className="text-caption text-neutral-400 block uppercase">Detected Intent</span>
                           <span className="text-[12px] font-bold text-foreground capitalize">
                             {aiAnalysis?.intent?.replace(/_/g, " ") || "Inquiry / Booking"}
                           </span>
                         </div>
                         <div className="text-right">
-                          <span className="text-[10px] text-neutral-400 block uppercase">Confidence</span>
+                          <span className="text-caption text-neutral-400 block uppercase">Confidence</span>
                           <span className="text-[12px] font-bold text-emerald-600 dark:text-emerald-400">
                             {Math.round((aiAnalysis?.confidenceScore || 0.95) * 100)}%
                           </span>
@@ -1025,26 +1025,26 @@ export default function UnifiedInboxPage() {
 
                     {/* RAG Knowledge Base Sources Matched */}
                     <div className="p-space-3 bg-background border border-border-subtle radius-lg shadow-xs space-y-space-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                      <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                         <BookOpen className="h-3 w-3 text-primary" /> Grounded KB Citations
                       </span>
 
                       {aiAnalysis?.citations && aiAnalysis.citations.length > 0 ? (
                         <div className="space-y-space-1.5">
                           {aiAnalysis.citations.map((cite: any, i: number) => (
-                            <div key={i} className="p-space-2 bg-bg-layer-1 border border-border-subtle radius-md text-[11px] space-y-1">
+                            <div key={i} className="p-space-2 bg-bg-layer-1 border border-border-subtle radius-md text-caption space-y-1">
                               <div className="flex items-center justify-between font-semibold text-primary">
                                 <span className="truncate max-w-[160px]">📄 {cite.documentName || "Knowledge Base Document"}</span>
-                                <span className="text-[10px] text-emerald-600">{Math.round((cite.score || 0.94) * 100)}% Match</span>
+                                <span className="text-caption text-emerald-600">{Math.round((cite.score || 0.94) * 100)}% Match</span>
                               </div>
-                              <p className="text-[10px] text-neutral-500 line-clamp-2 italic">
+                              <p className="text-caption text-neutral-500 line-clamp-2 italic">
                                 "{cite.content || cite.snippet || "Verified business policies and service guidelines."}"
                               </p>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="p-space-2 bg-bg-layer-1 border border-border-subtle radius-md text-[11px] text-neutral-500 text-center">
+                        <div className="p-space-2 bg-bg-layer-1 border border-border-subtle radius-md text-caption text-neutral-500 text-center">
                           Knowledge ground-truth active.
                         </div>
                       )}
@@ -1052,14 +1052,14 @@ export default function UnifiedInboxPage() {
 
                     {/* Quick Staff Assist Actions */}
                     <div className="p-space-3 bg-background border border-border-subtle radius-lg shadow-xs space-y-space-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                      <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground block">
                         Copilot Actions
                       </span>
                       <Button
                         variant="outline"
                         size="xs"
                         width="full"
-                        className="text-[11px] font-semibold justify-start gap-2 h-7.5"
+                        className="text-caption font-semibold justify-start gap-2 h-7.5"
                         onClick={handleGenerateAiDraft}
                         disabled={generatingDraft}
                       >
@@ -1082,7 +1082,7 @@ export default function UnifiedInboxPage() {
                         <h4 className="text-caption font-bold text-foreground truncate">
                           {selectedThread.conversation?.leadProfile?.name || "Anonymous Client"}
                         </h4>
-                        <span className="text-[11px] text-neutral-400 block">
+                        <span className="text-caption text-neutral-400 block">
                           via <span className="text-primary font-semibold uppercase">{selectedThread.channel?.type}</span>
                         </span>
                       </div>
@@ -1091,13 +1091,13 @@ export default function UnifiedInboxPage() {
                     {/* Score & LTV */}
                     <div className="grid grid-cols-2 gap-space-2">
                       <div className="bg-background border border-border-subtle radius-lg p-space-2 shadow-xs">
-                        <span className="text-[9px] text-neutral-400 uppercase font-bold block">Lead Score</span>
+                        <span className="text-caption text-neutral-400 uppercase font-bold block">Lead Score</span>
                         <span className="text-caption font-bold text-foreground mt-0.5 block">
                           {selectedThread.conversation?.leadProfile?.leadScore || 0}
                         </span>
                       </div>
                       <div className="bg-background border border-border-subtle radius-lg p-space-2 shadow-xs">
-                        <span className="text-[9px] text-neutral-400 uppercase font-bold block">Est. LTV</span>
+                        <span className="text-caption text-neutral-400 uppercase font-bold block">Est. LTV</span>
                         <span className="text-caption font-bold text-emerald-600 mt-0.5 block">
                           ${selectedThread.conversation?.leadProfile?.lifetimeValue || 0}
                         </span>
@@ -1107,7 +1107,7 @@ export default function UnifiedInboxPage() {
                     {/* Editable Fields */}
                     <div className="space-y-space-2 border-t border-border-subtle pt-space-2">
                       <div className="space-y-0.5">
-                        <Label className="text-[10px] uppercase font-bold text-neutral-500">Name</Label>
+                        <Label className="text-caption uppercase font-bold text-neutral-500">Name</Label>
                         <Input
                           value={contactName}
                           onChange={(e) => setContactName(e.target.value)}
@@ -1115,7 +1115,7 @@ export default function UnifiedInboxPage() {
                         />
                       </div>
                       <div className="space-y-0.5">
-                        <Label className="text-[10px] uppercase font-bold text-neutral-500">Email</Label>
+                        <Label className="text-caption uppercase font-bold text-neutral-500">Email</Label>
                         <Input
                           value={contactEmail}
                           onChange={(e) => setContactEmail(e.target.value)}
@@ -1123,7 +1123,7 @@ export default function UnifiedInboxPage() {
                         />
                       </div>
                       <div className="space-y-0.5">
-                        <Label className="text-[10px] uppercase font-bold text-neutral-500">Phone</Label>
+                        <Label className="text-caption uppercase font-bold text-neutral-500">Phone</Label>
                         <Input
                           value={contactPhone}
                           onChange={(e) => setContactPhone(e.target.value)}
@@ -1131,7 +1131,7 @@ export default function UnifiedInboxPage() {
                         />
                       </div>
                       <div className="space-y-0.5">
-                        <Label className="text-[10px] uppercase font-bold text-neutral-500">Lead Stage</Label>
+                        <Label className="text-caption uppercase font-bold text-neutral-500">Lead Stage</Label>
                         <Select value={contactStatus} onValueChange={(val) => setContactStatus(val)}>
                           <SelectTrigger className="h-7 text-caption bg-background border-border-subtle">
                             <SelectValue />
@@ -1146,7 +1146,7 @@ export default function UnifiedInboxPage() {
                       <Button
                         size="xs"
                         width="full"
-                        className="mt-2 h-7.5 text-[11px]"
+                        className="mt-2 h-7.5 text-caption"
                         onClick={handleSaveContact}
                         disabled={isSavingContact}
                       >
@@ -1159,18 +1159,18 @@ export default function UnifiedInboxPage() {
                 {/* ── TAB 3: INTERNAL NOTES ── */}
                 {activeDrawerTab === "notes" && (
                   <div className="space-y-space-2">
-                    <Label className="text-[10px] uppercase font-bold text-neutral-500">Internal Collaboration Notes</Label>
+                    <Label className="text-caption uppercase font-bold text-neutral-500">Internal Collaboration Notes</Label>
                     <NativeTextarea
                       rows={5}
                       value={contactNotes}
                       onChange={(e) => setContactNotes(e.target.value)}
                       placeholder="Add customer preferences, follow-up deadlines, or staff handover notes..."
-                      className="w-full bg-background border border-border-subtle radius-md p-space-2 text-[11px] leading-relaxed resize-none"
+                      className="w-full bg-background border border-border-subtle radius-md p-space-2 text-caption leading-relaxed resize-none"
                     />
                     <Button
                       size="xs"
                       width="full"
-                      className="h-7.5 text-[11px]"
+                      className="h-7.5 text-caption"
                       onClick={handleSaveContact}
                       disabled={isSavingContact}
                     >

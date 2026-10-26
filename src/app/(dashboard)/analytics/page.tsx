@@ -220,7 +220,7 @@ export default function AnalyticsPage() {
  Financial & Revenue Metrics
  </h3>
  </div>
- <span className="text-[11px] font-medium text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded">
+ <span className="text-caption font-medium text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded">
  Live Stream
  </span>
  </div>
@@ -452,7 +452,7 @@ export default function AnalyticsPage() {
  </svg>
  <div className="absolute inset-0 flex flex-col items-center justify-center">
  <span className="text-xl font-bold text-foreground tabular-nums leading-none">{leads.averageScore}</span>
- <span className="text-[9px] text-muted-foreground/50 font-bold uppercase tracking-wider mt-0.5">Avg</span>
+ <span className="text-caption text-muted-foreground/50 font-bold uppercase tracking-wider mt-0.5">Avg</span>
  </div>
  </div>
  <div>
@@ -505,13 +505,13 @@ export default function AnalyticsPage() {
  <div className="flex items-center gap-space-1.5 justify-between">
  <div className="flex items-center gap-space-1.5 min-w-0">
  <span className={cn("h-2 w-2 rounded-full shrink-0", stat.color)} />
- <span className="text-[10px] font-bold text-muted-foreground/75 uppercase tracking-wider truncate">{stat.label}</span>
+ <span className="text-caption font-bold text-muted-foreground/75 uppercase tracking-wider truncate">{stat.label}</span>
  </div>
- <span className="text-[10px] font-bold text-muted-foreground/50 tabular-nums shrink-0">{pct}%</span>
+ <span className="text-caption font-bold text-muted-foreground/50 tabular-nums shrink-0">{pct}%</span>
  </div>
  <div className="mt-space-2 flex items-baseline gap-space-1">
  <span className="text-xl font-bold text-foreground tabular-nums leading-none">{stat.count}</span>
- <span className="text-[10px] text-muted-foreground/60 leading-none">session{stat.count !== 1 && "s"}</span>
+ <span className="text-caption text-muted-foreground/60 leading-none">session{stat.count !== 1 && "s"}</span>
  </div>
  </div>
  );

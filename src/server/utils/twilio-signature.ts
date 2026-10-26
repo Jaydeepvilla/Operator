@@ -23,5 +23,12 @@ export function verifyTwilioSignature(options: {
     .update(Buffer.from(data, "utf-8"))
     .digest("base64");
 
-  return hash === options.signature;
+  try {
+    const a = Buffer.from(hash, "utf-8");
+    const b = Buffer.from(options.signature, "utf-8");
+    if (a.length !== b.length) return false;
+    return crypto.timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
 }

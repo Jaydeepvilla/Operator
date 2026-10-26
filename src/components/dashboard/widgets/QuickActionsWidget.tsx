@@ -35,6 +35,7 @@ import {
 } from "@/components/shared/dialog";
 import { Input } from "@/components/shared/input";
 import { Button } from "@/components/shared/button";
+import { NativeSelect } from "@/components/shared/native";
 import { quickCreateAppointmentAction } from "@/server/actions/appointments";
 import { createContactAction } from "@/server/actions/omnichannel";
 import { createFaqAction } from "@/server/actions/faq";
@@ -219,7 +220,7 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
               <span className="text-caption font-bold text-foreground tracking-wide">
                 Quick Actions
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+              <span className="text-caption font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                 1-Click Execution
               </span>
             </div>
@@ -234,12 +235,12 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
               {/* 1. New Appointment (Modal Trigger) */}
               <div className="relative">
                 <div className="absolute -top-3.5 inset-x-0 flex justify-center z-20 pointer-events-none">
-                  <span className="inline-flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full bg-gradient-to-r from-primary to-violet-500 text-white shadow-md shadow-primary/40 ring-2 ring-[hsl(var(--foreground)/0.08)]">
+                  <span className="inline-flex items-center gap-1 text-caption font-semibold uppercase tracking-widest px-3 py-1 rounded-full bg-gradient-to-r from-primary to-violet-500 text-white shadow-md shadow-primary/40 ring-2 ring-[hsl(var(--foreground)/0.08)]">
                     <Zap className="w-2.5 h-2.5 fill-white/80 stroke-none" />
                     Most Used
                   </span>
                 </div>
-                <button
+                <Button
                   type="button"
                   onClick={() => openModal("appointment")}
                   className="w-full text-left group relative flex flex-col items-start gap-space-2.5 p-space-4 rounded-xl border border-primary/30 bg-card hover:border-primary/60 hover:bg-primary/[0.03] hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer h-full"
@@ -249,7 +250,7 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
                     <div className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0 bg-primary/10 text-primary transition-transform duration-200 group-hover:scale-105">
                       <CalendarPlus className="h-4.5 w-4.5" />
                     </div>
-                    <span className="text-[11px] font-semibold text-primary opacity-80 group-hover:opacity-100 flex items-center gap-0.5">
+                    <span className="text-caption font-semibold text-primary opacity-80 group-hover:opacity-100 flex items-center gap-0.5">
                       Book <ArrowUpRight className="h-3.5 w-3.5 ml-0.5" />
                     </span>
                   </div>
@@ -261,12 +262,12 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
                       Schedule customer booking
                     </p>
                   </div>
-                </button>
+                </Button>
               </div>
 
               {/* 2. Add Customer (Modal Trigger) */}
               <div className="relative">
-                <button
+                <Button
                   type="button"
                   onClick={() => openModal("customer")}
                   className="w-full text-left group relative flex flex-col items-start gap-space-2.5 p-space-4 rounded-xl border border-border/80 bg-card hover:border-emerald-500/50 hover:bg-emerald-500/[0.02] hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer h-full"
@@ -276,7 +277,7 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
                     <div className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 transition-transform duration-200 group-hover:scale-105">
                       <UserPlus className="h-4.5 w-4.5" />
                     </div>
-                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 opacity-80 group-hover:opacity-100 flex items-center gap-0.5">
+                    <span className="text-caption font-semibold text-emerald-600 dark:text-emerald-400 opacity-80 group-hover:opacity-100 flex items-center gap-0.5">
                       Add <ArrowUpRight className="h-3.5 w-3.5 ml-0.5" />
                     </span>
                   </div>
@@ -288,12 +289,12 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
                       Save profile & lead info
                     </p>
                   </div>
-                </button>
+                </Button>
               </div>
 
               {/* 3. Import Knowledge (Modal Trigger) */}
               <div className="relative">
-                <button
+                <Button
                   type="button"
                   onClick={() => openModal("knowledge")}
                   className="w-full text-left group relative flex flex-col items-start gap-space-2.5 p-space-4 rounded-xl border border-border/80 bg-card hover:border-violet-500/50 hover:bg-violet-500/[0.02] hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer h-full"
@@ -303,7 +304,7 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
                     <div className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0 bg-violet-500/10 text-violet-600 dark:text-violet-400 transition-transform duration-200 group-hover:scale-105">
                       <BrainCircuit className="h-4.5 w-4.5" />
                     </div>
-                    <span className="text-[11px] font-semibold text-violet-600 dark:text-violet-400 opacity-80 group-hover:opacity-100 flex items-center gap-0.5">
+                    <span className="text-caption font-semibold text-violet-600 dark:text-violet-400 opacity-80 group-hover:opacity-100 flex items-center gap-0.5">
                       Train <ArrowUpRight className="h-3.5 w-3.5 ml-0.5" />
                     </span>
                   </div>
@@ -315,7 +316,7 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
                       Add instant FAQ or topic
                     </p>
                   </div>
-                </button>
+                </Button>
               </div>
 
               {/* 4. AI Settings (Route Link) */}
@@ -625,10 +626,10 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
               </div>
 
               <div>
-                <label className="text-[12px] font-semibold text-foreground block mb-1">
+                <label className="text-caption font-semibold text-foreground block mb-1">
                   Lifecycle Status
                 </label>
-                <select
+                <NativeSelect
                   value={custStatus}
                   onChange={(e) => setCustStatus(e.target.value)}
                   className="w-full h-10 px-3 rounded-lg border border-border bg-background text-body-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -638,7 +639,7 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
                   <option value="Hot">Hot Lead</option>
                   <option value="Booked">Active Customer</option>
                   <option value="VIP">VIP Client</option>
-                </select>
+                </NativeSelect>
               </div>
 
               <div>
@@ -743,10 +744,10 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
               </div>
 
               <div>
-                <label className="text-[12px] font-semibold text-foreground block mb-1">
+                <label className="text-caption font-semibold text-foreground block mb-1">
                   Category
                 </label>
-                <select
+                <NativeSelect
                   value={faqCategory}
                   onChange={(e) => setFaqCategory(e.target.value)}
                   className="w-full h-10 px-3 rounded-lg border border-border bg-background text-body-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -756,7 +757,7 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
                   <option value="Pricing">Pricing & Payments</option>
                   <option value="Services">Services & Procedures</option>
                   <option value="Location">Location & Parking</option>
-                </select>
+                </NativeSelect>
               </div>
 
               <DialogFooter className="pt-2 flex flex-col sm:flex-row sm:justify-between items-center gap-2">

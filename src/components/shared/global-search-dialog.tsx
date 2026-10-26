@@ -241,7 +241,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                   <X className="h-3.5 w-3.5" />
                 </button>
               )}
-              <kbd className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded border border-border/80 text-muted-foreground shadow-2xs select-none">
+              <kbd className="hidden sm:inline-flex items-center gap-0.5 text-caption font-mono bg-muted px-1.5 py-0.5 rounded border border-border/80 text-muted-foreground shadow-2xs select-none">
                 ESC
               </kbd>
             </div>
@@ -255,7 +255,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                     <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                     <div>
                       <h4 className="text-xs font-semibold text-foreground">Global Operator Search</h4>
-                      <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                      <p className="text-caption text-muted-foreground mt-0.5 leading-relaxed">
                         Search across real customers, calendar appointments, knowledge documents, FAQs, service catalog, and voice call logs.
                       </p>
                     </div>
@@ -263,7 +263,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
 
                   {/* Frequently accessed navigation commands */}
                   <div>
-                    <div className="px-3 pb-1.5 text-[11px] font-medium tracking-wide uppercase text-muted-foreground/70">
+                    <div className="px-3 pb-1.5 text-caption font-medium tracking-wide uppercase text-muted-foreground/70">
                       Quick Navigation
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
@@ -280,7 +280,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                               <span className="text-xs font-medium text-foreground block truncate">
                                 {item.title}
                               </span>
-                              <span className="text-[10px] text-muted-foreground truncate block">
+                              <span className="text-caption text-muted-foreground truncate block">
                                 {item.badge}
                               </span>
                             </div>
@@ -329,13 +329,13 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                   <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
                     No matching records found in contacts, appointments, documents, FAQs, or calls.
                   </p>
-                  <div className="pt-2 text-[11px] text-muted-foreground/80 space-y-1">
+                  <div className="pt-2 text-caption text-muted-foreground/80 space-y-1">
                     <div>Try searching by:</div>
                     <div className="flex flex-wrap items-center justify-center gap-1.5 mt-1">
-                      <span className="px-2 py-0.5 rounded bg-muted text-[10px]">Customer Name</span>
-                      <span className="px-2 py-0.5 rounded bg-muted text-[10px]">Email Address</span>
-                      <span className="px-2 py-0.5 rounded bg-muted text-[10px]">Phone Number</span>
-                      <span className="px-2 py-0.5 rounded bg-muted text-[10px]">Service or FAQ</span>
+                      <span className="px-2 py-0.5 rounded bg-muted text-caption">Customer Name</span>
+                      <span className="px-2 py-0.5 rounded bg-muted text-caption">Email Address</span>
+                      <span className="px-2 py-0.5 rounded bg-muted text-caption">Phone Number</span>
+                      <span className="px-2 py-0.5 rounded bg-muted text-caption">Service or FAQ</span>
                     </div>
                   </div>
                 </div>
@@ -347,7 +347,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                   {/* Contacts */}
                   {results.contacts.length > 0 && (
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between px-3 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                      <div className="flex items-center justify-between px-3 pt-1 text-caption font-semibold uppercase tracking-wider text-muted-foreground/70">
                         <span className="flex items-center gap-1.5">
                           <Users className="h-3 w-3 text-emerald-500" /> Contacts & Leads
                         </span>
@@ -369,7 +369,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                                 {item.title}
                               </div>
                               {item.description && (
-                                <div className="text-[11px] text-muted-foreground truncate">
+                                <div className="text-caption text-muted-foreground truncate">
                                   {item.description}
                                 </div>
                               )}
@@ -377,7 +377,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                           </div>
                           <div className="flex items-center gap-2 shrink-0 ml-2">
                             {item.badge && (
-                              <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4.5">
+                              <Badge variant="outline" className="text-caption py-0 px-1.5 h-4.5">
                                 {item.badge}
                               </Badge>
                             )}
@@ -391,7 +391,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                   {/* Appointments */}
                   {results.appointments.length > 0 && (
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between px-3 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                      <div className="flex items-center justify-between px-3 pt-1 text-caption font-semibold uppercase tracking-wider text-muted-foreground/70">
                         <span className="flex items-center gap-1.5">
                           <Calendar className="h-3 w-3 text-blue-500" /> Appointments
                         </span>
@@ -413,7 +413,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                                 {item.title}
                               </div>
                               {item.description && (
-                                <div className="text-[11px] text-muted-foreground truncate">
+                                <div className="text-caption text-muted-foreground truncate">
                                   {item.description}
                                 </div>
                               )}
@@ -421,7 +421,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                           </div>
                           <div className="flex items-center gap-2 shrink-0 ml-2">
                             {item.badge && (
-                              <Badge variant="secondary" className="text-[10px] py-0 px-1.5 h-4.5 capitalize">
+                              <Badge variant="secondary" className="text-caption py-0 px-1.5 h-4.5 capitalize">
                                 {item.badge}
                               </Badge>
                             )}
@@ -435,7 +435,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                   {/* Knowledge Base */}
                   {results.knowledge.length > 0 && (
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between px-3 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                      <div className="flex items-center justify-between px-3 pt-1 text-caption font-semibold uppercase tracking-wider text-muted-foreground/70">
                         <span className="flex items-center gap-1.5">
                           <BookOpen className="h-3 w-3 text-purple-500" /> Knowledge Base
                         </span>
@@ -457,7 +457,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                                 {item.title}
                               </div>
                               {item.description && (
-                                <div className="text-[11px] text-muted-foreground truncate">
+                                <div className="text-caption text-muted-foreground truncate">
                                   {item.description}
                                 </div>
                               )}
@@ -465,7 +465,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                           </div>
                           <div className="flex items-center gap-2 shrink-0 ml-2">
                             {item.badge && (
-                              <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4.5">
+                              <Badge variant="outline" className="text-caption py-0 px-1.5 h-4.5">
                                 {item.badge}
                               </Badge>
                             )}
@@ -479,7 +479,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                   {/* FAQs */}
                   {results.faqs.length > 0 && (
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between px-3 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                      <div className="flex items-center justify-between px-3 pt-1 text-caption font-semibold uppercase tracking-wider text-muted-foreground/70">
                         <span className="flex items-center gap-1.5">
                           <HelpCircle className="h-3 w-3 text-amber-500" /> FAQs
                         </span>
@@ -501,7 +501,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                                 {item.title}
                               </div>
                               {item.description && (
-                                <div className="text-[11px] text-muted-foreground truncate">
+                                <div className="text-caption text-muted-foreground truncate">
                                   {item.description}
                                 </div>
                               )}
@@ -509,7 +509,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                           </div>
                           <div className="flex items-center gap-2 shrink-0 ml-2">
                             {item.badge && (
-                              <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4.5">
+                              <Badge variant="outline" className="text-caption py-0 px-1.5 h-4.5">
                                 {item.badge}
                               </Badge>
                             )}
@@ -523,7 +523,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                   {/* Services */}
                   {results.services.length > 0 && (
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between px-3 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                      <div className="flex items-center justify-between px-3 pt-1 text-caption font-semibold uppercase tracking-wider text-muted-foreground/70">
                         <span className="flex items-center gap-1.5">
                           <Briefcase className="h-3 w-3 text-rose-500" /> Services & Pricing
                         </span>
@@ -545,7 +545,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                                 {item.title}
                               </div>
                               {item.description && (
-                                <div className="text-[11px] text-muted-foreground truncate">
+                                <div className="text-caption text-muted-foreground truncate">
                                   {item.description}
                                 </div>
                               )}
@@ -553,7 +553,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                           </div>
                           <div className="flex items-center gap-2 shrink-0 ml-2">
                             {item.metadata && (
-                              <Badge variant="secondary" className="text-[10px] py-0 px-1.5 h-4.5">
+                              <Badge variant="secondary" className="text-caption py-0 px-1.5 h-4.5">
                                 {item.metadata}
                               </Badge>
                             )}
@@ -567,7 +567,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                   {/* Calls */}
                   {results.calls.length > 0 && (
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between px-3 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                      <div className="flex items-center justify-between px-3 pt-1 text-caption font-semibold uppercase tracking-wider text-muted-foreground/70">
                         <span className="flex items-center gap-1.5">
                           <PhoneCall className="h-3 w-3 text-cyan-500" /> Voice Call Sessions
                         </span>
@@ -589,7 +589,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                                 {item.title}
                               </div>
                               {item.description && (
-                                <div className="text-[11px] text-muted-foreground truncate">
+                                <div className="text-caption text-muted-foreground truncate">
                                   {item.description}
                                 </div>
                               )}
@@ -597,7 +597,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                           </div>
                           <div className="flex items-center gap-2 shrink-0 ml-2">
                             {item.badge && (
-                              <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4.5">
+                              <Badge variant="outline" className="text-caption py-0 px-1.5 h-4.5">
                                 {item.badge}
                               </Badge>
                             )}
@@ -611,7 +611,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                   {/* Navigation commands */}
                   {results.navigation.length > 0 && (
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between px-3 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                      <div className="flex items-center justify-between px-3 pt-1 text-caption font-semibold uppercase tracking-wider text-muted-foreground/70">
                         <span className="flex items-center gap-1.5">
                           <Compass className="h-3 w-3 text-primary" /> Navigation
                         </span>
@@ -633,7 +633,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                                 {item.title}
                               </div>
                               {item.description && (
-                                <div className="text-[11px] text-muted-foreground truncate">
+                                <div className="text-caption text-muted-foreground truncate">
                                   {item.description}
                                 </div>
                               )}
@@ -641,7 +641,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
                           </div>
                           <div className="flex items-center gap-2 shrink-0 ml-2">
                             {item.badge && (
-                              <Badge variant="secondary" className="text-[10px] py-0 px-1.5 h-4.5">
+                              <Badge variant="secondary" className="text-caption py-0 px-1.5 h-4.5">
                                 {item.badge}
                               </Badge>
                             )}
@@ -656,19 +656,19 @@ export function GlobalSearchDialog({ open, onOpenChange }: GlobalSearchDialogPro
             </div>
 
             {/* ── Modal Footer ── */}
-            <div className="flex items-center justify-between px-4 py-2.5 border-t border-border/60 bg-muted/20 text-[11px] text-muted-foreground">
+            <div className="flex items-center justify-between px-4 py-2.5 border-t border-border/60 bg-muted/20 text-caption text-muted-foreground">
               <div className="flex items-center gap-3">
                 <span className="inline-flex items-center gap-1">
-                  <kbd className="px-1 py-0.5 rounded bg-muted border border-border/80 text-[10px] font-mono leading-none">
+                  <kbd className="px-1 py-0.5 rounded bg-muted border border-border/80 text-caption font-mono leading-none">
                     ↑
                   </kbd>
-                  <kbd className="px-1 py-0.5 rounded bg-muted border border-border/80 text-[10px] font-mono leading-none">
+                  <kbd className="px-1 py-0.5 rounded bg-muted border border-border/80 text-caption font-mono leading-none">
                     ↓
                   </kbd>
                   <span className="hidden sm:inline">Navigate</span>
                 </span>
                 <span className="inline-flex items-center gap-1">
-                  <kbd className="px-1 py-0.5 rounded bg-muted border border-border/80 text-[10px] font-mono leading-none">
+                  <kbd className="px-1 py-0.5 rounded bg-muted border border-border/80 text-caption font-mono leading-none">
                     ↵
                   </kbd>
                   <span className="hidden sm:inline">Select</span>

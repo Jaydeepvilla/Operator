@@ -200,7 +200,7 @@ export default function TeamPage() {
  {errorMessage && (
    <div className="p-space-3 radius-md bg-rose-500/10 border border-rose-500/20 text-rose-500 text-body-sm flex items-center justify-between animate-fade-in">
      <span>{errorMessage}</span>
-     <button className="text-body-sm hover:opacity-70" onClick={() => setErrorMessage(null)}>✕</button>
+     <Button className="text-body-sm hover:opacity-70" onClick={() => setErrorMessage(null)}>✕</Button>
    </div>
  )}
 

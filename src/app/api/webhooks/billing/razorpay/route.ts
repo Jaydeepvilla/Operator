@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 import { razorpayProvider } from "@/server/services/billing/providers/razorpay";
 import { webhookProcessor } from "@/server/services/billing/webhook-processor";
 
@@ -13,13 +14,15 @@ export async function POST(req: Request) {
 
     const event = JSON.parse(rawBody);
     const eventType = event.event;
-    // Derive unique provider event ID from payment, order, subscription, or event id
+    // Derive unique provider event ID from header, event_id, or eventType-scoped entity ID to avoid collision-suppression across event types
+    const headerEventId = req.headers.get("x-razorpay-event-id");
     const providerEventId =
+      headerEventId ||
       event.event_id ||
-      event.payload?.payment?.entity?.id ||
-      event.payload?.subscription?.entity?.id ||
-      event.payload?.order?.entity?.id ||
-      `rzp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      (event.payload?.payment?.entity?.id ? `${eventType}_${event.payload.payment.entity.id}` : null) ||
+      (event.payload?.subscription?.entity?.id ? `${eventType}_${event.payload.subscription.entity.id}` : null) ||
+      (event.payload?.order?.entity?.id ? `${eventType}_${event.payload.order.entity.id}` : null) ||
+      `rzp_${crypto.createHash("sha256").update(rawBody).digest("hex")}`;
 
     const result = await webhookProcessor.processEvent({
       provider: "razorpay",

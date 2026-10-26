@@ -257,7 +257,7 @@ export function DashboardShell({
                   <span className="text-caption font-medium text-foreground truncate">
                     {user?.name || "Account"}
                   </span>
-                  <span className="text-[11px] text-muted-foreground/70 truncate capitalize">
+                  <span className="text-caption text-muted-foreground/70 truncate capitalize">
                     {roleLabel}
                   </span>
                 </div>
@@ -271,7 +271,7 @@ export function DashboardShell({
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground">
+    <div className="flex h-dvh overflow-hidden bg-background text-foreground">
       {/* Desktop Sidebar */}
       <m.aside
         layout

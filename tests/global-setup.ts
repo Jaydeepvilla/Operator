@@ -27,7 +27,16 @@ async function globalSetup(config: FullConfig) {
     phone: '15552345678',
     timezone: 'America/New_York',
     verificationStatus: 'verified',
-  }).onConflictDoNothing();
+    onboardingStatus: 'completed',
+    onboardingStep: 'completed',
+  }).onConflictDoUpdate({
+    target: organizations.id,
+    set: {
+      onboardingStatus: 'completed',
+      onboardingStep: 'completed',
+      verificationStatus: 'verified',
+    },
+  });
 
   // 2. Seed business profile
   await db.insert(businessProfiles).values({

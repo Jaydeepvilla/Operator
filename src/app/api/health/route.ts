@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { sql } from "drizzle-orm";
+import { logger } from "@/lib/logger";
+import { sanitizeErrorMessage } from "@/lib/observability/redaction";
 
 const startTime = Date.now();
 
@@ -21,10 +23,15 @@ export async function GET() {
     await db.execute(sql`SELECT 1`);
     checks.database = { status: "ok", latencyMs: Date.now() - dbStart };
   } catch (err) {
+    const rawError = err instanceof Error ? err.message : "Unknown database error";
+    logger.error("Database health check failed", { error: err, context: "HealthCheck" });
+
     checks.database = {
       status: "error",
       latencyMs: Date.now() - dbStart,
-      error: err instanceof Error ? err.message : "Unknown database error",
+      error: process.env.NODE_ENV === "production"
+        ? "Database connectivity check failed"
+        : sanitizeErrorMessage(rawError),
     };
   }
 
@@ -38,7 +45,7 @@ export async function GET() {
       checks.tts = { status: "error", error: kokoroStatus.error || "Kokoro TTS engine unready" };
     }
   } catch (err: any) {
-    checks.tts = { status: "error", error: err.message || "Failed checking TTS" };
+    checks.tts = { status: "error", error: sanitizeErrorMessage(err.message || "Failed checking TTS") };
   }
 
   // 3. Inworld TTS Provider check
@@ -49,10 +56,10 @@ export async function GET() {
       ? { status: "ok" }
       : { status: "ok", error: "Not configured (optional)" };
   } catch (err: any) {
-    checks.inworldTts = { status: "error", error: err.message || "Failed checking Inworld TTS" };
+    checks.inworldTts = { status: "error", error: sanitizeErrorMessage(err.message || "Failed checking Inworld TTS") };
   }
 
-  // 3. Overall status
+  // 4. Overall status
   const allHealthy = Object.values(checks).every((c) => c.status === "ok");
 
   const payload = {

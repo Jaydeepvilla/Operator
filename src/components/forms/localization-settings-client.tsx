@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { updateBusinessLocalizationAction } from "@/server/actions/settings";
 import { Button } from "@/components/shared/button";
+import { NativeSelect } from "@/components/shared/native";
 import { cn } from "@/components/shared/utils";
 
 interface CountryConfig {
@@ -136,114 +137,115 @@ export function LocalizationSettingsClient({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Country Selector */}
+        {/* Operating Country */}
         <div className="space-y-2 p-5 rounded-2xl border" style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)" }}>
           <div className="flex items-center gap-2 mb-3">
             <Globe className="h-4 w-4 text-violet-400" />
-            <label className="text-xs font-black uppercase tracking-wider text-white/70">Operating Country</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-white/70">Operating Country</label>
           </div>
-          <select value={countryCode} onChange={(e) => handleCountryChange(e.target.value)}
+          <NativeSelect value={countryCode} onChange={(e) => handleCountryChange(e.target.value)}
             className="w-full h-11 px-4 rounded-xl text-sm text-white font-medium bg-white/5 border border-white/10 focus:border-violet-500/50 focus:outline-none">
             {countries.map((c) => (
               <option key={c.code} value={c.code} className="bg-neutral-900">{c.name} ({c.code})</option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
 
         {/* Primary Language */}
         <div className="space-y-2 p-5 rounded-2xl border" style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)" }}>
           <div className="flex items-center gap-2 mb-3">
             <Languages className="h-4 w-4 text-violet-400" />
-            <label className="text-xs font-black uppercase tracking-wider text-white/70">Primary Language</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-white/70">Primary Language</label>
           </div>
-          <select value={primaryLanguage} onChange={(e) => setPrimaryLanguage(e.target.value)}
+          <NativeSelect value={primaryLanguage} onChange={(e) => setPrimaryLanguage(e.target.value)}
             className="w-full h-11 px-4 rounded-xl text-sm text-white font-medium bg-white/5 border border-white/10 focus:border-violet-500/50 focus:outline-none">
             {languages.map((l) => (
               <option key={l.code} value={l.code} className="bg-neutral-900">{l.nativeName} ({l.name})</option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
 
         {/* Display Currency */}
         <div className="space-y-2 p-5 rounded-2xl border" style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)" }}>
           <div className="flex items-center gap-2 mb-3">
             <DollarSign className="h-4 w-4 text-violet-400" />
-            <label className="text-xs font-black uppercase tracking-wider text-white/70">Preferred Settlement Currency</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-white/70">Preferred Settlement Currency</label>
           </div>
-          <select value={currencyCode} onChange={(e) => setCurrencyCode(e.target.value)}
+          <NativeSelect value={currencyCode} onChange={(e) => setCurrencyCode(e.target.value)}
             className="w-full h-11 px-4 rounded-xl text-sm text-white font-medium bg-white/5 border border-white/10 focus:border-violet-500/50 focus:outline-none">
             {currencies.map((c) => (
               <option key={c.code} value={c.code} className="bg-neutral-900">{c.code} ({c.symbol})</option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
 
         {/* Timezone */}
         <div className="space-y-2 p-5 rounded-2xl border" style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)" }}>
           <div className="flex items-center gap-2 mb-3">
             <Clock className="h-4 w-4 text-violet-400" />
-            <label className="text-xs font-black uppercase tracking-wider text-white/70">Timezone Context</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-white/70">Timezone Context</label>
           </div>
-          <select value={timezone} onChange={(e) => setTimezone(e.target.value)}
+          <NativeSelect value={timezone} onChange={(e) => setTimezone(e.target.value)}
             className="w-full h-11 px-4 rounded-xl text-sm text-white font-medium bg-white/5 border border-white/10 focus:border-violet-500/50 focus:outline-none">
             <option value="UTC" className="bg-neutral-900">Coordinated Universal Time (UTC)</option>
             <option value="America/New_York" className="bg-neutral-900">Eastern Time (America/New_York)</option>
             <option value="Europe/Berlin" className="bg-neutral-900">Central European Time (Europe/Berlin)</option>
             <option value="Europe/London" className="bg-neutral-900">GMT / British Time (Europe/London)</option>
             <option value="Asia/Kolkata" className="bg-neutral-900">Indian Standard Time (Asia/Kolkata)</option>
-          </select>
+          </NativeSelect>
         </div>
 
         {/* Date Format */}
         <div className="space-y-2 p-5 rounded-2xl border" style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)" }}>
           <div className="flex items-center gap-2 mb-3">
             <Calendar className="h-4 w-4 text-violet-400" />
-            <label className="text-xs font-black uppercase tracking-wider text-white/70">Date Presentation</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-white/70">Date Presentation</label>
           </div>
-          <select value={dateFormat} onChange={(e) => setDateFormat(e.target.value)}
+          <NativeSelect value={dateFormat} onChange={(e) => setDateFormat(e.target.value)}
             className="w-full h-11 px-4 rounded-xl text-sm text-white font-medium bg-white/5 border border-white/10 focus:border-violet-500/50 focus:outline-none">
             <option value="YYYY-MM-DD" className="bg-neutral-900">YYYY-MM-DD (ISO standard)</option>
             <option value="DD/MM/YYYY" className="bg-neutral-900">DD/MM/YYYY (Europe/India)</option>
             <option value="MM/DD/YYYY" className="bg-neutral-900">MM/DD/YYYY (US standard)</option>
-          </select>
+          </NativeSelect>
         </div>
 
         {/* Time presentation */}
         <div className="space-y-2 p-5 rounded-2xl border" style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)" }}>
           <div className="flex items-center gap-2 mb-3">
             <Clock className="h-4 w-4 text-violet-400" />
-            <label className="text-xs font-black uppercase tracking-wider text-white/70">Time Clock Dial</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-white/70">Time Clock Dial</label>
           </div>
-          <select value={timeFormat} onChange={(e) => setTimeFormat(e.target.value)}
+          <NativeSelect value={timeFormat} onChange={(e) => setTimeFormat(e.target.value)}
             className="w-full h-11 px-4 rounded-xl text-sm text-white font-medium bg-white/5 border border-white/10 focus:border-violet-500/50 focus:outline-none">
             <option value="24h" className="bg-neutral-900">24-Hour System (military/standard)</option>
             <option value="12h" className="bg-neutral-900">12-Hour System (AM/PM standard)</option>
-          </select>
+          </NativeSelect>
         </div>
 
         {/* Week Start Day */}
         <div className="space-y-2 p-5 rounded-2xl border" style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)" }}>
           <div className="flex items-center gap-2 mb-3">
             <Calendar className="h-4 w-4 text-violet-400" />
-            <label className="text-xs font-black uppercase tracking-wider text-white/70">Week Start Day</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-white/70">Week Start Day</label>
           </div>
-          <select value={weekStart} onChange={(e) => setWeekStart(Number(e.target.value))}
+          <NativeSelect value={weekStart} onChange={(e) => setWeekStart(Number(e.target.value))}
             className="w-full h-11 px-4 rounded-xl text-sm text-white font-medium bg-white/5 border border-white/10 focus:border-violet-500/50 focus:outline-none">
             <option value={1} className="bg-neutral-900">Monday</option>
             <option value={0} className="bg-neutral-900">Sunday</option>
-          </select>
+          </NativeSelect>
         </div>
 
         {/* Measurement system */}
         <div className="space-y-2 p-5 rounded-2xl border" style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)" }}>
           <div className="flex items-center gap-2 mb-3">
             <Layers className="h-4 w-4 text-violet-400" />
-            <label className="text-xs font-black uppercase tracking-wider text-white/70">Measurement Standard</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-white/70">Measurement Standard</label>
           </div>
-          <select value={measurementUnit} onChange={(e) => setMeasurementUnit(e.target.value)}
+          <NativeSelect value={measurementUnit} onChange={(e) => setMeasurementUnit(e.target.value)}
             className="w-full h-11 px-4 rounded-xl text-sm text-white font-medium bg-white/5 border border-white/10 focus:border-violet-500/50 focus:outline-none">
             <option value="metric" className="bg-neutral-900">Metric System (km, Celsius, kg)</option>
             <option value="imperial" className="bg-neutral-900">Imperial System (miles, Fahrenheit, lbs)</option>
-          </select>
+          </NativeSelect>
         </div>
       </div>
 

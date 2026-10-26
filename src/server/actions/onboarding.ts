@@ -18,7 +18,7 @@ import { syncService } from "../services/sync";
 import { db } from "@/server/db";
 import { users, organizations, memberships, services, serviceCategories } from "@/server/db/schema";
 import { eq, and } from "drizzle-orm";
-import { createSession } from "@/lib/auth/session";
+import { createSession, isSecureCookie } from "@/lib/auth/session";
 import { userRepository } from "../repositories/user";
 import crypto from "crypto";
 import { cookies } from "next/headers";
@@ -74,7 +74,7 @@ export async function checkUserOrganization(): Promise<OnboardingStateResult> {
               name: "active_org_id",
               value: targetOrg.id,
               httpOnly: true,
-              secure: process.env.NODE_ENV === "production",
+              secure: isSecureCookie(),
               sameSite: "lax",
               path: "/",
             });
@@ -447,7 +447,7 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
         name: "active_org_id",
         value: organization.id,
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: isSecureCookie(),
         sameSite: "lax",
         path: "/",
       });

@@ -14,7 +14,7 @@ test.describe("Operator Page Verification", () => {
   for (const page of pages) {
     test(`Verify ${page.name} loads and does not have major layout issues`, async ({ page: browserPage }) => {
       const url = `http://localhost:3000${page.path}`;
-      const response = await browserPage.goto(url, { waitUntil: "networkidle" });
+      const response = await browserPage.goto(url, { waitUntil: "domcontentloaded" });
       
       expect(response).not.toBeNull();
       const status = response!.status();

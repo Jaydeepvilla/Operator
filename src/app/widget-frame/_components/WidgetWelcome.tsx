@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react";
 import { ChevronRight, Sparkles, CalendarCheck2, Clock, Users } from "lucide-react";
+import { Button } from "@/components/shared/button";
 
 interface WidgetWelcomeProps {
   companyName: string;
@@ -63,13 +64,13 @@ export function WidgetWelcome({
 
       {/* Action Cards */}
       <div className="flex flex-col gap-2">
-        <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground px-1">
+        <span className="text-caption font-medium uppercase tracking-wider text-muted-foreground px-1">
           Instant Actions
         </span>
 
         {/* Action 1: Book Appointment (Only if services are setup) */}
         {hasBooking && hasServices && (
-          <button
+          <Button
             type="button"
             onClick={() => onSelectIntent("book")}
             className="group flex items-center justify-between p-3 rounded-xl border border-border/50 bg-card hover:bg-accent/40 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 text-left cursor-pointer"
@@ -82,18 +83,18 @@ export function WidgetWelcome({
                 <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
                   Book an Appointment
                 </div>
-                <div className="text-[11px] text-muted-foreground truncate">
+                <div className="text-caption text-muted-foreground truncate">
                   Real-time openings with instant booking
                 </div>
               </div>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
-          </button>
+          </Button>
         )}
 
         {/* Action 2: View Services & Rates (Only if services are setup) */}
         {hasServices && (
-          <button
+          <Button
             type="button"
             onClick={() => onSelectIntent("services")}
             className="group flex items-center justify-between p-3 rounded-xl border border-border/50 bg-card hover:bg-accent/40 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 text-left cursor-pointer"
@@ -106,17 +107,17 @@ export function WidgetWelcome({
                 <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
                   Explore Services & Pricing
                 </div>
-                <div className="text-[11px] text-muted-foreground truncate">
+                <div className="text-caption text-muted-foreground truncate">
                   Browse our treatments, durations & fees
                 </div>
               </div>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
-          </button>
+          </Button>
         )}
 
         {/* Action 3: Business Hours & Info */}
-        <button
+        <Button
           type="button"
           onClick={() => onSelectIntent("hours")}
           className="group flex items-center justify-between p-3 rounded-xl border border-border/50 bg-card hover:bg-accent/40 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 text-left cursor-pointer"
@@ -129,17 +130,17 @@ export function WidgetWelcome({
               <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
                 Business Hours & Details
               </div>
-              <div className="text-[11px] text-muted-foreground truncate">
+              <div className="text-caption text-muted-foreground truncate">
                 Opening schedule, location & policies
               </div>
             </div>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
-        </button>
+        </Button>
 
         {/* Action 4: Speak with Staff (Always helpful, especially when no services configured) */}
         {!hasServices && (
-          <button
+          <Button
             type="button"
             onClick={() => onSelectIntent("question", "I'd like to speak with a staff member or manager.")}
             className="group flex items-center justify-between p-3 rounded-xl border border-border/50 bg-card hover:bg-accent/40 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 text-left cursor-pointer"
@@ -152,32 +153,32 @@ export function WidgetWelcome({
                 <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
                   Speak with Staff
                 </div>
-                <div className="text-[11px] text-muted-foreground truncate">
+                <div className="text-caption text-muted-foreground truncate">
                   Connect with a team member or leave a note
                 </div>
               </div>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
-          </button>
+          </Button>
         )}
       </div>
 
       {/* Suggested Starter Questions */}
       {questionsToShow.length > 0 && (
         <div className="flex flex-col gap-2 pt-1">
-          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground px-1">
+          <span className="text-caption font-medium uppercase tracking-wider text-muted-foreground px-1">
             Common Inquiries
           </span>
           <div className="flex flex-wrap gap-1.5">
             {questionsToShow.map((q, idx) => (
-              <button
+              <Button
                 key={idx}
                 type="button"
                 onClick={() => onSelectIntent("question", q)}
                 className="text-xs text-left px-3 py-1.5 rounded-full border border-border/60 bg-muted/40 hover:bg-primary/10 hover:border-primary/40 text-foreground/80 hover:text-foreground transition-all cursor-pointer select-none"
               >
                 {q}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

@@ -9,6 +9,7 @@ import { importsRepository } from "../../repositories/imports";
 import { chunkingService } from "../chunking";
 import { safeFetch } from "./ssrf";
 import { ContentExtractor } from "./extractor";
+import { sanitizeErrorMessage } from "@/lib/observability/redaction";
 
 export interface SelectedPagePayload {
   title: string;
@@ -190,25 +191,36 @@ export class WebsiteIngestionPipeline {
         importedCount++;
       } catch (err: any) {
         failedCount++;
+        const safeError = sanitizeErrorMessage(err?.message || "Failed to ingest page");
         failedPagesList.push({
           url: page.url,
-          error: err?.message || "Failed to ingest page",
+          error: safeError,
         });
-        console.error(`[Website Ingestion] Error processing ${page.url}:`, err);
+        console.error(`[Website Ingestion] Error processing page ${i + 1}: ${safeError}`);
       }
     }
 
     // 7. Finalize Import Status
     const startTime = (importRecord.metadata as any)?.startTime || Date.now();
     const durationMs = Date.now() - startTime;
-    const finalStatus = failedCount > 0 && importedCount > 0 ? "completed" : failedCount === totalPages ? "failed" : "completed";
+    const finalStatus =
+      failedCount === totalPages
+        ? "failed"
+        : failedCount > 0 && (importedCount > 0 || skippedCount > 0)
+        ? "partial"
+        : "completed";
 
     await importsRepository.update(importId, {
       status: finalStatus,
-      pagesScraped: importedCount,
+      pagesScraped: importedCount + skippedCount,
       metadata: {
         ...(importRecord.metadata as Record<string, any>),
-        stage: finalStatus === "failed" ? "Ingestion Failed" : "Completed Ingestion",
+        stage:
+          finalStatus === "failed"
+            ? "Ingestion Failed"
+            : finalStatus === "partial"
+            ? `Partially Completed (${importedCount + skippedCount}/${totalPages} pages)`
+            : "Completed Ingestion",
         progress: 100,
         durationMs,
         stats: {

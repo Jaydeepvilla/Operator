@@ -11,11 +11,15 @@ export const metadata: Metadata = {
     "Sign in to your Operator workspace — the AI Business Operating System that books, qualifies, and answers 24/7.",
 };
 
+import { headers } from "next/headers";
+
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const { userId } = await auth();
+  const reqHeaders = await headers();
+  const pathname = reqHeaders.get("x-pathname") || "";
 
-  // Authenticated users should not see auth pages — redirect to dashboard
-  if (userId) {
+  // Authenticated users should not see auth entry pages — redirect to dashboard
+  if (userId && !pathname.includes("/login-success")) {
     redirect("/dashboard");
   }
 

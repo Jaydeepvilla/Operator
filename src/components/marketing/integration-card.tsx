@@ -55,7 +55,7 @@ export function IntegrationCard({
           <div className="min-w-0">
             <div className="flex items-center gap-space-2">
               <h4 className="text-body-sm font-semibold text-foreground truncate">{integration.name}</h4>
-              <span className="text-[10px] font-mono text-muted-foreground/70 uppercase px-space-2 py-space-0.5 rounded bg-[hsl(var(--foreground)/0.03)] shrink-0">
+              <span className="text-caption font-mono text-muted-foreground/70 uppercase px-space-2 py-space-0.5 rounded bg-[hsl(var(--foreground)/0.03)] shrink-0">
                 {integration.category}
               </span>
             </div>
@@ -68,7 +68,7 @@ export function IntegrationCard({
         <div className="flex items-center gap-space-3 shrink-0">
           <span
             className={cn(
-              "text-[9px] font-mono uppercase tracking-wider px-space-2 py-space-0.5 rounded-full border hidden md:inline-flex items-center gap-1",
+              "text-caption font-mono uppercase tracking-wider px-space-2 py-space-0.5 rounded-full border hidden md:inline-flex items-center gap-1",
               isLive
                 ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                 : "bg-amber-500/10 text-amber-500 border-amber-500/20"
@@ -106,7 +106,7 @@ export function IntegrationCard({
               )}
             </Button>
           ) : (
-            <span className="text-[11px] font-medium text-muted-foreground/60 px-space-2.5 py-1">
+            <span className="text-caption font-medium text-muted-foreground/60 px-space-2.5 py-1">
               Coming Soon
             </span>
           )}
@@ -138,12 +138,12 @@ export function IntegrationCard({
               {integration.logo}
             </div>
             <div className="flex items-center gap-space-2">
-              <span className="text-[10px] font-mono uppercase tracking-wider px-space-2.5 py-space-1 rounded-full border border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.02)] text-muted-foreground font-semibold">
+              <span className="text-caption font-mono uppercase tracking-wider px-space-2.5 py-space-1 rounded-full border border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.02)] text-muted-foreground font-semibold">
                 {integration.difficulty}
               </span>
               <span
                 className={cn(
-                  "text-[10px] font-mono uppercase tracking-wider px-space-2.5 py-space-1 rounded-full border font-bold inline-flex items-center gap-1",
+                  "text-caption font-mono uppercase tracking-wider px-space-2.5 py-space-1 rounded-full border font-bold inline-flex items-center gap-1",
                   isConnected
                     ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/25"
                     : "bg-muted/40 text-muted-foreground border-border/40"
@@ -162,7 +162,7 @@ export function IntegrationCard({
 
           {/* Title & Category */}
           <div className="mb-space-2">
-            <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-primary block mb-space-1">
+            <span className="text-caption font-mono tracking-widest uppercase font-semibold text-primary block mb-space-1">
               {integration.category}
             </span>
             <h3 className="text-title-lg font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">
@@ -177,7 +177,7 @@ export function IntegrationCard({
           {/* Capabilities Callout Box */}
           {integration.capabilities && (
             <div className="mb-space-5 p-space-3.5 rounded-xl border border-[hsl(var(--foreground)/0.04)] bg-[hsl(var(--foreground)/0.015)] group-hover:bg-primary/[0.02] transition-colors">
-              <div className="flex items-center gap-space-1.5 text-[10px] font-mono uppercase font-semibold text-foreground/70 mb-space-1">
+              <div className="flex items-center gap-space-1.5 text-caption font-mono uppercase font-semibold text-foreground/70 mb-space-1">
                 <Zap className="h-3 w-3 text-primary" />
                 <span>Active AI Function</span>
               </div>
@@ -192,7 +192,7 @@ export function IntegrationCard({
             {integration.features.slice(0, 3).map((feat) => (
               <span
                 key={feat}
-                className="text-[11px] px-space-2.5 py-space-1 rounded-md border border-[hsl(var(--foreground)/0.04)] bg-[hsl(var(--foreground)/0.02)] text-foreground/75 font-medium"
+                className="text-caption px-space-2.5 py-space-1 rounded-md border border-[hsl(var(--foreground)/0.04)] bg-[hsl(var(--foreground)/0.02)] text-foreground/75 font-medium"
               >
                 {feat}
               </span>
@@ -251,12 +251,12 @@ export function IntegrationCard({
             {integration.logo}
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-mono text-muted-foreground/80 uppercase px-space-2 py-0.5 rounded bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.04)]">
+            <span className="text-caption font-mono text-muted-foreground/80 uppercase px-space-2 py-0.5 rounded bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.04)]">
               {integration.category}
             </span>
             <span
               className={cn(
-                "text-[9px] font-mono uppercase tracking-wider px-space-2 py-0.5 rounded-full border",
+                "text-caption font-mono uppercase tracking-wider px-space-2 py-0.5 rounded-full border",
                 isLive
                   ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                   : "bg-amber-500/10 text-amber-500 border-amber-500/20"
@@ -278,7 +278,7 @@ export function IntegrationCard({
         {/* Quick features (compact bullet line) */}
         <div className="space-y-1 mb-space-4 border-t border-[hsl(var(--foreground)/0.04)] pt-space-3">
           {integration.features.slice(0, 2).map((f) => (
-            <div key={f} className="flex items-center gap-1.5 text-[11px] text-foreground/75 truncate">
+            <div key={f} className="flex items-center gap-1.5 text-caption text-foreground/75 truncate">
               <CheckCircle2 className="h-3 w-3 text-primary/70 shrink-0" />
               <span className="truncate">{f}</span>
             </div>
@@ -289,7 +289,7 @@ export function IntegrationCard({
       {/* Button */}
       <div className="pt-space-2">
         {isLive ? (
-          <button
+          <Button
             onClick={() => onConnect?.(integration.id)}
             disabled={isLoading}
             className={cn(
@@ -300,9 +300,9 @@ export function IntegrationCard({
             )}
           >
             {isLoading ? "Connecting..." : isConnected ? "✓ Connected" : "Connect"}
-          </button>
+          </Button>
         ) : (
-          <div className="w-full py-1 text-center text-[10px] font-mono text-muted-foreground/50 uppercase tracking-wider">
+          <div className="w-full py-1 text-center text-caption font-mono text-muted-foreground/50 uppercase tracking-wider">
             In development
           </div>
         )}

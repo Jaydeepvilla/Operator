@@ -558,7 +558,7 @@ export function DashboardPreview() {
  </span>
  </div>
  </div>
- <NativeButton className="text-muted-foreground hover:text-foreground shrink-0 p-space-1.5 hover:bg-black/5 dark:hover:bg-white/10 radius-md transition-colors hidden xl:block">
+ <NativeButton aria-label="Admin options" className="text-muted-foreground hover:text-foreground shrink-0 p-space-1.5 hover:bg-black/5 dark:hover:bg-white/10 radius-md transition-colors hidden xl:block">
  <MoreHorizontal className="h-4 w-4" />
  </NativeButton>
  </div>
@@ -832,7 +832,7 @@ export function DashboardPreview() {
  </p>
  </div>
  <div className="flex items-center gap-space-2 shrink-0">
- <Button className="h-9 w-9 p-space-0 radius-md border-border-default bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all">
+ <Button aria-label="More options" variant="ghost" className="h-9 w-9 p-space-0 radius-md border-border-default bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all">
  <MoreHorizontal className="h-5 w-5" />
  </Button>
  </div>
@@ -859,6 +859,7 @@ export function DashboardPreview() {
 
  <div className="relative z-10 flex items-center gap-space-4">
  <NativeButton
+ aria-label={isPlaying ? "Pause audio recording" : "Play audio recording"}
  onClick={handlePlayPause}
  className="h-12 w-12 radius-md bg-gradient-to-br from-primary to-indigo-600 text-white flex items-center justify-center hover:scale-105 transition-all 0_0_20px_rgba(99,102,241,0.4)] shrink-0 active:scale-95 border-white/20"
  >

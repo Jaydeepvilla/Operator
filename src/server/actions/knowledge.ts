@@ -559,18 +559,36 @@ export async function executeWebsiteIngestionAction(data: {
       throw new Error("Import run record not found or access denied");
     }
 
-    // Launch the real asynchronous ingestion pipeline
-    WebsiteIngestionPipeline.runIngestion(
-      orgId,
-      data.importId,
-      data.selectedPages,
-      data.duplicateHandling
-    ).catch(err => {
-      console.error("[Website Ingestion Pipeline Failure]:", err);
+    // 1. Mark import record as queued
+    await importsRepository.update(data.importId, {
+      status: "queued",
+      metadata: {
+        ...(importRecord.metadata as Record<string, any>),
+        stage: "Queued for background worker ingestion",
+        progress: 0,
+        queuedAt: new Date().toISOString(),
+      },
     });
 
+    // 2. Enqueue durable background worker job with deduplication
+    const { worker } = await import("@/server/services/jobs/worker");
+    const jobId = await worker.enqueue(
+      "website_ingestion",
+      {
+        organizationId: orgId,
+        importId: data.importId,
+        selectedPages: data.selectedPages,
+        duplicateHandling: data.duplicateHandling,
+      },
+      {
+        organizationId: orgId,
+        idempotencyKey: `ingest_${data.importId}`,
+        maxAttempts: 3,
+      }
+    );
+
     revalidatePath("/kb");
-    return { success: true };
+    return { success: true, jobId, message: "Website ingestion enqueued for background execution" };
   } catch (error: any) {
     return { success: false, error: error?.message || "We couldn't start importing your website. Try again." };
   }

@@ -2605,10 +2605,17 @@ export const taxRates = pgTable("tax_rates", {
 export const billingEvents = pgTable("billing_events", {
   id: uuid("id").defaultRandom().primaryKey(),
   organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }),
+  provider: text("provider"),
+  providerEventId: text("provider_event_id"),
   eventType: text("event_type").notNull(),
+  status: text("status").default("received").notNull(), // 'received', 'processing', 'processed', 'failed'
+  error: text("error"),
   payload: jsonb("payload").default({}).notNull(),
+  processedAt: timestamp("processed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  uniqueIndex("billing_events_provider_event_unique").on(table.provider, table.providerEventId),
+]);
 
 export const revenueMetrics = pgTable("revenue_metrics", {
   id: uuid("id").defaultRandom().primaryKey(),

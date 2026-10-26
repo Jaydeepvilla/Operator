@@ -4,6 +4,7 @@ import React from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "./button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { sentry } from "@/lib/observability/sentry";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -49,7 +50,17 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     );
 
     onError?.(error, errorInfo);
-    // TODO: Forward to Sentry when integrated
+
+    // Forward to Sentry bridge
+    sentry.captureException(error, {
+      tags: {
+        context: `ErrorBoundary:${context}`,
+      },
+      extra: {
+        errorId: this.state.errorId,
+        componentStack: errorInfo.componentStack,
+      },
+    });
   }
 
   handleReset = () => {

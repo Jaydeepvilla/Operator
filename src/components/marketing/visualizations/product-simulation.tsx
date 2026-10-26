@@ -19,6 +19,7 @@ import {
   Zap,
   Globe,
 } from "lucide-react";
+import { Button } from "@/components/shared/button";
 
 interface ChatMessage {
   id: string;
@@ -201,14 +202,17 @@ function BrowserHeader({ onReset, isRunning }: { onReset: () => void; isRunning:
 
       {/* Reset & Status Controls */}
       <div className="flex items-center gap-2">
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onReset}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted transition-colors border border-border/40 cursor-pointer"
+          className="inline-flex items-center gap-1.5 h-7 px-2.5 py-1 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted transition-colors border border-border/40 cursor-pointer"
+          aria-label="Replay simulation"
           title="Replay simulation"
         >
           <RotateCcw className="h-3 w-3" />
           <span className="hidden md:inline">Replay</span>
-        </button>
+        </Button>
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -240,7 +244,7 @@ function ChatPane({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-foreground tracking-tight">Operator AI Receptionist</span>
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-primary/10 text-primary uppercase tracking-wide">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-caption font-semibold bg-primary/10 text-primary uppercase tracking-wide">
                 Autonomous
               </span>
             </div>
@@ -286,10 +290,10 @@ function ChatPane({
 
                 <div className={`flex flex-col max-w-[85%] sm:max-w-[78%] ${isAI ? "items-end" : "items-start"}`}>
                   <div className="flex items-center gap-1.5 mb-1 px-1">
-                    <span className="text-[11px] font-medium text-muted-foreground">
+                    <span className="text-caption font-medium text-muted-foreground">
                       {isAI ? "Operator Concierge" : "Mark B."}
                     </span>
-                    <span className="text-[10px] text-muted-foreground/50 font-mono">{turn.timestamp}</span>
+                    <span className="text-caption text-muted-foreground/50 font-mono">{turn.timestamp}</span>
                   </div>
 
                   {turn.isTyping ? (
@@ -333,7 +337,7 @@ function ChatPane({
           </div>
           <span className="font-medium text-foreground/80">Voice AI + Chat Channel</span>
         </div>
-        <span className="font-mono text-[11px] text-muted-foreground/80">Zero Human Hand-off Required</span>
+        <span className="font-mono text-caption text-muted-foreground/80">Zero Human Hand-off Required</span>
       </div>
     </div>
   );
@@ -352,7 +356,7 @@ function MetricsPane({ phase }: { phase: SimulationPhase }) {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-foreground tracking-tight">Real-time State & CRM</span>
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-caption font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono">
                 Sync Active
               </span>
             </div>
@@ -413,7 +417,7 @@ function MetricsPane({ phase }: { phase: SimulationPhase }) {
               <span className="text-xs font-medium text-foreground">Google Calendar Sync</span>
             </div>
             <span
-              className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium transition-all duration-300 ${
+              className={`px-2.5 py-0.5 rounded-full text-caption font-mono font-medium transition-all duration-300 ${
                 phase.calendarStatus === "booked"
                   ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-semibold"
                   : phase.calendarStatus === "checking"
@@ -432,7 +436,7 @@ function MetricsPane({ phase }: { phase: SimulationPhase }) {
                 <Clock className="h-3 w-3" /> Tomorrow, Friday • 2:00 PM – 2:45 PM
               </p>
             </div>
-            <div className="text-right font-mono text-[11px] text-muted-foreground">
+            <div className="text-right font-mono text-caption text-muted-foreground">
               <span>{phase.calendarSlot}</span>
             </div>
           </div>
@@ -441,28 +445,28 @@ function MetricsPane({ phase }: { phase: SimulationPhase }) {
         {/* Card 3: Metrics Counters */}
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 p-3.5 shadow-xs">
-            <span className="text-[11px] uppercase tracking-wider font-mono font-medium text-muted-foreground">
+            <span className="text-caption uppercase tracking-wider font-mono font-medium text-muted-foreground">
               Calls Handled Today
             </span>
             <div className="flex items-baseline justify-between mt-1">
               <p className="text-2xl font-bold font-mono text-foreground tracking-tight transition-all duration-300">
                 {phase.callCount}
               </p>
-              <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+              <span className="text-caption font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
                 +14% today
               </span>
             </div>
           </div>
 
           <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 p-3.5 shadow-xs">
-            <span className="text-[11px] uppercase tracking-wider font-mono font-medium text-muted-foreground">
+            <span className="text-caption uppercase tracking-wider font-mono font-medium text-muted-foreground">
               Intake Precision
             </span>
             <div className="flex items-baseline justify-between mt-1">
               <p className="text-2xl font-bold font-mono text-emerald-500 tracking-tight">
                 99.8%
               </p>
-              <span className="text-[11px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+              <span className="text-caption font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
                 Zero Misses
               </span>
             </div>
@@ -578,7 +582,7 @@ export function ProductSimulation() {
   return (
     <div className="relative mx-auto max-w-5xl w-full">
       {/* Radiant Background Aura / Glow */}
-      <div className="absolute -inset-1 sm:-inset-2 rounded-[2.5rem] bg-gradient-to-r from-indigo-500/15 via-purple-500/10 to-pink-500/15 blur-2xl opacity-50 dark:opacity-30 pointer-events-none -z-10" />
+      <div className="absolute -inset-1 sm:-inset-2 rounded-3xl bg-gradient-to-r from-primary/15 via-primary-light/10 to-primary/15 blur-2xl opacity-50 dark:opacity-30 pointer-events-none -z-10" />
 
       {/* ── Browser Window Shell Container ── */}
       <div className="relative rounded-3xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-[0_20px_70px_-15px_rgba(99,102,241,0.12),0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden">

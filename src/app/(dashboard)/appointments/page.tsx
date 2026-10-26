@@ -48,7 +48,7 @@ import { PageTitle } from "@/components/shared/page-title";
 import { EmptyState } from "@/components/shared/empty-state";
 import { LoadingState } from "@/components/shared/loading-state";
 import { DonutChartCard } from "@/components/charts";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/shared/tabs";
 
 interface AppointmentItem {
  appointment: {
@@ -391,14 +391,14 @@ export default function AppointmentsPage() {
  <TabsTrigger value="day" disabled className="gap-1.5 opacity-60 cursor-not-allowed">
  <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
  Day
- <span className="ml-0.5 px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 rounded-sm leading-none">
+ <span className="ml-0.5 px-1 py-0.5 text-caption font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 rounded-sm leading-none">
  Soon
  </span>
  </TabsTrigger>
  <TabsTrigger value="week" disabled className="gap-1.5 opacity-60 cursor-not-allowed">
  <CalendarRange className="h-3.5 w-3.5 shrink-0" />
  Week
- <span className="ml-0.5 px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 rounded-sm leading-none">
+ <span className="ml-0.5 px-1 py-0.5 text-caption font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 rounded-sm leading-none">
  Soon
  </span>
  </TabsTrigger>
@@ -507,7 +507,7 @@ export default function AppointmentsPage() {
  )}
  >
  {/* Clickable Header Row */}
- <button
+ <Button
  type="button"
  onClick={() => setSelectedAptId(isSelected ? null : item.appointment.id)}
  className={cn(
@@ -526,7 +526,7 @@ export default function AppointmentsPage() {
  {getStatusBadge(item.appointment.status)}
  </div>
  </div>
- <div className="text-[11px] text-muted-foreground/80 flex flex-wrap gap-x-space-3 gap-y-space-0.5">
+ <div className="text-caption text-muted-foreground/80 flex flex-wrap gap-x-space-3 gap-y-space-0.5">
  <span className="flex items-center gap-space-1 text-foreground/80"><Clock className="h-3 w-3 shrink-0 text-primary"/> {dateStr} · {timeStr}</span>
  <span className="truncate max-w-32">Svc: <strong>{item.service?.name || "N/A"}</strong></span>
  <span className="truncate max-w-24">Staff: <strong>{item.staff?.name || "N/A"}</strong></span>
@@ -535,12 +535,12 @@ export default function AppointmentsPage() {
 
  <div className="text-right pl-space-3 shrink-0 flex items-center gap-space-3">
  <div className="space-y-space-0.5">
- <span className="text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider block">Price</span>
+ <span className="text-caption text-muted-foreground/50 font-semibold uppercase tracking-wider block">Price</span>
  <span className="text-caption font-semibold text-primary block">${item.service?.price || "0.00"}</span>
  </div>
  <ChevronRight className={cn("h-4 w-4 text-muted-foreground/40 transition-transform duration-200", isSelected && "rotate-90")} />
  </div>
- </button>
+ </Button>
 
  {/* Inline expanded details */}
  {isSelected && (
@@ -555,7 +555,7 @@ export default function AppointmentsPage() {
  {/* Contact Info */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-4">
  <div className="space-y-space-2 bg-background/60 border border-slate-200/30 radius-lg p-space-4 shadow-[0_2px_4px_rgba(0,0,0,0.01)] hover:shadow-sm transition-all duration-300 ease-out">
- <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 block">Customer Information</span>
+ <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60 block">Customer Information</span>
  <div className="space-y-space-2 text-caption">
  <div className="flex items-center gap-space-2 text-caption">
  <Mail className="h-3.5 w-3.5 text-primary/70 shrink-0"/> 
@@ -570,7 +570,7 @@ export default function AppointmentsPage() {
 
  {/* Reschedule / Cancel status info */}
  <div className="space-y-space-2 bg-background/60 border border-slate-200/30 radius-lg p-space-4 shadow-[0_2px_4px_rgba(0,0,0,0.01)] hover:shadow-sm transition-all duration-300 ease-out">
- <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 block">Scheduling Context</span>
+ <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60 block">Scheduling Context</span>
  <div className="space-y-space-1.5 text-caption">
  <div>Booking ID: <span className="font-mono text-muted-foreground">{activeDetails.details.appointment.id}</span></div>
  <div className="flex items-center gap-space-1.5">
@@ -582,7 +582,7 @@ export default function AppointmentsPage() {
 
  {/* Status Action Buttons */}
  <div className="space-y-space-3 border-t border-slate-200/30 pt-space-4">
- <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/55 block">Triage Actions</span>
+ <span className="text-caption font-semibold uppercase tracking-widest text-muted-foreground/55 block">Triage Actions</span>
  <div className="flex flex-wrap gap-space-2">
  <Button 
  size="sm"
@@ -638,7 +638,7 @@ export default function AppointmentsPage() {
  {/* Unified Customer Profile context */}
  {activeDetails.leadProfile && (
  <div className="space-y-space-3 border-t border-slate-200/30 pt-space-4">
- <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/55 block">Unified Customer Profile</span>
+ <span className="text-caption font-semibold uppercase tracking-widest text-muted-foreground/55 block">Unified Customer Profile</span>
  <div className="bg-background/60 border border-slate-200/30 radius-lg p-space-4 space-y-space-3 shadow-xs transition-all duration-300 ease-out hover:shadow-sm">
  <div className="flex justify-between items-center text-caption">
  <span className="text-muted-foreground/80 font-medium">Qualification Status:</span>
@@ -648,7 +648,7 @@ export default function AppointmentsPage() {
  {/* Answers checklist summary */}
  {activeDetails.leadAnswers && activeDetails.leadAnswers.length > 0 && (
  <div className="space-y-space-2 pt-space-3 border-t border-slate-200/20 ">
- <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider block font-semibold flex items-center gap-space-1">
+ <span className="text-caption text-muted-foreground/60 uppercase tracking-wider block font-semibold flex items-center gap-space-1">
  <ClipboardList className="h-3 w-3 text-muted-foreground/45 shrink-0"/> Captured Qualification
  </span>
  <div className="space-y-space-2 max-h-36 overflow-y-auto pr-space-1">
@@ -665,7 +665,7 @@ export default function AppointmentsPage() {
  {/* Summary items */}
  {activeDetails.summary && (
  <div className="space-y-space-1.5 pt-space-3 border-t border-slate-200/20 text-caption">
- <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider block font-semibold flex items-center gap-space-1">
+ <span className="text-caption text-muted-foreground/60 uppercase tracking-wider block font-semibold flex items-center gap-space-1">
  <MessageSquare className="h-3 w-3 text-muted-foreground/45 shrink-0"/> AI Summary
  </span>
  <p className="text-muted-foreground leading-relaxed italic">"{activeDetails.summary.summaryText}"</p>
@@ -677,7 +677,7 @@ export default function AppointmentsPage() {
 
  {/* Notes log */}
  <div className="space-y-space-3 border-t border-slate-200/30 pt-space-4">
- <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/55 block">Staff Booking Notes</span>
+ <span className="text-caption font-semibold uppercase tracking-widest text-muted-foreground/55 block">Staff Booking Notes</span>
  <div className="space-y-space-3">
  {activeDetails.notes && activeDetails.notes.map((note: any) => (
  <div key={note.id} className="bg-background/80 border border-slate-200/30 radius-lg p-space-3 shadow-xs text-caption space-y-space-2 hover:shadow-sm transition-all duration-300 ease-out">

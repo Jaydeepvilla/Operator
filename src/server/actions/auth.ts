@@ -125,6 +125,29 @@ export async function loginAction(input: any) {
     // 7. Initialize sessions & refresh token cookies
     const { sessionToken } = await createSession(user.id, userAgent, ipAddress, rememberMe);
 
+    // Set active organization cookie if user belongs to an org
+    try {
+      const [membership] = await db
+        .select()
+        .from(memberships)
+        .where(eq(memberships.userId, user.id))
+        .limit(1);
+
+      if (membership?.organizationId) {
+        const cookieStore = await cookies();
+        cookieStore.set({
+          name: "active_org_id",
+          value: membership.organizationId,
+          httpOnly: true,
+          secure: false,
+          sameSite: "lax",
+          path: "/",
+        });
+      }
+    } catch (e) {
+      console.error("ACTIVE ORG COOKIE SET ERROR:", e);
+    }
+
     // 8. Log browser/OS device attributes
     let browser = "Unknown";
     let os = "Unknown";
@@ -325,7 +348,7 @@ export async function registerAction(input: any) {
     `;
 
     await notificationService.sendEmail(emailClean, subject, html);
-    console.log(`[Email Dispatch] Verification email link generated for ${emailClean}: ${verificationUrl}`);
+    console.info(`[Email Dispatch] Verification email link generated for ${emailClean}: ${verificationUrl}`);
 
     await auditService.log({
       userId,
@@ -463,7 +486,7 @@ export async function resendVerificationAction(input: { email: string }) {
     `;
 
     await notificationService.sendEmail(emailClean, subject, html);
-    console.log(`[Email Dispatch] Resending verification token link: ${verificationUrl}`);
+    console.info(`[Email Dispatch] Resending verification token link: ${verificationUrl}`);
 
     return { success: true };
   } catch (error: any) {
@@ -519,7 +542,7 @@ export async function forgotPasswordAction(input: any) {
     `;
 
     await notificationService.sendEmail(emailClean, subject, html);
-    console.log(`[Email Dispatch] Password reset link generated: ${resetUrl}`);
+    console.info(`[Email Dispatch] Password reset link generated: ${resetUrl}`);
 
     return { success: true };
   } catch (error: any) {

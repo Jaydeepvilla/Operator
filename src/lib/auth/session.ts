@@ -17,6 +17,17 @@ export interface SessionData {
   updatedAt: Date;
 }
 
+export function isSecureCookie(): boolean {
+  if (process.env.NODE_ENV !== "production") return false;
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "").toLowerCase();
+  // Allow plain HTTP only if explicitly pointed to local test/development host
+  if (appUrl.startsWith("http://localhost") || appUrl.startsWith("http://127.0.0.1")) {
+    return false;
+  }
+  // Enforce secure cookies by default in all production deployments
+  return true;
+}
+
 /**
  * Creates a database session and a refresh token, writing the secure HttpOnly cookies.
  */
@@ -48,15 +59,18 @@ export async function createSession(
   // Set session cookie
   try {
     const cookieStore = await cookies();
-    cookieStore.set("session_token", sessionToken, {
+    cookieStore.set({
+      name: "session_token",
+      value: sessionToken,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isSecureCookie(),
       sameSite: "lax",
       path: "/",
-      // If rememberMe is false, omit expires to make it a session-lifetime cookie
       ...(rememberMe ? { expires: sessionExpiresAt } : {}),
     });
-  } catch (e) {}
+  } catch (e) {
+    console.error("SESSION COOKIE SET ERROR:", e);
+  }
 
   // Create and set Refresh Token (expires in 30 days)
   const refreshTokenVal = crypto.randomBytes(32).toString("hex");
@@ -76,14 +90,18 @@ export async function createSession(
 
   try {
     const cookieStore = await cookies();
-    cookieStore.set("refresh_token", refreshTokenVal, {
+    cookieStore.set({
+      name: "refresh_token",
+      value: refreshTokenVal,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isSecureCookie(),
       sameSite: "strict",
       path: "/api/auth/refresh", // only expose to refresh endpoint
       expires: refreshExpiresAt,
     });
-  } catch (e) {}
+  } catch (e) {
+    console.error("REFRESH COOKIE SET ERROR:", e);
+  }
 
   // Track browser fingerprint/device if provided
   if (fingerprint) {
@@ -161,7 +179,7 @@ export async function rotateSession(
     const cookieStore = await cookies();
     cookieStore.set("session_token", newSessionToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isSecureCookie(),
       sameSite: "lax",
       path: "/",
       ...(session.rememberMe ? { expires: session.expiresAt } : {}),
@@ -245,7 +263,7 @@ export async function getSession(token: string): Promise<SessionData | null> {
       const cookieStore = await cookies();
       cookieStore.set("session_token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: isSecureCookie(),
         sameSite: "lax",
         expires: expiresAt,
         path: "/",

@@ -30,6 +30,7 @@ import { InlineEditModal } from "./inline-edit-modal";
 import { ChannelActivationHub } from "./channel-activation-hub";
 import { VoicePersonaCard } from "./voice-persona-card";
 import { cn } from "@/components/shared/utils";
+import { Button } from "@/components/shared/button";
 
 interface ConfidenceBridgeProps {
   businessName: string;
@@ -186,7 +187,7 @@ export function ConfidenceBridge({
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5">
                 <ShieldCheck className="h-3 w-3 text-primary" />
-                <span className="text-[10px] font-bold text-primary tracking-wide uppercase">
+                <span className="text-caption font-bold text-primary tracking-wide uppercase">
                   Step 2 of 3: Verification
                 </span>
               </div>
@@ -199,7 +200,7 @@ export function ConfidenceBridge({
             </div>
 
             {/* Optional Voice Persona Drawer Trigger */}
-            <button
+            <Button
               onClick={() => setVoiceDrawerOpen((prev) => !prev)}
               className={cn(
                 "inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all shadow-xs shrink-0",
@@ -211,7 +212,7 @@ export function ConfidenceBridge({
               <Volume2 className="h-3.5 w-3.5 text-primary" />
               <span>Voice Persona</span>
               <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", voiceDrawerOpen && "rotate-180")} />
-            </button>
+            </Button>
           </div>
 
           {/* Collapsible Voice Persona Drawer */}
@@ -260,7 +261,7 @@ export function ConfidenceBridge({
                     </span>
                     <span
                       className={cn(
-                        "rounded-full px-2 py-0.2 text-[10px] font-bold border",
+                        "rounded-full px-2 py-0.2 text-caption font-bold border",
                         isAllVerified
                           ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                           : "bg-muted text-muted-foreground border-border"
@@ -269,7 +270,7 @@ export function ConfidenceBridge({
                       {isAllVerified ? "Ready for Channels" : `Test ${currentStepIndex + 1} of ${totalCount}`}
                     </span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                  <p className="text-caption text-muted-foreground mt-0.5">
                     {isAllVerified
                       ? "All safety boundaries and pricing rules confirmed. Click below to proceed to channels."
                       : "Complete the single simulation test below to proceed."}
@@ -279,10 +280,10 @@ export function ConfidenceBridge({
 
               {/* Quick 1-Click Run All Option */}
               {!isAllVerified && (
-                <button
+                <Button
                   onClick={handleRunAll}
                   disabled={isBulkRunning || runningScenarioId !== null}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/80 hover:bg-muted/50 px-2.5 py-1 text-[11px] font-medium text-foreground transition-all shadow-xs disabled:opacity-50 ml-auto sm:ml-0"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/80 hover:bg-muted/50 px-2.5 py-1 text-caption font-medium text-foreground transition-all shadow-xs disabled:opacity-50 ml-auto sm:ml-0"
                 >
                   {isBulkRunning ? (
                     <>
@@ -295,7 +296,7 @@ export function ConfidenceBridge({
                       <span>Auto-Run All 3</span>
                     </>
                   )}
-                </button>
+                </Button>
               )}
             </div>
 
@@ -306,7 +307,7 @@ export function ConfidenceBridge({
                 const isActive = currentStepIndex === idx;
                 const tabTitle = idx === 0 ? "Pricing & Hours" : idx === 1 ? "Calendar Booking" : "Safety Rules";
                 return (
-                  <button
+                  <Button
                     key={s.id}
                     onClick={() => setCurrentStepIndex(idx)}
                     className={cn(
@@ -320,7 +321,7 @@ export function ConfidenceBridge({
                   >
                     <span
                       className={cn(
-                        "flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold",
+                        "flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-caption font-bold",
                         isDone
                           ? "bg-emerald-500 text-white"
                           : isActive
@@ -331,7 +332,7 @@ export function ConfidenceBridge({
                       {isDone ? <Check className="h-2.5 w-2.5 stroke-[3]" /> : idx + 1}
                     </span>
                     <span className="truncate">{tabTitle}</span>
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -344,7 +345,7 @@ export function ConfidenceBridge({
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Current Simulation (Test {currentStepIndex + 1} of {totalCount})
                 </h3>
-                <span className="text-[11px] text-muted-foreground">
+                <span className="text-caption text-muted-foreground">
                   Isolated dry-run check
                 </span>
               </div>
@@ -360,19 +361,19 @@ export function ConfidenceBridge({
               <div className="flex items-center justify-between pt-2">
                 <div>
                   {hasPrevStep && (
-                    <button
+                    <Button
                       onClick={() => setCurrentStepIndex((prev) => Math.max(prev - 1, 0))}
                       className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
                     >
                       <ArrowLeft className="h-3 w-3" />
                       <span>Previous Test</span>
-                    </button>
+                    </Button>
                   )}
                 </div>
 
                 <div className="flex items-center gap-2">
                   {hasNextStep ? (
-                    <button
+                    <Button
                       onClick={() => setCurrentStepIndex((prev) => prev + 1)}
                       className={cn(
                         "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all shadow-sm active:scale-95",
@@ -389,15 +390,15 @@ export function ConfidenceBridge({
                           : "Next Test"}
                       </span>
                       <ArrowRight className="h-3.5 w-3.5" />
-                    </button>
+                    </Button>
                   ) : isAllVerified ? (
-                    <button
+                    <Button
                       onClick={() => setViewMode("channels")}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-bold text-white transition-all shadow-md shadow-emerald-600/25 active:scale-95 ring-2 ring-emerald-500/30"
                     >
                       <span>All Verified · Connect Customer Channels</span>
                       <ArrowRight className="h-3.5 w-3.5" />
-                    </button>
+                    </Button>
                   ) : null}
                 </div>
               </div>

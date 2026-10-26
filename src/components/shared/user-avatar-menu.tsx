@@ -64,7 +64,7 @@ export function UserAvatarMenu({
                     className="h-full w-full object-cover"
                   />
                 ) : null}
-                <Avatar.Fallback className="flex h-full w-full items-center justify-center bg-primary/15 text-primary font-bold uppercase text-[11px]">
+                <Avatar.Fallback className="flex h-full w-full items-center justify-center bg-primary/15 text-primary font-bold uppercase text-caption">
                   {initials || "U"}
                 </Avatar.Fallback>
               </Avatar.Root>
@@ -75,7 +75,7 @@ export function UserAvatarMenu({
               <span className="text-[12px] font-semibold text-foreground group-hover:text-primary transition-colors truncate max-w-[120px]">
                 {name}
               </span>
-              <span className="text-[10px] text-muted-foreground font-medium mt-0.5 capitalize">
+              <span className="text-caption text-muted-foreground font-medium mt-0.5 capitalize">
                 {roleLabel}
               </span>
             </div>
@@ -98,7 +98,7 @@ export function UserAvatarMenu({
                   className="h-full w-full object-cover"
                 />
               ) : null}
-              <Avatar.Fallback className="flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold uppercase text-[11px]">
+              <Avatar.Fallback className="flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold uppercase text-caption">
                 {initials || "U"}
               </Avatar.Fallback>
             </Avatar.Root>
@@ -110,19 +110,19 @@ export function UserAvatarMenu({
         <DropdownMenu.Content
           align="end"
           sideOffset={8}
-          className="z-[100] min-w-[260px] overflow-hidden rounded-2xl border border-border bg-popover/95 backdrop-blur-md p-1.5 shadow-xl animate-in fade-in-50 zoom-in-95 duration-150"
+          className="z-50 min-w-64 overflow-hidden rounded-2xl border border-border bg-popover/95 backdrop-blur-md p-1.5 shadow-xl animate-in fade-in-50 zoom-in-95 duration-150"
         >
           {/* User Profile Header */}
           <div className="flex flex-col px-3 py-2.5 rounded-xl bg-accent/40 mb-1 border border-border/40">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-foreground truncate">{name}</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-wider">
+              <span className="text-caption font-bold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-wider">
                 {roleLabel}
               </span>
             </div>
-            <span className="text-[11px] text-muted-foreground truncate mt-0.5">{email}</span>
+            <span className="text-caption text-muted-foreground truncate mt-0.5">{email}</span>
             {orgName && (
-              <span className="text-[10px] font-medium text-muted-foreground/80 truncate mt-1 pt-1 border-t border-border/40 flex items-center gap-1">
+              <span className="text-caption font-medium text-muted-foreground/80 truncate mt-1 pt-1 border-t border-border/40 flex items-center gap-1">
                 <Building className="h-3 w-3 text-primary/70 shrink-0" />
                 {orgName}
               </span>

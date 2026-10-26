@@ -77,11 +77,11 @@ function FindingRow({ finding }: { finding: AuditFinding }) {
  >
  <div className="flex items-start justify-between gap-2 mb-1.5">
  <div className="flex items-center gap-2 flex-wrap">
- <span className={cn("inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border", cfg.badge)}>
+ <span className={cn("inline-flex items-center gap-1 text-caption font-bold px-2 py-0.5 rounded-full border", cfg.badge)}>
  <Icon className="h-3 w-3" />
  {cfg.label}
  </span>
- <span className="text-[10px] font-semibold text-muted-foreground/60 bg-muted/80 px-2 py-0.5 rounded-full">
+ <span className="text-caption font-semibold text-muted-foreground/60 bg-muted/80 px-2 py-0.5 rounded-full">
  {finding.area}
  </span>
  </div>
@@ -95,10 +95,10 @@ function FindingRow({ finding }: { finding: AuditFinding }) {
  <p className="text-[13px] font-semibold text-foreground leading-snug mb-1">
  {finding.title}
  </p>
- <p className="text-[11px] text-muted-foreground/70 leading-relaxed mb-1.5">
+ <p className="text-caption text-muted-foreground/70 leading-relaxed mb-1.5">
  {finding.description}
  </p>
- <p className="text-[11px] text-muted-foreground/55 italic flex items-center gap-1">
+ <p className="text-caption text-muted-foreground/55 italic flex items-center gap-1">
  <Lightbulb className="h-3 w-3 text-amber-400 shrink-0" />
  {finding.recommendation}
  </p>
@@ -120,7 +120,7 @@ function ScoreArc({ score }: { score: number }) {
  return (
  <div className={cn("flex flex-col items-center justify-center w-16 h-16 rounded-2xl bg-muted/40 ring-2 shrink-0", ring)}>
  <span className={cn("text-2xl font-bold tabular-nums leading-none", color)}>{score}</span>
- <span className="text-[9px] text-muted-foreground/60 font-semibold uppercase tracking-wide mt-0.5">
+ <span className="text-caption text-muted-foreground/60 font-semibold uppercase tracking-wide mt-0.5">
  Score
  </span>
  </div>
@@ -149,30 +149,30 @@ export function BusinessAuditPanel({ audit }: BusinessAuditPanelProps) {
  </div>
  <h2 className="text-[13px] font-bold text-foreground">AI Business Audit</h2>
  </div>
- <p className="text-[11px] text-muted-foreground/70 leading-snug line-clamp-2 mb-2">
+ <p className="text-caption text-muted-foreground/70 leading-snug line-clamp-2 mb-2">
  {audit.summary}
  </p>
  <div className="flex flex-wrap gap-2">
  {audit.findingsCount.critical > 0 && (
- <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-500 border-rose-500/20">
+ <span className="inline-flex items-center gap-1 text-caption font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-500 border-rose-500/20">
  <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
  {audit.findingsCount.critical} Critical
  </span>
  )}
  {audit.findingsCount.warning > 0 && (
- <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border-amber-500/20">
+ <span className="inline-flex items-center gap-1 text-caption font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border-amber-500/20">
  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
  {audit.findingsCount.warning} Warning
  </span>
  )}
  {audit.findingsCount.info > 0 && (
- <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border-blue-500/20">
+ <span className="inline-flex items-center gap-1 text-caption font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border-blue-500/20">
  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
  {audit.findingsCount.info} Info
  </span>
  )}
  {totalFindings === 0 && (
- <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+ <span className="inline-flex items-center gap-1 text-caption font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
  <CheckCircle2 className="h-3 w-3" /> All Clear
  </span>
  )}

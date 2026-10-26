@@ -190,7 +190,7 @@ export function BillingPortalClient({
                   <h2 className="text-body-lg font-bold text-foreground capitalize">
                     {subscription?.plan?.name || activePlanConfig?.name || currentPlanId} Plan
                   </h2>
-                  <span className={`inline-flex items-center gap-space-1 px-space-2.5 py-0.5 radius-full text-[11px] font-semibold tracking-wide uppercase ${
+                  <span className={`inline-flex items-center gap-space-1 px-space-2.5 py-0.5 radius-full text-caption font-semibold tracking-wide uppercase ${
                     isSuspended
                       ? "bg-destructive/15 text-destructive border border-destructive/25"
                       : isPastDue
@@ -215,7 +215,7 @@ export function BillingPortalClient({
             </div>
 
             <div className="flex items-baseline gap-space-1.5 pt-space-1">
-              <span className="text-heading-md font-extrabold text-foreground font-mono">
+              <span className="text-heading-md font-semibold text-foreground font-mono">
                 ${activePlanPrice}
               </span>
               <span className="text-caption text-muted-foreground">/ month</span>
@@ -257,13 +257,13 @@ export function BillingPortalClient({
                     Compare & Change Plan
                   </Button>
                   {!isSuspended && !isTrial && (
-                    <button 
+                    <Button 
                       onClick={handleCancel}
                       disabled={isPending}
                       className="text-caption text-muted-foreground hover:text-destructive transition-colors cursor-pointer px-space-2 py-space-1"
                     >
                       Cancel Plan
-                    </button>
+                    </Button>
                   )}
                 </>
               )}
@@ -276,13 +276,13 @@ export function BillingPortalClient({
               <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/75">
                 Current Period Quota Usage
               </span>
-              <button 
+              <Button 
                 onClick={() => setActiveTab("usage")}
                 className="text-caption text-primary hover:text-primary/90 flex items-center gap-space-1 cursor-pointer font-medium"
               >
                 <span>Details</span>
                 <ArrowUpRight className="h-3.5 w-3.5" />
-              </button>
+              </Button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-3">
@@ -293,7 +293,7 @@ export function BillingPortalClient({
                     <MessageSquare className="h-3.5 w-3.5 text-primary" />
                     Conversations
                   </span>
-                  <span className="font-mono text-muted-foreground text-[11px]">{convPercent}%</span>
+                  <span className="font-mono text-muted-foreground text-caption">{convPercent}%</span>
                 </div>
                 <div className="w-full bg-border/40 h-1.5 radius-full overflow-hidden">
                   <div 
@@ -303,7 +303,7 @@ export function BillingPortalClient({
                     style={{ width: `${convPercent}%` }} 
                   />
                 </div>
-                <p className="text-[11px] text-muted-foreground font-mono">
+                <p className="text-caption text-muted-foreground font-mono">
                   {convUsage.toLocaleString()} / {convLimit.toLocaleString()}
                 </p>
               </div>
@@ -315,7 +315,7 @@ export function BillingPortalClient({
                     <PhoneCall className="h-3.5 w-3.5 text-emerald-400" />
                     Voice AI
                   </span>
-                  <span className="font-mono text-muted-foreground text-[11px]">{voicePercent}%</span>
+                  <span className="font-mono text-muted-foreground text-caption">{voicePercent}%</span>
                 </div>
                 <div className="w-full bg-border/40 h-1.5 radius-full overflow-hidden">
                   <div 
@@ -325,7 +325,7 @@ export function BillingPortalClient({
                     style={{ width: `${voicePercent}%` }} 
                   />
                 </div>
-                <p className="text-[11px] text-muted-foreground font-mono">
+                <p className="text-caption text-muted-foreground font-mono">
                   {voiceUsage.toLocaleString()} / {voiceLimit.toLocaleString()}m
                 </p>
               </div>
@@ -337,7 +337,7 @@ export function BillingPortalClient({
                     <Calendar className="h-3.5 w-3.5 text-amber-400" />
                     Calendars
                   </span>
-                  <span className="font-mono text-muted-foreground text-[11px]">
+                  <span className="font-mono text-muted-foreground text-caption">
                     {calLimit === null ? "Unlimited" : `${calUsage}/${calLimit}`}
                   </span>
                 </div>
@@ -347,7 +347,7 @@ export function BillingPortalClient({
                     style={{ width: calLimit === null ? "30%" : `${Math.min(100, Math.round((calUsage / calLimit) * 100))}%` }} 
                   />
                 </div>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-caption text-muted-foreground">
                   {calLimit === null ? "All calendars synced" : `${calLimit - calUsage} available slots`}
                 </p>
               </div>
@@ -412,7 +412,7 @@ export function BillingPortalClient({
         {/* Annual / Monthly Toggle for Plans */}
         {activeTab === "plans" && (
           <div className="inline-flex items-center gap-space-1 p-space-0.5 bg-card/60 border border-border/40 radius-lg text-caption">
-            <button
+            <Button
               onClick={() => setBillingInterval("monthly")}
               className={`px-space-3 py-space-1 radius-md transition-all font-medium cursor-pointer ${
                 billingInterval === "monthly" 
@@ -421,8 +421,8 @@ export function BillingPortalClient({
               }`}
             >
               Monthly
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => setBillingInterval("yearly")}
               className={`px-space-3 py-space-1 radius-md transition-all font-medium flex items-center gap-space-1.5 cursor-pointer ${
                 billingInterval === "yearly" 
@@ -431,10 +431,10 @@ export function BillingPortalClient({
               }`}
             >
               <span>Yearly</span>
-              <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-space-1.5 py-0.5 radius-full font-semibold">
+              <span className="text-caption bg-emerald-500/20 text-emerald-400 px-space-1.5 py-0.5 radius-full font-semibold">
                 Save 20%
               </span>
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -485,12 +485,12 @@ export function BillingPortalClient({
                 >
                   {/* Top Badge */}
                   {isActive ? (
-                    <div className="w-fit mx-auto mb-space-3 inline-flex items-center gap-space-1.5 px-space-3 py-0.5 radius-full text-[11px] font-semibold tracking-wider uppercase bg-primary/20 text-primary border border-primary/30">
+                    <div className="w-fit mx-auto mb-space-3 inline-flex items-center gap-space-1.5 px-space-3 py-0.5 radius-full text-caption font-semibold tracking-wider uppercase bg-primary/20 text-primary border border-primary/30">
                       <CheckCircle2 className="h-3 w-3" />
                       Current Plan
                     </div>
                   ) : tier.badge ? (
-                    <div className="w-fit mx-auto mb-space-3 inline-flex items-center gap-space-1.5 px-space-3 py-0.5 radius-full text-[11px] font-semibold tracking-wider uppercase bg-gradient-to-r from-violet-500/15 to-indigo-500/15 text-violet-300 border border-violet-500/25">
+                    <div className="w-fit mx-auto mb-space-3 inline-flex items-center gap-space-1.5 px-space-3 py-0.5 radius-full text-caption font-semibold tracking-wider uppercase bg-gradient-to-r from-violet-500/15 to-indigo-500/15 text-violet-300 border border-violet-500/25">
                       <Sparkles className="h-3 w-3 text-violet-400" />
                       {tier.badge}
                     </div>
@@ -507,14 +507,14 @@ export function BillingPortalClient({
                     </p>
 
                     <div className="flex items-baseline gap-space-1.5 mt-space-5">
-                      <span className="text-heading-lg font-extrabold text-foreground font-mono">
+                      <span className="text-heading-lg font-semibold text-foreground font-mono">
                         ${displayPrice}
                       </span>
                       <span className="text-caption text-muted-foreground">/ month</span>
                     </div>
 
                     {billingInterval === "yearly" && (
-                      <p className="text-[11px] text-emerald-400 font-medium mt-space-0.5">
+                      <p className="text-caption text-emerald-400 font-medium mt-space-0.5">
                         Billed annually (${displayPrice * 12}/yr)
                       </p>
                     )}
@@ -571,14 +571,14 @@ export function BillingPortalClient({
                           Upgrade to {tier.name}
                         </RazorpayCheckoutButton>
 
-                        <button
+                        <Button
                           type="button"
                           disabled={isPending}
                           onClick={() => handlePlanChange(tier.id)}
-                          className="w-full text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer pt-space-1"
+                          className="w-full text-center text-caption text-muted-foreground hover:text-foreground transition-colors cursor-pointer pt-space-1"
                         >
                           {isPending ? "Updating..." : `Switch to ${tier.name} directly`}
-                        </button>
+                        </Button>
                       </>
                     )}
                   </div>
@@ -621,7 +621,7 @@ export function BillingPortalClient({
                     style={{ width: `${convPercent}%` }} 
                   />
                 </div>
-                <p className="text-[11px] text-muted-foreground">{convPercent}% of monthly allowance used</p>
+                <p className="text-caption text-muted-foreground">{convPercent}% of monthly allowance used</p>
               </div>
 
               {/* Voice Minutes Meter */}
@@ -642,7 +642,7 @@ export function BillingPortalClient({
                     style={{ width: `${voicePercent}%` }} 
                   />
                 </div>
-                <p className="text-[11px] text-muted-foreground">{voicePercent}% of included minutes used</p>
+                <p className="text-caption text-muted-foreground">{voicePercent}% of included minutes used</p>
               </div>
 
               {/* Calendar Connections Meter */}
@@ -661,7 +661,7 @@ export function BillingPortalClient({
                     style={{ width: calLimit === null ? "25%" : `${Math.min(100, Math.round((calUsage / calLimit) * 100))}%` }} 
                   />
                 </div>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-caption text-muted-foreground">
                   {calLimit === null ? "Unlimited calendar integrations included" : `${calLimit - calUsage} available slots remaining`}
                 </p>
               </div>
@@ -741,7 +741,7 @@ export function BillingPortalClient({
                         <td className="px-space-6 py-space-4 text-foreground font-medium">{inv.number}</td>
                         <td className="px-space-6 py-space-4 font-mono text-primary font-semibold">${inv.total}</td>
                         <td className="px-space-6 py-space-4">
-                          <span className={`inline-flex items-center px-space-2.5 py-0.5 radius-full text-[11px] font-semibold uppercase tracking-wider ${
+                          <span className={`inline-flex items-center px-space-2.5 py-0.5 radius-full text-caption font-semibold uppercase tracking-wider ${
                             inv.status === "paid" 
                               ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25" 
                               : "bg-warning-500/15 text-warning-500 border border-warning-500/25"

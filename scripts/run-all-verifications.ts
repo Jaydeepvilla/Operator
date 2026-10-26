@@ -210,28 +210,28 @@ async function runCommand(suite: SuiteDefinition, evidenceDir: string, timestamp
   return new Promise((resolve) => {
     // Windows spawn compatibility
     const cmd = process.platform === "win32" && suite.command === "npx" ? "npx.cmd" : suite.command;
-    const child = spawn(cmd, suite.args, {
+    const child: any = spawn(cmd, suite.args, {
       cwd: process.cwd(),
-      env: { ...process.env, CI: "true" },
+      env: process.env as any,
       shell: process.platform === "win32",
     });
 
     let stdoutBuffer = "";
     let stderrBuffer = "";
 
-    child.stdout.on("data", (chunk) => {
+    child.stdout.on("data", (chunk: any) => {
       const text = chunk.toString();
       stdoutBuffer += text;
       process.stdout.write(text);
     });
 
-    child.stderr.on("data", (chunk) => {
+    child.stderr.on("data", (chunk: any) => {
       const text = chunk.toString();
       stderrBuffer += text;
       process.stderr.write(text);
     });
 
-    child.on("close", (code) => {
+    child.on("close", (code: any) => {
       const end = Date.now();
       const endTime = new Date(end).toISOString();
       const durationMs = end - start;
@@ -268,7 +268,7 @@ async function runCommand(suite: SuiteDefinition, evidenceDir: string, timestamp
       });
     });
 
-    child.on("error", (err) => {
+    child.on("error", (err: any) => {
       const end = Date.now();
       const endTime = new Date(end).toISOString();
       const errText = `Failed to start process: ${err.message}`;

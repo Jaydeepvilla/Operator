@@ -102,7 +102,7 @@ export function SidebarNavGroup({ title, links }: SidebarGroupProps) {
           <AnimatePresence>
             <m.p 
               {...fade}
-              className="px-2.5 pb-1 pt-2.5 text-[10px] uppercase tracking-widest text-[hsl(var(--sidebar-section-label))] font-semibold select-none" 
+              className="px-2.5 pb-1 pt-2.5 text-caption uppercase tracking-widest text-[hsl(var(--sidebar-section-label))] font-semibold select-none" 
               aria-hidden="true"
             >
               {title}

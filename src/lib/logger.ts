@@ -1,12 +1,15 @@
 /**
  * Structured Logger — production-grade logging utility for Operator.
  * Outputs structured JSON in production and formatted text in development.
- * Use correlation IDs from request headers or generated UUIDs for tracing.
+ * Automatically sanitizes sensitive data and bridges errors to Sentry.
  */
+
+import { redactSensitiveData, sanitizeErrorMessage } from "@/lib/observability/redaction";
+import { sentry } from "@/lib/observability/sentry";
 
 type LogLevel = "debug" | "info" | "warn" | "error";
 
-interface LogEntry {
+export interface LogEntry {
   timestamp: string;
   level: LogLevel;
   message: string;
@@ -53,23 +56,26 @@ function buildEntry(
     data?: Record<string, unknown>;
   }
 ): LogEntry {
+  const sanitizedMessage = sanitizeErrorMessage(message);
+  const sanitizedData = options?.data ? redactSensitiveData(options.data) : undefined;
+
   const entry: LogEntry = {
     timestamp: new Date().toISOString(),
     level,
-    message,
+    message: sanitizedMessage,
     context: options?.context,
     correlationId: options?.correlationId,
     organizationId: options?.organizationId,
     userId: options?.userId,
     durationMs: options?.durationMs,
-    data: options?.data,
+    data: sanitizedData,
   };
 
   if (options?.error) {
     const err = options.error instanceof Error ? options.error : new Error(String(options.error));
     entry.error = {
       name: err.name,
-      message: err.message,
+      message: sanitizeErrorMessage(err.message),
       stack: process.env.NODE_ENV !== "production" ? err.stack : undefined,
     };
   }
@@ -86,18 +92,49 @@ export const logger = {
 
   info(message: string, options?: Parameters<typeof buildEntry>[2]) {
     const entry = buildEntry("info", message, options);
+    console.info(formatLog(entry));
+
+    sentry.addBreadcrumb({
+      category: options?.context || "log.info",
+      message: entry.message,
+      level: "info",
+      data: entry.data,
+    });
   },
 
   warn(message: string, options?: Parameters<typeof buildEntry>[2]) {
     const entry = buildEntry("warn", message, options);
     console.warn(formatLog(entry));
+
+    sentry.addBreadcrumb({
+      category: options?.context || "log.warn",
+      message: entry.message,
+      level: "warning",
+      data: entry.data,
+    });
   },
 
   error(message: string, options?: Parameters<typeof buildEntry>[2]) {
     const entry = buildEntry("error", message, options);
     console.error(formatLog(entry));
-    // TODO: Forward to Sentry when integrated
-    // if (typeof Sentry !== 'undefined') Sentry.captureException(options?.error ?? new Error(message));
+
+    // Forward to Sentry bridge with sanitized context
+    const errObj = options?.error instanceof Error
+      ? options.error
+      : new Error(entry.message);
+
+    sentry.captureException(errObj, {
+      tags: {
+        context: options?.context || "unspecified",
+        correlationId: options?.correlationId || "none",
+        organizationId: options?.organizationId || "none",
+      },
+      extra: {
+        durationMs: options?.durationMs,
+        data: entry.data,
+      },
+      user: options?.userId ? { id: options.userId } : undefined,
+    });
   },
 
   /**

@@ -45,16 +45,16 @@ function BottleneckRow({ b }: { b: OperationsBottleneck }) {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {b.automationAvailable && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+            <span className="inline-flex items-center gap-1 text-caption font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
               <Zap className="h-2.5 w-2.5" />
               Automatable
             </span>
           )}
         </div>
       </div>
-      <p className="text-[11px] text-muted-foreground/70 leading-relaxed">{b.description}</p>
+      <p className="text-caption text-muted-foreground/70 leading-relaxed">{b.description}</p>
       <div className="flex items-center justify-between">
-        <p className="text-[11px] text-muted-foreground/50 italic">→ {b.suggestedFix}</p>
+        <p className="text-caption text-muted-foreground/50 italic">→ {b.suggestedFix}</p>
         <Button asChild variant="ghost" size="xs" className="shrink-0">
           <Link href={b.actionHref}>
             Resolve <ArrowRight className="h-3 w-3" />
@@ -77,7 +77,7 @@ function ScoreArc({ score, label }: { score: number; label: string }) {
   return (
     <div className={cn("flex flex-col items-center justify-center w-16 h-16 rounded-2xl bg-muted/40 ring-2 shrink-0", ring)}>
       <span className={cn("text-2xl font-bold tabular-nums leading-none", color)}>{score}</span>
-      <span className="text-[9px] text-muted-foreground/60 font-semibold uppercase tracking-wide mt-0.5">
+      <span className="text-caption text-muted-foreground/60 font-semibold uppercase tracking-wide mt-0.5">
         {label}
       </span>
     </div>
@@ -98,7 +98,7 @@ function SectionHeading({
       <div className={cn("h-5 w-5 rounded-md flex items-center justify-center", color)}>
         <Icon className="h-3 w-3" />
       </div>
-      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+      <span className="text-caption font-bold uppercase tracking-widest text-muted-foreground/60">
         {label}
       </span>
     </div>
@@ -125,7 +125,7 @@ export function OperationsAdvisorPanel({ operations }: OperationsAdvisorPanelPro
             </div>
             <h2 className="text-[13px] font-bold text-foreground">Operations Advisor</h2>
           </div>
-          <p className="text-[11px] text-muted-foreground/65 leading-snug">
+          <p className="text-caption text-muted-foreground/65 leading-snug">
             Workflow bottlenecks, automation gaps, and industry benchmarks
           </p>
         </div>
@@ -154,7 +154,7 @@ export function OperationsAdvisorPanel({ operations }: OperationsAdvisorPanelPro
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-semibold text-foreground leading-snug">{a.title}</p>
-                  <p className="text-[11px] text-muted-foreground/65 mt-0.5 leading-snug line-clamp-2">
+                  <p className="text-caption text-muted-foreground/65 mt-0.5 leading-snug line-clamp-2">
                     {a.description}
                   </p>
                 </div>
@@ -179,7 +179,7 @@ export function OperationsAdvisorPanel({ operations }: OperationsAdvisorPanelPro
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-semibold text-foreground leading-snug">{g.title}</p>
-                  <p className="text-[11px] text-muted-foreground/65 mt-0.5 leading-snug line-clamp-2">
+                  <p className="text-caption text-muted-foreground/65 mt-0.5 leading-snug line-clamp-2">
                     {g.description}
                   </p>
                 </div>

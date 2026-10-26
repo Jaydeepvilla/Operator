@@ -107,7 +107,7 @@ export function OrgSwitcher({
             <span className="text-body-sm font-semibold text-foreground truncate max-w-[130px] leading-tight">
               {currentOrg.name}
             </span>
-            <span className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
+            <span className="text-caption text-muted-foreground truncate leading-tight mt-0.5">
               {currentOrg.industry || roleLabel}
             </span>
           </div>
@@ -123,11 +123,11 @@ export function OrgSwitcher({
         <DropdownMenu.Content
           align="start"
           sideOffset={8}
-          className="z-[100] w-64 overflow-hidden rounded-xl border border-border bg-popover p-1.5 shadow-xl animate-in fade-in-50 zoom-in-95 duration-150"
+          className="z-50 w-64 overflow-hidden rounded-xl border border-border bg-popover p-1.5 shadow-xl animate-in fade-in-50 zoom-in-95 duration-150"
         >
           <div className="px-2.5 py-2 border-b border-[hsl(var(--foreground)/0.06)]">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              <span className="text-caption font-bold text-muted-foreground uppercase tracking-wider">
                 Businesses ({organizations.length || 1})
               </span>
             </div>
@@ -160,7 +160,7 @@ export function OrgSwitcher({
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div
                         className={cn(
-                          "flex h-6 w-6 shrink-0 items-center justify-center rounded text-[11px] font-bold",
+                          "flex h-6 w-6 shrink-0 items-center justify-center rounded text-caption font-bold",
                           isSelected
                             ? "bg-primary text-primary-foreground"
                             : "bg-[hsl(var(--foreground)/0.08)] text-foreground/80"
@@ -172,7 +172,7 @@ export function OrgSwitcher({
                         <span className="text-body-sm font-semibold truncate max-w-[140px] leading-tight">
                           {org.name}
                         </span>
-                        <span className="text-[10px] text-muted-foreground capitalize leading-tight mt-0.5">
+                        <span className="text-caption text-muted-foreground capitalize leading-tight mt-0.5">
                           {org.role} {org.industry ? `• ${org.industry}` : ""}
                         </span>
                       </div>

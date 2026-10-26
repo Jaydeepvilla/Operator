@@ -260,12 +260,12 @@ export default function AutomationsPage() {
             <AlertCircle className="h-4 w-4 shrink-0" />
           )}
           <span className="flex-1 font-medium">{feedbackMsg.text}</span>
-          <button
+          <Button
             onClick={() => setFeedbackMsg(null)}
             className="hover:opacity-70 font-bold px-1 text-caption cursor-pointer"
           >
             ×
-          </button>
+          </Button>
         </div>
       )}
 
@@ -329,7 +329,7 @@ export default function AutomationsPage() {
                         </div>
 
                         {/* Switch */}
-                        <button
+                        <Button
                           type="button"
                           role="switch"
                           aria-checked={rule.isActive}
@@ -345,11 +345,11 @@ export default function AutomationsPage() {
                               rule.isActive ? "translate-x-4.5" : "translate-x-0.5"
                             )}
                           />
-                        </button>
+                        </Button>
                       </div>
 
                       {/* Trigger -> Actions Pills */}
-                      <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[11px]">
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1 text-caption">
                         <span className="px-2 py-0.5 rounded bg-[hsl(var(--foreground)/0.05)] text-foreground/80 font-medium flex items-center gap-1">
                           Trigger: {triggerMeta.label}
                         </span>
@@ -364,7 +364,7 @@ export default function AutomationsPage() {
                         ))}
                       </div>
 
-                      <div className="flex items-center justify-between text-[11px] text-muted-foreground/75 pt-2 border-t border-[hsl(var(--foreground)/0.04)]">
+                      <div className="flex items-center justify-between text-caption text-muted-foreground/75 pt-2 border-t border-[hsl(var(--foreground)/0.04)]">
                         <span>Fired {rule.executionCount || 0} times</span>
                         <span>
                           {rule.lastExecutedAt
@@ -434,13 +434,13 @@ export default function AutomationsPage() {
                         <span className="font-semibold text-foreground truncate">
                           Event: {log.triggerEvent}
                         </span>
-                        <span className="text-[11px] text-muted-foreground truncate">
+                        <span className="text-caption text-muted-foreground truncate">
                           {log.actionsExecuted?.join(", ") || log.errorMessage || "Executed"}
                         </span>
                       </div>
                     </div>
 
-                    <span className="text-[11px] text-muted-foreground/60 shrink-0">
+                    <span className="text-caption text-muted-foreground/60 shrink-0">
                       {new Date(log.executedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </span>
                   </div>

@@ -53,9 +53,13 @@ export async function validateSafeUrl(rawUrl: string): Promise<{ valid: boolean;
 
     let url: URL;
     try {
-      url = new URL(trimmed.startsWith("http://") || trimmed.startsWith("https://") ? trimmed : `https://${trimmed}`);
+      url = new URL(trimmed);
     } catch {
-      return { valid: false, error: "Invalid URL format" };
+      try {
+        url = new URL(`https://${trimmed}`);
+      } catch {
+        return { valid: false, error: "Invalid URL format" };
+      }
     }
 
     if (url.protocol !== "http:" && url.protocol !== "https:") {

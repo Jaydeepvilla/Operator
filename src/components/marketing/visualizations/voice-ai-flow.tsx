@@ -128,7 +128,7 @@ export function VoiceAiFlow() {
                 <h4 className={`text-body-sm font-semibold transition-colors duration-300 ${isActive ? "text-[hsl(var(--foreground))] font-bold" : "text-[hsl(var(--foreground)/0.65)]"}`}>
                   {step.title}
                 </h4>
-                <p className="text-[10px] text-muted-foreground mt-0.5 truncate leading-relaxed">
+                <p className="text-caption text-muted-foreground mt-0.5 truncate leading-relaxed">
                   {step.subtitle}
                 </p>
               </div>
@@ -163,7 +163,7 @@ export function VoiceAiFlow() {
           >
             {activeStep ? `Stage 0${hoveredIdx! + 1} • Diagnostics` : "Voice AI processing pipeline"}
           </span>
-          <p className="text-[11px] text-[hsl(var(--foreground)/0.6)] leading-normal max-w-2xl transition-all duration-300 font-medium">
+          <p className="text-caption text-[hsl(var(--foreground)/0.6)] leading-normal max-w-2xl transition-all duration-300 font-medium">
             {activeStep
               ? activeStep.desc
               : "Hover over any stage above to trace how real-time calls are ingested, transcribed, and structured by Operator Voice AI in milliseconds."}
@@ -171,12 +171,12 @@ export function VoiceAiFlow() {
         </div>
 
         {/* Metric Area */}
-        <div className="flex md:flex-col items-center md:items-end justify-center shrink-0 md:pl-space-4 md:border-l border-[hsl(var(--foreground)/0.1)] min-w-[144px] z-10 relative text-center md:text-right">
+        <div className="flex md:flex-col items-center md:items-end justify-center shrink-0 md:pl-space-4 md:border-l border-[hsl(var(--foreground)/0.1)] min-w-36 z-10 relative text-center md:text-right">
           <span className="text-[8px] uppercase tracking-wider font-mono text-slate-500 font-semibold">
             {activeStep ? "processing latency" : "total pipeline delay"}
           </span>
           <span
-            className="text-heading-md font-mono leading-none font-extrabold tracking-tight transition-all duration-300 my-0.5"
+            className="text-heading-md font-mono leading-none font-semibold tracking-tight transition-all duration-300 my-0.5"
             style={{
               color: activeStep ? "#10b981" : "hsl(var(--primary))",
               textShadow: activeStep 
@@ -186,7 +186,7 @@ export function VoiceAiFlow() {
           >
             {activeStep ? activeStep.metric : "< 900ms"}
           </span>
-          <span className="text-[9px] text-slate-500 font-medium transition-colors duration-300">
+          <span className="text-caption text-slate-500 font-medium transition-colors duration-300">
             {activeStep ? activeStep.metricLabel : "end-to-end response time"}
           </span>
         </div>

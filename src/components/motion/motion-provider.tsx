@@ -3,7 +3,7 @@
 import { AnimatePresence, LazyMotion, domAnimation } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
-import { pageTransition } from "./page";
+import { pageTransition } from "./page-transitions";
 import { m } from "framer-motion";
 
 export function MotionProvider({ children }: { children: ReactNode }) {

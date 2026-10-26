@@ -54,21 +54,21 @@ function SeasonalCard({ rec }: { rec: SeasonalRecommendation }) {
             <p className="text-[13px] font-semibold text-foreground leading-snug">{rec.event.name}</p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <Clock className="h-3 w-3 text-muted-foreground/50" />
-              <span className={cn("text-[10px] font-bold", isUrgent ? "text-rose-500" : isSoon ? "text-amber-500" : "text-muted-foreground/60")}>
+              <span className={cn("text-caption font-bold", isUrgent ? "text-rose-500" : isSoon ? "text-amber-500" : "text-muted-foreground/60")}>
                 {daysLabel}
               </span>
-              <span className="text-muted-foreground/40 text-[10px]">·</span>
-              <span className="text-[10px] text-muted-foreground/60">{dateStr}</span>
+              <span className="text-muted-foreground/40 text-caption">·</span>
+              <span className="text-caption text-muted-foreground/60">{dateStr}</span>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           {isUrgent && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
+            <span className="inline-flex items-center gap-1 text-caption font-bold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
               <Flame className="h-2.5 w-2.5" /> Act Now
             </span>
           )}
-          <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", cfg.bg, cfg.text)}>
+          <span className={cn("text-caption font-bold px-2 py-0.5 rounded-full", cfg.bg, cfg.text)}>
             {cfg.label}
           </span>
         </div>
@@ -77,12 +77,12 @@ function SeasonalCard({ rec }: { rec: SeasonalRecommendation }) {
       {/* Recommendation */}
       <div>
         <p className="text-[12px] font-semibold text-foreground leading-snug">{rec.title}</p>
-        <p className="text-[11px] text-muted-foreground/70 leading-relaxed mt-1">{rec.description}</p>
+        <p className="text-caption text-muted-foreground/70 leading-relaxed mt-1">{rec.description}</p>
       </div>
 
       {/* Footer */}
       <div className="flex items-center justify-between pt-1 border-t border-border/40">
-        <p className="text-[11px] text-muted-foreground/50 italic flex items-center gap-1 truncate mr-2">
+        <p className="text-caption text-muted-foreground/50 italic flex items-center gap-1 truncate mr-2">
           <TrendingUp className="h-3 w-3 text-emerald-500 shrink-0" />
           {rec.businessImpact}
         </p>
@@ -111,7 +111,7 @@ export function SeasonalRecommendationsPanel({ seasonal }: SeasonalRecommendatio
           </div>
           <div>
             <h2 className="text-[13px] font-bold text-foreground">Seasonal Recommendations</h2>
-            <p className="text-[11px] text-muted-foreground/60">
+            <p className="text-caption text-muted-foreground/60">
               Upcoming events in the next 90 days
             </p>
           </div>
@@ -120,7 +120,7 @@ export function SeasonalRecommendationsPanel({ seasonal }: SeasonalRecommendatio
           <div className="text-2xl font-bold tabular-nums text-amber-500">
             {seasonal.recommendations.length}
           </div>
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+          <div className="text-caption font-semibold uppercase tracking-widest text-muted-foreground/60">
             Events
           </div>
         </div>

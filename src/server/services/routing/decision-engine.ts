@@ -40,6 +40,8 @@ const PUBLIC_ROUTES = new Set([
   "/book",
   "/sign-in",
   "/sign-up",
+  "/login-success",
+  "/auth-success",
   "/forgot-password",
   "/reset-password",
   "/verify-email",
@@ -376,7 +378,7 @@ export class RouteDecisionEngine {
 
     // Routing Observability (Phase 17)
     if (current !== decision.destination) {
-      console.log(
+      console.info(
         `[ROUTE_DECISION] from: "${current}" to: "${decision.destination}" reason: ${decision.reason} priority: ${decision.priority} (org: ${context.businessId || "none"}, user: ${context.userId || "anon"})`
       );
     }

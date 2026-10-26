@@ -8,6 +8,7 @@ import {
   invoiceItems,
   payments,
   refunds,
+  organizations,
 } from "../../db/schema";
 import { subscriptionEngine } from "./subscription-engine";
 import { getPlan } from "@/lib/billing/plans";
@@ -32,54 +33,137 @@ export class WebhookProcessor {
   }): Promise<ProcessWebhookResult> {
     const { provider, providerEventId, eventType, payload } = params;
 
-    // 1. Idempotency Check: check if providerEventId has already been recorded
-    const existingEvents = await db
-      .select()
-      .from(billingEvents)
-      .where(eq(billingEvents.eventType, `${provider}.${eventType}`));
+    // 1. Atomic database-enforced idempotency claim
+    let eventRecordId: string;
+    try {
+      const [inserted] = await db
+        .insert(billingEvents)
+        .values({
+          provider,
+          providerEventId,
+          eventType: `${provider}.${eventType}`,
+          status: "processing",
+          payload: {
+            providerEventId,
+            provider,
+            eventType,
+            receivedAt: new Date().toISOString(),
+            raw: payload,
+          },
+        })
+        .returning({ id: billingEvents.id });
 
-    const isDuplicate = existingEvents.some((ev) => {
-      const p = ev.payload as any;
-      return p?.providerEventId === providerEventId || p?.id === providerEventId;
-    });
+      eventRecordId = inserted.id;
+    } catch (err: any) {
+      // Check for PostgreSQL unique constraint violation (code 23505 or DrizzleQueryError wrapping PostgresError)
+      const isUniqueViolation =
+        err?.code === "23505" ||
+        err?.cause?.code === "23505" ||
+        err?.cause?.constraint_name === "billing_events_provider_event_unique" ||
+        err?.message?.includes("billing_events_provider_event_unique") ||
+        err?.message?.includes("unique constraint") ||
+        err?.cause?.message?.includes("unique constraint");
 
-    if (isDuplicate) {
-      console.log(`[WebhookProcessor] Duplicate event ${providerEventId} (${eventType}) ignored.`);
+      if (isUniqueViolation) {
+        // Query the existing event state
+        const [existing] = await db
+          .select()
+          .from(billingEvents)
+          .where(
+            and(
+              eq(billingEvents.provider, provider),
+              eq(billingEvents.providerEventId, providerEventId)
+            )
+          )
+          .limit(1);
+
+        if (!existing) {
+          throw err;
+        }
+
+        // Case A: Event already processed completely
+        if (existing.status === "processed") {
+          console.info(`[WebhookProcessor] Duplicate event ${providerEventId} (${eventType}) already processed. Skipping.`);
+          return {
+            processed: false,
+            duplicate: true,
+            eventType,
+            providerEventId,
+            message: "Event already processed (idempotent).",
+          };
+        }
+
+        // Case B: Event is currently being processed by another worker
+        if (existing.status === "processing") {
+          const processingAgeMs = Date.now() - existing.createdAt.getTime();
+          // If less than 5 minutes old, assume active concurrent worker
+          if (processingAgeMs < 5 * 60 * 1000) {
+            console.info(`[WebhookProcessor] Event ${providerEventId} is currently being processed by an active concurrent worker.`);
+            return {
+              processed: false,
+              duplicate: true,
+              eventType,
+              providerEventId,
+              message: "Event is currently processing.",
+            };
+          }
+          // Lease expired (> 5 minutes); previous worker crashed. Reclaim processing.
+          console.warn(`[WebhookProcessor] Reclaiming abandoned processing lease for event ${providerEventId}.`);
+          eventRecordId = existing.id;
+        } else if (existing.status === "failed") {
+          // Case C: Previous processing failed. Allow retry.
+          console.info(`[WebhookProcessor] Retrying failed event ${providerEventId}.`);
+          await db
+            .update(billingEvents)
+            .set({ status: "processing", error: null })
+            .where(eq(billingEvents.id, existing.id));
+          eventRecordId = existing.id;
+        } else {
+          eventRecordId = existing.id;
+        }
+      } else {
+        throw err;
+      }
+    }
+
+    // 2. Dispatch event to handler with transactional completion and failure recording
+    try {
+      if (provider === "razorpay") {
+        await this.handleRazorpayEvent(eventType, payload, providerEventId);
+      } else if (provider === "stripe") {
+        await this.handleStripeEvent(eventType, payload, providerEventId);
+      }
+
+      // Mark permanently processed
+      await db
+        .update(billingEvents)
+        .set({
+          status: "processed",
+          processedAt: new Date(),
+          error: null,
+        })
+        .where(eq(billingEvents.id, eventRecordId));
+
       return {
-        processed: false,
-        duplicate: true,
+        processed: true,
+        duplicate: false,
         eventType,
         providerEventId,
-        message: "Event already processed (idempotent).",
+        message: "Webhook processed successfully.",
       };
+    } catch (error: any) {
+      console.error(`[WebhookProcessor] Processing failed for event ${providerEventId}:`, error);
+      // Record failure state
+      await db
+        .update(billingEvents)
+        .set({
+          status: "failed",
+          error: error?.message || "Unknown processing error",
+        })
+        .where(eq(billingEvents.id, eventRecordId));
+
+      throw error;
     }
-
-    // 2. Record event in billingEvents to claim idempotency lock
-    await db.insert(billingEvents).values({
-      eventType: `${provider}.${eventType}`,
-      payload: {
-        providerEventId,
-        provider,
-        eventType,
-        receivedAt: new Date().toISOString(),
-        raw: payload,
-      },
-    });
-
-    // 3. Dispatch to appropriate lifecycle handler
-    if (provider === "razorpay") {
-      await this.handleRazorpayEvent(eventType, payload, providerEventId);
-    } else if (provider === "stripe") {
-      await this.handleStripeEvent(eventType, payload, providerEventId);
-    }
-
-    return {
-      processed: true,
-      duplicate: false,
-      eventType,
-      providerEventId,
-      message: "Webhook processed successfully.",
-    };
   }
 
   /**
@@ -101,6 +185,17 @@ export class WebhookProcessor {
         const currency = paymentObj?.currency?.toUpperCase() || "INR";
 
         if (orgId) {
+          const [org] = await db
+            .select({ id: organizations.id })
+            .from(organizations)
+            .where(eq(organizations.id, orgId))
+            .limit(1);
+
+          if (!org) {
+            console.warn(`[WebhookProcessor] Razorpay event ${eventId} references unknown organization ${orgId}. Skipping.`);
+            break;
+          }
+
           // Convert trial to active paid subscription via central engine
           await subscriptionEngine.convertTrialToPaid({
             organizationId: orgId,
@@ -165,6 +260,17 @@ export class WebhookProcessor {
         const planId = (subObj?.notes?.planId || "starter").toLowerCase();
 
         if (orgId) {
+          const [org] = await db
+            .select({ id: organizations.id })
+            .from(organizations)
+            .where(eq(organizations.id, orgId))
+            .limit(1);
+
+          if (!org) {
+            console.warn(`[WebhookProcessor] Razorpay subscription event ${eventId} references unknown organization ${orgId}. Skipping.`);
+            break;
+          }
+
           await subscriptionEngine.convertTrialToPaid({
             organizationId: orgId,
             planId,
@@ -268,6 +374,17 @@ export class WebhookProcessor {
         const planId = (session?.metadata?.planId || "starter").toLowerCase();
 
         if (orgId) {
+          const [org] = await db
+            .select({ id: organizations.id })
+            .from(organizations)
+            .where(eq(organizations.id, orgId))
+            .limit(1);
+
+          if (!org) {
+            console.warn(`[WebhookProcessor] Stripe checkout event ${eventId} references unknown organization ${orgId}. Skipping.`);
+            break;
+          }
+
           await subscriptionEngine.convertTrialToPaid({
             organizationId: orgId,
             planId,
@@ -303,7 +420,7 @@ export class WebhookProcessor {
 
       case "invoice.payment_failed": {
         const invoice = event.data?.object as any;
-        const subId = invoice.subscription as string;
+        const subId = invoice?.subscription as string | undefined;
         if (subId) {
           const subRecord = await db.query.subscriptions.findFirst({
             where: eq(subscriptions.stripeSubscriptionId, subId),
@@ -320,7 +437,7 @@ export class WebhookProcessor {
 
       case "invoice.payment_succeeded": {
         const invoice = event.data?.object as any;
-        const subId = invoice.subscription as string;
+        const subId = invoice?.subscription as string | undefined;
         if (subId) {
           const subRecord = await db.query.subscriptions.findFirst({
             where: eq(subscriptions.stripeSubscriptionId, subId),

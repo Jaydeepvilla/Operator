@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/shared/button";
 import { Input } from "@/components/shared/input";
+import { NativeSelect } from "@/components/shared/native";
 import { Label } from "@/components/shared/label";
 import { cn } from "@/components/shared/utils";
 import { useToast } from "@/components/shared/toast";
@@ -399,7 +400,7 @@ export function VoiceCockpitClient({
  <div className="space-y-space-3.5">
  <div className="space-y-space-1">
  <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">From Line</Label>
- <select
+ <NativeSelect
  value={selectedLineId}
  onChange={(e) => setSelectedLineId(e.target.value)}
  className="w-full h-9 radius-md border-[hsl(var(--foreground)/0.08)] bg-background px-space-3 text-caption focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground"
@@ -408,7 +409,7 @@ export function VoiceCockpitClient({
  <option key={num.id} value={num.id}>{num.name} ({num.phoneNumber})</option>
  ))}
  {initialNumbers.length === 0 && <option value="">No active lines</option>}
- </select>
+ </NativeSelect>
  </div>
 
  <div className="space-y-space-1">
@@ -464,13 +465,13 @@ export function VoiceCockpitClient({
 
  {/* Control Action Buttons */}
  <div className="flex items-center gap-space-1">
- <Button size="sm"variant="ghost"className="h-8 text-caption font-semibold text-amber-500 hover:bg-amber-500/10 cursor-pointer">
+ <Button size="sm" variant="ghost" aria-label="Mute audio stream" title="Mute audio stream" className="h-8 w-8 p-0 text-caption font-semibold text-amber-500 hover:bg-amber-500/10 cursor-pointer">
  <VolumeX className="h-3.5 w-3.5"/>
  </Button>
- <Button size="sm"variant="ghost"className="h-8 text-caption font-semibold text-primary hover:bg-primary/10 cursor-pointer">
+ <Button size="sm" variant="ghost" aria-label="Transfer call to agent" title="Transfer call to agent" className="h-8 w-8 p-0 text-caption font-semibold text-primary hover:bg-primary/10 cursor-pointer">
  <UserCheck className="h-3.5 w-3.5"/>
  </Button>
- <Button size="sm"variant="ghost"className="h-8 text-caption font-semibold text-rose-500 hover:bg-rose-500/10 cursor-pointer">
+ <Button size="sm" variant="ghost" aria-label="Disconnect call" title="Disconnect call" className="h-8 w-8 p-0 text-caption font-semibold text-rose-500 hover:bg-rose-500/10 cursor-pointer">
  <PhoneOff className="h-3.5 w-3.5"/>
  </Button>
  </div>

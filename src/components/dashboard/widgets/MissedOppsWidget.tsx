@@ -67,7 +67,7 @@ export function MissedOppsWidget({ gapAnalysis }: MissedOppsWidgetProps) {
           </div>
           <div>
             <p className="text-body-sm font-bold text-foreground">No Gaps Found</p>
-            <p className="text-[11px] text-muted-foreground/60 mt-1">Your business is fully configured.</p>
+            <p className="text-caption text-muted-foreground/60 mt-1">Your business is fully configured.</p>
           </div>
         </Card>
       </m.div>
@@ -84,11 +84,11 @@ export function MissedOppsWidget({ gapAnalysis }: MissedOppsWidgetProps) {
               <div className="h-7 w-7 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
                 <Target className="w-3.5 h-3.5 text-[hsl(var(--state-warning-text))]" />
               </div>
-              <p className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">
+              <p className="text-caption font-bold text-muted-foreground/70 uppercase tracking-widest">
                 Missing Requirements
               </p>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[hsl(var(--state-warning-bg))] text-[hsl(var(--state-warning-text))] border border-[hsl(var(--state-warning-border))]">
+            <span className="text-caption font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[hsl(var(--state-warning-bg))] text-[hsl(var(--state-warning-text))] border border-[hsl(var(--state-warning-border))]">
               {totalMissingItems} total
             </span>
           </div>
@@ -111,7 +111,7 @@ export function MissedOppsWidget({ gapAnalysis }: MissedOppsWidgetProps) {
                       <p className="text-body-sm font-bold text-foreground group-hover:text-primary transition-colors">
                         {cat.label}
                       </p>
-                      <p className="text-[11px] text-muted-foreground/60 truncate">
+                      <p className="text-caption text-muted-foreground/60 truncate">
                         {cat.missing.slice(0, 2).join(", ")}
                         {cat.missing.length > 2 ? ` +${cat.missing.length - 2} more` : ""}
                       </p>

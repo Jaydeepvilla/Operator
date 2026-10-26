@@ -48,10 +48,10 @@ export const BUTTON_TOKENS = {
  types: {
  primary: {
  filled: {
- default: 'bg-[#0A0E17] text-white shadow-[0_4px_14px_0_rgba(10,14,23,0.15)]',
- hover: 'hover:bg-[#1a2133] hover:shadow-[0_6px_20px_rgba(10,14,23,0.23)] hover:-translate-y-0.5',
- active: 'active:bg-[#05070b] active:translate-y-0 active:shadow-none',
- focus: 'focus:ring-[#0A0E17]/50',
+ default: 'bg-[var(--btn-primary-bg)] text-[var(--btn-primary-fg)] shadow-sm',
+ hover: 'hover:bg-[var(--btn-primary-hover)] hover:shadow-md hover:-translate-y-0.5',
+ active: 'active:bg-[var(--btn-primary-active)] active:translate-y-0 active:shadow-none',
+ focus: 'focus:ring-primary/40',
  },
  outline: {
  default: 'bg-transparent text-[#0A0E17] border-[#0A0E17]',
@@ -75,10 +75,10 @@ export const BUTTON_TOKENS = {
 
  secondary: {
  filled: {
- default: 'bg-white text-[#0A0E17] border-gray-200/60 shadow-[0_2px_8px_0_rgba(0,0,0,0.04)]',
- hover: 'hover:bg-gray-50 hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] hover:-translate-y-0.5',
- active: 'active:bg-gray-100 active:translate-y-0',
- focus: 'focus:ring-gray-200',
+ default: 'bg-card text-card-foreground border border-border-default shadow-xs',
+ hover: 'hover:bg-accent hover:border-border-hover hover:shadow-sm hover:-translate-y-0.5',
+ active: 'active:bg-accent/80 active:translate-y-0',
+ focus: 'focus:ring-border-default',
  },
  outline: {
  default: 'bg-transparent text-gray-700 border-gray-200',

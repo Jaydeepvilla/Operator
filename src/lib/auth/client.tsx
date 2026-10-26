@@ -27,13 +27,13 @@ const AuthContext = React.createContext<AuthContextType>({
 
 export function AuthProvider({
   children,
-  initialUser = null,
+  initialUser,
 }: {
   children: React.ReactNode;
   initialUser?: UserType | null;
 }) {
-  const [user, setUser] = React.useState<UserType | null>(initialUser);
-  const [isLoading, setIsLoading] = React.useState(initialUser === null);
+  const [user, setUser] = React.useState<UserType | null>(initialUser ?? null);
+  const [isLoading, setIsLoading] = React.useState(initialUser === undefined);
 
   const refresh = React.useCallback(async () => {
     try {
@@ -53,7 +53,7 @@ export function AuthProvider({
   }, []);
 
   React.useEffect(() => {
-    if (!initialUser) {
+    if (initialUser === undefined) {
       refresh();
     } else {
       setIsLoading(false);

@@ -3,6 +3,8 @@
 import * as React from "react";
 import { X, Check, Loader2, AlertCircle } from "lucide-react";
 import { updateInlineServiceAction } from "@/server/actions/verification";
+import { Button } from "@/components/shared/button";
+import { Input } from "@/components/shared/input";
 
 interface InlineEditModalProps {
   isOpen: boolean;
@@ -72,12 +74,14 @@ export function InlineEditModal({
             <h3 className="text-title-md font-bold text-foreground">Edit Service & Pricing</h3>
             <p className="text-body-sm text-muted-foreground">Updates your knowledge base & re-runs pricing verification.</p>
           </div>
-          <button
+          <Button
+            type="button"
+            aria-label="Close dialog"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
 
         {error && (
@@ -90,7 +94,7 @@ export function InlineEditModal({
         <form onSubmit={handleSave} className="space-y-space-4">
           <div className="space-y-space-1.5">
             <label className="text-[12px] font-semibold text-foreground">Service Name</label>
-            <input
+            <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -103,7 +107,7 @@ export function InlineEditModal({
             <label className="text-[12px] font-semibold text-foreground">Price ($ USD)</label>
             <div className="relative">
               <span className="absolute left-3 top-2.5 text-muted-foreground font-semibold text-body-sm">$</span>
-              <input
+              <Input
                 type="text"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
@@ -115,14 +119,14 @@ export function InlineEditModal({
           </div>
 
           <div className="flex items-center justify-end gap-space-2 pt-space-2">
-            <button
+            <Button
               type="button"
               onClick={onClose}
               className="rounded-xl px-space-4 py-space-2 text-body-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isSaving}
               className="flex items-center gap-space-2 rounded-xl bg-primary px-space-5 py-space-2 text-body-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all shadow-md shadow-primary/20 disabled:opacity-50"
@@ -138,7 +142,7 @@ export function InlineEditModal({
                   <span>Save & Re-verify</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

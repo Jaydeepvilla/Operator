@@ -14,6 +14,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Calendar3DIcon } from "./WidgetIcons3D";
+import { Button } from "@/components/shared/button";
+import { Input } from "@/components/shared/input";
 
 interface Service {
   id: string;
@@ -206,13 +208,13 @@ export function WidgetScheduler({
         </div>
 
         {step !== "confirmed" && (
-          <button
+          <Button
             type="button"
             onClick={onCancel}
-            className="text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+            className="text-caption text-muted-foreground hover:text-foreground cursor-pointer"
           >
             Cancel
-          </button>
+          </Button>
         )}
       </div>
 
@@ -221,7 +223,7 @@ export function WidgetScheduler({
         {/* Step 1: Service Selection */}
         {step === "service" && (
           <div className="flex flex-col gap-2">
-            <span className="text-[11px] text-muted-foreground">Select a service to book:</span>
+            <span className="text-caption text-muted-foreground">Select a service to book:</span>
             <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto pr-1">
               {services.length === 0 ? (
                 <div className="py-8 text-center text-xs text-muted-foreground italic">
@@ -229,7 +231,7 @@ export function WidgetScheduler({
                 </div>
               ) : (
                 services.map((s) => (
-                  <button
+                  <Button
                     key={s.id}
                     type="button"
                     onClick={() => {
@@ -240,10 +242,10 @@ export function WidgetScheduler({
                   >
                     <div>
                       <div className="text-xs font-semibold text-foreground">{s.name}</div>
-                      <div className="text-[11px] text-muted-foreground">{s.duration} mins</div>
+                      <div className="text-caption text-muted-foreground">{s.duration} mins</div>
                     </div>
                     <span className="text-xs font-semibold text-primary">${s.price}</span>
-                  </button>
+                  </Button>
                 ))
               )}
             </div>
@@ -254,19 +256,19 @@ export function WidgetScheduler({
         {step === "staff" && (
           <div className="flex flex-col gap-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-muted-foreground">Choose your specialist:</span>
-              <button
+              <span className="text-caption text-muted-foreground">Choose your specialist:</span>
+              <Button
                 type="button"
                 onClick={() => setStep("service")}
-                className="text-[11px] text-primary inline-flex items-center gap-0.5 cursor-pointer"
+                className="text-caption text-primary inline-flex items-center gap-0.5 cursor-pointer"
               >
                 <ChevronLeft className="h-3 w-3" /> Back
-              </button>
+              </Button>
             </div>
 
             <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto pr-1">
               {/* Option 1: Any Available */}
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setSelectedStaff(null);
@@ -280,15 +282,15 @@ export function WidgetScheduler({
                   </div>
                   <div>
                     <div className="text-xs font-semibold text-foreground">Any Available Staff</div>
-                    <div className="text-[11px] text-muted-foreground">Fastest appointment matching</div>
+                    <div className="text-caption text-muted-foreground">Fastest appointment matching</div>
                   </div>
                 </div>
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-              </button>
+              </Button>
 
               {/* Specific Staff */}
               {staff.map((st) => (
-                <button
+                <Button
                   key={st.id}
                   type="button"
                   onClick={() => {
@@ -303,11 +305,11 @@ export function WidgetScheduler({
                     </div>
                     <div>
                       <div className="text-xs font-semibold text-foreground">{st.name}</div>
-                      <div className="text-[11px] text-muted-foreground">{st.role || "Specialist"}</div>
+                      <div className="text-caption text-muted-foreground">{st.role || "Specialist"}</div>
                     </div>
                   </div>
                   <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -317,19 +319,19 @@ export function WidgetScheduler({
         {step === "datetime" && (
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-muted-foreground">Select date & opening:</span>
-              <button
+              <span className="text-caption text-muted-foreground">Select date & opening:</span>
+              <Button
                 type="button"
                 onClick={() => setStep("staff")}
-                className="text-[11px] text-primary inline-flex items-center gap-0.5 cursor-pointer"
+                className="text-caption text-primary inline-flex items-center gap-0.5 cursor-pointer"
               >
                 <ChevronLeft className="h-3 w-3" /> Back
-              </button>
+              </Button>
             </div>
 
             {/* Quick Date Pills */}
             <div className="flex items-center gap-1.5">
-              <button
+              <Button
                 type="button"
                 onClick={() => setSelectedDate(todayStr)}
                 className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
@@ -339,8 +341,8 @@ export function WidgetScheduler({
                 }`}
               >
                 Today
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setSelectedDate(tomorrowStr)}
                 className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
@@ -350,8 +352,8 @@ export function WidgetScheduler({
                 }`}
               >
                 Tomorrow
-              </button>
-              <input
+              </Button>
+              <Input
                 type="date"
                 min={todayStr}
                 value={selectedDate}
@@ -375,12 +377,12 @@ export function WidgetScheduler({
                 <>
                   {categorizedSlots.morning.length > 0 && (
                     <div>
-                      <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground block mb-1">
+                      <span className="text-caption font-medium uppercase tracking-wider text-muted-foreground block mb-1">
                         Morning
                       </span>
                       <div className="grid grid-cols-4 gap-1.5">
                         {categorizedSlots.morning.map((s, i) => (
-                          <button
+                          <Button
                             key={i}
                             type="button"
                             onClick={() => setSelectedSlot(s)}
@@ -391,7 +393,7 @@ export function WidgetScheduler({
                             }`}
                           >
                             {s.startTime}
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     </div>
@@ -399,12 +401,12 @@ export function WidgetScheduler({
 
                   {categorizedSlots.afternoon.length > 0 && (
                     <div>
-                      <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground block mb-1 mt-1">
+                      <span className="text-caption font-medium uppercase tracking-wider text-muted-foreground block mb-1 mt-1">
                         Afternoon
                       </span>
                       <div className="grid grid-cols-4 gap-1.5">
                         {categorizedSlots.afternoon.map((s, i) => (
-                          <button
+                          <Button
                             key={i}
                             type="button"
                             onClick={() => setSelectedSlot(s)}
@@ -415,7 +417,7 @@ export function WidgetScheduler({
                             }`}
                           >
                             {s.startTime}
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     </div>
@@ -423,12 +425,12 @@ export function WidgetScheduler({
 
                   {categorizedSlots.evening.length > 0 && (
                     <div>
-                      <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground block mb-1 mt-1">
+                      <span className="text-caption font-medium uppercase tracking-wider text-muted-foreground block mb-1 mt-1">
                         Evening
                       </span>
                       <div className="grid grid-cols-4 gap-1.5">
                         {categorizedSlots.evening.map((s, i) => (
-                          <button
+                          <Button
                             key={i}
                             type="button"
                             onClick={() => setSelectedSlot(s)}
@@ -439,7 +441,7 @@ export function WidgetScheduler({
                             }`}
                           >
                             {s.startTime}
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     </div>
@@ -449,13 +451,13 @@ export function WidgetScheduler({
             </div>
 
             {selectedSlot && (
-              <button
+              <Button
                 type="button"
                 onClick={() => setStep("contact")}
                 className="w-full mt-1 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold flex items-center justify-center gap-1 shadow-sm cursor-pointer transition-all"
               >
                 Continue to Confirm <ArrowRight className="h-3.5 w-3.5" />
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -464,20 +466,20 @@ export function WidgetScheduler({
         {step === "contact" && (
           <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-muted-foreground">Who is this booking for?</span>
-              <button
+              <span className="text-caption text-muted-foreground">Who is this booking for?</span>
+              <Button
                 type="button"
                 onClick={() => setStep("datetime")}
-                className="text-[11px] text-primary inline-flex items-center gap-0.5 cursor-pointer"
+                className="text-caption text-primary inline-flex items-center gap-0.5 cursor-pointer"
               >
                 <ChevronLeft className="h-3 w-3" /> Back
-              </button>
+              </Button>
             </div>
 
             {/* Booking Summary Tag */}
             <div className="p-2.5 rounded-lg bg-muted/40 border border-border/40 text-xs">
               <div className="font-semibold text-foreground">{selectedService?.name}</div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-caption text-muted-foreground">
                 {new Date(selectedDate).toLocaleDateString(undefined, {
                   weekday: "short",
                   month: "short",
@@ -488,8 +490,8 @@ export function WidgetScheduler({
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-medium text-foreground">Your Full Name *</label>
-              <input
+              <label className="text-caption font-medium text-foreground">Your Full Name *</label>
+              <Input
                 type="text"
                 required
                 value={name}
@@ -501,8 +503,8 @@ export function WidgetScheduler({
 
             <div className="grid grid-cols-2 gap-2">
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium text-foreground">Email</label>
-                <input
+                <label className="text-caption font-medium text-foreground">Email</label>
+                <Input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -511,8 +513,8 @@ export function WidgetScheduler({
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium text-foreground">Phone Number</label>
-                <input
+                <label className="text-caption font-medium text-foreground">Phone Number</label>
+                <Input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -528,7 +530,7 @@ export function WidgetScheduler({
               </div>
             )}
 
-            <button
+            <Button
               type="submit"
               disabled={submitting || !name.trim()}
               className="w-full mt-1.5 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold flex items-center justify-center gap-1 shadow-sm cursor-pointer disabled:opacity-50 transition-all"
@@ -542,7 +544,7 @@ export function WidgetScheduler({
                   Confirm Appointment <Check className="h-3.5 w-3.5" />
                 </>
               )}
-            </button>
+            </Button>
           </form>
         )}
 
@@ -590,13 +592,13 @@ export function WidgetScheduler({
                   <CalendarPlus className="h-3.5 w-3.5 text-primary" /> Add to Calendar
                 </a>
               )}
-              <button
+              <Button
                 type="button"
                 onClick={onCancel}
                 className="flex-1 py-2 px-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold cursor-pointer transition-colors"
               >
                 Return to Chat
-              </button>
+              </Button>
             </div>
           </div>
         )}

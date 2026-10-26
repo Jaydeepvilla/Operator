@@ -9,6 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/shared/dropdown-menu";
+import { Button } from "@/components/shared/button";
 
 interface DailyBriefWidgetProps {
   brief: DailyBriefData;
@@ -95,17 +96,17 @@ export function DailyBriefWidget({
         <div className="relative z-10 flex flex-col gap-space-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-space-2">
-              <span className="text-[11px] font-bold text-primary uppercase tracking-widest">
+              <span className="text-caption font-bold text-primary uppercase tracking-widest">
                 {greeting}
               </span>
               <span className="text-muted-foreground/40">•</span>
-              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-caption font-semibold text-emerald-600 dark:text-emerald-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span>Live Receptionist 24/7</span>
               </div>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight leading-tight">
               {businessName}
             </h1>
           </div>
@@ -115,7 +116,7 @@ export function DailyBriefWidget({
             {/* Range Pills */}
             <div className="inline-flex items-center p-1 rounded-xl bg-muted/60 border border-border/50 text-caption font-medium">
               {ranges.map((r) => (
-                <button
+                <Button
                   key={r.id}
                   onClick={() => onRangeChange?.(r.id)}
                   className={cn(
@@ -126,12 +127,12 @@ export function DailyBriefWidget({
                   )}
                 >
                   {r.label}
-                </button>
+                </Button>
               ))}
             </div>
 
             {/* Refresh Button with Rotating Spinner */}
-            <button
+            <Button
               onClick={onRefresh}
               disabled={isRefreshing}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/60 bg-background/80 hover:bg-muted/60 text-muted-foreground hover:text-foreground text-[12px] font-semibold transition-all shadow-sm"
@@ -146,17 +147,17 @@ export function DailyBriefWidget({
               <span className="hidden sm:inline">
                 {isRefreshing ? "Syncing..." : lastUpdatedText}
               </span>
-            </button>
+            </Button>
 
             {/* Quick Test AI Button */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
+                <Button
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-[12px] font-bold hover:bg-primary/90 transition-all shadow-sm shadow-primary/20 cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Test AI Call/Chat</span>
-                </button>
+                </Button>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent
@@ -165,7 +166,7 @@ export function DailyBriefWidget({
                 className="w-72 rounded-2xl border border-border/80 bg-popover text-popover-foreground p-2 shadow-2xl backdrop-blur-xl z-50 animate-in fade-in zoom-in-95"
               >
                 <div className="px-3 py-1.5 mb-1 border-b border-border/40">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground">
                     Live Receptionist Testing
                   </span>
                 </div>
@@ -178,7 +179,7 @@ export function DailyBriefWidget({
                       <MessageSquare className="w-3.5 h-3.5 text-primary shrink-0" />
                       <div>
                         <p className="font-semibold text-[12px]">Test Web Chatbot</p>
-                        <p className="text-[10px] text-muted-foreground font-normal">Live chat with your business knowledge</p>
+                        <p className="text-caption text-muted-foreground font-normal">Live chat with your business knowledge</p>
                       </div>
                     </div>
                     <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
@@ -193,7 +194,7 @@ export function DailyBriefWidget({
                       <Phone className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                       <div>
                         <p className="font-semibold text-[12px]">Test Phone Voice</p>
-                        <p className="text-[10px] text-muted-foreground font-normal">Voice speed, agent prompt & test dial</p>
+                        <p className="text-caption text-muted-foreground font-normal">Voice speed, agent prompt & test dial</p>
                       </div>
                     </div>
                     <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
@@ -211,7 +212,7 @@ export function DailyBriefWidget({
           </p>
 
           {/* Channel Pulse Indicators */}
-          <div className="flex items-center gap-space-3 shrink-0 text-[11px] font-medium text-muted-foreground">
+          <div className="flex items-center gap-space-3 shrink-0 text-caption font-medium text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               Voice Hotline

@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Send, Mic, MicOff, Loader2 } from "lucide-react";
+import { Button } from "@/components/shared/button";
+import { Input } from "@/components/shared/input";
 
 interface WidgetInputBarProps {
   onSendMessage: (text: string) => void;
@@ -91,7 +93,7 @@ export function WidgetInputBar({
       className="p-2.5 bg-background/80 backdrop-blur-md border-t border-border/30 flex items-center gap-2 select-none shrink-0"
     >
       <div className="relative flex-1 flex items-center">
-        <input
+        <Input
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -102,7 +104,7 @@ export function WidgetInputBar({
 
         {/* Real Speech-to-text mic toggle */}
         {speechSupported && (
-          <button
+          <Button
             type="button"
             onClick={toggleSpeech}
             title={isListening ? "Stop listening" : "Speak your message"}
@@ -113,11 +115,11 @@ export function WidgetInputBar({
             }`}
           >
             {isListening ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
-          </button>
+          </Button>
         )}
       </div>
 
-      <button
+      <Button
         type="submit"
         disabled={!text.trim() || isLoading}
         className="h-9 w-9 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-xs hover:scale-102 active:scale-98 transition-all"
@@ -128,7 +130,7 @@ export function WidgetInputBar({
         ) : (
           <Send className="h-3.5 w-3.5" />
         )}
-      </button>
+      </Button>
     </form>
   );
 }

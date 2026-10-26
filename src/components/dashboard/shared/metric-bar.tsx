@@ -32,7 +32,7 @@ export function MetricBar({ label, value, colorClass, showDot, empty, displayVal
 
   return (
     <div className="flex items-center justify-between py-space-0.5">
-      <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-medium">
+      <span className="text-caption text-muted-foreground flex items-center gap-1.5 font-medium">
         {showDot && (
           <span
             className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`}
@@ -41,7 +41,7 @@ export function MetricBar({ label, value, colorClass, showDot, empty, displayVal
         )}
         {label}
       </span>
-      <span className={`text-[11px] font-bold tabular-nums ${textColor}`}>
+      <span className={`text-caption font-bold tabular-nums ${textColor}`}>
         {displayValue ?? `${value}%`}
       </span>
     </div>

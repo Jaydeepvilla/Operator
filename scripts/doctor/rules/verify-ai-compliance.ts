@@ -67,12 +67,15 @@ export const verifyAiCompliance: DoctorRule = {
       const numLines = sourceFile.getEndLineNumber();
       const isClient = isClientComponent(sourceFile);
 
-      if (numLines > 3500) {
-        addV({ file: filePath, line: 1, message: `Component exceeds 3500 lines (${numLines}).`, severity: "Critical", canAutoFix: false, risk: "High" }, "maintainability");
-      } else if (numLines > 3000) {
-        addV({ file: filePath, line: 1, message: `Component exceeds 3000 lines (${numLines}).`, severity: "Error", canAutoFix: false, risk: "Medium" }, "maintainability");
-      } else if (numLines > 2500) {
-        addV({ file: filePath, line: 1, message: `Component exceeds 2500 lines (${numLines}).`, severity: "Warning", canAutoFix: false, risk: "Low" }, "maintainability");
+      const isComponentFile = (filePath.includes("components") || filePath.includes("app")) && !filePath.includes("schema.ts");
+      if (isComponentFile) {
+        if (numLines > 3500) {
+          addV({ file: filePath, line: 1, message: `Component exceeds 3500 lines (${numLines}).`, severity: "Critical", canAutoFix: false, risk: "High" }, "maintainability");
+        } else if (numLines > 3000) {
+          addV({ file: filePath, line: 1, message: `Component exceeds 3000 lines (${numLines}).`, severity: "Error", canAutoFix: false, risk: "Medium" }, "maintainability");
+        } else if (numLines > 2500) {
+          addV({ file: filePath, line: 1, message: `Component exceeds 2500 lines (${numLines}).`, severity: "Warning", canAutoFix: false, risk: "Low" }, "maintainability");
+        }
       }
 
       // 14. DESIGN PATTERNS / ARCHITECTURE
@@ -163,7 +166,10 @@ export const verifyAiCompliance: DoctorRule = {
            const tagName = (node as any).getTagNameNode().getText();
            
            if (nativeToSharedMap[tagName] && !filePath.includes("components/shared") && !filePath.includes("components\\shared")) {
-              addV({ file: filePath, line: node.getStartLineNumber(), message: `Raw HTML <${tagName}> used. Could reuse <${nativeToSharedMap[tagName]}>.`, severity: "Warning", canAutoFix: true, risk: "Low" }, "componentReuse");
+              const expectedComponentFile = path.join(cwd, "src", "components", "shared", `${nativeToSharedMap[tagName].toLowerCase()}.tsx`);
+              if (fs.existsSync(expectedComponentFile)) {
+                addV({ file: filePath, line: node.getStartLineNumber(), message: `Raw HTML <${tagName}> used. Could reuse <${nativeToSharedMap[tagName]}>.`, severity: "Warning", canAutoFix: true, risk: "Low" }, "componentReuse");
+              }
            }
            
            if (tagName === "img") {

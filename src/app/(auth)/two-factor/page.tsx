@@ -9,6 +9,7 @@ import { AuthLayout } from "@/components/auth/auth-layout";
 import { AuthHeader } from "@/components/shared/auth-forms";
 import { AuthErrorBanner } from "@/components/auth/auth-error-banner";
 import { cn } from "@/components/shared/utils";
+import { Input } from "@/components/shared/input";
 
 // ── OTP digit input ─────────────────────────────────────────────────────────
 function OtpInput({
@@ -58,7 +59,7 @@ function OtpInput({
   return (
     <div className="flex items-center justify-center gap-space-2" role="group" aria-label="One-time password input">
       {Array.from({ length: digits }).map((_, i) => (
-        <input
+        <Input
           key={i}
           ref={(el) => { refs.current[i] = el; }}
           type="text"
@@ -166,7 +167,7 @@ export default function TwoFactorPage() {
 
           {/* Resend */}
           <div className="flex items-center justify-center gap-space-2">
-            <button
+            <Button
               type="button"
               onClick={handleResend}
               disabled={resending || resendCooldown > 0}
@@ -183,7 +184,7 @@ export default function TwoFactorPage() {
                 <RefreshCw className="h-3 w-3" aria-hidden="true" />
               )}
               {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
-            </button>
+            </Button>
           </div>
 
           <p className="text-center text-caption text-foreground/40">

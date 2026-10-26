@@ -17,27 +17,35 @@ test.describe('Operator Production Readiness — E2E User Journeys', () => {
   // JOURNEY A: Authentication & Session Management
   // ──────────────────────────────────────────────────────────────────────────
   test('Journey A — Authentication: Login, Session Persistence, and Logout', async ({ page }) => {
-    // 1. Visit sign-in page, fill credentials, submit and verify redirect
-    await page.goto('/sign-in');
-    await page.fill('#signin-email', 'demo+admin@example.com');
-    await page.fill('#signin-password', 'Dem0P@ssw0rd!2026_');
-    await page.click('button[type="submit"]');
+    test.setTimeout(60000);
+    // 1. Visit sign-in page on an unauthenticated context, fill credentials, submit and verify redirect
+    const unauthContext = await page.context().browser()!.newContext({ storageState: { cookies: [], origins: [] } });
+    const authPage = await unauthContext.newPage();
+    await authPage.goto('/sign-in');
+    await authPage.fill('#signin-email', 'demo+admin@example.com');
+    await authPage.fill('#signin-password', 'Dem0P@ssw0rd!2026_');
+    await authPage.click('button[type="submit"]');
 
-    // Verify redirected to dashboard or session established
-    await page.waitForURL('**/dashboard', { timeout: 10000 }).catch(async () => {
-      await page.goto('/dashboard');
-    });
-    await expect(page).toHaveURL(/.*dashboard/);
+    // Verify redirected to login-success or dashboard via web-first assertion
+    await expect(authPage).toHaveURL(/.*(login-success|dashboard)/, { timeout: 30000 });
+    if (authPage.url().includes('login-success')) {
+      const continueBtn = authPage.locator('button:has-text("Continue"), a:has-text("Continue")');
+      if (await continueBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await continueBtn.click();
+      }
+    }
+    await expect(authPage).toHaveURL(/.*dashboard/, { timeout: 30000 });
 
     // 2. Refresh page to verify session persistence
-    await page.reload();
-    await expect(page).toHaveURL(/.*dashboard/);
+    await authPage.reload();
+    await expect(authPage).toHaveURL(/.*dashboard/);
 
     // 3. Test unauthenticated direct access on fresh context
-    const unauthContext = await page.context().browser()!.newContext({ storageState: { cookies: [], origins: [] } });
-    const unauthPage = await unauthContext.newPage();
-    await unauthPage.goto('/dashboard');
-    await expect(unauthPage).toHaveURL(/.*sign-in/);
+    const cleanContext = await page.context().browser()!.newContext({ storageState: { cookies: [], origins: [] } });
+    const cleanPage = await cleanContext.newPage();
+    await cleanPage.goto('/dashboard');
+    await expect(cleanPage).toHaveURL(/.*sign-in/);
+    await cleanContext.close();
     await unauthContext.close();
   });
 

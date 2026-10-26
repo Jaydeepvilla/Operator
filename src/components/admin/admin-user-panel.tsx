@@ -1,5 +1,6 @@
-"use client";;
+"use client";
 import * as React from "react";
+import Image from "next/image";
 import {
  Search,
  UserCheck,
@@ -26,6 +27,7 @@ import { Button } from "@/components/shared/button";
 import { Input } from "@/components/shared/input";
 import { Label } from "@/components/shared/label";
 import { Badge } from "@/components/shared/badge";
+import { NativeSelect } from "@/components/shared/native";
 import {
  getAdminUsersAction,
  getAdminUserProfileDetailAction,
@@ -235,25 +237,25 @@ export function AdminUserPanel() {
  switch (status) {
  case "active":
  return (
- <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
+ <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-caption font-bold uppercase tracking-wider px-2 py-0.5">
  Active
  </Badge>
  );
  case "suspended":
  return (
- <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
+ <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-caption font-bold uppercase tracking-wider px-2 py-0.5">
  Suspended
  </Badge>
  );
  case "deactivated":
  return (
- <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/20 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
+ <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/20 text-caption font-bold uppercase tracking-wider px-2 py-0.5">
  Deactivated
  </Badge>
  );
  default:
  return (
- <Badge className="bg-slate-500/10 text-slate-400 border-slate-500/20 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
+ <Badge className="bg-slate-500/10 text-slate-400 border-slate-500/20 text-caption font-bold uppercase tracking-wider px-2 py-0.5">
  {status}
  </Badge>
  );
@@ -284,7 +286,7 @@ export function AdminUserPanel() {
  <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 shrink-0">
  <SlidersHorizontal className="h-4 w-4" /> Filter Status:
  </div>
- <select
+ <NativeSelect
  value={statusFilter}
  onChange={(e) => {
  setStatusFilter(e.target.value);
@@ -296,7 +298,7 @@ export function AdminUserPanel() {
  <option value="active">Active only</option>
  <option value="suspended">Suspended only</option>
  <option value="deactivated">Deactivated only</option>
- </select>
+ </NativeSelect>
  </div>
  </div>
  {/* Users table */}
@@ -319,11 +321,11 @@ export function AdminUserPanel() {
  <table className="w-full text-left border-collapse text-xs">
  <thead>
  <tr className="border-b border-white/5 bg-white/[0.01]">
- <th className="p-4 font-bold text-slate-400 uppercase tracking-wider text-[10px]">User Details</th>
- <th className="p-4 font-bold text-slate-400 uppercase tracking-wider text-[10px]">Status</th>
- <th className="p-4 font-bold text-slate-400 uppercase tracking-wider text-[10px]">Organization Role</th>
- <th className="p-4 font-bold text-slate-400 uppercase tracking-wider text-[10px]">Created Date</th>
- <th className="p-4 font-bold text-slate-400 uppercase tracking-wider text-[10px] text-right">Actions</th>
+ <th className="p-4 font-bold text-slate-400 uppercase tracking-wider text-caption">User Details</th>
+ <th className="p-4 font-bold text-slate-400 uppercase tracking-wider text-caption">Status</th>
+ <th className="p-4 font-bold text-slate-400 uppercase tracking-wider text-caption">Organization Role</th>
+ <th className="p-4 font-bold text-slate-400 uppercase tracking-wider text-caption">Created Date</th>
+ <th className="p-4 font-bold text-slate-400 uppercase tracking-wider text-caption text-right">Actions</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-white/5">
@@ -338,7 +340,7 @@ export function AdminUserPanel() {
  <div className="h-9 w-9 rounded-xl bg-violet-600/10 border-violet-500/20 flex items-center justify-center text-violet-400 font-bold uppercase shrink-0">
  {user.avatar ? (
  // eslint-disable-next-line @next/next/no-img-element
- (<img src={user.avatar} alt="Avatar" className="h-full w-full object-cover rounded-xl" />)
+ (<Image src={user.avatar} alt="Avatar" width={36} height={36} className="h-full w-full object-cover rounded-xl" unoptimized />)
  ) : (
  user.name ? user.name.charAt(0) : "U"
  )}
@@ -347,7 +349,7 @@ export function AdminUserPanel() {
  <div className="font-semibold text-white group-hover:text-violet-400 transition-colors">
  {user.name || "Unnamed User"}
  </div>
- <div className="text-[10px] text-slate-400 mt-0.5">{user.email}</div>
+ <div className="text-caption text-slate-400 mt-0.5">{user.email}</div>
  </div>
  </div>
  </td>
@@ -361,7 +363,7 @@ export function AdminUserPanel() {
  <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
  <div className="flex justify-end gap-1.5">
  {/* Suspend / Activate button */}
- <button
+ <Button
  onClick={() => handleToggleSuspension(user)}
  disabled={actionLoadingId === user.id}
  title={user.status === "suspended" ? "Unsuspend User" : "Suspend User"}
@@ -379,10 +381,10 @@ export function AdminUserPanel() {
  ) : (
  <ShieldAlert className="h-3.5 w-3.5" />
  )}
- </button>
+ </Button>
 
  {/* Soft Delete / Restore button */}
- <button
+ <Button
  onClick={() => handleToggleDeletion(user)}
  disabled={actionLoadingId === user.id}
  title={user.status === "deactivated" ? "Restore User Profile" : "Soft Delete User"}
@@ -400,7 +402,7 @@ export function AdminUserPanel() {
  ) : (
  <UserX className="h-3.5 w-3.5" />
  )}
- </button>
+ </Button>
  </div>
  </td>
  </tr>
@@ -413,7 +415,7 @@ export function AdminUserPanel() {
  {/* Pagination Bar */}
  {totalPages > 1 && (
  <div className="flex items-center justify-between p-4 border-t border-white/5 text-slate-400">
- <span className="text-[11px]">
+ <span className="text-caption">
  Total Users: <strong>{totalCount}</strong> • Page <strong>{page}</strong> of <strong>{totalPages}</strong>
  </span>
  <div className="flex gap-2">
@@ -451,10 +453,10 @@ export function AdminUserPanel() {
  </div>
  <div>
  <h3 className="text-sm font-bold text-white">Administrative Portal</h3>
- <p className="text-[10px] text-slate-400">Manage logs, active device sessions, and overrides.</p>
+ <p className="text-caption text-slate-400">Manage logs, active device sessions, and overrides.</p>
  </div>
  </div>
- <button
+ <Button
  onClick={() => setSelectedUserId(null)}
  className={getButtonClasses(
  'secondary',
@@ -464,7 +466,7 @@ export function AdminUserPanel() {
  )}
  >
  <X className="h-4.5 w-4.5" />
- </button>
+ </Button>
  </div>
 
  {/* Scrollable details panel */}
@@ -481,7 +483,7 @@ export function AdminUserPanel() {
  <div className="h-12 w-12 rounded-xl bg-violet-600/10 border-violet-500/20 flex items-center justify-center text-violet-400 font-bold uppercase text-lg shrink-0">
  {userDetail.user.avatar ? (
  // eslint-disable-next-line @next/next/no-img-element
- (<img src={userDetail.user.avatar} alt="Avatar" className="h-full w-full object-cover rounded-xl" />)
+ (<Image src={userDetail.user.avatar} alt="Avatar" width={48} height={48} className="h-full w-full object-cover rounded-xl" unoptimized />)
  ) : (
  userDetail.user.name ? userDetail.user.name.charAt(0) : "U"
  )}
@@ -491,12 +493,12 @@ export function AdminUserPanel() {
  <h4 className="text-sm font-bold text-white">{userDetail.user.name}</h4>
  {getStatusBadge(userDetail.user.status)}
  </div>
- <p className="text-[10px] text-slate-400 mt-0.5">{userDetail.user.email}</p>
+ <p className="text-caption text-slate-400 mt-0.5">{userDetail.user.email}</p>
  <div className="flex gap-1.5 mt-2 flex-wrap">
- <Badge className="bg-white/5 border-white/10 text-slate-300 text-[9px] capitalize px-2 py-0.5">
+ <Badge className="bg-white/5 border-white/10 text-slate-300 text-caption capitalize px-2 py-0.5">
  Role: {userDetail.user.role}
  </Badge>
- <Badge className="bg-white/5 border-white/10 text-slate-300 text-[9px] px-2 py-0.5">
+ <Badge className="bg-white/5 border-white/10 text-slate-300 text-caption px-2 py-0.5">
  ID: {userDetail.user.id}
  </Badge>
  </div>
@@ -505,7 +507,7 @@ export function AdminUserPanel() {
 
  {/* Account Actions Box */}
  <div className="space-y-3">
- <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Quick Profile Controls</h5>
+ <h5 className="text-caption font-bold uppercase tracking-wider text-slate-400">Quick Profile Controls</h5>
  <div className="grid grid-cols-2 gap-3">
  <Button
  onClick={() => handleToggleSuspension(userDetail.user)}
@@ -536,30 +538,30 @@ export function AdminUserPanel() {
  {/* Active sessions check */}
  <div className="space-y-3">
  <div className="flex justify-between items-center">
- <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Active Device Connections</h5>
+ <h5 className="text-caption font-bold uppercase tracking-wider text-slate-400">Active Device Connections</h5>
  {userDetail.sessions.length > 0 && (
- <button
+ <Button
  onClick={() => handleForceLogout(userDetail.user.id)}
  className={getButtonClasses(
  'primary',
  'filled',
  'medium',
- 'text-[10px] text-rose-400 transition-colors'
+ 'text-caption text-rose-400 transition-colors'
  )}
  >
  Revoke All Sessions
- </button>
+ </Button>
  )}
  </div>
 
  {userDetail.sessions.length === 0 ? (
- <p className="text-[10px] text-slate-500 italic p-3 border-white/5 rounded-xl text-center">
+ <p className="text-caption text-slate-500 italic p-3 border-white/5 rounded-xl text-center">
  No active logins or open sessions registered.
  </p>
  ) : (
  <div className="divide-y divide-white/5 border-white/5 rounded-xl bg-slate-950/15">
  {userDetail.sessions.map((session: any) => (
- <div key={session.id} className="flex justify-between items-center p-3 text-[10px]">
+ <div key={session.id} className="flex justify-between items-center p-3 text-caption">
  <div className="flex gap-2.5 items-center">
  <Smartphone className="h-3.5 w-3.5 text-slate-500" />
  <div>
@@ -584,27 +586,27 @@ export function AdminUserPanel() {
  {/* Password Override */}
  <form onSubmit={handleOverridePassword} className="space-y-3 bg-slate-950/30 border-slate-900 p-4 rounded-xl">
  <div className="flex justify-between items-center">
- <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+ <h5 className="text-caption font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
  <Key className="h-3 w-3" /> Password Override
  </h5>
  </div>
 
  {resetSuccess && (
- <div className="flex items-center gap-1.5 text-emerald-400 text-[10px] font-semibold animate-fade-in">
+ <div className="flex items-center gap-1.5 text-emerald-400 text-caption font-semibold animate-fade-in">
  <Check className="h-3.5 w-3.5" /> Password updated, all other user sessions terminated!
  </div>
  )}
 
  {resetError && (
- <div className="flex items-center gap-1.5 text-rose-400 text-[10px] font-semibold animate-fade-in">
+ <div className="flex items-center gap-1.5 text-rose-400 text-caption font-semibold animate-fade-in">
  <AlertTriangle className="h-3.5 w-3.5" /> {resetError}
  </div>
  )}
 
  <div className="space-y-1.5">
- <Label htmlFor="override-pw" className="text-[10px]">Assign New Credentials Password</Label>
+ <Label htmlFor="override-pw" className="text-caption">Assign New Credentials Password</Label>
  <div className="relative">
- <input
+ <Input
  id="override-pw"
  type={showOverridePw ? "text" : "password"}
  required
@@ -613,7 +615,7 @@ export function AdminUserPanel() {
  placeholder="Type a secure new password..."
  className="w-full bg-slate-950/40 border-slate-800 focus:border-violet-500/50 radius-xl pl-3 pr-8 py-2 text-xs text-white placeholder-slate-600 outline-none transition-all duration-300"
  />
- <button
+ <Button
  type="button"
  onClick={() => setShowOverridePw(!showOverridePw)}
  className={getButtonClasses(
@@ -624,14 +626,14 @@ export function AdminUserPanel() {
  )}
  >
  {showOverridePw ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
- </button>
+ </Button>
  </div>
  </div>
 
  <Button
  type="submit"
  disabled={resettingPassword || !newOverridePassword}
- className="bg-violet-600 hover:bg-violet-500 text-[11px] py-2 px-4 rounded-xl w-full"
+ className="bg-violet-600 hover:bg-violet-500 text-caption py-2 px-4 rounded-xl w-full"
  >
  {resettingPassword ? "Applying reset..." : "Override user credentials"}
  </Button>
@@ -639,25 +641,25 @@ export function AdminUserPanel() {
 
  {/* User history logs */}
  <div className="space-y-3">
- <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+ <h5 className="text-caption font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
  <History className="h-3.5 w-3.5" /> Login History Trail
  </h5>
 
  {userDetail.history.length === 0 ? (
- <p className="text-[10px] text-slate-500 italic p-3 border-white/5 rounded-xl text-center">
+ <p className="text-caption text-slate-500 italic p-3 border-white/5 rounded-xl text-center">
  No login history audits recorded yet.
  </p>
  ) : (
  <div className="border-white/5 rounded-xl overflow-hidden bg-slate-950/10">
  {userDetail.history.map((log: any) => (
- <div key={log.id} className="flex justify-between items-center p-3 text-[10px] hover:bg-white/[0.01] transition-colors border-b last:border-0 border-white/5">
+ <div key={log.id} className="flex justify-between items-center p-3 text-caption hover:bg-white/[0.01] transition-colors border-b last:border-0 border-white/5">
  <div>
  <div className="font-semibold text-slate-300">
  {log.browser} on {log.os} ({log.device})
  </div>
  <div className="text-slate-500 mt-0.5">IP Address: {log.ipAddress || "Unknown"}</div>
  </div>
- <span className="text-slate-500 text-[9px]">
+ <span className="text-slate-500 text-caption">
  {new Date(log.loginAt).toLocaleString()}
  </span>
  </div>
@@ -668,23 +670,23 @@ export function AdminUserPanel() {
 
  {/* Audit trail */}
  <div className="space-y-3">
- <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+ <h5 className="text-caption font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
  <FileText className="h-3.5 w-3.5" /> Security Audit Log
  </h5>
 
  {userDetail.auditLogs.length === 0 ? (
- <p className="text-[10px] text-slate-500 italic p-3 border-white/5 rounded-xl text-center">
+ <p className="text-caption text-slate-500 italic p-3 border-white/5 rounded-xl text-center">
  No security actions recorded in user ledger.
  </p>
  ) : (
  <div className="border-white/5 rounded-xl overflow-hidden bg-slate-950/10">
  {userDetail.auditLogs.map((log: any) => (
- <div key={log.id} className="p-3 text-[10px] hover:bg-white/[0.01] transition-colors border-b last:border-0 border-white/5 space-y-1">
+ <div key={log.id} className="p-3 text-caption hover:bg-white/[0.01] transition-colors border-b last:border-0 border-white/5 space-y-1">
  <div className="flex justify-between items-center">
- <span className="font-semibold text-violet-400 uppercase text-[9px] tracking-wider">
+ <span className="font-semibold text-violet-400 uppercase text-caption tracking-wider">
  {log.action}
  </span>
- <span className="text-slate-500 text-[9px]">
+ <span className="text-slate-500 text-caption">
  {new Date(log.createdAt).toLocaleString()}
  </span>
  </div>
@@ -692,7 +694,7 @@ export function AdminUserPanel() {
  Resource: <strong>{log.resource}</strong> (ID: {log.resourceId})
  </p>
  {log.metadata && (
- <pre className="bg-black/30 border-white/5 p-1.5 rounded-lg text-[9px] text-slate-400 font-mono overflow-x-auto max-w-full">
+ <pre className="bg-black/30 border-white/5 p-1.5 rounded-lg text-caption text-slate-400 font-mono overflow-x-auto max-w-full">
  {JSON.stringify(log.metadata, null, 2)}
  </pre>
  )}

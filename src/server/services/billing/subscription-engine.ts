@@ -266,7 +266,7 @@ export class SubscriptionEngine {
       })
       .onConflictDoNothing();
 
-    const [updatedSub] = await db
+    let [updatedSub] = await db
       .update(subscriptions)
       .set({
         planId: plan.id,
@@ -280,6 +280,37 @@ export class SubscriptionEngine {
       })
       .where(eq(subscriptions.organizationId, organizationId))
       .returning();
+
+    if (!updatedSub) {
+      // Upsert: Organization did not have an existing subscription record
+      const [insertedSub] = await db
+        .insert(subscriptions)
+        .values({
+          organizationId,
+          planId: plan.id,
+          status: "active",
+          currentPeriodStart: now,
+          currentPeriodEnd: periodEnd,
+          cancelAtPeriodEnd: false,
+          razorpaySubscriptionId: paymentProvider === "razorpay" ? providerSubscriptionId : undefined,
+          stripeSubscriptionId: paymentProvider === "stripe" ? providerSubscriptionId : undefined,
+        })
+        .onConflictDoUpdate({
+          target: subscriptions.organizationId,
+          set: {
+            planId: plan.id,
+            status: "active",
+            currentPeriodStart: now,
+            currentPeriodEnd: periodEnd,
+            cancelAtPeriodEnd: false,
+            razorpaySubscriptionId: paymentProvider === "razorpay" ? providerSubscriptionId : undefined,
+            stripeSubscriptionId: paymentProvider === "stripe" ? providerSubscriptionId : undefined,
+            updatedAt: now,
+          },
+        })
+        .returning();
+      updatedSub = insertedSub;
+    }
 
     // Reset usage counters for fresh paid period
     await this.resetUsageForNewPeriod(organizationId, now, periodEnd);

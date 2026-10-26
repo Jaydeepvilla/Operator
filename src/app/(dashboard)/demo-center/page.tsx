@@ -140,12 +140,12 @@ export default function DemoCenterPage() {
             <CheckCircle2 className="h-4 w-4 shrink-0" />
             <span>{feedbackMessage}</span>
           </div>
-          <button
+          <Button
             onClick={() => setFeedbackMessage(null)}
             className="text-[12px] underline hover:opacity-80"
           >
             Dismiss
-          </button>
+          </Button>
         </div>
       )}
 
@@ -160,10 +160,10 @@ export default function DemoCenterPage() {
               <h3 className="text-body-md font-semibold text-foreground">
                 {demoStatus?.name || "Active Demo Organization"}
               </h3>
-              <Badge variant="outline" className="text-[11px] font-mono">
+              <Badge variant="outline" className="text-caption font-mono">
                 {demoStatus?.industry || "Salon & Spa"}
               </Badge>
-              <Badge variant="secondary" className="text-[11px]">
+              <Badge variant="secondary" className="text-caption">
                 SANDBOX / DEMO MODE
               </Badge>
             </div>
@@ -201,7 +201,7 @@ export default function DemoCenterPage() {
             const isSelected = selectedScriptId === script.id;
 
             return (
-              <button
+              <Button
                 key={script.id}
                 onClick={() => handleSwitchIndustry(script.id)}
                 disabled={actionLoading}
@@ -212,7 +212,7 @@ export default function DemoCenterPage() {
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <Badge variant={isSelected ? "default" : "outline"} className="text-[11px]">
+                  <Badge variant={isSelected ? "default" : "outline"} className="text-caption">
                     {script.industry}
                   </Badge>
                   {isSelected && (
@@ -225,7 +225,7 @@ export default function DemoCenterPage() {
                 <p className="text-[12px] text-muted-foreground line-clamp-2 mt-1">
                   {script.tagline}
                 </p>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -279,7 +279,7 @@ export default function DemoCenterPage() {
                         <span className="text-caption font-semibold text-primary">
                           Step {step.step}: {step.title}
                         </span>
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge variant="outline" className="text-caption">
                           Automated Action
                         </Badge>
                       </div>
@@ -309,7 +309,7 @@ export default function DemoCenterPage() {
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-space-3">
                   <div className="p-space-3 rounded-lg bg-muted/40 border border-border text-center">
-                    <p className="text-[11px] text-muted-foreground uppercase font-semibold">
+                    <p className="text-caption text-muted-foreground uppercase font-semibold">
                       Recovered Bookings
                     </p>
                     <p className="text-title-md font-bold text-primary mt-1">
@@ -317,7 +317,7 @@ export default function DemoCenterPage() {
                     </p>
                   </div>
                   <div className="p-space-3 rounded-lg bg-muted/40 border border-border text-center">
-                    <p className="text-[11px] text-muted-foreground uppercase font-semibold">
+                    <p className="text-caption text-muted-foreground uppercase font-semibold">
                       After-Hours Capture
                     </p>
                     <p className="text-title-md font-bold text-primary mt-1">
@@ -325,7 +325,7 @@ export default function DemoCenterPage() {
                     </p>
                   </div>
                   <div className="p-space-3 rounded-lg bg-muted/40 border border-border text-center">
-                    <p className="text-[11px] text-muted-foreground uppercase font-semibold">
+                    <p className="text-caption text-muted-foreground uppercase font-semibold">
                       Labor Saved
                     </p>
                     <p className="text-title-md font-bold text-primary mt-1">
@@ -333,7 +333,7 @@ export default function DemoCenterPage() {
                     </p>
                   </div>
                   <div className="p-space-3 rounded-lg bg-muted/40 border border-border text-center">
-                    <p className="text-[11px] text-muted-foreground uppercase font-semibold">
+                    <p className="text-caption text-muted-foreground uppercase font-semibold">
                       No-Show Reduction
                     </p>
                     <p className="text-title-md font-bold text-emerald-600 dark:text-emerald-400 mt-1">

@@ -262,8 +262,8 @@ export function LandingPageClient() {
       >
         {/* Background effects */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.08),transparent_70%)]" />
-          <div className="absolute bottom-0 left-0 w-[600px] h-[400px] bg-[radial-gradient(ellipse_at_center,hsl(280_75%_55%/0.04),transparent_70%)]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[900px] md:w-[900px] h-[600px] bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.08),transparent_70%)]" />
+          <div className="absolute bottom-0 left-0 w-full max-w-[600px] md:w-[600px] h-[400px] bg-[radial-gradient(ellipse_at_center,hsl(280_75%_55%/0.04),transparent_70%)]" />
         </div>
 
         <div ref={heroContentRef} className="relative mx-auto max-w-screen-xl px-space-6">
@@ -283,7 +283,7 @@ export function LandingPageClient() {
             </Link>
 
             {/* Headline */}
-            <h1 className="hero-headline text-display-lg md:text-display-xl tracking-tight leading-[1.05] text-foreground font-semibold max-w-3xl mb-space-5">
+            <h1 className="hero-headline text-display-lg md:text-display-xl tracking-tight text-foreground font-semibold max-w-3xl mb-space-5">
               Stop losing customers
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-[hsl(270_75%_58%)] to-[hsl(280_75%_55%)]">
@@ -388,7 +388,7 @@ export function LandingPageClient() {
         className="py-space-24 lg:py-space-32 relative overflow-hidden"
       >
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-[radial-gradient(ellipse_at_center,hsl(var(--state-error-text)/0.03),transparent_70%)]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] md:w-[800px] h-[600px] bg-[radial-gradient(ellipse_at_center,hsl(var(--state-error-text)/0.03),transparent_70%)]" />
         </div>
 
         <div className="relative mx-auto max-w-5xl px-space-6">
@@ -617,7 +617,7 @@ export function LandingPageClient() {
       <div className="section-break" />
       <section id="features" className="py-space-24 lg:py-space-32 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/3 right-0 w-[500px] h-[500px] bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.04),transparent_70%)]" />
+          <div className="absolute top-1/3 right-0 w-full max-w-[500px] md:w-[500px] h-[500px] bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.04),transparent_70%)]" />
         </div>
 
         <div className="relative mx-auto max-w-5xl px-space-6">
@@ -818,7 +818,7 @@ export function LandingPageClient() {
         className="relative py-space-28 lg:py-space-32 overflow-hidden cta-mesh"
       >
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.1),transparent_70%)]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[600px] md:w-[600px] h-[400px] bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.1),transparent_70%)]" />
         </div>
 
         <GsapReveal animation="scale-up" className="relative mx-auto max-w-2xl px-space-6 text-center">

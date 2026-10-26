@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Sparkles, Calendar, Clock, MapPin, UserCheck, DollarSign } from "lucide-react";
+import { Button } from "@/components/shared/button";
 
 export interface DynamicActionItem {
   id: string;
@@ -85,7 +86,7 @@ export function WidgetQuickActions({
   return (
     <div className="flex items-center gap-1.5 px-3 py-2 border-t border-border/20 bg-background/40 backdrop-blur-xs overflow-x-auto no-scrollbar select-none shrink-0">
       {actionsToRender.map((act) => (
-        <button
+        <Button
           key={act.id + act.label}
           type="button"
           onClick={() => onAction(act)}
@@ -97,7 +98,7 @@ export function WidgetQuickActions({
         >
           {getActionIcon(act.id)}
           <span>{act.label}</span>
-        </button>
+        </Button>
       ))}
     </div>
   );

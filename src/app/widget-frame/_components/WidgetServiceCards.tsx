@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { Clock, Tag, ArrowRight, Search } from "lucide-react";
 import { Services3DIcon } from "./WidgetIcons3D";
+import { Button } from "@/components/shared/button";
+import { Input } from "@/components/shared/input";
 
 interface Service {
   id: string;
@@ -37,7 +39,7 @@ export function WidgetServiceCards({
           <Services3DIcon size={18} />
           <span className="text-xs font-semibold text-foreground">Available Services</span>
         </div>
-        <span className="text-[11px] text-muted-foreground">
+        <span className="text-caption text-muted-foreground">
           {filtered.length} {filtered.length === 1 ? "option" : "options"}
         </span>
       </div>
@@ -45,7 +47,7 @@ export function WidgetServiceCards({
       {services.length > 3 && (
         <div className="relative">
           <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
-          <input
+          <Input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -70,17 +72,17 @@ export function WidgetServiceCards({
                 <div className="flex items-center gap-2">
                   <h4 className="text-xs font-semibold text-foreground truncate">{service.name}</h4>
                   {service.categoryName && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                    <span className="text-caption px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
                       {service.categoryName}
                     </span>
                   )}
                 </div>
                 {service.description && (
-                  <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                  <p className="text-caption text-muted-foreground line-clamp-1 mt-0.5">
                     {service.description}
                   </p>
                 )}
-                <div className="flex items-center gap-3 mt-1.5 text-[11px] text-muted-foreground">
+                <div className="flex items-center gap-3 mt-1.5 text-caption text-muted-foreground">
                   <span className="inline-flex items-center gap-1 font-medium text-foreground">
                     ${service.price}
                   </span>
@@ -92,13 +94,13 @@ export function WidgetServiceCards({
                 </div>
               </div>
 
-              <button
+              <Button
                 type="button"
                 onClick={() => onSelectService(service)}
                 className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium shrink-0 cursor-pointer shadow-xs hover:scale-102 active:scale-98 transition-all"
               >
                 Book <ArrowRight className="h-3 w-3" />
-              </button>
+              </Button>
             </div>
           ))
         )}

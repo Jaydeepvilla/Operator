@@ -6,6 +6,8 @@ import { MarketingFooter } from "@/components/marketing/footer";
 import { RazorpayCheckoutButton } from "@/components/billing/razorpay-checkout-button";
 import { Shield, CheckCircle2, CreditCard, Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/shared/button";
+import { Input } from "@/components/shared/input";
 
 export default function CheckoutDemoPage() {
   const [selectedPlan, setSelectedPlan] = useState<"starter" | "pro" | "custom">("pro");
@@ -50,7 +52,7 @@ export default function CheckoutDemoPage() {
             </h2>
 
             <div className="grid grid-cols-3 gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setSelectedPlan("starter")}
                 className={`p-3 rounded-xl border text-left transition-all ${
@@ -61,9 +63,9 @@ export default function CheckoutDemoPage() {
               >
                 <div className="text-xs text-muted-foreground">Starter</div>
                 <div className="text-base font-bold">₹49</div>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 onClick={() => setSelectedPlan("pro")}
                 className={`p-3 rounded-xl border text-left transition-all ${
@@ -74,9 +76,9 @@ export default function CheckoutDemoPage() {
               >
                 <div className="text-xs text-muted-foreground">Pro Plan</div>
                 <div className="text-base font-bold">₹149</div>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 onClick={() => setSelectedPlan("custom")}
                 className={`p-3 rounded-xl border text-left transition-all ${
@@ -87,13 +89,13 @@ export default function CheckoutDemoPage() {
               >
                 <div className="text-xs text-muted-foreground">Custom</div>
                 <div className="text-base font-bold">₹ Custom</div>
-              </button>
+              </Button>
             </div>
 
             {selectedPlan === "custom" && (
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">Amount in INR (₹)</label>
-                <input
+                <Input
                   type="number"
                   min="1"
                   value={customAmount}
@@ -110,7 +112,7 @@ export default function CheckoutDemoPage() {
               </h3>
               <div>
                 <label className="text-xs text-muted-foreground">Full Name</label>
-                <input
+                <Input
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
@@ -119,7 +121,7 @@ export default function CheckoutDemoPage() {
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">Email Address</label>
-                <input
+                <Input
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
@@ -128,7 +130,7 @@ export default function CheckoutDemoPage() {
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">Phone Number</label>
-                <input
+                <Input
                   type="tel"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
@@ -187,7 +189,7 @@ export default function CheckoutDemoPage() {
                     <CheckCircle2 className="h-4 w-4" />
                     Official Payment Verified
                   </div>
-                  <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold">
+                  <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-caption font-bold">
                     STATUS: PAID
                   </span>
                 </div>

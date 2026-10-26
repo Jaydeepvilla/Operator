@@ -23,7 +23,7 @@ export function AIRecommendationsWidget({ recommendations }: AIRecommendationsWi
  </div>
  <div>
  <p className="text-body-sm font-bold text-foreground">All Caught Up!</p>
- <p className="text-[11px] text-muted-foreground/60 mt-1 leading-relaxed">
+ <p className="text-caption text-muted-foreground/60 mt-1 leading-relaxed">
  Your AI has no active optimization recommendations.
  </p>
  </div>
@@ -65,11 +65,11 @@ export function AIRecommendationsWidget({ recommendations }: AIRecommendationsWi
  <div className="h-7 w-7 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 ring-1 ring-primary/20">
  <Sparkles className="w-3.5 h-3.5 text-primary" />
  </div>
- <p className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">
+ <p className="text-caption font-bold text-muted-foreground/70 uppercase tracking-widest">
  AI Recommendations
  </p>
  </div>
- <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/25">
+ <span className="text-caption font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/25">
  Proactive
  </span>
  </div>
@@ -93,7 +93,7 @@ export function AIRecommendationsWidget({ recommendations }: AIRecommendationsWi
  className="flex flex-col sm:flex-row sm:items-start gap-space-3 p-space-3 rounded-xl border border-[hsl(var(--foreground)/0.07)] bg-background/80 backdrop-blur-sm hover:border-primary/20 hover:bg-background/80 transition-all duration-200"
  >
  {/* Numbered badge */}
- <span className="hidden sm:flex h-5 w-5 shrink-0 rounded-full bg-primary/10 text-primary text-[10px] font-bold items-center justify-center mt-0.5 ring-1 ring-primary/15">
+ <span className="hidden sm:flex h-5 w-5 shrink-0 rounded-full bg-primary/10 text-primary text-caption font-bold items-center justify-center mt-0.5 ring-1 ring-primary/15">
  {idx + 1}
  </span>
 
@@ -103,19 +103,19 @@ export function AIRecommendationsWidget({ recommendations }: AIRecommendationsWi
  {rec.title}
  </h4>
  {isAuto && (
- <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-primary/8 text-primary border border-primary/20">
+ <span className="inline-flex items-center gap-0.5 text-caption font-bold px-1.5 py-0.5 rounded-full bg-primary/8 text-primary border border-primary/20">
  <Zap className="w-2.5 h-2.5" /> AI
  </span>
  )}
  </div>
- <p className="text-[11px] text-muted-foreground/65 leading-relaxed line-clamp-2">
+ <p className="text-caption text-muted-foreground/65 leading-relaxed line-clamp-2">
  {rec.description}
  </p>
  <div className="flex items-center gap-space-2 pt-space-0.5">
- <span className="text-[10px] text-muted-foreground/50 flex items-center gap-1">
+ <span className="text-caption text-muted-foreground/50 flex items-center gap-1">
  <Clock className="w-3 h-3" />{rec.estimatedTimeMinutes} min
  </span>
- <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border ${impactColor}`}>
+ <span className={`text-caption font-bold px-1.5 py-0.5 rounded-full border ${impactColor}`}>
  {rec.impact} Impact
  </span>
  </div>

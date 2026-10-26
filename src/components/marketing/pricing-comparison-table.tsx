@@ -106,21 +106,23 @@ export function PricingComparisonTable({
     <div className={cn("w-full relative", className)}>
       {/* Table Toolbar */}
       <div className="flex items-center justify-between gap-space-4 mb-space-4 px-space-2 text-caption">
-        <span className="text-muted-foreground font-mono text-[11px] uppercase tracking-wider">
+        <span className="text-muted-foreground font-mono text-caption uppercase tracking-wider">
           Compare all {categories.reduce((acc, c) => acc + c.features.length, 0)} features across 3 tiers
         </span>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={isAllCollapsed ? expandAll : collapseAll}
-          className="text-primary hover:text-primary-hover font-semibold text-caption cursor-pointer transition-colors"
+          className="text-primary hover:text-primary-hover font-semibold text-caption cursor-pointer transition-colors h-auto p-0 hover:bg-transparent"
         >
           {isAllCollapsed ? "Expand all sections" : "Collapse all sections"}
-        </button>
+        </Button>
       </div>
 
       {/* Responsive Table Container with horizontal scroll affordance */}
       <div className="overflow-x-auto rounded-2xl border border-[hsl(var(--foreground)/0.08)] bg-card/40 backdrop-blur-xs shadow-sm no-scrollbar">
-        <table className="w-full text-left border-collapse min-w-[640px]">
+        <table className="w-full text-left border-collapse min-w-[var(--container-sm)]">
           {/* Sticky Table Header */}
           <thead className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-[hsl(var(--foreground)/0.08)] shadow-2xs">
             <tr>
@@ -140,14 +142,14 @@ export function PricingComparisonTable({
                     )}
                   >
                     {isPopular && (
-                      <span className="inline-flex items-center gap-1 text-[9px] font-mono uppercase tracking-widest text-primary font-bold px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 mb-1">
+                      <span className="inline-flex items-center gap-1 text-caption font-mono uppercase tracking-widest text-primary font-bold px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 mb-1">
                         <Sparkles className="h-2.5 w-2.5" /> Most Popular
                       </span>
                     )}
                     <div className="text-body-md font-bold text-foreground">{p.name}</div>
                     <div className="text-body-sm font-mono text-muted-foreground mt-0.5">
                       ${yearly ? p.yearlyPrice : p.price}
-                      <span className="text-[10px]">/mo</span>
+                      <span className="text-caption">/mo</span>
                     </div>
                     <div className="mt-space-2.5">
                       <Button
@@ -190,7 +192,7 @@ export function PricingComparisonTable({
                           <span className="text-body-sm font-bold text-foreground">
                             {cat.label}
                           </span>
-                          <span className="text-[10px] font-mono text-muted-foreground bg-[hsl(var(--foreground)/0.04)] px-2 py-0.5 rounded-full font-semibold">
+                          <span className="text-caption font-mono text-muted-foreground bg-[hsl(var(--foreground)/0.04)] px-2 py-0.5 rounded-full font-semibold">
                             {cat.features.length}
                           </span>
                         </div>

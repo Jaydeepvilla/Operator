@@ -68,7 +68,7 @@ export function FeatureCard({
             </div>
           )}
           {badge && (
-            <span className="text-[10px] uppercase font-mono tracking-wider font-semibold px-space-2.5 py-space-1 rounded-full border border-primary/20 bg-primary/5 text-primary">
+            <span className="text-caption uppercase font-mono tracking-wider font-semibold px-space-2.5 py-space-1 rounded-full border border-primary/20 bg-primary/5 text-primary">
               {badge}
             </span>
           )}
@@ -106,7 +106,7 @@ export function FeatureCard({
               {metric.label}
             </div>
             {metric.sublabel && (
-              <div className="text-[10px] text-muted-foreground/70 mt-space-0.5">
+              <div className="text-caption text-muted-foreground/70 mt-space-0.5">
                 {metric.sublabel}
               </div>
             )}

@@ -55,14 +55,14 @@ export function NotificationsDropdown({ initialNotifications }: NotificationsDro
         <DropdownMenu.Content
           align="end"
           sideOffset={8}
-          className="z-[100] w-[380px] overflow-hidden rounded-xl border border-border bg-popover shadow-lg animate-in fade-in-50 zoom-in-95 duration-100 flex flex-col max-h-[480px]"
+          className="z-50 w-[380px] overflow-hidden rounded-xl border border-border bg-popover shadow-lg animate-in fade-in-50 zoom-in-95 duration-100 flex flex-col max-h-[480px]"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3.5 border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.01)] shrink-0">
             <div className="flex items-center gap-2">
               <span className="text-body-sm font-semibold text-foreground">Notifications</span>
               {count > 0 && (
-                <span className="text-[10px] font-bold bg-[hsl(var(--state-error-bg))] text-[hsl(var(--state-error-text))] px-2 py-0.5 rounded-full">
+                <span className="text-caption font-bold bg-[hsl(var(--state-error-bg))] text-[hsl(var(--state-error-text))] px-2 py-0.5 rounded-full">
                   {count} new
                 </span>
               )}
@@ -70,7 +70,7 @@ export function NotificationsDropdown({ initialNotifications }: NotificationsDro
             {count > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="text-[10px] font-semibold text-primary hover:text-primary-hover flex items-center gap-1 transition-colors cursor-pointer"
+                className="text-caption font-semibold text-primary hover:text-primary-hover flex items-center gap-1 transition-colors cursor-pointer"
               >
                 <CheckSquare className="w-3 h-3" />
                 Mark all read
@@ -123,7 +123,7 @@ export function NotificationsDropdown({ initialNotifications }: NotificationsDro
                   <Check className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <p className="text-body-sm font-semibold text-foreground">No notifications</p>
-                <p className="text-[11px] text-muted-foreground mt-1 max-w-[240px]">
+                <p className="text-caption text-muted-foreground mt-1 max-w-[240px]">
                   {activeTab === "unread" 
                     ? "You don't have any unread notifications."
                     : activeTab === "read"
@@ -187,7 +187,7 @@ export function NotificationsDropdown({ initialNotifications }: NotificationsDro
 
                           {/* Right Header Area: Timestamp on idle, Action Controls on hover */}
                           <div className="flex items-center gap-1 shrink-0">
-                            <span className="text-[10px] text-muted-foreground/60 group-hover:hidden transition-opacity">
+                            <span className="text-caption text-muted-foreground/60 group-hover:hidden transition-opacity">
                               {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true })}
                             </span>
 
@@ -221,7 +221,7 @@ export function NotificationsDropdown({ initialNotifications }: NotificationsDro
                           </div>
                         </div>
 
-                        <p className="text-[11px] text-muted-foreground/80 mt-1 leading-relaxed">
+                        <p className="text-caption text-muted-foreground/80 mt-1 leading-relaxed">
                           {notif.description}
                         </p>
 
@@ -230,7 +230,7 @@ export function NotificationsDropdown({ initialNotifications }: NotificationsDro
                           <div className="mt-2.5 flex items-center gap-2">
                             <Link
                               href={notif.actionUrl}
-                              className="inline-flex h-6 items-center justify-center rounded-lg bg-primary px-3 text-[10px] font-semibold text-primary-foreground shadow-sm hover:opacity-90 transition-all duration-150"
+                              className="inline-flex h-6 items-center justify-center rounded-lg bg-primary px-3 text-caption font-semibold text-primary-foreground shadow-sm hover:opacity-90 transition-all duration-150"
                             >
                               {notif.metadata?.actionText || "Review"}
                             </Link>

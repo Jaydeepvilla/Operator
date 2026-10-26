@@ -72,7 +72,7 @@ export function KPICard({
             )}>
               <Icon className={cn("w-3.5 h-3.5", empty ? "text-primary" : resolvedStatusTextClass)} />
             </div>
-            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
+            <p className="text-caption font-bold text-muted-foreground uppercase tracking-widest">
               {title}
             </p>
           </div>
@@ -95,13 +95,13 @@ export function KPICard({
               {resolvedStatusLabel}
             </span>
             {metaText && (
-              <p className="text-[11px] text-muted-foreground leading-snug">
+              <p className="text-caption text-muted-foreground leading-snug">
                 {metaText}
               </p>
             )}
             {alertCount > 0 && (
               <div className={cn(
-                "inline-flex items-center gap-space-1 px-space-2 py-space-0.5 rounded-full border text-[11px] font-semibold",
+                "inline-flex items-center gap-space-1 px-space-2 py-space-0.5 rounded-full border text-caption font-semibold",
                 alertBg
               )}>
                 {AlertIcon && <AlertIcon className="w-3 h-3 shrink-0" />}

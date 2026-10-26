@@ -51,7 +51,7 @@ export async function getPaymentConfigStatusAction(providerId = "razorpay") {
 }
 
 import { subscriptionEngine } from "../services/billing/subscription-engine";
-import { getPlan, PLAN_CATALOG, getAllPlans } from "@/lib/billing/plans";
+import { getPlan, getLocalizedPlan, PLAN_CATALOG, getAllPlans } from "@/lib/billing/plans";
 
 /**
  * Loads billing portal dashboard data using the central dynamic SubscriptionEngine.
@@ -114,6 +114,8 @@ export async function getBillingPortalDataAction() {
  */
 export async function createCheckoutSessionAction(params: {
   planId: string;
+  currency?: string;
+  countryCode?: string;
   successUrl?: string;
   cancelUrl?: string;
 }) {
@@ -123,8 +125,8 @@ export async function createCheckoutSessionAction(params: {
   try {
     const { organizationId } = await getVerifiedOrgContext();
 
-    // 1. Validate Plan ID
-    const validPlans = ["starter", "pro", "business", "enterprise"];
+    // 1. Validate Plan ID and resolve authoritative PlanConfig
+    const validPlans = ["starter", "pro", "business", "enterprise", "professional"];
     if (!planId || !validPlans.includes(planId.toLowerCase())) {
       throw new CheckoutValidationError(`Invalid plan selection: ${planId || "none"}.`, {
         correlationId,
@@ -134,14 +136,25 @@ export async function createCheckoutSessionAction(params: {
     // 2. Select Payment Provider (Razorpay as primary or fallback)
     const providerName = (process.env.RAZORPAY_KEY_ID || !process.env.STRIPE_SECRET_KEY) ? "razorpay" : "stripe";
     
-    // 3. Resolve customer billing account
+    // 3. Resolve authoritative currency and localized plan
+    const defaultCurrency = providerName === "razorpay" ? "INR" : "USD";
+    const requestedCurrency = params.currency?.toUpperCase() || defaultCurrency;
+    const localizedPlan = getLocalizedPlan(planId, requestedCurrency, params.countryCode);
+    const checkoutCurrency = localizedPlan.currency;
+
+    // 4. Resolve customer billing account and preserve currency integrity
     let account = await billingRepository.getBillingAccount(organizationId);
     if (!account) {
       account = await billingRepository.createBillingAccount({
         organizationId,
         email: "billing@customer.com",
-        currency: providerName === "razorpay" ? "INR" : "USD",
+        currency: checkoutCurrency,
       });
+    } else if (account.currency !== checkoutCurrency) {
+      await db
+        .update(billingAccounts)
+        .set({ currency: checkoutCurrency, updatedAt: new Date() })
+        .where(eq(billingAccounts.id, account.id));
     }
 
     const host = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -153,13 +166,16 @@ export async function createCheckoutSessionAction(params: {
         organizationId,
         customerId: account.razorpayCustomerId || undefined,
         customerEmail: account.email,
-        priceId: `plan_${planId}`,
+        priceId: `plan_${localizedPlan.id}_${checkoutCurrency.toLowerCase()}`,
+        amount: localizedPlan.price,
+        currency: checkoutCurrency,
         mode: "subscription",
         successUrl: params.successUrl || `${baseOrigin}/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: params.cancelUrl || `${baseOrigin}/billing?checkout=cancelled`,
         metadata: {
           organizationId,
-          planId,
+          planId: localizedPlan.id,
+          currency: checkoutCurrency,
           correlationId,
         },
       });
@@ -172,7 +188,7 @@ export async function createCheckoutSessionAction(params: {
       };
     }
 
-    // 4. Resolve Stripe Provider
+    // 5. Resolve Stripe Provider
     const stripe = ProviderRegistry.getSubscriptionProvider("stripe");
     if (!stripe.createCheckoutSession) {
       throw new PaymentUnavailableError("Checkout sessions are not supported by the configured provider.", {
@@ -180,19 +196,24 @@ export async function createCheckoutSessionAction(params: {
       });
     }
 
-    const priceId = process.env[`STRIPE_PRICE_${planId.toUpperCase()}`] || `price_${planId}`;
+    const priceId = process.env[`STRIPE_PRICE_${localizedPlan.id.toUpperCase()}_${checkoutCurrency}`] ||
+                    process.env[`STRIPE_PRICE_${localizedPlan.id.toUpperCase()}`] ||
+                    `price_${localizedPlan.id}_${checkoutCurrency.toLowerCase()}`;
 
     const session = await stripe.createCheckoutSession({
       organizationId,
       customerId: account.stripeCustomerId || undefined,
       customerEmail: account.email,
       priceId,
+      amount: localizedPlan.price,
+      currency: checkoutCurrency,
       mode: "subscription",
       successUrl: params.successUrl || `${baseOrigin}/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: params.cancelUrl || `${baseOrigin}/billing?checkout=cancelled`,
       metadata: {
         organizationId,
-        planId,
+        planId: localizedPlan.id,
+        currency: checkoutCurrency,
         correlationId,
       },
     });

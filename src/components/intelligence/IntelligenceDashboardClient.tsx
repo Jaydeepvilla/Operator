@@ -241,12 +241,12 @@ export function IntelligenceDashboardClient({
         <Card className="relative overflow-hidden border border-border-default hover:border-primary/30 transition-all duration-200">
           <CardContent className="p-space-5 pt-space-5 space-y-space-2">
             <div className="flex justify-between items-center">
-              <span className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">Health Score</span>
+              <span className="text-caption font-bold text-muted-foreground/70 uppercase tracking-widest">Health Score</span>
               <Activity className="h-4 w-4 text-emerald-500 shrink-0" />
             </div>
             <div className="flex items-center gap-space-2">
               <span className="text-title-lg font-bold tabular-nums leading-none">{overallHealth.overallScore}%</span>
-              <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0", getScoreStatusColor(overallHealth.overallScore))}>
+              <span className={cn("text-caption font-semibold px-2 py-0.5 rounded-full border shrink-0", getScoreStatusColor(overallHealth.overallScore))}>
                 {overallHealth.overallStatus}
               </span>
             </div>
@@ -257,12 +257,12 @@ export function IntelligenceDashboardClient({
         <Card className="relative overflow-hidden border border-border-default hover:border-primary/30 transition-all duration-200">
           <CardContent className="p-space-5 pt-space-5 space-y-space-2">
             <div className="flex justify-between items-center">
-              <span className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">AI Readiness</span>
+              <span className="text-caption font-bold text-muted-foreground/70 uppercase tracking-widest">AI Readiness</span>
               <Sparkles className="h-4 w-4 text-violet-500 shrink-0" />
             </div>
             <div className="flex items-center gap-space-2">
               <span className="text-title-lg font-bold tabular-nums leading-none">{aiReadiness.overallScore}%</span>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400">
+              <span className="text-caption font-semibold px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400">
                 Optimized
               </span>
             </div>
@@ -273,7 +273,7 @@ export function IntelligenceDashboardClient({
         <Card className="relative overflow-hidden border border-border-default hover:border-primary/30 transition-all duration-200">
           <CardContent className="p-space-5 pt-space-5 space-y-space-2">
             <div className="flex justify-between items-center">
-              <span className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">Revenue Gaps</span>
+              <span className="text-caption font-bold text-muted-foreground/70 uppercase tracking-widest">Revenue Gaps</span>
               <DollarSign className="h-4 w-4 text-amber-500 shrink-0" />
             </div>
             <div className="flex items-center gap-space-2">
@@ -287,7 +287,7 @@ export function IntelligenceDashboardClient({
         <Card className="relative overflow-hidden border border-border-default hover:border-primary/30 transition-all duration-200">
           <CardContent className="p-space-5 pt-space-5 space-y-space-2">
             <div className="flex justify-between items-center">
-              <span className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">Active Customers</span>
+              <span className="text-caption font-bold text-muted-foreground/70 uppercase tracking-widest">Active Customers</span>
               <Users className="h-4 w-4 text-indigo-500 shrink-0" />
             </div>
             <div className="flex items-center gap-space-2">
@@ -301,7 +301,7 @@ export function IntelligenceDashboardClient({
         <Card className="relative overflow-hidden border border-border-default hover:border-primary/30 transition-all duration-200">
           <CardContent className="p-space-5 pt-space-5 space-y-space-2">
             <div className="flex justify-between items-center">
-              <span className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">Critical Issues</span>
+              <span className="text-caption font-bold text-muted-foreground/70 uppercase tracking-widest">Critical Issues</span>
               <AlertTriangle className={cn("h-4 w-4 shrink-0", criticalIssuesCount > 0 ? "text-rose-500" : "text-muted-foreground/40")} />
             </div>
             <div className="flex items-center gap-space-2">
@@ -309,7 +309,7 @@ export function IntelligenceDashboardClient({
                 {criticalIssuesCount}
               </span>
               <span className={cn(
-                "text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0",
+                "text-caption font-semibold px-2 py-0.5 rounded-full border shrink-0",
                 criticalIssuesCount > 0 ? "bg-rose-500/10 border-rose-500/20 text-rose-400" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
               )}>
                 {criticalIssuesCount > 0 ? "Action Required" : "All Clear"}
@@ -348,17 +348,17 @@ export function IntelligenceDashboardClient({
               Priority Action Items
             </h3>
             {remainingActionsCount > 0 && (
-              <button 
+              <Button 
                 onClick={() => setIsDrawerOpen(true)} 
                 className={getButtonClasses(
                   'primary',
                   'link',
                   'medium',
-                  'text-primary text-[11px] hover:underline cursor-pointer transition-colors shrink-0'
+                  'text-primary text-caption hover:underline cursor-pointer transition-colors shrink-0'
                 )}
               >
                 View All ({deduplicatedActions.length})
-              </button>
+              </Button>
             )}
           </div>
 
@@ -379,20 +379,20 @@ export function IntelligenceDashboardClient({
                       <div className="space-y-space-1 min-w-0">
                         <div className="flex items-center gap-space-2 flex-wrap">
                           <span className={cn(
-                            "text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border shrink-0",
+                            "text-caption font-bold uppercase px-2 py-0.5 rounded-full border shrink-0",
                             isCritical ? "bg-rose-500/10 border-rose-500/20 text-rose-400" :
                             isWarning ? "bg-amber-500/10 border-amber-500/20 text-amber-400" :
                             "bg-primary/10 border-primary/20 text-primary"
                           )}>
                             {action.severity}
                           </span>
-                          <span className="text-[10px] text-muted-foreground/60 flex items-center gap-space-1">
+                          <span className="text-caption text-muted-foreground/60 flex items-center gap-space-1">
                             <Clock className="h-3 w-3 shrink-0" />
                             {action.estimatedTime}
                           </span>
                         </div>
                         <h4 className="text-body-sm font-bold text-foreground">{action.title}</h4>
-                        <p className="text-[11px] text-muted-foreground/85 leading-snug line-clamp-1">
+                        <p className="text-caption text-muted-foreground/85 leading-snug line-clamp-1">
                           Impact: <span className="font-semibold text-foreground/80">{action.impact}</span>
                         </p>
                       </div>
@@ -443,13 +443,13 @@ export function IntelligenceDashboardClient({
                       </div>
                       <div>
                         <h4 className="text-caption font-bold text-foreground leading-none">{mod.name}</h4>
-                        <span className="text-[10px] text-muted-foreground/60 font-semibold block mt-space-1">
+                        <span className="text-caption text-muted-foreground/60 font-semibold block mt-space-1">
                           {mod.status}
                         </span>
                       </div>
                     </div>
 
-                    <Link href={mod.quickFix.href} className="text-[11px] font-semibold text-primary hover:text-primary-light transition-colors flex items-center gap-space-1 pt-space-2 border-t border-border-subtle shrink-0">
+                    <Link href={mod.quickFix.href} className="text-caption font-semibold text-primary hover:text-primary-light transition-colors flex items-center gap-space-1 pt-space-2 border-t border-border-subtle shrink-0">
                       <span>{mod.quickFix.text}</span>
                       <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
                     </Link>
@@ -474,7 +474,7 @@ export function IntelligenceDashboardClient({
           <Card className="border border-border-default hover:border-primary/30 transition-all duration-200">
             <CardContent className="p-space-5 pt-space-5 flex flex-col justify-between h-full space-y-space-4">
               <div className="space-y-space-2">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 block">Revenue Idea</span>
+                <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground/60 block">Revenue Idea</span>
                 <h4 className="text-body-sm font-bold text-foreground leading-snug">{growthIdeasMap.revenue.title}</h4>
                 <p className="text-caption text-emerald-500 font-medium flex items-center gap-1">
                   <Activity className="h-3.5 w-3.5 shrink-0" />
@@ -494,7 +494,7 @@ export function IntelligenceDashboardClient({
           <Card className="border border-border-default hover:border-primary/30 transition-all duration-200">
             <CardContent className="p-space-5 pt-space-5 flex flex-col justify-between h-full space-y-space-4">
               <div className="space-y-space-2">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 block">Retention Idea</span>
+                <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground/60 block">Retention Idea</span>
                 <h4 className="text-body-sm font-bold text-foreground leading-snug">{growthIdeasMap.retention.title}</h4>
                 <p className="text-caption text-emerald-500 font-medium flex items-center gap-1">
                   <Activity className="h-3.5 w-3.5 shrink-0" />
@@ -514,7 +514,7 @@ export function IntelligenceDashboardClient({
           <Card className="border border-border-default hover:border-primary/30 transition-all duration-200">
             <CardContent className="p-space-5 pt-space-5 flex flex-col justify-between h-full space-y-space-4">
               <div className="space-y-space-2">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 block">Automation Idea</span>
+                <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground/60 block">Automation Idea</span>
                 <h4 className="text-body-sm font-bold text-foreground leading-snug">{growthIdeasMap.automation.title}</h4>
                 <p className="text-caption text-emerald-500 font-medium flex items-center gap-1">
                   <Activity className="h-3.5 w-3.5 shrink-0" />
@@ -534,7 +534,7 @@ export function IntelligenceDashboardClient({
           <Card className="border border-border-default hover:border-primary/30 transition-all duration-200">
             <CardContent className="p-space-5 pt-space-5 flex flex-col justify-between h-full space-y-space-4">
               <div className="space-y-space-2">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 block">Cross-Sell Idea</span>
+                <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground/60 block">Cross-Sell Idea</span>
                 <h4 className="text-body-sm font-bold text-foreground leading-snug">{growthIdeasMap.crossSell.title}</h4>
                 <p className="text-caption text-emerald-500 font-medium flex items-center gap-1">
                   <Activity className="h-3.5 w-3.5 shrink-0" />
@@ -555,7 +555,7 @@ export function IntelligenceDashboardClient({
       {/* ─── PROGRESSIVE DISCLOSURE MODAL (Centered overlay) ─── */}
       {isDrawerOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-space-4 animate-fade-in">
-          <button
+          <Button
             type="button"
             aria-label="Close dialog"
             className="absolute inset-0 bg-black/60 backdrop-blur-xs cursor-default border-none p-0"
@@ -611,7 +611,7 @@ export function IntelligenceDashboardClient({
                           )}>
                             {action.severity}
                           </span>
-                          <span className="text-[10px] text-muted-foreground/60 flex items-center gap-space-0.5">
+                          <span className="text-caption text-muted-foreground/60 flex items-center gap-space-0.5">
                             <Clock className="h-3.5 w-3.5" />
                             {action.estimatedTime}
                           </span>
@@ -628,7 +628,7 @@ export function IntelligenceDashboardClient({
                     </div>
 
                     <p className="text-caption text-muted-foreground/80 leading-relaxed">{action.description}</p>
-                    <div className="text-[11px] text-muted-foreground/60 pt-space-2 border-t border-border-subtle/50 flex items-center gap-space-1 italic">
+                    <div className="text-caption text-muted-foreground/60 pt-space-2 border-t border-border-subtle/50 flex items-center gap-space-1 italic">
                       <Info className="h-3 w-3 text-primary shrink-0" />
                       <span>Impact: {action.impact}</span>
                     </div>

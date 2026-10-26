@@ -17,21 +17,21 @@ interface MazeSnippetProps {
  * Configured via NEXT_PUBLIC_MAZE_API_KEY in environment or passed via `apiKey` prop.
  */
 export function MazeSnippet({ apiKey }: MazeSnippetProps) {
+  if (process.env.NEXT_PUBLIC_MAZE_ENABLED !== "true") {
+    return null;
+  }
+
   const key =
     apiKey ||
-    process.env.NEXT_PUBLIC_MAZE_API_KEY ||
-    "240861ba-3ed9-427b-9d55-dbee9c2d6668";
+    process.env.NEXT_PUBLIC_MAZE_API_KEY;
 
   if (!key) {
     return null;
   }
 
   return (
-    <Script
-      id="maze-universal-snippet"
-      strategy="afterInteractive"
-      dangerouslySetInnerHTML={{
-        __html: `
+    <Script id="maze-universal-snippet" strategy="afterInteractive">
+      {`
 (function (m, a, z, e) {
   var s, t, u, v;
   try {
@@ -58,8 +58,7 @@ export function MazeSnippet({ apiKey }: MazeSnippetProps) {
   a.getElementsByTagName('head')[0].appendChild(s);
   m.mazeUniversalSnippetApiKey = e;
 })(window, document, 'https://snippet.maze.co/maze-universal-loader.js', ${JSON.stringify(key)});
-`,
-      }}
-    />
+`}
+    </Script>
   );
 }

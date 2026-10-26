@@ -24,6 +24,7 @@ import { Button } from "@/components/shared/button";
 import { useRouter } from "next/navigation";
 import { VoicePersonaCard } from "./voice-persona-card";
 import { markOrganizationVerifiedAction } from "@/server/actions/verification";
+import { Input } from "@/components/shared/input";
 
 interface ChannelActivationHubProps {
   businessName: string;
@@ -180,13 +181,13 @@ export function ChannelActivationHub({
       {/* Header */}
       <div className="space-y-space-1.5 text-left">
         {onBack && (
-          <button
+          <Button
             onClick={onBack}
             className="inline-flex items-center gap-1 text-caption font-semibold text-muted-foreground hover:text-foreground transition-colors mb-1"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
             <span>Back to Verification Tests</span>
-          </button>
+          </Button>
         )}
         <div className="flex items-center gap-2">
           <div className="inline-flex items-center gap-space-1.5 px-space-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-caption font-bold uppercase tracking-wider">
@@ -205,7 +206,7 @@ export function ChannelActivationHub({
       {/* Channel Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-3">
         {/* Option 1: Website Chat */}
-        <button
+        <Button
           type="button"
           onClick={() => setSelectedChannel("widget")}
           className={cn(
@@ -229,10 +230,10 @@ export function ChannelActivationHub({
           <p className="text-caption text-muted-foreground mt-0.5 leading-snug">
             Embed AI chat on your site to answer FAQs and book appointments 24/7.
           </p>
-        </button>
+        </Button>
 
         {/* Option 2: Phone Forwarding */}
-        <button
+        <Button
           type="button"
           onClick={() => setSelectedChannel("phone")}
           className={cn(
@@ -256,10 +257,10 @@ export function ChannelActivationHub({
           <p className="text-caption text-muted-foreground mt-0.5 leading-snug">
             Forward unanswered calls to Operator. Keep your existing phone number.
           </p>
-        </button>
+        </Button>
 
         {/* Option 3: WhatsApp */}
-        <button
+        <Button
           type="button"
           onClick={() => setSelectedChannel("whatsapp")}
           className={cn(
@@ -283,7 +284,7 @@ export function ChannelActivationHub({
           <p className="text-caption text-muted-foreground mt-0.5 leading-snug">
             Connect your WhatsApp business line to handle inbound chats automatically.
           </p>
-        </button>
+        </Button>
       </div>
 
       {/* Configuration & Sandbox Card */}
@@ -313,11 +314,11 @@ export function ChannelActivationHub({
             <span className="text-body-sm font-bold text-foreground">Carrier Call Forwarding</span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-2">
               <div className="p-space-3 rounded-lg border border-border bg-muted/40">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">To Forward Calls</span>
+                <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground">To Forward Calls</span>
                 <p className="text-body-sm font-mono font-bold text-foreground mt-0.5">*71 + (555) 010-0199</p>
               </div>
               <div className="p-space-3 rounded-lg border border-border bg-muted/40">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">To Cancel Forwarding</span>
+                <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground">To Cancel Forwarding</span>
                 <p className="text-body-sm font-mono font-bold text-foreground mt-0.5">*73</p>
               </div>
             </div>
@@ -343,7 +344,7 @@ export function ChannelActivationHub({
               <Sparkles className="h-3.5 w-3.5 text-primary" />
               <span className="text-caption font-bold text-foreground">Live Simulation Sandbox</span>
             </div>
-            <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+            <span className="text-caption font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
               Simulated
             </span>
           </div>
@@ -359,7 +360,7 @@ export function ChannelActivationHub({
               >
                 <div
                   className={cn(
-                    "flex h-5 w-5 rounded-full items-center justify-center shrink-0 text-[9px]",
+                    "flex h-5 w-5 rounded-full items-center justify-center shrink-0 text-caption",
                     msg.sender === "user"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-foreground border border-border"
@@ -388,7 +389,7 @@ export function ChannelActivationHub({
           </div>
 
           <form onSubmit={handleSendTestMessage} className="flex gap-space-2">
-            <input
+            <Input
               type="text"
               value={testInput}
               onChange={(e) => setTestInput(e.target.value)}

@@ -21,6 +21,7 @@ import { PageTitle } from "@/components/shared/page-title";
 import { Input } from "@/components/shared/input";
 import { Label } from "@/components/shared/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/shared/card";
+import { NativeSelect } from "@/components/shared/native";
 import { cn } from "@/components/shared/utils";
 
 import { getButtonClasses } from '@/design-system/button-tokens';
@@ -136,7 +137,7 @@ export default function TemplatesPage() {
  <div className="flex items-center gap-space-2 radius-lg bg-error-500/10 border-error-500/20 p-space-3 text-caption text-error-500">
  <AlertCircle className="h-4 w-4"/>
  <span>{errorMsg}</span>
- <button className={getButtonClasses(
+ <Button className={getButtonClasses(
  'primary',
  'filled',
  'small',
@@ -144,7 +145,7 @@ export default function TemplatesPage() {
  )} onClick={() => setErrorMsg("")}>
  <span className="sr-only">Dismiss</span>
  &times;
- </button>
+ </Button>
  </div>
  )}
  {loading ? (
@@ -213,7 +214,7 @@ export default function TemplatesPage() {
  <div className="grid grid-cols-2 gap-space-3">
  <div className="space-y-space-1">
  <Label htmlFor="tplCategory">Category Trigger</Label>
- <select
+ <NativeSelect
  id="tplCategory"
  value={category}
  onChange={(e) => setCategory(e.target.value)}
@@ -227,12 +228,12 @@ export default function TemplatesPage() {
  <option value="re_engagement">Re-engagement</option>
  <option value="review_request">Review Request</option>
  <option value="custom">Custom</option>
- </select>
+ </NativeSelect>
  </div>
 
  <div className="space-y-space-1">
  <Label htmlFor="tplChannel">Channel Scope</Label>
- <select
+ <NativeSelect
  id="tplChannel"
  value={channelType}
  onChange={(e) => setChannelType(e.target.value)}
@@ -242,7 +243,7 @@ export default function TemplatesPage() {
  <option value="whatsapp">WhatsApp Business</option>
  <option value="sms">SMS / Vonage</option>
  <option value="email">Email Client</option>
- </select>
+ </NativeSelect>
  </div>
  </div>
 
@@ -280,7 +281,7 @@ export default function TemplatesPage() {
  </Label>
  <div className="flex flex-wrap gap-space-2">
  {variables.map((v) => (
- <button
+ <Button
  key={v}
  type="button"
  onClick={() => insertVariable(v)}
@@ -288,11 +289,11 @@ export default function TemplatesPage() {
  'primary',
  'filled',
  'small',
- 'text-[11px] bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.08)] text-muted-foreground hover: hover: transition-all select-none cursor-pointer'
+ 'text-caption bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.08)] text-muted-foreground hover: hover: transition-all select-none cursor-pointer'
  )}
  >
  {v}
- </button>
+ </Button>
  ))}
  </div>
  </div>

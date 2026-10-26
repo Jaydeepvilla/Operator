@@ -6,6 +6,7 @@ import { VerificationStatus } from "@/server/services/verification/types";
 import { ConfidenceBridge } from "./confidence-bridge";
 
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/shared/button";
 
 interface DashboardVerificationBarProps {
   businessName: string;
@@ -49,19 +50,19 @@ export function DashboardVerificationBar({
         </div>
 
         <div className="flex items-center gap-space-2 shrink-0">
-          <button
+          <Button
             onClick={() => setIsOpen(true)}
             className="flex items-center gap-space-1.5 rounded-xl bg-amber-500 px-space-4 py-space-2 text-[12px] font-bold text-white hover:bg-amber-600 transition-all shadow-md shadow-amber-500/20"
           >
             <Play className="h-3 w-3 fill-current" />
             <span>{isReview ? "Review Verification" : "Run Verification"}</span>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setDismissed(true)}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-amber-500/10 hover:text-foreground transition-colors"
           >
             <X className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -74,12 +75,12 @@ export function DashboardVerificationBar({
                 <CheckCircle2 className="h-5 w-5 text-primary" />
                 <h3 className="text-title-md font-bold text-foreground">AI Verification Studio</h3>
               </div>
-              <button
+              <Button
                 onClick={() => setIsOpen(false)}
                 className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
 
             <ConfidenceBridge

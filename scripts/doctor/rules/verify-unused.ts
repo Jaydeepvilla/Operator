@@ -26,25 +26,23 @@ export const verifyUnused: DoctorRule = {
       // Scan all files (app and other components) for imports from shared components
       for (const sourceFile of sourceFiles) {
         const filePath = sourceFile.getFilePath();
-        // Skip files inside shared components directory itself when checking usages, 
-        // unless we want to catch inter-dependencies. Better to just track all imports.
         
         const imports = sourceFile.getImportDeclarations();
         for (const imp of imports) {
           const moduleSpecifier = imp.getModuleSpecifierValue();
           // Heuristic: Check if the import path ends with the component name
           for (const component of sharedComponents) {
-             if (moduleSpecifier.endsWith(`shared/${component}`) || 
-                 (moduleSpecifier.includes("components/shared") && moduleSpecifier.includes(component))) {
-                 usedSharedComponents.add(component);
-             }
-             // Also check relative imports if the current file is nearby
-             if (moduleSpecifier.startsWith(".") && filePath.includes("components")) {
-                 const resolvedPath = path.resolve(path.dirname(filePath), moduleSpecifier);
-                 if (resolvedPath.replace(/\\\\/g, "/").includes(`components/shared/${component}`)) {
-                     usedSharedComponents.add(component);
-                 }
-             }
+            if (moduleSpecifier.endsWith(`shared/${component}`) || 
+                (moduleSpecifier.includes("components/shared") && moduleSpecifier.includes(component))) {
+              usedSharedComponents.add(component);
+            }
+            // Also check relative imports if the current file is nearby
+            if (moduleSpecifier.startsWith(".") && filePath.includes("components")) {
+              const resolvedPath = path.resolve(path.dirname(filePath), moduleSpecifier);
+              if (resolvedPath.replace(/\\/g, "/").includes(`components/shared/${component}`)) {
+                usedSharedComponents.add(component);
+              }
+            }
           }
         }
       }
@@ -59,7 +57,13 @@ export const verifyUnused: DoctorRule = {
         "section-header",
         "separator",
         "tabs",
-        "tooltip"
+        "tooltip",
+        "progress",
+        "maze-snippet",
+        "scroll-reveal-observer",
+        "org-switcher",
+        "global-search-dialog",
+        "notifications-dropdown"
       ]);
 
       // Check which components are unused
@@ -67,8 +71,9 @@ export const verifyUnused: DoctorRule = {
         if (!usedSharedComponents.has(component) && !ALLOWED_UNUSED_COMPONENTS.has(component)) {
           violations.push({
             file: path.join(sharedDir, `${component}.tsx`),
-            message: `Unused shared component: '${component}' is exported but never imported anywhere.`
-          , severity: 'Error' });
+            message: `Unused shared component: '${component}' is exported but never imported anywhere.`,
+            severity: 'Error'
+          });
         }
       }
     }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import crypto from "crypto";
 
 // Match public routes
 const PUBLIC_PATHS = [
@@ -45,6 +46,8 @@ function isPublicRoute(pathname: string): boolean {
   if (
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/webhooks") ||
+    pathname.startsWith("/api/cron") ||
+    pathname.startsWith("/api/voice") ||
     pathname.startsWith("/api/widget") ||
     pathname.startsWith("/widget-frame") ||
     pathname.startsWith("/widget.js") ||
@@ -71,15 +74,12 @@ function isAuthPage(pathname: string): boolean {
 }
 
 /**
- * Edge-level route protection (Next.js 16 proxy convention).
- *
- * Named export required — Next.js 16 renamed middleware → proxy and
- * expects `export function proxy` (or `export default`).
+ * Edge-level route protection & telemetry correlation (Next.js 16 proxy convention).
  */
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionToken = request.cookies.get("session_token")?.value;
-  const hasSession = !!sessionToken;
+  const requestId = request.headers.get("x-request-id") || `req_${crypto.randomUUID().slice(0, 12)}`;
 
   // ── Public routes ────────────────────────────────────────────────────
   if (isPublicRoute(pathname)) {
@@ -89,6 +89,7 @@ export function proxy(request: NextRequest) {
       response.cookies.delete("session_token");
       response.cookies.delete("refresh_token");
       response.cookies.delete("active_org_id");
+      response.headers.set("x-request-id", requestId);
       return response;
     }
 
@@ -99,41 +100,63 @@ export function proxy(request: NextRequest) {
           headers: {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, x-request-id",
+            "x-request-id": requestId,
           },
         });
       }
       const response = NextResponse.next();
       response.headers.set("Access-Control-Allow-Origin", "*");
       response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-      response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+      response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, x-request-id");
+      response.headers.set("x-request-id", requestId);
       return response;
     }
 
-    // Note: Do not blindly redirect from auth pages (sign-in/sign-up) at the edge
-    // because the session token cookie might be orphaned/deleted in the database.
-    // AuthLayout performs the verified database check and redirects only if valid.
-    return NextResponse.next();
+    const publicReqHeaders = new Headers(request.headers);
+    publicReqHeaders.set("x-pathname", pathname);
+    publicReqHeaders.set("x-request-id", requestId);
+    const response = NextResponse.next({
+      request: {
+        headers: publicReqHeaders,
+      },
+    });
+    response.headers.set("x-request-id", requestId);
+    return response;
   }
 
   // ── Protected routes ─────────────────────────────────────────────────
   if (!sessionToken) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        {
+          status: 401,
+          headers: { "x-request-id": requestId },
+        }
+      );
+    }
     const signInUrl = new URL("/sign-in", request.url);
     // Remember the page they tried to access
     if (pathname !== "/dashboard") {
       signInUrl.searchParams.set("redirect", pathname);
     }
-    return NextResponse.redirect(signInUrl);
+    const redirectRes = NextResponse.redirect(signInUrl);
+    redirectRes.headers.set("x-request-id", requestId);
+    return redirectRes;
   }
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", pathname);
+  requestHeaders.set("x-request-id", requestId);
 
-  return NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
+  response.headers.set("x-request-id", requestId);
+  return response;
 }
 
 export const config = {

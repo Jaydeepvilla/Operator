@@ -459,11 +459,13 @@ test.describe("Onboarding Intelligence & Website Extraction Suite", () => {
     expect(whitening?.duration).toBe(60);
     expect(whitening?.price).toBe("350.00");
 
-    // Clean up test records
-    await db.delete(services).where(eq(services.organizationId, orgId));
-    await db.delete(serviceCategories).where(eq(serviceCategories.organizationId, orgId));
-    await db.delete(memberships).where(eq(memberships.organizationId, orgId));
-    await db.delete(organizations).where(eq(organizations.id, orgId));
+    // Clean up test records (never delete shared test org)
+    if (orgId !== '11111111-1111-1111-1111-111111111111') {
+      await db.delete(services).where(eq(services.organizationId, orgId));
+      await db.delete(serviceCategories).where(eq(serviceCategories.organizationId, orgId));
+      await db.delete(memberships).where(eq(memberships.organizationId, orgId));
+      await db.delete(organizations).where(eq(organizations.id, orgId));
+    }
   });
 
   test("8. Idempotency: Retrying onboarding submission does not duplicate services", async () => {
@@ -502,11 +504,13 @@ test.describe("Onboarding Intelligence & Website Extraction Suite", () => {
 
     expect(savedServices.length).toBe(1);
 
-    // Clean up
-    await db.delete(services).where(eq(services.organizationId, orgId));
-    await db.delete(serviceCategories).where(eq(serviceCategories.organizationId, orgId));
-    await db.delete(memberships).where(eq(memberships.organizationId, orgId));
-    await db.delete(organizations).where(eq(organizations.id, orgId));
+    // Clean up (never delete shared test org)
+    if (orgId !== '11111111-1111-1111-1111-111111111111') {
+      await db.delete(services).where(eq(services.organizationId, orgId));
+      await db.delete(serviceCategories).where(eq(serviceCategories.organizationId, orgId));
+      await db.delete(memberships).where(eq(memberships.organizationId, orgId));
+      await db.delete(organizations).where(eq(organizations.id, orgId));
+    }
   });
 
   test("9. Section 2 Controlled Fixture E2E Reproduction & Release Gate: Full workflow from crawling to DB persistence and page reload", async () => {
@@ -630,12 +634,14 @@ test.describe("Onboarding Intelligence & Website Extraction Suite", () => {
     expect(reloadState.hasOrg).toBe(true);
     expect(reloadState.isCompleted).toBe(true);
 
-    // Clean up
-    await db.delete(services).where(eq(services.organizationId, orgId));
-    await db.delete(serviceCategories).where(eq(serviceCategories.organizationId, orgId));
-    await db.delete(businessProfiles).where(eq(businessProfiles.organizationId, orgId));
-    await db.delete(businessSettings).where(eq(businessSettings.organizationId, orgId));
-    await db.delete(memberships).where(eq(memberships.organizationId, orgId));
-    await db.delete(organizations).where(eq(organizations.id, orgId));
+    // Clean up (never delete shared test org)
+    if (orgId !== '11111111-1111-1111-1111-111111111111') {
+      await db.delete(services).where(eq(services.organizationId, orgId));
+      await db.delete(serviceCategories).where(eq(serviceCategories.organizationId, orgId));
+      await db.delete(businessProfiles).where(eq(businessProfiles.organizationId, orgId));
+      await db.delete(businessSettings).where(eq(businessSettings.organizationId, orgId));
+      await db.delete(memberships).where(eq(memberships.organizationId, orgId));
+      await db.delete(organizations).where(eq(organizations.id, orgId));
+    }
   });
 });

@@ -4,6 +4,7 @@ import * as React from "react";
 import { ShieldCheck, CheckCircle2, MessageSquare, Phone, Globe, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/components/shared/utils";
+import { Button } from "@/components/shared/button";
 
 interface VerificationSummaryCardProps {
   businessName: string;
@@ -58,23 +59,23 @@ export function VerificationSummaryCard({
         </div>
 
         {isAllVerified && (
-          <button
+          <Button
             onClick={onGoToDashboard}
             className="flex items-center gap-space-2 rounded-xl bg-primary px-space-5 py-space-2.5 text-body-sm font-bold text-primary-foreground hover:bg-primary/90 transition-all shadow-md shadow-primary/20 shrink-0"
           >
             <span>Complete Setup</span>
             <ArrowRight className="h-4 w-4" />
-          </button>
+          </Button>
         )}
       </div>
 
       {isAllVerified && (
         <div className="space-y-space-3 pt-space-2 border-t border-emerald-500/20">
-          <p className="text-[11px] font-bold text-foreground uppercase tracking-wider">
+          <p className="text-caption font-bold text-foreground uppercase tracking-wider">
             Step 3: Connect Your Customer Channels
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-3">
-            <button
+            <Button
               onClick={() => router.push("/channels")}
               className="flex items-center gap-space-3 rounded-xl border border-border bg-card p-space-3.5 text-left hover:border-primary hover:bg-primary/5 transition-all shadow-sm group"
             >
@@ -83,11 +84,11 @@ export function VerificationSummaryCard({
               </div>
               <div>
                 <p className="text-[12px] font-bold text-foreground">WhatsApp Business</p>
-                <p className="text-[10px] text-muted-foreground">Connect number & automated chat</p>
+                <p className="text-caption text-muted-foreground">Connect number & automated chat</p>
               </div>
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={() => router.push("/channels")}
               className="flex items-center gap-space-3 rounded-xl border border-border bg-card p-space-3.5 text-left hover:border-primary hover:bg-primary/5 transition-all shadow-sm group"
             >
@@ -96,11 +97,11 @@ export function VerificationSummaryCard({
               </div>
               <div>
                 <p className="text-[12px] font-bold text-foreground">Smart Phone Line</p>
-                <p className="text-[10px] text-muted-foreground">Forward business calls to Operator</p>
+                <p className="text-caption text-muted-foreground">Forward business calls to Operator</p>
               </div>
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={() => router.push("/widget")}
               className="flex items-center gap-space-3 rounded-xl border border-border bg-card p-space-3.5 text-left hover:border-primary hover:bg-primary/5 transition-all shadow-sm group"
             >
@@ -109,9 +110,9 @@ export function VerificationSummaryCard({
               </div>
               <div>
                 <p className="text-[12px] font-bold text-foreground">Live Website Widget</p>
-                <p className="text-[10px] text-muted-foreground">Embed chat popup snippet</p>
+                <p className="text-caption text-muted-foreground">Embed chat popup snippet</p>
               </div>
-            </button>
+            </Button>
           </div>
         </div>
       )}

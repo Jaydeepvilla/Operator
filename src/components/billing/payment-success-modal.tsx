@@ -105,7 +105,7 @@ export function PaymentSuccessModal({ isOpen, onClose, invoice }: PaymentSuccess
               <span className="text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Issued By</span>
               <div className="font-semibold text-white text-sm">{invoice.businessName || "Operator AI (Nexx Technologies)"}</div>
               <div className="text-muted-foreground">{invoice.supportEmail || "hello@nexxtecchnologies.com"}</div>
-              <div className="text-muted-foreground font-mono text-[11px]">GSTIN: {invoice.businessGst || "27AAACN8491F1Z8"}</div>
+              <div className="text-muted-foreground font-mono text-caption">GSTIN: {invoice.businessGst || "27AAACN8491F1Z8"}</div>
             </div>
           </div>
 
@@ -152,7 +152,7 @@ export function PaymentSuccessModal({ isOpen, onClose, invoice }: PaymentSuccess
                 <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
                 <span className="font-medium text-white">Razorpay Secure Transaction</span>
               </div>
-              <div className="font-mono text-[11px] text-muted-foreground">
+              <div className="font-mono text-caption text-muted-foreground">
                 Ref: <span className="text-emerald-400 font-semibold">{invoice.paymentId}</span> | Order: {invoice.orderId}
               </div>
             </div>

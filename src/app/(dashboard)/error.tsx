@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import { Button } from "@/components/shared/button";
 import Link from "next/link";
+import { sentry } from "@/lib/observability/sentry";
 
 export default function DashboardError({
   error,
@@ -13,7 +14,7 @@ export default function DashboardError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log to structured logger or Sentry
+    // Log to structured logger and Sentry bridge
     console.error(
       JSON.stringify({
         timestamp: new Date().toISOString(),
@@ -23,6 +24,13 @@ export default function DashboardError({
         message: error.message,
       })
     );
+
+    sentry.captureException(error, {
+      tags: {
+        context: "DashboardErrorBoundary",
+        digest: error.digest || "none",
+      },
+    });
   }, [error]);
 
   return (

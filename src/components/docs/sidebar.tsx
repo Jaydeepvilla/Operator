@@ -42,7 +42,7 @@ function SidebarContent({ onSelect }: DocsSidebarProps) {
                 >
                   <span className="truncate">{item.label}</span>
                   {item.badge && (
-                    <Badge variant={isActive ? "secondary" : "soft"} className="text-[10px] ml-space-2">
+                    <Badge variant={isActive ? "secondary" : "soft"} className="text-caption ml-space-2">
                       {item.badge}
                     </Badge>
                   )}

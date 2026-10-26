@@ -43,7 +43,7 @@ export function StatCard({
       {...props}
     >
       <div className="flex items-start justify-between z-10 relative">
-        <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+        <span className="text-caption text-muted-foreground font-semibold uppercase tracking-wider">
           {label}
         </span>
         {Icon && (
@@ -61,7 +61,7 @@ export function StatCard({
           {trend && (
             <span
               className={cn(
-                "text-[9px] font-bold leading-none px-2 py-0.5 rounded-full border uppercase tracking-wider shrink-0",
+                "text-caption font-bold leading-none px-2 py-0.5 rounded-full border uppercase tracking-wider shrink-0",
                 trend.positive 
                   ? "bg-[hsl(var(--state-success-bg))] border-[hsl(var(--state-success-border))] text-[hsl(var(--state-success-text))]"
                   : "bg-[hsl(var(--state-error-bg))] border-[hsl(var(--state-error-border))] text-[hsl(var(--state-error-text))]"

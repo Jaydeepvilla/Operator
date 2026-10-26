@@ -25,7 +25,7 @@ import {
   CheckSquare } from
 "lucide-react";
 import { Button } from "@/components/shared/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/shared/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/shared/card";
 import { Input } from "@/components/shared/input";
 import { Label } from "@/components/shared/label";
@@ -293,7 +293,7 @@ export function BusinessSettingsForm({ settings, bookingRules }: BusinessSetting
           onChange={(e) => handleHourChange(day, "open", e.target.value)}
           disabled={dayHours.closed}
           className="w-32 text-caption h-8 bg-background border-[hsl(var(--foreground)/0.08)] disabled:opacity-30 disabled:cursor-not-allowed px-space-2 focus-visible:ring-primary/20" />
-         <span className="text-caption text-muted-foreground/50 uppercase font-bold tracking-wider text-[10px]">TO</span>
+         <span className="text-caption text-muted-foreground/50 uppercase font-bold tracking-wider text-caption">TO</span>
          <Input
           type="time"
           value={dayHours.close}
@@ -304,7 +304,7 @@ export function BusinessSettingsForm({ settings, bookingRules }: BusinessSetting
 
         {/* Status badge */}
         <span className={cn(
-         "inline-flex text-[10px] font-semibold border px-space-2 py-space-0.5 rounded-full uppercase tracking-wider shrink-0",
+         "inline-flex text-caption font-semibold border px-space-2 py-space-0.5 rounded-full uppercase tracking-wider shrink-0",
          !dayHours.closed
           ? "bg-[hsl(var(--state-success-bg))] border-[hsl(var(--state-success-border))] text-[hsl(var(--state-success-text))]"
           : "bg-[hsl(var(--state-error-bg))] border-[hsl(var(--state-error-border))] text-[hsl(var(--state-error-text))]"

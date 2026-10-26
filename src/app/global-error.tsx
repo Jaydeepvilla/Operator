@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import { sentry } from "@/lib/observability/sentry";
+import { Button } from "@/components/shared/button";
 
 export default function GlobalError({
   error,
@@ -20,6 +22,14 @@ export default function GlobalError({
         message: error.message,
       })
     );
+
+    sentry.captureException(error, {
+      level: "fatal",
+      tags: {
+        context: "GlobalErrorBoundary",
+        digest: error.digest || "none",
+      },
+    });
   }, [error]);
 
   return (
@@ -40,13 +50,13 @@ export default function GlobalError({
               Ref: {error.digest}
             </p>
           )}
-          <button
+          <Button
             onClick={() => reset()}
             className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium bg-[#fafafa] text-[#09090b] hover:bg-[#e4e4e7] transition-colors cursor-pointer"
           >
             <RefreshCw className="h-4 w-4" />
             Try again
-          </button>
+          </Button>
         </div>
       </body>
     </html>

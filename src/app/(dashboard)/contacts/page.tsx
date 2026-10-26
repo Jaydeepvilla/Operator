@@ -319,7 +319,7 @@ export default function ContactsPage() {
  {/* Contacts Table List */}
  <ScrollArea className="flex-1 bg-[hsl(var(--foreground)/0.002)]" horizontal={false}>
  <table className="w-full text-left text-caption divide-y divide-[hsl(var(--foreground)/0.06)]">
- <thead className="bg-card uppercase text-[11px] font-semibold text-muted-foreground/55 tracking-wider sticky top-0 z-10 border-b border-[hsl(var(--foreground)/0.06)]">
+ <thead className="bg-card uppercase text-caption font-semibold text-muted-foreground/55 tracking-wider sticky top-0 z-10 border-b border-[hsl(var(--foreground)/0.06)]">
  <tr>
  <th className="p-space-3">Contact</th>
  <th className="p-space-3">Lead Status</th>

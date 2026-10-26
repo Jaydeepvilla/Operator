@@ -44,7 +44,7 @@ function StatPill({
       >
         {value}
       </div>
-      <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+      <span className="text-caption font-semibold uppercase tracking-widest text-muted-foreground/60">
         {label}
       </span>
     </div>
@@ -77,7 +77,7 @@ function PriorityRow({ action, idx }: { action: BIRecommendation; idx: number })
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-semibold text-foreground leading-snug">{action.title}</p>
-        <p className="text-[11px] text-muted-foreground/65 line-clamp-1 mt-0.5 leading-snug">
+        <p className="text-caption text-muted-foreground/65 line-clamp-1 mt-0.5 leading-snug">
           {action.description}
         </p>
       </div>
@@ -120,12 +120,12 @@ export function WeeklyReviewPanel({ weeklyReview: review }: WeeklyReviewPanelPro
             </div>
             <div>
               <h2 className="text-[13px] font-bold text-foreground">Weekly Review</h2>
-              <p className="text-[11px] text-muted-foreground/60">
+              <p className="text-caption text-muted-foreground/60">
                 Week of {formattedWeek}
               </p>
             </div>
           </div>
-          <span className="text-[11px] font-medium text-muted-foreground/60 italic leading-snug max-w-[50%] text-right">
+          <span className="text-caption font-medium text-muted-foreground/60 italic leading-snug max-w-[50%] text-right">
             {review.headline}
           </span>
         </div>
@@ -171,14 +171,14 @@ export function WeeklyReviewPanel({ weeklyReview: review }: WeeklyReviewPanelPro
                 <div className="h-5 w-5 rounded-md bg-emerald-500/10 flex items-center justify-center">
                   <CheckCircle2 className="h-3 w-3 text-emerald-500" />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">
+                <span className="text-caption font-bold uppercase tracking-widest text-emerald-500">
                   This Week's Wins
                 </span>
               </div>
               <ul className="space-y-2">
                 {review.businessWins.map((win, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-[12px]">
-                    <span className="h-4 w-4 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 mt-0.5 text-[9px] font-bold">
+                    <span className="h-4 w-4 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 mt-0.5 text-caption font-bold">
                       ✓
                     </span>
                     <span className="text-foreground leading-snug">{win}</span>
@@ -195,7 +195,7 @@ export function WeeklyReviewPanel({ weeklyReview: review }: WeeklyReviewPanelPro
                 <div className="h-5 w-5 rounded-md bg-amber-500/10 flex items-center justify-center">
                   <Sparkles className="h-3 w-3 text-amber-500" />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-amber-500">
+                <span className="text-caption font-bold uppercase tracking-widest text-amber-500">
                   Next Priorities
                 </span>
               </div>

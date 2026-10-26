@@ -13,7 +13,7 @@ import { eq, asc } from "drizzle-orm";
 import { orchestratorService } from "../orchestrator";
 import { VoiceProviderRegistry } from "./types";
 import { llmRegistry } from "../llm";
-import { sanitizeVoiceResponse } from "../../../lib/voice/sanitizer";
+import { sanitizeVoiceResponse } from "@/lib/voice/sanitizer";
 
 import "./deepgram";
 import "./kokoro";

@@ -5,11 +5,19 @@ export const maxDuration = 60; // Max execution time for serverless cron
 
 export async function GET(req: Request) {
   try {
-    // Check cron authorization if CRON_SECRET is configured
+    // Check cron authorization with fail-closed enforcement
     const authHeader = req.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret) {
+      console.error("[Cron Queue Processor] CRON_SECRET is not configured");
+      return NextResponse.json(
+        { error: "Cron authorization not configured on server" },
+        { status: 500 }
+      );
+    }
+
+    if (authHeader !== `Bearer ${cronSecret}`) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 

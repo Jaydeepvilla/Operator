@@ -110,22 +110,38 @@ export async function POST(req: NextRequest) {
           recipientNumber,
         });
 
-        const host = req.headers.get("host") || "app.operator.ai";
-        const protocol = host.includes("localhost") ? "ws" : "wss";
-
-        // Twilio Media Streams Connect XML
-        xmlResponse = `
-          <Response>
-            <Say>Thank you for calling. Connecting you to Operator AI.</Say>
-            <Connect>
-              <Stream url="${protocol}://${host}/api/webhooks/voice/stream">
-                <Parameter name="organizationId" value="${orgId}" />
-                <Parameter name="sessionId" value="${sessionId}" />
-                <Parameter name="conversationId" value="${conversationId}" />
-              </Stream>
-            </Connect>
-          </Response>
-        `;
+        const streamGatewayUrl = process.env.VOICE_STREAM_GATEWAY_URL;
+        
+        if (streamGatewayUrl) {
+          // Dedicated WebSocket Gateway configured
+          xmlResponse = `
+            <Response>
+              <Say>Thank you for calling. Connecting you to Operator AI.</Say>
+              <Connect>
+                <Stream url="${streamGatewayUrl}">
+                  <Parameter name="organizationId" value="${orgId}" />
+                  <Parameter name="sessionId" value="${sessionId}" />
+                  <Parameter name="conversationId" value="${conversationId}" />
+                </Stream>
+              </Connect>
+            </Response>
+          `;
+        } else {
+          // Robust Serverless Conversational Speech Turn Loop
+          const turnUrl = `/api/webhooks/voice/turn?sessionId=${sessionId}&conversationId=${conversationId}&organizationId=${orgId}&emptyTurns=0`;
+          xmlResponse = `
+            <Response>
+              <Say>Welcome to Operator AI. How may I assist you today?</Say>
+              <Gather input="speech" action="${turnUrl}" method="POST" speechTimeout="auto" timeout="4" actionOnEmptyResult="true">
+              </Gather>
+              <Say>I did not hear any response. Please let me know how I can help.</Say>
+              <Gather input="speech" action="${turnUrl}&amp;emptyTurns=1" method="POST" speechTimeout="auto" timeout="4" actionOnEmptyResult="true">
+              </Gather>
+              <Say>Thank you for calling Operator AI. Have a great day! Goodbye.</Say>
+              <Hangup/>
+            </Response>
+          `;
+        }
         break;
     }
 
