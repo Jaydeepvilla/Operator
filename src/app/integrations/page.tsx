@@ -13,10 +13,7 @@ import microsoftIcon from "@/assets/microsoft.svg";
 import calendlyIcon from "@/assets/calendly.svg";
 import geminiIcon from "@/assets/gemini.svg";
 import razorpayIcon from "@/assets/razorpay.svg";
-import slackIcon from "@/assets/slack-logo.svg";
 import whatsappIcon from "@/assets/whatsapp-text.svg";
-import zoomIcon from "@/assets/zoom-app.svg";
-import hubspotIcon from "@/assets/hubspot.svg";
 import metaIcon from "@/assets/meta.svg";
 import stripeIcon from "@/assets/stripe.svg";
 import twilioIcon from "@/assets/twilio.svg";
@@ -67,15 +64,6 @@ const LOGOS = {
  whatsapp: (
  <Image src={whatsappIcon.src || whatsappIcon} alt="WhatsApp" width={28} height={28} className="h-7 w-auto object-contain" unoptimized />
  ),
- zoom: (
- <Image src={zoomIcon.src || zoomIcon} alt="Zoom" width={28} height={28} className="h-7 w-auto object-contain" unoptimized />
- ),
- slack: (
- <Image src={slackIcon.src || slackIcon} alt="Slack" width={28} height={28} className="h-7 w-auto object-contain" unoptimized />
- ),
- hubspot: (
- <Image src={hubspotIcon.src || hubspotIcon} alt="HubSpot" width={28} height={28} className="h-7 w-auto object-contain" unoptimized />
- ),
  meta: (
  <Image src={metaIcon.src || metaIcon} alt="Meta" width={28} height={28} className="h-7 w-auto object-contain" unoptimized />
  ),
@@ -107,7 +95,6 @@ const CATEGORIES = [
  "Scheduling",
  "Payments",
  "Telephony",
- "CRM",
  "AI",
 ];
 
@@ -185,30 +172,6 @@ const INTEGRATIONS: IntegrationData[] = [
  capabilities: "Hooks existing office phone numbers with duplex audio streaming under 800ms latency."
  },
  {
- id: "slack",
- name: "Slack Notifications",
- category: "Communication",
- status: "live",
- logo: LOGOS.slack,
- desc: "Push qualified lead summaries, VIP caller notifications, and urgent human transfer alerts directly to team channels.",
- features: ["Lead channel alerts", "Human transfer pings", "Threaded transcripts", "One-click call join"],
- difficulty: "1-Click",
- popularity: "Popular",
- capabilities: "Notifies front desk staff when an emergency caller requests human escalation."
- },
- {
- id: "hubspot",
- name: "HubSpot CRM",
- category: "CRM",
- status: "live",
- logo: LOGOS.hubspot,
- desc: "Sync contacts, qualification data, call audio recordings, and chat transcripts directly to deals and pipelines.",
- features: ["Contact profile sync", "Deal stage automation", "Audio timeline logs", "Custom field mapping"],
- difficulty: "Setup Required",
- popularity: "Core",
- capabilities: "Maps insurance status, budget, and caller urgency directly to custom HubSpot pipeline properties."
- },
- {
  id: "outlook",
  name: "Microsoft Outlook",
  category: "Scheduling",
@@ -243,18 +206,6 @@ const INTEGRATIONS: IntegrationData[] = [
  difficulty: "Setup Required",
  popularity: "Popular",
  capabilities: "Qualifies social media inquiries using the same rules and calendar availability as phone callers."
- },
- {
- id: "zoom",
- name: "Zoom Meetings",
- category: "Communication",
- status: "coming-soon",
- logo: LOGOS.zoom,
- desc: "Automatically provision personalized Zoom video consultation URLs upon appointment confirmation.",
- features: ["Dynamic meeting URLs", "Passcode security", "Host delegation keys", "Calendar integration"],
- difficulty: "1-Click",
- popularity: "Popular",
- capabilities: "Generates secure meeting links and appends them to appointment confirmation SMS messages."
  }
 ];
 
@@ -449,7 +400,7 @@ export default function IntegrationsPage() {
  setTimeout(() => {
  setConnectedIds([...connectedIds, id]);
  setConnectingId(null);
- }, 1200);
+ }, 250);
  };
 
  // Filter list
@@ -467,19 +418,16 @@ export default function IntegrationsPage() {
  // Visual layout pre-computed coordinates (center = 50, radius = 37, rounded to 2 decimals)
  // Deterministic values guarantee 100% hydration matching between SSR and Client
  const visualNodes = [
- { id: "google-calendar", label: "Google Cal", logo: LOGOS.googleCalendar, angle: 0, x: 87, y: 50 },
- { id: "outlook", label: "Outlook", logo: LOGOS.outlook, angle: 30, x: 82.04, y: 68.5 },
- { id: "whatsapp", label: "WhatsApp", logo: LOGOS.whatsapp, angle: 60, x: 68.5, y: 82.04 },
- { id: "stripe", label: "Stripe", logo: LOGOS.stripe, angle: 90, x: 50, y: 87 },
- { id: "razorpay", label: "Razorpay", logo: LOGOS.razorpay, angle: 120, x: 31.5, y: 82.04 },
- { id: "zoom", label: "Zoom", logo: LOGOS.zoom, angle: 150, x: 17.96, y: 68.5 },
- { id: "slack", label: "Slack", logo: LOGOS.slack, angle: 180, x: 13, y: 50 },
- { id: "hubspot", label: "HubSpot", logo: LOGOS.hubspot, angle: 210, x: 17.96, y: 31.5 },
- { id: "meta", label: "Meta", logo: LOGOS.meta, angle: 240, x: 31.5, y: 17.96 },
- { id: "calendly", label: "Calendly", logo: LOGOS.calendly, angle: 270, x: 50, y: 13 },
- { id: "twilio", label: "Twilio", logo: LOGOS.twilio, angle: 300, x: 68.5, y: 17.96 },
- { id: "gemini", label: "Gemini", logo: LOGOS.gemini, angle: 330, x: 82.04, y: 31.5 },
- ];
+  { id: "google-calendar", label: "Google Cal", logo: LOGOS.googleCalendar, angle: 0, x: 87, y: 50 },
+  { id: "outlook", label: "Outlook", logo: LOGOS.outlook, angle: 40, x: 78.34, y: 73.78 },
+  { id: "whatsapp", label: "WhatsApp", logo: LOGOS.whatsapp, angle: 80, x: 56.42, y: 86.44 },
+  { id: "stripe", label: "Stripe", logo: LOGOS.stripe, angle: 120, x: 31.5, y: 82.04 },
+  { id: "razorpay", label: "Razorpay", logo: LOGOS.razorpay, angle: 160, x: 15.23, y: 62.65 },
+  { id: "meta", label: "Meta", logo: LOGOS.meta, angle: 200, x: 15.23, y: 37.35 },
+  { id: "calendly", label: "Calendly", logo: LOGOS.calendly, angle: 240, x: 31.5, y: 17.96 },
+  { id: "twilio", label: "Twilio", logo: LOGOS.twilio, angle: 280, x: 56.42, y: 13.56 },
+  { id: "gemini", label: "Gemini", logo: LOGOS.gemini, angle: 320, x: 78.34, y: 26.22 },
+];
 
  return (
  <div className="relative flex flex-col min-h-screen bg-background text-foreground selection:bg-primary/20">

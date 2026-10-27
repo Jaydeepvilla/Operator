@@ -246,6 +246,27 @@ const INTEGRATIONS: Record<string, IntegrationData> = {
  impact: "Cuts down customer booking friction, increasing appointment conversion rates by 22%.",
  useCase: "A salon client changes their hair styling appointment slot directly using a self-serve Calendly link."
  },
+ Stripe: {
+ key: "Stripe",
+ name: "Stripe Payments Core",
+ role: "Payments Core",
+ desc: "Secures appointment deposits and upfront retainers with automated SMS/email payment links before calendar slots lock.",
+ logo: StripeLogo,
+ color: "text-indigo-500",
+ colorBorder: "border-indigo-500/20 hover:border-indigo-500/50",
+ colorBg: "bg-indigo-500/5",
+ x: 70,
+ y: 190,
+ outlets: ["CRM"],
+ pathTrace: ["Payment Prompt", "Stripe Checkout", "Card Verified", "CRM ledger verified"],
+ capabilities: [
+ "Instant checkout links via SMS/Chat",
+ "PCI-DSS Level 1 Compliant",
+ "Automated refund and dispute protection"],
+ benefits: "Guarantees appointment attendance and eliminates no-shows via pre-booking deposit capture.",
+ impact: "Reduces appointment cancellations by over 85% with automated payment collection.",
+ useCase: "A client confirms a high-value consultation and pays a $50 deposit via Stripe before the booking locks."
+ },
  Razorpay: {
  key: "Razorpay",
  name: "Razorpay Payments & Invoicing",

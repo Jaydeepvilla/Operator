@@ -5,23 +5,23 @@
 
 :root {
     /* ----------------------------------------------------------------------
-     Duration Scale
+     Duration Scale — Snappy, zero-perceived-lag enterprise motion
      ---------------------------------------------------------------------- */
-    --duration-instant: 100ms;  /* hover feedback, pressed states */
-    --duration-fast: 150ms;     /* buttons, toggles, small interactions */
-    --duration-base: 200ms;     /* dropdowns, tooltips, focus rings */
-    --duration-moderate: 300ms; /* modals, drawers, page content */
-    --duration-slow: 400ms;     /* page transitions, reveals */
-    --duration-slower: 600ms;   /* scroll reveal, onboarding */
+    --duration-instant: 50ms;   /* hover feedback, active clicks, micro-interactions */
+    --duration-fast: 100ms;     /* buttons, toggles, badges, small state changes */
+    --duration-base: 150ms;     /* dropdowns, tooltips, popovers, focus rings */
+    --duration-moderate: 200ms; /* modals, drawers, tabs, page content */
+    --duration-slow: 250ms;     /* section reveals, page transitions */
+    --duration-slower: 300ms;   /* scroll reveal, complex workflows */
 
     /* ----------------------------------------------------------------------
-     Easing Curves
+     Easing Curves — Sharp, responsive, natural
      ---------------------------------------------------------------------- */
-    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);   /* general purpose */
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);     /* instant general purpose */
     --ease-out: cubic-bezier(0, 0, 0.2, 1);           /* elements entering */
     --ease-in: cubic-bezier(0.4, 0, 1, 1);            /* elements leaving */
-    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* playful bounce */
-    --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);    /* premium, cinematic */
+    --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);     /* crisp spring */
+    --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);    /* premium, zero-drag */
 }
 
 /* ==========================================================================
@@ -208,12 +208,48 @@
     transform: translateY(0);
 }
 
-/* Stagger support — add data-delay attribute */
-.reveal[data-delay="1"] { transition-delay: 80ms; }
-.reveal[data-delay="2"] { transition-delay: 160ms; }
-.reveal[data-delay="3"] { transition-delay: 240ms; }
-.reveal[data-delay="4"] { transition-delay: 320ms; }
-.reveal[data-delay="5"] { transition-delay: 400ms; }
+/* Stagger support — add data-delay attribute (tight, snappy) */
+.reveal[data-delay="1"] { transition-delay: 30ms; }
+.reveal[data-delay="2"] { transition-delay: 60ms; }
+.reveal[data-delay="3"] { transition-delay: 90ms; }
+.reveal[data-delay="4"] { transition-delay: 120ms; }
+.reveal[data-delay="5"] { transition-delay: 150ms; }
+
+/* ==========================================================================
+   SMART SYSTEM-WIDE COMPONENT STATE TRANSITIONS
+   All interactive states respond instantly without delayed sluggishness
+   ========================================================================== */
+
+/* Universal interactive elements transition instant & crisp */
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+[role="tab"],
+[role="menuitem"],
+[role="option"],
+[role="switch"] {
+    transition-duration: var(--duration-fast);
+    transition-timing-function: var(--ease-standard);
+}
+
+/* Hover state responds immediately */
+button:hover,
+a:hover,
+[role="button"]:hover,
+[role="tab"]:hover {
+    transition-duration: var(--duration-instant);
+}
+
+/* Active pressed state is instant 40ms */
+button:active,
+a:active,
+[role="button"]:active,
+[role="tab"]:active {
+    transition-duration: 40ms;
+}
 
 /* ==========================================================================
    INTERACTIVE PRIMITIVES
@@ -250,7 +286,7 @@
 
 .interactive-button:active {
     transform: translateY(0) scale(0.98);
-    transition-duration: 60ms;
+    transition-duration: 40ms;
 }
 
 /* Integration nodes */

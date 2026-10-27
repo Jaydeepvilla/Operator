@@ -445,7 +445,7 @@ export function DashboardPreview() {
  <div className="absolute -inset-space-20 bg-[radial-gradient(circle_at_20%_30%,rgba(99,102,241,0.25),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(236,72,153,0.15),transparent_40%),radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.15),transparent_60%)] pointer-events-none z-0 dark:opacity-80 opacity-50 blur-3xl animate-pulse duration-10000" />
 
  {/* Main Glassmorphic Wrapper */}
- <div className="relative radius-2xl bg-white/60 dark:bg-black/40 backdrop-blur-2xl overflow-hidden flex flex-col md:flex-row transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] min-h-176">
+ <div className="relative radius-2xl bg-white/60 dark:bg-black/40 backdrop-blur-2xl overflow-hidden flex flex-col md:flex-row transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] min-h-176">
  {/* Sleek Sidebar (Desktop) */}
  <aside className="hidden md:flex md:w-16 xl:w-64 shrink-0 border-r border-border-subtle bg-white/20 dark:bg-white/5 flex-col justify-between p-space-4 xl:p-space-6 transition-all duration-300">
  <div>
@@ -531,7 +531,7 @@ export function DashboardPreview() {
  AI Management
  </div>
  <NativeButton className="w-full flex items-center justify-center xl:justify-start gap-space-3 px-space-3 xl:px-space-4 py-space-2.5 radius-md text-caption font-medium text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-all group">
- <Settings className="h-4 w-4 shrink-0 group-hover:rotate-90 transition-transform duration-500" />
+ <Settings className="h-4 w-4 shrink-0 group-hover:rotate-90 transition-transform duration-150" />
  <span className="hidden xl:inline">Voice Prompts</span>
  </NativeButton>
  <NativeButton className="w-full flex items-center justify-center xl:justify-start gap-space-3 px-space-3 xl:px-space-4 py-space-2.5 radius-md text-caption font-medium text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-all group">
@@ -600,7 +600,7 @@ export function DashboardPreview() {
  {/* Glowing Operator AI live status pill */}
  <div className="flex items-center gap-space-3 shrink-0 w-full sm:w-auto justify-start sm:justify-end">
  <div className="relative group cursor-default">
- <div className="absolute inset-space-0 bg-emerald-500/20 blur-md radius-md group-hover:bg-emerald-500/30 transition-all duration-500" />
+ <div className="absolute inset-space-0 bg-emerald-500/20 blur-md radius-md group-hover:bg-emerald-500/30 transition-all duration-150" />
  <span className="relative text-caption font-semibold radius-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 px-space-3.5 py-space-1.5 flex items-center gap-space-2 backdrop-blur-md">
  <span className="relative flex h-2 w-2">
  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -616,7 +616,7 @@ export function DashboardPreview() {
  <section className="px-space-6 py-space-5 grid grid-cols-2 lg:grid-cols-4 gap-space-4 z-10 relative">
  {stats.map((stat, idx) => (
  <div key={idx} className="relative group">
- <div className="absolute inset-space-0 bg-gradient-to-b from-white/40 to-white/10 dark:from-white/5 dark:to-transparent radius-2xl blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+ <div className="absolute inset-space-0 bg-gradient-to-b from-white/40 to-white/10 dark:from-white/5 dark:to-transparent radius-2xl blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
  <div className="relative p-space-5 flex flex-col justify-between radius-2xl border-border-default bg-white dark:bg-card shadow-sm transition-all duration-300 hover:-translate-y-space-0.5 hover:shadow-md">
  <div className="flex justify-between items-start">
  <span className="text-caption font-semibold text-muted-foreground uppercase tracking-widest">
@@ -689,7 +689,7 @@ export function DashboardPreview() {
  <div className="px-space-6 pb-space-6 flex-1 flex flex-col min-h-0 relative z-10">
  {/* VIEW 1: CALL INBOX */}
  {activeTab === "calls" && (
- <div className="flex-1 flex flex-col md:flex-row gap-space-5 min-h-0 animate-in fade-in slide-in-from-bottom-space-4 duration-700 ease-out">
+ <div className="flex-1 flex flex-col md:flex-row gap-space-5 min-h-0 animate-in fade-in slide-in-from-bottom-space-4 duration-200 ease-out">
  {/* Calls List Panel */}
  <div
  className={`w-full md:w-64 xl:w-80 flex flex-col gap-space-3 shrink-0 ${
@@ -950,7 +950,7 @@ export function DashboardPreview() {
  {selectedCall.transcript.map((bubble, idx) => (
  <div
  key={idx}
- className={`flex ${bubble.speaker === "ai" ? "justify-start" : "justify-end"} animate-in fade-in slide-in-from-bottom-space-2 duration-500`}
+ className={`flex ${bubble.speaker === "ai" ? "justify-start" : "justify-end"} animate-in fade-in slide-in-from-bottom-space-2 duration-150`}
  style={{ animationDelay: `${idx * 150}ms` }}
  >
  <div
@@ -1019,7 +1019,7 @@ export function DashboardPreview() {
 
  {/* VIEW 2: CHATS INBOX - Enhanced Spacing & Premium Cards */}
  {activeTab === "chats" && (
- <div className="space-y-space-5 flex-1 animate-in fade-in slide-in-from-bottom-space-4 duration-700 ease-out">
+ <div className="space-y-space-5 flex-1 animate-in fade-in slide-in-from-bottom-space-4 duration-200 ease-out">
  <p className="text-caption font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-space-2">
  <MessageCircle className="h-4 w-4" /> Multi-Channel Client
  Inbox
@@ -1075,7 +1075,7 @@ export function DashboardPreview() {
  {/* VIEW 3: CALENDAR HUB - Enhanced Spacing & Premium Cards */}
  {activeTab === "calendar" && (
  <ScrollArea
- className="space-y-space-6 flex-1 max-h-136 pr-space-2 animate-in fade-in slide-in-from-bottom-space-4 duration-700 ease-out pb-space-4"
+ className="space-y-space-6 flex-1 max-h-136 pr-space-2 animate-in fade-in slide-in-from-bottom-space-4 duration-200 ease-out pb-space-4"
  horizontal={false}
  >
  <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-border-default pb-space-5 gap-space-4">
@@ -1196,7 +1196,7 @@ export function DashboardPreview() {
  {/* VIEW 4: ANALYTICS PORTAL - Premium Charts & Stats */}
  {activeTab === "analytics" && (
  <ScrollArea
- className="space-y-space-6 flex-1 max-h-136 pr-space-2 animate-in fade-in slide-in-from-bottom-space-4 duration-700 ease-out pb-space-4"
+ className="space-y-space-6 flex-1 max-h-136 pr-space-2 animate-in fade-in slide-in-from-bottom-space-4 duration-200 ease-out pb-space-4"
  horizontal={false}
  >
  <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-border-default pb-space-5 gap-space-4">
@@ -1290,7 +1290,7 @@ export function DashboardPreview() {
  className="flex-1 flex flex-col items-center gap-space-4 h-full justify-end relative z-10"
  >
  <div
- className="w-full max-w-16 bg-gradient-to-t from-primary/40 to-indigo-500/80 hover:from-primary/60 hover:to-indigo-400 radius-t-xl transition-all duration-500 cursor-pointer relative group/bar border-t-space-2 border-white/40 shadow-[0_-5px_15px_rgba(99,102,241,0.2)]"
+ className="w-full max-w-16 bg-gradient-to-t from-primary/40 to-indigo-500/80 hover:from-primary/60 hover:to-indigo-400 radius-t-xl transition-all duration-150 cursor-pointer relative group/bar border-t-space-2 border-white/40 shadow-[0_-5px_15px_rgba(99,102,241,0.2)]"
  style={{ height: `${(val / 2000) * 100}%` }}
  >
  {/* Rich Tooltip on Hover */}

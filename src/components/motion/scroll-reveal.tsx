@@ -15,7 +15,7 @@ export function ScrollReveal({ children, className, stagger = false }: ScrollRev
     <m.div
       initial="initial"
       whileInView="animate"
-      viewport={{ once: true, margin: "-50px" }}
+      viewport={{ once: true, margin: "0px" }}
       variants={stagger ? scrollRevealStagger : scrollReveal}
       className={className}
     >

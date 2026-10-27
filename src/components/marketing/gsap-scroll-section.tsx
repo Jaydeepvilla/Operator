@@ -39,9 +39,9 @@ export function GsapScrollSection({
   animation = "fade-up",
   staggerSelector,
   delay = 0,
-  duration = 1,
-  stagger: staggerInterval = 0.15,
-  start = "top 85%",
+  duration = 0.35,
+  stagger: staggerInterval = 0.05,
+  start = "top 95%",
   scrub = false,
   pin = false,
   id,
@@ -62,32 +62,32 @@ export function GsapScrollSection({
 
     switch (animation) {
       case "fade-up":
-        fromVars = { opacity: 0, y: 60 };
-        toVars = { opacity: 1, y: 0, ease: "power3.out" };
+        fromVars = { opacity: 0, y: 16 };
+        toVars = { opacity: 1, y: 0, ease: "power2.out" };
         break;
       case "fade-in":
         fromVars = { opacity: 0 };
         toVars = { opacity: 1, ease: "power2.out" };
         break;
       case "slide-left":
-        fromVars = { opacity: 0, x: 80 };
-        toVars = { opacity: 1, x: 0, ease: "power3.out" };
+        fromVars = { opacity: 0, x: 24 };
+        toVars = { opacity: 1, x: 0, ease: "power2.out" };
         break;
       case "slide-right":
-        fromVars = { opacity: 0, x: -80 };
-        toVars = { opacity: 1, x: 0, ease: "power3.out" };
+        fromVars = { opacity: 0, x: -24 };
+        toVars = { opacity: 1, x: 0, ease: "power2.out" };
         break;
       case "scale-up":
-        fromVars = { opacity: 0, scale: 0.9 };
-        toVars = { opacity: 1, scale: 1, ease: "power3.out" };
+        fromVars = { opacity: 0, scale: 0.97 };
+        toVars = { opacity: 1, scale: 1, ease: "power2.out" };
         break;
       case "parallax":
-        fromVars = { y: 40 };
-        toVars = { y: -40, ease: "none" };
+        fromVars = { y: 20 };
+        toVars = { y: -20, ease: "none" };
         break;
       case "reveal-mask":
         fromVars = { clipPath: "inset(100% 0 0 0)" };
-        toVars = { clipPath: "inset(0% 0 0 0)", ease: "power4.inOut" };
+        toVars = { clipPath: "inset(0% 0 0 0)", ease: "power3.inOut" };
         break;
     }
 
@@ -147,8 +147,8 @@ export function GsapReveal({
   className = "",
   animation = "fade-up",
   delay = 0,
-  duration = 0.8,
-  start = "top 88%",
+  duration = 0.3,
+  start = "top 95%",
 }: GsapRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -161,24 +161,24 @@ export function GsapReveal({
 
     switch (animation) {
       case "fade-up":
-        fromVars = { opacity: 0, y: 40 };
-        toVars = { opacity: 1, y: 0, ease: "power3.out" };
+        fromVars = { opacity: 0, y: 14 };
+        toVars = { opacity: 1, y: 0, ease: "power2.out" };
         break;
       case "fade-in":
         fromVars = { opacity: 0 };
         toVars = { opacity: 1, ease: "power2.out" };
         break;
       case "slide-left":
-        fromVars = { opacity: 0, x: 60 };
-        toVars = { opacity: 1, x: 0, ease: "power3.out" };
+        fromVars = { opacity: 0, x: 20 };
+        toVars = { opacity: 1, x: 0, ease: "power2.out" };
         break;
       case "slide-right":
-        fromVars = { opacity: 0, x: -60 };
-        toVars = { opacity: 1, x: 0, ease: "power3.out" };
+        fromVars = { opacity: 0, x: -20 };
+        toVars = { opacity: 1, x: 0, ease: "power2.out" };
         break;
       case "scale-up":
-        fromVars = { opacity: 0, scale: 0.92 };
-        toVars = { opacity: 1, scale: 1, ease: "power3.out" };
+        fromVars = { opacity: 0, scale: 0.97 };
+        toVars = { opacity: 1, scale: 1, ease: "power2.out" };
         break;
     }
 
@@ -212,7 +212,7 @@ interface AnimatedCounterProps {
   duration?: number;
 }
 
-export function AnimatedCounter({ value, className = "", duration = 2 }: AnimatedCounterProps) {
+export function AnimatedCounter({ value, className = "", duration = 0.6 }: AnimatedCounterProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const hasAnimated = useRef(false);
 

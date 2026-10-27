@@ -208,11 +208,14 @@ const TabsContent = React.forwardRef<
  className
  )}
  >
- <AnimatePresence mode="wait">
+ <AnimatePresence>
  {activeTab === value && (
  <m.div
  key={value}
- {...fade}
+ initial={{ opacity: 0 }}
+ animate={{ opacity: 1 }}
+ exit={{ opacity: 0 }}
+ transition={{ duration: 0.12 }}
  className="h-full w-full"
             >
               {children}
