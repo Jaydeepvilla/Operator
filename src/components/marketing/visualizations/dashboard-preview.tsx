@@ -495,7 +495,7 @@ export function DashboardPreview() {
  {isActive && (
  <>
  <div className="absolute inset-space-0 bg-gradient-to-r from-primary/20 to-transparent dark:from-primary/15" />
- <div className="absolute left-space-0 top-space-1/4 bottom-space-1/4 w-1 bg-primary radius-md 0_0_8px_rgba(99,102,241,0.6)]" />
+ <div className="absolute left-space-0 top-space-1/4 bottom-space-1/4 w-1 bg-primary radius-md shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
  </>
  )}
  <div className="flex items-center gap-space-3 relative z-10">
@@ -861,7 +861,7 @@ export function DashboardPreview() {
  <NativeButton
  aria-label={isPlaying ? "Pause audio recording" : "Play audio recording"}
  onClick={handlePlayPause}
- className="h-12 w-12 radius-md bg-gradient-to-br from-primary to-indigo-600 text-white flex items-center justify-center hover:scale-105 transition-all 0_0_20px_rgba(99,102,241,0.4)] shrink-0 active:scale-95 border-white/20"
+ className="h-12 w-12 radius-md bg-gradient-to-br from-primary to-indigo-600 text-white flex items-center justify-center hover:scale-105 transition-all shadow-[0_0_20px_rgba(99,102,241,0.4)] shrink-0 active:scale-95 border-white/20"
  >
  {isPlaying ? (
  <Pause className="h-5 w-5 fill-white" />
@@ -884,7 +884,7 @@ export function DashboardPreview() {
  key={i}
  className={`flex-1 radius-md transition-all duration-300 ${
  isPlayed
- ? "bg-gradient-to-t from-primary to-indigo-400 0_0_8px_rgba(99,102,241,0.6)]"
+ ? "bg-gradient-to-t from-primary to-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.6)]"
  : "bg-black/10 dark:bg-white/20 hover:bg-black/20 dark:hover:bg-white/30"
  }`}
  style={{ height: `${Math.max(15, h)}%` }}
@@ -990,7 +990,7 @@ export function DashboardPreview() {
  </ScrollArea>
 
  {/* Bottom Integrations Synced Ribbon - Glowing Badges */}
- <div className="px-space-6 py-space-4 border-t border-border-subtle bg-white/50 dark:bg-black/40 flex flex-col sm:flex-row sm:items-center justify-between gap-space-4 relative z-10 backdrop-blur-md 0_-10px_30px_rgba(0,0,0,0.02)]">
+ <div className="px-space-6 py-space-4 border-t border-border-subtle bg-white/50 dark:bg-black/40 flex flex-col sm:flex-row sm:items-center justify-between gap-space-4 relative z-10 backdrop-blur-md shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
  <span className="text-caption font-semibold text-muted-foreground uppercase tracking-widest shrink-0">
  System Sync
  </span>
@@ -1000,7 +1000,7 @@ export function DashboardPreview() {
  key={idx}
  className="flex items-center gap-space-2 shrink-0 whitespace-nowrap bg-white/80 dark:bg-white/10 border-border-default px-space-3 py-space-1.5 radius-md hover:scale-105 transition-transform cursor-default"
  >
- <div className="h-4 w-4 radius-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 flex items-center justify-center shrink-0 0_0_8px_rgba(16,185,129,0.3)]">
+ <div className="h-4 w-4 radius-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 flex items-center justify-center shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.3)]">
  <Check className="h-2.5 w-2.5 stroke-[3]" />
  </div>
  <span className="text-caption font-semibold text-foreground/80">
@@ -1031,7 +1031,7 @@ export function DashboardPreview() {
  {recentChats.map((chat, idx) => (
  <div
  key={chat.id}
- className="radius-2xl border-white/20 dark:border-white/10 bg-white/60 dark:bg-white/5 backdrop-blur-md p-space-5 flex flex-col sm:flex-row sm:items-center justify-between hover:border-primary/30 0_8px_30px_rgba(99,102,241,0.12)] hover:-translate-y-space-0.5 transition-all duration-300 gap-space-4"
+ className="radius-2xl border-white/20 dark:border-white/10 bg-white/60 dark:bg-white/5 backdrop-blur-md p-space-5 flex flex-col sm:flex-row sm:items-center justify-between hover:border-primary/30 shadow-[0_8px_30px_rgba(99,102,241,0.12)] hover:-translate-y-space-0.5 transition-all duration-300 gap-space-4"
  style={{ animationDelay: `${idx * 100}ms` }}
  >
  <div className="flex items-center gap-space-5">
@@ -1110,7 +1110,7 @@ export function DashboardPreview() {
  key={d}
  className={`radius-2xl p-space-4 text-body-sm font-mono border transition-all duration-300 flex flex-col items-center justify-between gap-space-3 ${
  d === 9
- ? "bg-gradient-to-br from-primary to-indigo-600 text-white border-primary/50 0_8px_25px_rgba(99,102,241,0.4)] scale-105 font-normal z-10"
+ ? "bg-gradient-to-br from-primary to-indigo-600 text-white border-primary/50 shadow-[0_8px_25px_rgba(99,102,241,0.4)] scale-105 font-normal z-10"
  : d === 12 || d === 15
  ? "bg-primary/10 dark:bg-primary/20 text-primary border-primary/20 font-normal hover:bg-primary/20"
  : "bg-white/50 dark:bg-white/5 text-foreground/80 border-border-subtle hover:border-border-hover hover:bg-white/80 dark:hover:bg-white/10"
@@ -1123,7 +1123,7 @@ export function DashboardPreview() {
  </span>
  )}
  {(d === 12 || d === 15) && (
- <span className="h-2 w-2 radius-md bg-primary mt-space-1 0_0_8px_rgba(99,102,241,0.6)]" />
+ <span className="h-2 w-2 radius-md bg-primary mt-space-1 shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
  )}
  </div>
  ))}
@@ -1237,7 +1237,7 @@ export function DashboardPreview() {
  ].map((card, i) => (
  <div
  key={i}
- className="radius-2xl border-white/20 dark:border-white/10 bg-white/60 dark:bg-white/5 backdrop-blur-md p-space-6 hover:border-primary/40 hover:-translate-y-space-1 0_15px_30px_rgba(99,102,241,0.15)] transition-all duration-300 text-center relative overflow-hidden group"
+ className="radius-2xl border-white/20 dark:border-white/10 bg-white/60 dark:bg-white/5 backdrop-blur-md p-space-6 hover:border-primary/40 hover:-translate-y-space-1 shadow-[0_15px_30px_rgba(99,102,241,0.15)] transition-all duration-300 text-center relative overflow-hidden group"
  >
  <div className="absolute inset-space-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
  <p className="relative z-10 text-caption font-semibold text-muted-foreground uppercase tracking-widest mb-space-3">
@@ -1290,7 +1290,7 @@ export function DashboardPreview() {
  className="flex-1 flex flex-col items-center gap-space-4 h-full justify-end relative z-10"
  >
  <div
- className="w-full max-w-16 bg-gradient-to-t from-primary/40 to-indigo-500/80 hover:from-primary/60 hover:to-indigo-400 radius-t-xl transition-all duration-500 cursor-pointer relative group/bar border-t-space-2 border-white/40 0_-5px_15px_rgba(99,102,241,0.2)]"
+ className="w-full max-w-16 bg-gradient-to-t from-primary/40 to-indigo-500/80 hover:from-primary/60 hover:to-indigo-400 radius-t-xl transition-all duration-500 cursor-pointer relative group/bar border-t-space-2 border-white/40 shadow-[0_-5px_15px_rgba(99,102,241,0.2)]"
  style={{ height: `${(val / 2000) * 100}%` }}
  >
  {/* Rich Tooltip on Hover */}

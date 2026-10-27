@@ -10,7 +10,7 @@ export default defineConfig({
     headless: true,
     viewport: { width: 1280, height: 720 },
     ignoreHTTPSErrors: true,
-    baseURL: "http://localhost:3000",
+    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || process.env.BASE_URL || "http://localhost:3000",
   },
   projects: [
     {

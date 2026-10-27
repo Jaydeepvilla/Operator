@@ -58,11 +58,14 @@ export async function getAppointmentDetailsAction(appointmentId: string) {
     // Safety check org mapping & IDOR guard
     const apt = await assertResourceOwnership(appointments, appointmentId, organizationId, "Appointment");
 
-    const fullDetails = await appointmentsRepository.findById(appointmentId);
-    const history = await appointmentsRepository.getStatusHistory(appointmentId);
-    const notes = await appointmentsRepository.listNotes(appointmentId);
-    const reschedules = await appointmentsRepository.getRescheduleRequests(appointmentId);
-    const cancellation = await appointmentsRepository.getCancellation(appointmentId);
+    // Parallelize all independent appointment entity queries via Promise.all (Vercel async-parallel rule)
+    const [fullDetails, history, notes, reschedules, cancellation] = await Promise.all([
+      appointmentsRepository.findById(appointmentId),
+      appointmentsRepository.getStatusHistory(appointmentId),
+      appointmentsRepository.listNotes(appointmentId),
+      appointmentsRepository.getRescheduleRequests(appointmentId),
+      appointmentsRepository.getCancellation(appointmentId),
+    ]);
 
     // Fetch unified customer profile information
     let leadProfile = null;
@@ -71,14 +74,18 @@ export async function getAppointmentDetailsAction(appointmentId: string) {
 
     const leadProfileId = fullDetails?.appointment?.leadProfileId;
     if (leadProfileId) {
-      leadProfile = await leadsRepository.findProfileById(leadProfileId);
-      leadAnswers = await leadsRepository.listAnswers(leadProfileId);
-      
-      const [conv] = await db
-        .select()
-        .from(conversations)
-        .where(eq(conversations.leadProfileId, leadProfileId))
-        .limit(1);
+      const [fetchedProfile, fetchedAnswers, [conv]] = await Promise.all([
+        leadsRepository.findProfileById(leadProfileId),
+        leadsRepository.listAnswers(leadProfileId),
+        db
+          .select()
+          .from(conversations)
+          .where(eq(conversations.leadProfileId, leadProfileId))
+          .limit(1),
+      ]);
+
+      leadProfile = fetchedProfile;
+      leadAnswers = fetchedAnswers;
 
       if (conv) {
         summary = await summariesRepository.findByConversation(conv.id);

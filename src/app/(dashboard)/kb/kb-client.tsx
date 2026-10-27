@@ -628,12 +628,12 @@ const handleExecuteIngestion = async () => {
  className={cn(
  "flex items-center justify-start gap-space-3 px-space-4 py-space-3 text-body-sm font-medium transition-all duration-200 cursor-pointer w-auto lg:w-full text-left radius-lg relative select-none",
  isActive
- ?"bg-[hsl(var(--primary)/0.08)] text-primary font-semibold hover:bg-[hsl(var(--primary)/0.12)] hover:text-primary inset_0_1px_0_rgba(255,255,255,0.05)]"
+ ?"bg-[hsl(var(--primary)/0.08)] text-primary font-semibold hover:bg-[hsl(var(--primary)/0.12)] hover:text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
  :"text-muted-foreground/70 hover:text-foreground hover:bg-[hsl(var(--foreground)/0.035)]"
  )}
  >
  {isActive && (
- <span className="absolute left-space-0 top-space-2 bottom-space-2 w-1 bg-primary radius-r-md hidden lg:block 0_0_8px_rgba(var(--primary-rgb),0.5)]"/>
+ <span className="absolute left-space-0 top-space-2 bottom-space-2 w-1 bg-primary radius-r-md hidden lg:block shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]"/>
  )}
  <Icon className={cn("h-4.5 w-4.5 shrink-0", isActive ?"text-primary":"text-muted-foreground/60")} />
  <span className="leading-none">{tab.label}</span>

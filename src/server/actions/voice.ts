@@ -261,13 +261,15 @@ export async function getVoicePromptAction() {
 export async function getAIPersonaSettingsAction() {
   try {
     const { organizationId } = await requireOrganizationAccess();
-    const [prompt] = await db
-      .select()
-      .from(voicePrompts)
-      .where(and(eq(voicePrompts.organizationId, organizationId), eq(voicePrompts.isActive, true)));
-
-    const voiceSetting = await voiceRepository.getVoiceSettings(organizationId);
-    const profile = await profileRepository.getByOrg(organizationId);
+    // Parallelize independent DB queries via Promise.all (Vercel async-parallel rule)
+    const [[prompt], voiceSetting, profile] = await Promise.all([
+      db
+        .select()
+        .from(voicePrompts)
+        .where(and(eq(voicePrompts.organizationId, organizationId), eq(voicePrompts.isActive, true))),
+      voiceRepository.getVoiceSettings(organizationId),
+      profileRepository.getByOrg(organizationId),
+    ]);
 
     let tone = "professional";
     if (prompt?.name && prompt.name.startsWith("tone:")) {
@@ -415,9 +417,14 @@ export async function initiateOutboundCallAction(params: {
       .where(and(eq(phoneNumbers.id, lineId), eq(phoneNumbers.organizationId, organizationId)))
       .limit(1);
 
-    if (callerPhoneRecord) {
-      callerNumber = callerPhoneRecord.phoneNumber;
+    if (!callerPhoneRecord) {
+      return {
+        success: false,
+        error: "Selected phone line was not found or does not belong to your organization.",
+      };
     }
+
+    callerNumber = callerPhoneRecord.phoneNumber;
 
     if (twilioConfigured) {
       const accountSid = process.env.TWILIO_ACCOUNT_SID!;

@@ -154,6 +154,62 @@ test.describe('Operator Production Readiness — E2E User Journeys', () => {
   });
 
   // ──────────────────────────────────────────────────────────────────────────
+  // JOURNEY E: Appointments Lifecycle, Status Triage & Audit Trail
+  // ──────────────────────────────────────────────────────────────────────────
+  test('Journey E — Appointments Lifecycle: Status Triage, Notes & Audit History', async ({ page }) => {
+    const bookingStartTime = new Date(Date.now() + 48 * 60 * 60 * 1000);
+    const bookingEndTime = new Date(bookingStartTime.getTime() + 45 * 60 * 1000);
+
+    const apptId = crypto.randomUUID();
+    await db.insert(appointments).values({
+      id: apptId,
+      organizationId: testOrgId,
+      customerName: 'Marcus Vance Lifecycle',
+      customerPhone: '+15551239999',
+      customerEmail: 'marcus.lifecycle@example.com',
+      startTime: bookingStartTime,
+      endTime: bookingEndTime,
+      status: 'confirmed',
+    });
+
+    // 1. Visit appointments dashboard
+    const resp = await page.goto('/appointments');
+    expect(resp?.status()).toBeLessThan(400);
+
+    // 2. Query appointment via repository
+    const { appointmentsRepository } = await import('../src/server/repositories/appointments');
+    const aptDetails = await appointmentsRepository.findById(apptId);
+    expect(aptDetails).toBeDefined();
+    expect(aptDetails?.appointment?.status).toBe('confirmed');
+
+    // 3. Update status to completed with audit trail
+    await appointmentsRepository.update(
+      apptId,
+      { status: 'completed' },
+      'staff',
+      'Customer checked out and payment settled'
+    );
+
+    const updatedApt = await appointmentsRepository.findById(apptId);
+    expect(updatedApt?.appointment?.status).toBe('completed');
+
+    // 4. Add staff note
+    const note = await appointmentsRepository.addNote(
+      testOrgId,
+      apptId,
+      'Customer requested email invoice copy',
+      'staff'
+    );
+    expect(note).toBeDefined();
+    expect(note.noteText).toContain('email invoice copy');
+
+    // 5. Verify status history audit records
+    const history = await appointmentsRepository.getStatusHistory(apptId);
+    expect(history.length).toBeGreaterThan(0);
+    expect(history.some((h) => h.newStatus === 'completed')).toBe(true);
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
   // JOURNEY F: Appointment Engine & Double-Booking Prevention
   // ──────────────────────────────────────────────────────────────────────────
   test('Journey F — Appointment Engine: Booking Slot & Conflict Rejection', async ({ page }) => {

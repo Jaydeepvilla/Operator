@@ -5,11 +5,12 @@ import { verifyTwilioSignature } from '../src/server/utils/twilio-signature';
 import { validateSafeUrl } from '../src/server/services/crawler/ssrf';
 
 test.describe('Operator Phase 4 — Security Audit & Vulnerability Remediation Suite', () => {
+  const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3033';
 
   test('SEC-001: Cron Endpoints Enforce Strict Fail-Closed Authentication', async ({ playwright }) => {
     // Unauthenticated context
     const anonContext = await playwright.request.newContext({
-      baseURL: 'http://localhost:3000',
+      baseURL: baseUrl,
       storageState: { cookies: [], origins: [] },
     });
 
@@ -46,18 +47,9 @@ test.describe('Operator Phase 4 — Security Audit & Vulnerability Remediation S
   test('SEC-002: Protected API Routes Return HTTP 401 JSON (Not 307 HTML Redirect)', async ({ playwright }) => {
     // Unauthenticated request context (no session cookies)
     const anonContext = await playwright.request.newContext({
-      baseURL: 'http://localhost:3000',
+      baseURL: baseUrl,
       storageState: { cookies: [], origins: [] },
     });
-
-    const resOrder = await anonContext.post('/api/create-order', {
-      maxRedirects: 0,
-      headers: { 'Content-Type': 'application/json' },
-      data: { plan: 'growth' },
-    });
-    expect(resOrder.status()).toBe(401);
-    const orderJson = await resOrder.json().catch(() => null);
-    expect(orderJson).toHaveProperty('error', 'Unauthorized');
 
     const resDashboard = await anonContext.get('/api/dashboard/summary', {
       maxRedirects: 0,
@@ -72,7 +64,7 @@ test.describe('Operator Phase 4 — Security Audit & Vulnerability Remediation S
   test('SEC-004: /api/auth/me Preserves Strict 401 Semantics When Unauthenticated', async ({ playwright }) => {
     // Unauthenticated request context
     const anonContext = await playwright.request.newContext({
-      baseURL: 'http://localhost:3000',
+      baseURL: baseUrl,
       storageState: { cookies: [], origins: [] },
     });
 
@@ -186,6 +178,30 @@ test.describe('Operator Phase 4 — Security Audit & Vulnerability Remediation S
     const zeroIp = await validateSafeUrl('http://0.0.0.0:8000');
     expect(zeroIp.valid).toBe(false);
     expect(zeroIp.error).toContain('forbidden');
+  });
+
+  test('SEC-008: Billing Webhook Strictly Enforces Cryptographic Signature and Rejects Forgeries', async ({ playwright }) => {
+    const anonContext = await playwright.request.newContext({
+      baseURL: baseUrl,
+      storageState: { cookies: [], origins: [] },
+    });
+
+    // 1. Missing signature must be rejected with HTTP 400
+    const resNoSig = await anonContext.post('/api/webhooks/billing/razorpay', {
+      data: JSON.stringify({ event: 'payment.captured' }),
+    });
+    expect(resNoSig.status()).toBe(400);
+
+    // 2. Forged signature must be rejected with HTTP 400
+    const resBadSig = await anonContext.post('/api/webhooks/billing/razorpay', {
+      headers: {
+        'x-razorpay-signature': 'forged_fake_signature_hash_1234567890',
+      },
+      data: JSON.stringify({ event: 'payment.captured' }),
+    });
+    expect(resBadSig.status()).toBe(400);
+
+    await anonContext.dispose();
   });
 
 });

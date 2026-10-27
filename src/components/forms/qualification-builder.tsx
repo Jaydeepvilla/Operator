@@ -222,7 +222,7 @@ function SortableCard({
 
  {/* Enhanced Required Pill */}
  {q.isRequired && (
- <span className="inline-flex items-center gap-space-1 text-caption font-normal px-space-1.5 py-space-0.5 rounded-md uppercase tracking-wider bg-gradient-to-r from-rose-500/15 to-orange-500/10 border-rose-400/25 text-rose-500 inset_0_1px_0_rgba(255,255,255,0.08)]">
+ <span className="inline-flex items-center gap-space-1 text-caption font-normal px-space-1.5 py-space-0.5 rounded-md uppercase tracking-wider bg-gradient-to-r from-rose-500/15 to-orange-500/10 border-rose-400/25 text-rose-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
  <ShieldCheck className="h-2.5 w-2.5"/>
  Required
  </span>
