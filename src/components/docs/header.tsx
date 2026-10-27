@@ -39,12 +39,14 @@ export function DocsHeader() {
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
 
-            <Link href="/docs" className="flex items-center gap-space-2">
-              <Logo />
-              <span className="text-sm font-semibold text-muted-foreground hidden sm:inline-block border-l border-[hsl(var(--foreground)/0.08)] pl-space-2 ml-space-2">
+            <div className="flex items-center gap-space-2">
+              <Link href="/" title="Navigate to Home">
+                <Logo />
+              </Link>
+              <Link href="/docs" className="text-sm font-semibold text-muted-foreground hidden sm:inline-block border-l border-[hsl(var(--foreground)/0.08)] pl-space-2 ml-space-2 hover:text-foreground transition-colors">
                 Documentation
-              </span>
-            </Link>
+              </Link>
+            </div>
           </div>
 
           <div className="flex items-center gap-space-2 sm:gap-space-4">

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/client";
 import { UserAvatarMenu } from "./user-avatar-menu";
@@ -182,16 +183,16 @@ export function DashboardShell({
               : "gap-space-3 px-space-4 py-space-4"
           )}
         >
-          <div
-            onClick={collapsed ? toggleSidebar : undefined}
+          <Link
+            href="/"
             className={cn(
-              "flex h-8 w-8 items-center justify-center radius-lg shrink-0 transition-all duration-200",
-              collapsed && "cursor-pointer hover:scale-105"
+              "flex h-8 w-8 items-center justify-center radius-lg shrink-0 transition-all duration-200 cursor-pointer hover:scale-105",
+              collapsed && "hover:opacity-90"
             )}
-            title={collapsed ? "Expand sidebar" : undefined} tabIndex={0} onKeyDown={() => {}}
+            title="Navigate to Home"
           >
             <LogoIcon className="h-8 w-8" />
-          </div>
+          </Link>
           {!collapsed && (
             <div className="flex flex-col min-w-0 flex-1 animate-fade-in">
               <span className="text-caption text-foreground truncate tracking-tight-lg">

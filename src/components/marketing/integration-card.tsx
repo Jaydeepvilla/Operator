@@ -49,8 +49,10 @@ export function IntegrationCard({
         )}
       >
         <div className="flex items-center gap-space-3.5 min-w-0">
-          <div className="h-9 w-9 rounded-lg bg-white border border-[hsl(var(--foreground)/0.08)] p-space-1.5 flex items-center justify-center shrink-0 shadow-2xs">
-            {integration.logo}
+          <div className="h-11 w-11 rounded-xl bg-white dark:bg-card border border-[hsl(var(--foreground)/0.12)] p-2 flex items-center justify-center shrink-0 shadow-2xs">
+            <div className="w-6 h-6 flex items-center justify-center">
+              {integration.logo}
+            </div>
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-space-2">
@@ -134,8 +136,10 @@ export function IntegrationCard({
         <div>
           {/* Top Brand Bar */}
           <div className="flex items-center justify-between gap-space-3 mb-space-5">
-            <div className="h-10 w-10 rounded-xl bg-white border border-[hsl(var(--foreground)/0.08)] p-space-2 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform duration-200">
-              {integration.logo}
+            <div className="h-13 w-13 rounded-2xl bg-white dark:bg-card border border-[hsl(var(--foreground)/0.12)] p-2.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform duration-200 shrink-0">
+              <div className="w-7 h-7 flex items-center justify-center">
+                {integration.logo}
+              </div>
             </div>
             <div className="flex items-center gap-space-2">
               <span className="text-caption font-mono uppercase tracking-wider px-space-2.5 py-space-1 rounded-full border border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.02)] text-muted-foreground font-semibold">
@@ -247,8 +251,10 @@ export function IntegrationCard({
       <div>
         {/* Header */}
         <div className="flex items-center justify-between gap-space-2 mb-space-3.5">
-          <div className="h-8 w-8 rounded-lg bg-white border border-[hsl(var(--foreground)/0.08)] p-space-1.5 flex items-center justify-center shadow-2xs">
-            {integration.logo}
+          <div className="h-12 w-12 rounded-xl bg-white dark:bg-card border border-[hsl(var(--foreground)/0.12)] p-2 flex items-center justify-center shadow-xs shrink-0">
+            <div className="w-6 h-6 flex items-center justify-center">
+              {integration.logo}
+            </div>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-caption font-mono text-muted-foreground/80 uppercase px-space-2 py-0.5 rounded bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--foreground)/0.04)]">
@@ -292,11 +298,12 @@ export function IntegrationCard({
           <Button
             onClick={() => onConnect?.(integration.id)}
             disabled={isLoading}
+            variant={isConnected ? "outline" : "default"}
             className={cn(
-              "w-full text-caption font-semibold py-1.5 px-3 rounded-lg border transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 select-none",
+              "w-full text-caption font-semibold py-2 px-3 rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 select-none",
               isConnected
-                ? "border-emerald-500/30 text-emerald-500 bg-emerald-500/5 hover:bg-emerald-500/10"
-                : "border-[hsl(var(--foreground)/0.08)] bg-[hsl(var(--foreground)/0.02)] text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                ? "border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20"
+                : "bg-primary text-white hover:bg-primary-hover shadow-xs"
             )}
           >
             {isLoading ? "Connecting..." : isConnected ? "✓ Connected" : "Connect"}

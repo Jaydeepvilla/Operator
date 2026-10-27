@@ -196,11 +196,11 @@ export default function PricingPage() {
                         {plan.desc}
                       </p>
 
-                      <div className="flex items-baseline gap-space-1.5 mt-space-4">
-                        <span className="text-display-md font-mono font-bold text-foreground tracking-tight">
+                      <div className="flex items-baseline gap-space-2 mt-space-5 mb-space-1">
+                        <span className="text-5xl md:text-6xl font-black font-mono tracking-tight text-foreground">
                           ${displayPrice}
                         </span>
-                        <span className="text-body-sm text-muted-foreground font-mono">/month</span>
+                        <span className="text-body-sm md:text-body-md text-muted-foreground font-mono font-semibold">/month</span>
                       </div>
 
                       {yearly && (
@@ -246,7 +246,12 @@ export default function PricingPage() {
                       asChild
                       variant={isPopular ? "default" : "outline"}
                       size="lg"
-                      className="w-full font-semibold shadow-xs justify-center"
+                      className={cn(
+                        "w-full font-semibold shadow-xs justify-center",
+                        isPopular
+                          ? "bg-primary text-white hover:bg-primary-hover"
+                          : "border border-primary/40 text-primary hover:bg-primary hover:text-white"
+                      )}
                     >
                       <Link href="/sign-up">
                         {isPopular ? "Start 14-Day Free Trial" : "Start Free Trial"}

@@ -45,48 +45,88 @@ import { Input } from "@/components/shared/input";
 
 // ─── SVG LOGOS ────────────────────────────────────────────────────────────
 const LOGOS = {
- operator: (className = "h-8 w-auto object-contain") => (
- <Image
- src="/logo.png"
- alt="Operator AI"
- width={32}
- height={32}
- unoptimized
- className={className}
- />
- ),
- googleCalendar: (
- <Image src={googleIcon.src || googleIcon} alt="Google Calendar" width={28} height={28} className="h-7 w-auto object-contain" unoptimized />
- ),
- outlook: (
- <Image src={microsoftIcon.src || microsoftIcon} alt="Outlook" width={28} height={28} className="h-7 w-auto object-contain" unoptimized />
- ),
- whatsapp: (
- <Image src={whatsappIcon.src || whatsappIcon} alt="WhatsApp" width={28} height={28} className="h-7 w-auto object-contain" unoptimized />
- ),
- meta: (
- <Image src={metaIcon.src || metaIcon} alt="Meta" width={28} height={28} className="h-7 w-auto object-contain" unoptimized />
- ),
- calendly: (
- <Image src={calendlyIcon.src || calendlyIcon} alt="Calendly" width={28} height={28} className="h-7 w-auto object-contain" unoptimized />
- ),
- vonage: (
- <div className="h-7 w-7 flex items-center justify-center rounded-lg bg-blue-600/10 text-blue-500 font-bold">
- <Phone className="h-4 w-4" />
- </div>
- ),
- gemini: (
- <Image src={geminiIcon.src || geminiIcon} alt="Google Gemini" width={28} height={28} className="h-7 w-auto object-contain" unoptimized />
- ),
- razorpay: (
- <Image src={razorpayIcon.src || razorpayIcon} alt="Razorpay" width={28} height={28} className="h-7 w-auto object-contain" unoptimized />
- ),
- stripe: (
- <Image src={stripeIcon.src || stripeIcon} alt="Stripe" width={28} height={28} className="h-7 w-auto object-contain" unoptimized />
- ),
- twilio: (
- <Image src={twilioIcon.src || twilioIcon} alt="Twilio" width={28} height={28} className="h-7 w-auto object-contain" unoptimized />
- ),
+  operator: (className = "h-8 w-auto object-contain") => (
+    <Image
+      src="/logo.png"
+      alt="Operator AI"
+      width={32}
+      height={32}
+      unoptimized
+      className={className}
+    />
+  ),
+  googleCalendar: (
+    <svg viewBox="0 0 24 24" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+    </svg>
+  ),
+  outlook: (
+    <svg viewBox="0 0 129 129" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h61.3v61.3H0z" fill="#f25022"/>
+      <path d="M67.7 0H129v61.3H67.7z" fill="#7fba00"/>
+      <path d="M0 67.7h61.3V129H0z" fill="#00a4ef"/>
+      <path d="M67.7 67.7H129V129H67.7z" fill="#ffb900"/>
+    </svg>
+  ),
+  whatsapp: (
+    <svg viewBox="0 0 24 24" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12.012 2C6.49 2 2 6.48 2 12c0 1.76.46 3.48 1.33 4.99L2 22l5.16-1.31A9.95 9.95 0 0 0 12.01 22c5.52 0 10.01-4.48 10.01-10s-4.49-10-10.01-10zm5.82 14.15c-.24.68-1.4 1.31-1.94 1.39-.52.08-1.18.11-1.9-.13-.44-.14-1-.33-1.74-.65-3.08-1.33-5.1-4.44-5.25-4.65-.15-.21-1.25-1.66-1.25-3.17 0-1.51.79-2.25 1.07-2.56.28-.31.62-.39.83-.39.21 0 .41 0 .59.01.19.01.44-.07.69.53.26.62.88 2.14.96 2.3.08.16.13.35.03.56-.1.21-.16.34-.31.52-.16.18-.33.4-.47.54-.16.16-.32.33-.14.64.18.31.81 1.33 1.74 2.16 1.19 1.06 2.19 1.39 2.5 1.55.31.16.49.13.67-.08.18-.21.77-.9 1-.1.2-.23.23-.49.44-.41.21.08 1.33.63 1.56.74.23.11.38.16.44.26.06.1.06.6-.18 1.28z" fill="#25D366"/>
+    </svg>
+  ),
+  meta: (
+    <svg viewBox="0 0 24 24" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.522 6c-1.748 0-3.324.97-4.322 2.502C12.202 6.97 10.626 6 8.878 6 5.637 6 3 8.687 3 12s2.637 6 5.878 6c1.748 0 3.324-.97 4.322-2.502 1 .16 2.576 1.13 4.322 1.13 3.241 0 5.878-2.687 5.878-6S20.763 6 17.522 6zm-8.644 9.6c-2.028 0-3.678-1.615-3.678-3.6 0-1.985 1.65-3.6 3.678-3.6 2.029 0 3.678 1.615 3.678 3.6 0 1.985-1.649 3.6-3.678 3.6zm8.644 0c-2.029 0-3.678-1.615-3.678-3.6 0-1.985 1.649-3.6 3.678-3.6 2.028 0 3.678 1.615 3.678 3.6 0 1.985-1.65 3.6-3.678 3.6z" fill="#0081FB"/>
+    </svg>
+  ),
+  calendly: (
+    <svg viewBox="50 40 300 260" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#006bff" d="M231.58,223.23C220.65,232.93,207,245,182.25,245h-14.8c-17.91,0-34.2-6.51-45.86-18.31-11.39-11.53-17.66-27.31-17.66-44.44V162c0-17.13,6.27-32.91,17.66-44.44,11.66-11.8,27.95-18.3,45.86-18.3h14.8c24.78,0,38.4,12.06,49.33,21.76,11.35,10,21.14,18.74,47.25,18.74a75.11,75.11,0,0,0,11.89-.95l-.09-.23a89.53,89.53,0,0,0-5.49-11.28L267.69,97.07a89.65,89.65,0,0,0-77.64-44.82H155.14A89.65,89.65,0,0,0,77.5,97.07L60.05,127.3a89.67,89.67,0,0,0,0,89.65L77.5,247.18A89.65,89.65,0,0,0,155.14,292h34.91a89.65,89.65,0,0,0,77.64-44.82L285.14,217a89.53,89.53,0,0,0,5.49-11.28l.09-.22a74,74,0,0,0-11.89-1c-26.11,0-35.9,8.69-47.25,18.74" />
+      <path fill="#006bff" d="M182.25,117.61h-14.8c-27.26,0-45.17,19.47-45.17,44.39v20.25c0,24.92,17.91,44.39,45.17,44.39h14.8c39.72,0,36.6-40.5,96.58-40.5a91.64,91.64,0,0,1,16.94,1.56,89.54,89.54,0,0,0,0-31.15,92.51,92.51,0,0,1-16.94,1.56c-60,0-56.86-40.5-96.58-40.5" />
+      <path fill="#006bff" d="M330.23,202.5a83.62,83.62,0,0,0-34.45-14.81c0,.11,0,.2,0,.3a89.7,89.7,0,0,1-5,17.45,65.58,65.58,0,0,1,28.48,11.73c0,.08-.05.18-.08.27a153.57,153.57,0,1,1,0-90.63c0,.09.05.19.08.27a65.45,65.45,0,0,1-28.48,11.72,90.3,90.3,0,0,1,5,17.47,2.33,2.33,0,0,0,0,.28,83.6,83.6,0,0,0,34.45-14.8c9.82-7.27,7.92-15.48,6.43-20.34a172.13,172.13,0,1,0,0,101.43c1.49-4.86,3.39-13.07-6.43-20.34" />
+      <path fill="#0ae8f0" d="M290.72,138.8a74,74,0,0,1-11.89,1c-26.11,0-35.9-8.69-47.24-18.74-10.94-9.7-24.56-21.77-49.34-21.77h-14.8c-17.92,0-34.2,6.51-45.86,18.31-11.39,11.53-17.66,27.31-17.66,44.44v20.25c0,17.13,6.27,32.91,17.66,44.44,11.66,11.8,27.94,18.3,45.86,18.3h14.8c24.78,0,38.4-12.06,49.34-21.76,11.34-10,21.13-18.74,47.24-18.74a75.11,75.11,0,0,1,11.89.95,89,89,0,0,0,5-17.45,2.68,2.68,0,0,0,0-.3,92.51,92.51,0,0,0-16.94-1.55c-60,0-56.86,40.51-96.58,40.51h-14.8c-27.26,0-45.17-19.48-45.17-44.4V162c0-24.92,17.91-44.39,45.17-44.39h14.8c39.72,0,36.6,40.49,96.58,40.49a91.64,91.64,0,0,0,16.94-1.55c0-.09,0-.18,0-.28a90.3,90.3,0,0,0-5-17.47" />
+    </svg>
+  ),
+  vonage: (
+    <div className="w-full h-full flex items-center justify-center rounded-lg bg-indigo-600/10 text-indigo-500 font-bold">
+      <Phone className="h-5 w-5" />
+    </div>
+  ),
+  gemini: (
+    <svg viewBox="0 0 24 24" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 24C12 17.373 6.627 12 0 12C6.627 12 12 6.627 12 0C12 6.627 17.373 12 24 12C17.373 12 12 17.373 12 24Z" fill="url(#gemini_grad_int)"/>
+      <defs>
+        <linearGradient id="gemini_grad_int" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#1BA1E3"/>
+          <stop offset="0.5" stopColor="#547BF4"/>
+          <stop offset="1" stopColor="#9B72CB"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  ),
+  razorpay: (
+    <svg viewBox="0 0 127 146" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M54.3828 47.1751L47.2567 73.1251L87.4627 47.0438L61.2088 145.65H87.8565L126.656 0L54.3828 47.1751Z" fill="#3395FF"/>
+      <path d="M11.0641 104.175L0 145.65H54.6643L77.0364 61.2748L11.0641 104.175Z" fill="#0C2651" className="fill-[#0C2651] dark:fill-white"/>
+    </svg>
+  ),
+  stripe: (
+    <svg viewBox="0 0 32 32" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="8" fill="#635BFF"/>
+      <path d="M14.6 13.4c0-.9.8-1.3 2-1.3 1.8 0 4.1.5 5.9 1.5v-5.2c-2-.8-3.9-1.1-5.9-1.1-4.9 0-8.1 2.5-8.1 6.8 0 6.6 9.1 5.5 9.1 8.4 0 1.1-1 1.5-2.3 1.5-2 0-4.5-.8-6.5-1.9v5.4c2.2 1 4.5 1.4 6.5 1.4 5 0 8.4-2.5 8.4-6.8 0-7.1-9.1-5.9-9.1-8.7z" fill="#fff"/>
+    </svg>
+  ),
+  twilio: (
+    <svg viewBox="-313 376 50 50" className="w-full h-full" fill="#f12e45" xmlns="http://www.w3.org/2000/svg">
+      <path d="M-288 376c-13.8 0-25 11.2-25 25s11.2 25 25 25 25-11.2 25-25-11.2-25-25-25zm0 43.4c-10.2 0-18.4-8.2-18.4-18.4s8.2-18.4 18.4-18.4 18.4 8.2 18.4 18.4-8.2 18.4-18.4 18.4z" />
+      <circle cx="-281.8" cy="394.8" r="5.2" />
+      <circle cx="-281.8" cy="407.2" r="5.2" />
+      <circle cx="-294.2" cy="407.2" r="5.2" />
+      <circle cx="-294.2" cy="394.8" r="5.2" />
+    </svg>
+  ),
 };
 
 const CATEGORIES = [
@@ -526,6 +566,578 @@ export default function IntegrationsPage() {
  const isConnected = connectedIds.includes(node.id);
 
  return (
+ <button
+ type="button"
+ key={node.id}
+ onMouseEnter={() => setActiveVisualId(node.id)}
+ onClick={() => setActiveVisualId(node.id)}
+ style={{
+ left: `${node.x}%`,
+ top: `${node.y}%`,
+ transform: "translate(-50%, -50%)",
+ }}
+ className={cn(
+ "absolute z-20 cursor-pointer transition-all duration-300 p-0 bg-transparent border-none text-left",
+ isHovered ? "scale-125 z-40" : "scale-100"
+ )}
+ >
+ <div
+ className={cn(
+ "w-11 h-11 rounded-full p-[2px] transition-all duration-300 bg-card border shadow-sm",
+ isHovered
+ ? "border-primary shadow-lg shadow-primary/30 ring-2 ring-primary/20"
+ : isConnected
+ ? "border-primary/40"
+ : "border-[hsl(var(--foreground)/0.08)] hover:border-[hsl(var(--foreground)/0.18)]"
+ )}
+ >
+ <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center relative p-space-1.5 bg-white">
+ {node.logo}
+ {isConnected && (
+ <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-card" />
+ )}
+ </div>
+ </div>
+ </button>
+ );
+ })}
+ </div>
+ </div>
+
+ {/* Right Side: Detailed Capabilities Inspector Card (5 cols) */}
+ <div className="lg:col-span-5 relative z-30 flex flex-col justify-center">
+ {(() => {
+ const activeNode = INTEGRATIONS.find((i) => i.id === activeVisualId) || INTEGRATIONS[0];
+ const isConnected = connectedIds.includes(activeNode.id);
+ const isLoading = connectingId === activeNode.id;
+
+ return (
+ <div className="rounded-2xl border-[hsl(var(--foreground)/0.08)] bg-card/70 backdrop-blur-xs p-space-6 shadow-md transition-all duration-300">
+ <div className="flex items-center gap-space-3.5 mb-space-5">
+ <div className="w-12 h-12 rounded-xl bg-white border-[hsl(var(--foreground)/0.08)] p-space-2 flex items-center justify-center shadow-xs shrink-0">
+ {activeNode.logo}
+ </div>
+ <div className="flex flex-col min-w-0">
+ <h4 className="text-title-md font-bold text-foreground leading-snug truncate">
+ {activeNode.name}
+ </h4>
+ <span className="text-caption text-muted-foreground uppercase tracking-widest font-mono font-semibold">
+ {activeNode.category}
+ </span>
+ </div>
+ <span
+ className={cn(
+ "ml-auto text-caption uppercase font-mono tracking-wider px-space-2.5 py-space-1 rounded-full border font-bold whitespace-nowrap leading-none",
+ isConnected
+ ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+ : "bg-[hsl(var(--foreground)/0.03)] text-muted-foreground border-[hsl(var(--foreground)/0.06)]"
+ )}
+ >
+ {isConnected ? "Linked" : "Available"}
+ </span>
+ </div>
+
+ <p className="text-body-sm text-muted-foreground leading-relaxed mb-space-5">
+ {activeNode.desc}
+ </p>
+
+ <div className="border-t border-[hsl(var(--foreground)/0.05)] pt-space-4 mb-space-5">
+ <span className="text-caption font-mono uppercase tracking-wider text-muted-foreground/70 block mb-space-1.5 font-semibold">
+ Active AI Function:
+ </span>
+ <p className="text-caption text-foreground/85 leading-relaxed bg-[hsl(var(--foreground)/0.02)] border-[hsl(var(--foreground)/0.04)] p-space-3 rounded-xl font-medium">
+ {activeNode.capabilities}
+ </p>
+ </div>
+
+ <div className="flex items-center justify-between gap-space-3 pt-space-2">
+ <div className="text-caption text-muted-foreground font-mono">
+ <span>Difficulty: </span>
+ <span className="text-foreground font-bold">{activeNode.difficulty}</span>
+ </div>
+
+ {activeNode.status === "live" ? (
+ <Button
+ onClick={() => handleConnect(activeNode.id)}
+ variant={isConnected ? "outline" : "default"}
+ size="sm"
+ disabled={isLoading}
+ className="font-semibold text-caption h-8"
+ >
+ {isLoading ? "Connecting..." : isConnected ? "Disconnect" : "Connect Integration"}
+ </Button>
+ ) : (
+ <span className="text-caption font-semibold text-amber-500 bg-amber-500/10 px-space-2.5 py-space-1 rounded-full border-amber-500/15">
+ Coming Soon
+ </span>
+ )}
+ </div>
+ </div>
+ );
+ })()}
+ </div>
+ </div>
+ </GsapScrollSection>
+ </section>
+
+ {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECTION 3: CORE MAPPINGS (Featured 6 Integrations)
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+ <section className="mx-auto max-w-5xl px-space-6 pb-space-28 z-10 relative">
+ <GsapScrollSection animation="fade-up">
+ <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-4 mb-space-12">
+ <div>
+ <div className="inline-flex items-center gap-space-2 px-space-3 py-space-1 rounded-full border-primary/20 bg-primary/5 mb-space-4">
+ <span className="text-caption uppercase font-mono tracking-widest font-bold text-primary">Core Mappings</span>
+ </div>
+ <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
+ Featured Integrations.
+ <br />
+ <span className="text-primary">Native zero-code adapters.</span>
+ </h2>
+ </div>
+ <p className="text-caption md:text-body-sm text-muted-foreground max-w-xs leading-relaxed">
+ Pre-built two-way synchronizations configured for dental clinics, law practices, and service businesses.
+ </p>
+ </div>
+
+ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-6">
+ {featured.map((item) => (
+ <IntegrationCard
+ key={item.id}
+ integration={item}
+ variant="featured"
+ isConnected={connectedIds.includes(item.id)}
+ isLoading={connectingId === item.id}
+ onConnect={handleConnect}
+ />
+ ))}
+ </div>
+ </GsapScrollSection>
+ </section>
+
+ {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECTION 4: AUTOMATION TIMELINE & PAYLOAD INSPECTOR
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+ <section className="mx-auto max-w-5xl px-space-6 pb-space-28 z-10 relative">
+ <GsapScrollSection animation="fade-up">
+ <div className="text-center mb-space-12">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
+ <Workflow className="h-3.5 w-3.5 text-primary" />
+ <span className="text-caption uppercase tracking-widest font-semibold text-primary">Intelligent Routing</span>
+ </div>
+ <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
+ Automation Showcases.
+ <br />
+ <span className="text-primary">Ecosystem Workflow In Action</span>
+ </h2>
+ </div>
+
+ <div className="relative rounded-3xl border-[hsl(var(--foreground)/0.08)] bg-card/25 backdrop-blur-xs p-space-6 md:p-space-10 overflow-hidden shadow-sm">
+ <div className="absolute inset-0 dot-grid opacity-15 pointer-events-none" />
+
+ {/* Status Header */}
+ <div className="flex items-center justify-between mb-space-8 relative z-10">
+ <div className="flex items-center gap-space-2.5">
+ <span className="relative flex h-2 w-2">
+ <span
+ className={cn(
+ "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+ isPaused ? "bg-amber-400" : "bg-emerald-400"
+ )}
+ />
+ <span
+ className={cn(
+ "relative inline-flex rounded-full h-2 w-2",
+ isPaused ? "bg-amber-500" : "bg-emerald-500"
+ )}
+ />
+ </span>
+ <span className="text-caption font-mono uppercase tracking-widest text-muted-foreground font-semibold">
+ {isPaused ? "Simulation Paused • Click any step" : "Live Automation Simulation"}
+ </span>
+ </div>
+ {isPaused && (
+            <Button
+              onClick={() => setIsPaused(false)}
+              className="bg-primary text-white hover:bg-primary-hover font-semibold text-caption px-4 py-1.5 h-auto rounded-full shadow-xs cursor-pointer select-none"
+            >
+              Resume Loop
+            </Button>
+          )}
+ </div>
+
+ {/* Steps Track */}
+ <div className="relative z-10 flex flex-col lg:flex-row items-stretch justify-between gap-space-4 mb-space-8">
+ {WORKFLOW_STEPS.map((step, idx) => {
+ const isActive = activeStep === idx;
+ return (
+ <button
+              type="button"
+              key={step.id}
+              onClick={() => {
+                setActiveStep(idx);
+                setIsPaused(true);
+              }}
+              className={cn(
+                "flex-1 p-space-4 rounded-xl border transition-all duration-300 cursor-pointer select-none text-left bg-card/40",
+                isActive
+                  ? "border-primary bg-primary/10 shadow-xs"
+                  : "border-[hsl(var(--foreground)/0.06)] hover:border-primary/40 hover:bg-card/70"
+              )}
+            >
+ <div className="flex items-center gap-space-3 mb-space-2">
+ <span className={cn(
+ "w-6 h-6 rounded flex items-center justify-center font-mono text-caption font-bold shrink-0",
+ isActive ? "bg-primary text-primary-foreground" : "bg-[hsl(var(--foreground)/0.05)] text-muted-foreground"
+ )}>
+ 0{idx + 1}
+ </span>
+ <h4 className="text-body-sm font-semibold text-foreground truncate">{step.title}</h4>
+ </div>
+ <p className="text-caption text-muted-foreground leading-snug line-clamp-2">
+ {step.desc}
+                </p>
+              </button>
+ );
+ })}
+ </div>
+
+ {/* Payload Inspector Terminal */}
+ <div className="relative z-10 border-[hsl(var(--foreground)/0.08)] bg-black/95 rounded-2xl overflow-hidden shadow-md">
+ <div className="flex items-center justify-between px-space-4 py-space-2.5 border-b border-white/5 bg-white/5">
+ <div className="flex items-center gap-space-2">
+ <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+ <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+ <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+ <span className="text-caption text-zinc-400 font-mono ml-space-2 uppercase tracking-wider">
+ payload_inspector.json
+ </span>
+ </div>
+ <div className="flex items-center gap-space-3 font-mono text-caption">
+ <span className="text-zinc-500">active_step:</span>
+ <span className="text-primary font-bold">{WORKFLOW_STEPS[activeStep].id}</span>
+ </div>
+ </div>
+
+ <div className="p-space-5 font-mono text-caption text-zinc-300 overflow-x-auto leading-relaxed">
+ <pre className="text-left">
+ {JSON.stringify(WORKFLOW_STEPS[activeStep].payload, null, 2)}
+ </pre>
+ </div>
+ </div>
+ </div>
+ </GsapScrollSection>
+ </section>
+
+ {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECTION 5: DIRECTORY EXPLORER (Broken Monotony with Grid & Density List)
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+ <section className="mx-auto max-w-5xl px-space-6 pb-space-28 z-10 relative">
+ <GsapScrollSection animation="fade-up">
+ <div className="text-center mb-space-10">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
+ <Layers className="h-3.5 w-3.5 text-primary" />
+ <span className="text-caption uppercase tracking-widest font-semibold text-primary">Directory Index</span>
+ </div>
+ <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
+ Explore Directory.
+ <br />
+ <span className="text-primary">Search & Filter Integrations</span>
+ </h2>
+ </div>
+
+ {/* Search Bar + View Mode Switcher */}
+ <div className="flex flex-col sm:flex-row items-center justify-between gap-space-4 mb-space-8">
+ <div className="relative flex-1 w-full max-w-lg">
+ <div className="relative rounded-xl border-[hsl(var(--foreground)/0.08)] bg-card/60 p-space-2 flex items-center gap-space-2 shadow-xs">
+ <Search className="h-4 w-4 text-muted-foreground/60 ml-space-2 shrink-0" />
+ <Input
+ ref={searchInputRef}
+ value={searchQuery}
+ onChange={(e) => setSearchQuery(e.target.value)}
+ className="w-full bg-transparent text-body-sm outline-none border-none py-space-1 text-foreground placeholder:text-muted-foreground/50"
+ placeholder="Search tools, telephony, calendars, CRMs..."
+ />
+ <div className="hidden sm:flex items-center gap-1 bg-[hsl(var(--foreground)/0.04)] border-[hsl(var(--foreground)/0.08)] px-space-2 py-0.5 rounded text-caption text-muted-foreground font-mono shrink-0 mr-space-1">
+ <span>⌘</span>
+ <span>K</span>
+ </div>
+ </div>
+ </div>
+
+ {/* View Mode Toggle: Grid vs Compact List */}
+            <div className="flex items-center gap-1.5 p-1 rounded-xl border border-border/50 bg-card/60 shrink-0">
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-caption font-semibold transition-all cursor-pointer flex items-center gap-1.5",
+                  viewMode === "grid"
+                    ? "bg-primary text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                )}
+                title="Grid View"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                <span className="hidden md:inline text-caption">Grid</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-caption font-semibold transition-all cursor-pointer flex items-center gap-1.5",
+                  viewMode === "list"
+                    ? "bg-primary text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                )}
+                title="Compact List View"
+              >
+                <ListFilter className="h-4 w-4" />
+                <span className="hidden md:inline text-caption">Dense List</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Category Filter Pills */}
+ <div className="overflow-x-auto w-full mb-space-8 no-scrollbar">
+ <div className="inline-flex items-center gap-space-2 pb-space-1">
+ {CATEGORIES.map((cat) => {
+ const isActive = activeCategory === cat;
+ const count =
+ cat === "All"
+ ? INTEGRATIONS.length
+ : INTEGRATIONS.filter((i) => i.category === cat).length;
+
+ return (
+ <button
+ type="button"
+ key={cat}
+ onClick={() => setActiveCategory(cat)}
+ className={cn(
+ "h-8 px-space-3.5 text-caption rounded-full font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-1.5 border",
+ isActive
+ ? "bg-primary text-white border-primary shadow-xs"
+ : "border-border/60 bg-card/40 text-muted-foreground hover:text-foreground hover:bg-card/80 hover:border-border"
+ )}
+ >
+ <span>{cat}</span>
+ <span
+ className={cn(
+ "px-1.5 py-0.2 rounded-full text-caption font-mono",
+ isActive ? "bg-white/20 text-white" : "bg-[hsl(var(--foreground)/0.05)] text-muted-foreground"
+ )}
+ >
+ {count}
+ </span>
+ </button>
+ );
+ })}
+ </div>
+ </div>
+
+ {/* Results Grid or Dense List View */}
+ {viewMode === "grid" ? (
+ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-5">
+ {filtered.map((item) => (
+ <IntegrationCard
+ key={item.id}
+ integration={item}
+ variant="directory"
+ isConnected={connectedIds.includes(item.id)}
+ isLoading={connectingId === item.id}
+ onConnect={handleConnect}
+ />
+ ))}
+ </div>
+ ) : (
+ <div className="space-y-space-2.5">
+ {filtered.map((item) => (
+ <IntegrationCard
+ key={item.id}
+ integration={item}
+ variant="compact-row"
+ isConnected={connectedIds.includes(item.id)}
+ isLoading={connectingId === item.id}
+ onConnect={handleConnect}
+ />
+ ))}
+ </div>
+ )}
+
+ {filtered.length === 0 && (
+ <div className="text-center py-space-16 text-muted-foreground rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/20">
+ <Search className="h-8 w-8 mx-auto mb-space-3 opacity-30 text-primary" />
+ <p className="text-body-sm font-semibold text-foreground">No integrations match your search</p>
+ <p className="text-caption text-muted-foreground mt-space-1">
+ Try other keywords or request a custom webhook adapter below.
+ </p>
+ </div>
+ )}
+ </GsapScrollSection>
+ </section>
+
+ {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECTION 6: DEVELOPER API PLAYGROUND
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+ <section className="mx-auto max-w-5xl px-space-6 pb-space-28 z-10 relative">
+ <GsapScrollSection animation="fade-up">
+ <div className="text-center mb-space-12">
+ <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
+ <Terminal className="h-3.5 w-3.5 text-primary" />
+ <span className="text-caption uppercase tracking-widest font-semibold text-primary">Custom SDKs</span>
+ </div>
+ <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
+ Engineered for customization.
+ <br />
+ <span className="text-primary">Integrate anything with code.</span>
+ </h2>
+ </div>
+
+ <div className="grid grid-cols-1 lg:grid-cols-3 gap-space-6 items-stretch">
+ {/* Left pane: selector tabs */}
+          <div className="flex flex-col gap-space-2 justify-center">
+            {[
+              { id: "api", title: "REST API Client", desc: "Interact directly via RESTful requests", icon: <Terminal className="h-4 w-4" /> },
+              { id: "webhook", title: "Webhook Payload", desc: "Listen for real-time appointment events", icon: <FileJson className="h-4 w-4" /> },
+              { id: "sdk", title: "Python SDK", desc: "Query conversations programmatically", icon: <Terminal className="h-4 w-4" /> },
+              { id: "mcp", title: "MCP Config", desc: "Model Context Protocol configuration", icon: <Key className="h-4 w-4" /> },
+            ].map((tab) => {
+              const isActive = activeCodeTab === tab.id;
+              return (
+                <button
+                  type="button"
+                  key={tab.id}
+                  onClick={() => setActiveCodeTab(tab.id as any)}
+                  className={cn(
+                    "w-full text-left p-space-4 rounded-xl border transition-all duration-200 flex items-start gap-space-3.5 cursor-pointer select-none",
+                    isActive
+                      ? "border-primary/50 bg-card shadow-sm ring-1 ring-primary/20"
+                      : "border-border/40 bg-card/40 hover:bg-card/80 hover:border-border/80"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "p-space-2 rounded-lg shrink-0 transition-colors",
+                      isActive ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {tab.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <span className={cn(
+                      "text-body-sm font-semibold block transition-colors",
+                      isActive ? "text-primary font-bold" : "text-foreground"
+                    )}>
+                      {tab.title}
+                    </span>
+                    <span className="text-caption text-muted-foreground block mt-0.5 leading-snug">
+                      {tab.desc}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Right pane: code playground */}
+          <div className="lg:col-span-2 relative rounded-2xl border border-border/40 bg-[#0A0E17] text-slate-200 overflow-hidden flex flex-col min-h-96 shadow-lg">
+            <div className="flex items-center justify-between px-space-5 py-space-3 border-b border-slate-800 bg-slate-900/60 shrink-0">
+              <div className="flex items-center gap-space-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                <span className="text-caption font-mono text-slate-400 ml-space-2.5">
+                  {activeCodeTab === "api" && "routes.ts"}
+                  {activeCodeTab === "webhook" && "webhook.json"}
+                  {activeCodeTab === "sdk" && "sdk_query.py"}
+                  {activeCodeTab === "mcp" && "mcp.json"}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopyCode}
+                className="flex items-center gap-1.5 text-caption font-mono text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-md border border-slate-700/60 transition-colors cursor-pointer select-none"
+              >
+                {isCopied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                <span>{isCopied ? "Copied" : "Copy"}</span>
+              </button>
+            </div>
+            <div className="flex-1 p-space-6 overflow-auto font-mono text-caption leading-relaxed bg-[#07090E]">
+              <pre className="text-left whitespace-pre-wrap select-all">
+                {CODE_SNIPPETS[activeCodeTab]}
+              </pre>
+            </div>
+          </div>
+        </div>
+      </GsapScrollSection>
+ </section>
+
+ {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECTION 2: ELEVATED NETWORK GRAPH VISUALIZER
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+ <section className="relative max-w-5xl mx-auto px-space-6 pb-space-28 z-10">
+ <GsapScrollSection animation="scale-up">
+ <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-8 items-center rounded-3xl border-[hsl(var(--foreground)/0.08)] bg-card/30 backdrop-blur-xs p-space-6 md:p-space-8 overflow-hidden relative shadow-md">
+ <div className="absolute inset-0 dot-grid opacity-25 pointer-events-none" />
+
+ {/* Left Side: Circular Orbital Graph (7 cols) */}
+ <div className="lg:col-span-7 relative flex items-center justify-center min-h-[380px] md:min-h-[460px]">
+ <div className="relative aspect-square w-full max-w-[360px] md:max-w-[430px] flex items-center justify-center select-none">
+ {/* Concentric subtle guide rings */}
+ <div className="absolute inset-4 rounded-full border-[hsl(var(--foreground)/0.05)] pointer-events-none animate-[spin_120s_linear_infinite]" />
+ <div className="absolute inset-16 rounded-full border-[hsl(var(--foreground)/0.04)] pointer-events-none" />
+
+ {/* SVG glowing connection pathways */}
+ <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100">
+ <defs>
+ <linearGradient id="activeLineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+ <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="1" />
+ <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.4" />
+ </linearGradient>
+ </defs>
+ {visualNodes.map((node) => {
+ const isHovered = activeVisualId === node.id;
+ const isConnected = connectedIds.includes(node.id);
+
+ return (
+ <path
+ key={node.id}
+ d={`M ${node.x} ${node.y} L 50 50`}
+ stroke={isHovered ? "url(#activeLineGrad)" : isConnected ? "hsl(var(--primary)/0.35)" : "hsl(var(--foreground)/0.06)"}
+ strokeWidth={isHovered ? "0.9" : isConnected ? "0.5" : "0.3"}
+ strokeDasharray={isHovered ? "2 1" : "none"}
+ className="transition-all duration-300"
+ />
+ );
+ })}
+ </svg>
+
+ {/* Center Core: Operator 3D Logo */}
+ <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
+ <div className="relative w-18 h-18 md:w-22 md:h-22 flex items-center justify-center rounded-full bg-card shadow-2xl border-primary/30 p-2.5 select-none group cursor-pointer">
+ <div className="absolute -inset-2 rounded-full bg-primary/20 animate-ping duration-1000 pointer-events-none" />
+ <div className="absolute -inset-4 rounded-full bg-primary/10 animate-pulse pointer-events-none" />
+ <div className="relative w-full h-full rounded-full overflow-hidden flex items-center justify-center">
+ <Image
+ src="/logo.png"
+ alt="Operator AI Core"
+ width={80}
+ height={80}
+ unoptimized
+ priority
+ className="w-full h-full object-contain drop-shadow-md transition-transform duration-500 group-hover:scale-110"
+ />
+ </div>
+ </div>
+ </div>
+
+ {/* Orbital Integration Nodes */}
+ {visualNodes.map((node) => {
+ const isHovered = activeVisualId === node.id;
+ const isConnected = connectedIds.includes(node.id);
+
+ return (
  <Button
  type="button"
  key={node.id}
@@ -718,13 +1330,13 @@ export default function IntegrationsPage() {
  </span>
  </div>
  {isPaused && (
- <Button
- onClick={() => setIsPaused(false)}
- className="text-caption text-primary hover:text-primary-hover font-bold transition-colors cursor-pointer select-none"
- >
- Resume Loop
- </Button>
- )}
+            <Button
+              onClick={() => setIsPaused(false)}
+              className="bg-primary text-white hover:bg-primary-hover font-semibold text-caption px-4 py-1.5 h-auto rounded-full shadow-xs cursor-pointer select-none"
+            >
+              Resume Loop
+            </Button>
+          )}
  </div>
 
  {/* Steps Track */}
@@ -827,35 +1439,39 @@ export default function IntegrationsPage() {
  </div>
 
  {/* View Mode Toggle: Grid vs Compact List */}
- <div className="flex items-center gap-1.5 p-1 rounded-xl border-[hsl(var(--foreground)/0.08)] bg-card/40 shrink-0">
- <Button
- type="button"
- onClick={() => setViewMode("grid")}
- className={cn(
- "p-1.5 rounded-lg text-caption font-semibold transition-colors cursor-pointer flex items-center gap-1.5",
- viewMode === "grid" ? "bg-primary text-white shadow-xs" : "text-muted-foreground hover:text-foreground"
- )}
- title="Grid View"
- >
- <LayoutGrid className="h-4 w-4" />
- <span className="hidden md:inline text-caption">Grid</span>
- </Button>
- <Button
- type="button"
- onClick={() => setViewMode("list")}
- className={cn(
- "p-1.5 rounded-lg text-caption font-semibold transition-colors cursor-pointer flex items-center gap-1.5",
- viewMode === "list" ? "bg-primary text-white shadow-xs" : "text-muted-foreground hover:text-foreground"
- )}
- title="Compact List View"
- >
- <ListFilter className="h-4 w-4" />
- <span className="hidden md:inline text-caption">Dense List</span>
- </Button>
- </div>
- </div>
+            <div className="flex items-center gap-1.5 p-1 rounded-xl border border-border/50 bg-card/60 shrink-0">
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-caption font-semibold transition-all cursor-pointer flex items-center gap-1.5",
+                  viewMode === "grid"
+                    ? "bg-primary text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                )}
+                title="Grid View"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                <span className="hidden md:inline text-caption">Grid</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-caption font-semibold transition-all cursor-pointer flex items-center gap-1.5",
+                  viewMode === "list"
+                    ? "bg-primary text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                )}
+                title="Compact List View"
+              >
+                <ListFilter className="h-4 w-4" />
+                <span className="hidden md:inline text-caption">Dense List</span>
+              </button>
+            </div>
+          </div>
 
- {/* Category Filter Pills */}
+          {/* Category Filter Pills */}
  <div className="overflow-x-auto w-full mb-space-8 no-scrollbar">
  <div className="inline-flex items-center gap-space-2 pb-space-1">
  {CATEGORIES.map((cat) => {

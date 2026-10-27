@@ -1,11 +1,13 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { cn } from "@/components/shared/utils";
 
 interface LogoProps {
   className?: string;
   iconClassName?: string;
   showText?: boolean;
+  href?: string;
 }
 
 export function LogoIcon({
@@ -36,9 +38,9 @@ export function LogoIcon({
   );
 }
 
-export function Logo({ className, iconClassName, showText = true }: LogoProps) {
-  return (
-    <div className={cn("flex items-center gap-space-2.5", className)}>
+export function Logo({ className, iconClassName, showText = true, href }: LogoProps) {
+  const content = (
+    <div className={cn("flex items-center gap-space-2.5 transition-opacity hover:opacity-90 cursor-pointer", className)}>
       <LogoIcon className={iconClassName} />
       {showText && (
         <span className="text-base tracking-tight text-foreground font-bold font-sans">
@@ -50,4 +52,14 @@ export function Logo({ className, iconClassName, showText = true }: LogoProps) {
       )}
     </div>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="inline-flex items-center shrink-0">
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
 }
