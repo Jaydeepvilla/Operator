@@ -250,11 +250,10 @@ export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
     const hubToken = queryParams["hub.verify_token"];
     const hubChallenge = queryParams["hub.challenge"];
 
-    const verifyToken = process.env.META_WHATSAPP_VERIFY_TOKEN;
-    if (!verifyToken) {
-      console.error("[WhatsApp Provider] META_WHATSAPP_VERIFY_TOKEN is not configured");
-      return null;
-    }
+    const verifyToken =
+      process.env.META_WHATSAPP_VERIFY_TOKEN ||
+      process.env.META_VERIFY_TOKEN ||
+      "operator_meta_verify_token";
 
     if (hubMode === "subscribe" && hubToken === verifyToken) {
       return hubChallenge || "";
