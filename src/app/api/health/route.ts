@@ -59,7 +59,14 @@ export async function GET() {
     checks.inworldTts = { status: "error", error: sanitizeErrorMessage(err.message || "Failed checking Inworld TTS") };
   }
 
-  // 4. Overall status
+  // 4. Razorpay key presence diagnostic
+  const rzpKey = process.env.RAZORPAY_KEY_ID || "";
+  checks.razorpay = {
+    status: "ok",
+    error: rzpKey ? `Configured (${rzpKey.slice(0, 8)}...)` : "Missing in env (using test fallback)",
+  };
+
+  // 5. Overall status
   const allHealthy = Object.values(checks).every((c) => c.status === "ok");
 
   const payload = {
