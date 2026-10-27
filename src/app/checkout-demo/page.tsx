@@ -162,7 +162,7 @@ export default function CheckoutDemoPage() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Test Key ID:</span>
                   <span className="font-mono text-xs text-muted-foreground">
-                    rzp_test_TVtKeJYufz4TgQ
+                    rzp_test_TsrjKrqgpr3af8
                   </span>
                 </div>
               </div>

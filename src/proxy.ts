@@ -49,6 +49,9 @@ function isPublicRoute(pathname: string): boolean {
     pathname.startsWith("/api/cron") ||
     pathname.startsWith("/api/voice") ||
     pathname.startsWith("/api/widget") ||
+    pathname.startsWith("/api/create-order") ||
+    pathname.startsWith("/api/verify-payment") ||
+    pathname.startsWith("/checkout-demo") ||
     pathname.startsWith("/widget-frame") ||
     pathname.startsWith("/widget.js") ||
     pathname.startsWith("/book") ||
