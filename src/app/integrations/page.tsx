@@ -784,20 +784,20 @@ export default function IntegrationsPage() {
  {WORKFLOW_STEPS.map((step, idx) => {
  const isActive = activeStep === idx;
  return (
- <Button
- type="button"
- key={step.id}
- onClick={() => {
- setActiveStep(idx);
- setIsPaused(true);
- }}
- className={cn(
- "flex-1 p-space-4 rounded-xl border transition-all duration-300 cursor-pointer select-none",
- isActive
- ? "border-primary bg-primary/10 shadow-xs"
- : "border-[hsl(var(--foreground)/0.06)] bg-card/40 hover:border-[hsl(var(--foreground)/0.12)]"
- )}
- >
+ <button
+              type="button"
+              key={step.id}
+              onClick={() => {
+                setActiveStep(idx);
+                setIsPaused(true);
+              }}
+              className={cn(
+                "flex-1 p-space-4 rounded-xl border transition-all duration-300 cursor-pointer select-none text-left bg-card/40",
+                isActive
+                  ? "border-primary bg-primary/10 shadow-xs"
+                  : "border-[hsl(var(--foreground)/0.06)] hover:border-primary/40 hover:bg-card/70"
+              )}
+            >
  <div className="flex items-center gap-space-3 mb-space-2">
  <span className={cn(
  "w-6 h-6 rounded flex items-center justify-center font-mono text-caption font-bold shrink-0",
@@ -809,8 +809,8 @@ export default function IntegrationsPage() {
  </div>
  <p className="text-caption text-muted-foreground leading-snug line-clamp-2">
  {step.desc}
- </p>
- </Button>
+                </p>
+              </button>
  );
  })}
  </div>
@@ -885,9 +885,7 @@ export default function IntegrationsPage() {
  onClick={() => setViewMode("grid")}
  className={cn(
  "p-1.5 rounded-lg text-caption font-semibold transition-colors cursor-pointer flex items-center gap-1.5",
- viewMode === "grid"
- ? "bg-foreground text-background shadow-xs"
- : "text-muted-foreground hover:text-foreground"
+ viewMode === "grid" ? "bg-primary text-white shadow-xs" : "text-muted-foreground hover:text-foreground"
  )}
  title="Grid View"
  >
@@ -899,9 +897,7 @@ export default function IntegrationsPage() {
  onClick={() => setViewMode("list")}
  className={cn(
  "p-1.5 rounded-lg text-caption font-semibold transition-colors cursor-pointer flex items-center gap-1.5",
- viewMode === "list"
- ? "bg-foreground text-background shadow-xs"
- : "text-muted-foreground hover:text-foreground"
+ viewMode === "list" ? "bg-primary text-white shadow-xs" : "text-muted-foreground hover:text-foreground"
  )}
  title="Compact List View"
  >

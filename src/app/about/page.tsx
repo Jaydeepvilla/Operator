@@ -172,12 +172,12 @@ export default function AboutPage() {
  <div
  key={v.title}
  className={`radius-2xl p-space-6 transition-all duration-300 ${isDarkCard
- ?"bg-foreground text-background scale-[1.02] border-none"
+ ?"bg-primary text-white scale-[1.02] shadow-md shadow-primary/20 border-none"
  :"border-[hsl(var(--foreground)/0.06)] bg-card/65 hover:border-primary/20"
  }`}
  >
- <h3 className={`text-body-sm font-semibold mb-space-2 ${isDarkCard ?"text-background":"text-foreground"}`}>{v.title}</h3>
- <p className={`text-body-sm leading-relaxed ${isDarkCard ?"text-background/80":"text-muted-foreground"}`}>{v.desc}</p>
+ <h3 className={`text-body-sm font-semibold mb-space-2 ${isDarkCard ?"text-white":"text-foreground"}`}>{v.title}</h3>
+ <p className={`text-body-sm leading-relaxed ${isDarkCard ?"text-white/90":"text-muted-foreground"}`}>{v.desc}</p>
  </div>
  );
  })}

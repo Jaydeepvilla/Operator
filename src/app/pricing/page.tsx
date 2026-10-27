@@ -117,38 +117,38 @@ export default function PricingPage() {
 
             {/* Monthly / Annual Toggle Switch */}
             <div className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--foreground)/0.08)] bg-card/60 backdrop-blur-xs p-1.5 shadow-xs mb-space-8">
-              <Button
+              <button
                 type="button"
                 onClick={() => setYearly(false)}
                 className={cn(
                   "h-8 px-space-4 text-caption rounded-full font-semibold transition-all duration-200 cursor-pointer select-none",
                   !yearly
-                    ? "bg-foreground text-background shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-primary text-white shadow-sm shadow-primary/25"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 )}
               >
                 Monthly
-              </Button>
-              <Button
+              </button>
+              <button
                 type="button"
                 onClick={() => setYearly(true)}
                 className={cn(
                   "h-8 pl-space-4 pr-space-3 text-caption rounded-full font-semibold transition-all duration-200 cursor-pointer select-none flex items-center gap-2",
                   yearly
-                    ? "bg-foreground text-background shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-primary text-white shadow-sm shadow-primary/25"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 )}
               >
                 <span>Annual</span>
                 <span
                   className={cn(
                     "px-2 py-0.5 rounded-full text-caption font-mono font-bold tracking-tight uppercase transition-colors",
-                    yearly ? "bg-primary text-primary-foreground" : "bg-primary/15 text-primary"
+                    yearly ? "bg-white/20 text-white" : "bg-primary/15 text-primary"
                   )}
                 >
                   Save 20%
                 </span>
-              </Button>
+              </button>
             </div>
           </GsapScrollSection>
         </section>
@@ -179,11 +179,11 @@ export default function PricingPage() {
                   )}
                 >
                   {/* Floating Popular Pill Badge */}
-                  {plan.badge && (
+                  {isPopular && (
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
-                      <span className="inline-flex items-center gap-1.5 px-space-3.5 py-space-1 rounded-full text-caption font-mono uppercase font-bold tracking-wider bg-gradient-to-r from-primary to-[hsl(280_75%_55%)] text-primary-foreground shadow-md shadow-primary/20">
+                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-caption font-mono uppercase font-bold tracking-wider bg-gradient-to-r from-primary to-violet-600 text-white shadow-md shadow-primary/30">
                         <Sparkles className="h-3 w-3" />
-                        {plan.badge}
+                        Most Popular
                       </span>
                     </div>
                   )}

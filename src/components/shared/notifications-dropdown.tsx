@@ -85,7 +85,7 @@ export function NotificationsDropdown({ initialNotifications }: NotificationsDro
               className={cn(
                 "flex-1 py-1.5 text-center text-caption font-semibold rounded-lg transition-all cursor-pointer",
                 activeTab === "all"
-                  ? "bg-foreground text-background shadow-sm"
+                  ? "bg-primary text-white shadow-sm shadow-primary/20"
                   : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.03)]"
               )}
             >
@@ -96,7 +96,7 @@ export function NotificationsDropdown({ initialNotifications }: NotificationsDro
               className={cn(
                 "flex-1 py-1.5 text-center text-caption font-semibold rounded-lg transition-all cursor-pointer",
                 activeTab === "unread"
-                  ? "bg-foreground text-background shadow-sm"
+                  ? "bg-primary text-white shadow-sm shadow-primary/20"
                   : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.03)]"
               )}
             >
@@ -107,7 +107,7 @@ export function NotificationsDropdown({ initialNotifications }: NotificationsDro
               className={cn(
                 "flex-1 py-1.5 text-center text-caption font-semibold rounded-lg transition-all cursor-pointer",
                 activeTab === "read"
-                  ? "bg-foreground text-background shadow-sm"
+                  ? "bg-primary text-white shadow-sm shadow-primary/20"
                   : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.03)]"
               )}
             >

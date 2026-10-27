@@ -4,7 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/components/shared/utils";
-import { Button } from "@/components/shared/button";
+// Button primitive removed for custom accordion styling
 
 export interface AccordionItem {
   q: string;
@@ -54,13 +54,13 @@ export function AnimatedAccordion({
             )}
           >
             {/* Question Header Button */}
-            <Button
+            <button
               id={itemId}
               type="button"
               aria-expanded={isOpen}
               aria-controls={contentId}
               onClick={() => toggleIndex(idx)}
-              className="w-full flex items-center justify-between gap-space-4 px-space-6 py-space-5 text-left select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="w-full flex items-center justify-between gap-space-4 px-space-6 py-space-5 text-left select-none cursor-pointer bg-transparent border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             >
               <span
                 className={cn(
@@ -80,7 +80,7 @@ export function AnimatedAccordion({
               >
                 <ChevronDown className="h-4 w-4" />
               </div>
-            </Button>
+            </button>
 
             {/* Smooth Animated Height Panel via Grid Transition */}
             <div
