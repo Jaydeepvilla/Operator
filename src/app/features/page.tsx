@@ -747,25 +747,25 @@ export default function FeaturesPage() {
 
          <div className="grid grid-cols-2 md:grid-cols-4 gap-space-6 text-center">
           <div className="p-space-8 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xs shadow-xs hover:border-primary/30 transition-colors">
-            <p className="text-5xl md:text-6xl font-bold font-mono tracking-tight text-primary mb-space-2">
+            <p className="text-[3rem] leading-tight font-bold font-mono tracking-tight text-primary mb-space-2">
               <AnimatedCounter value="+40%" />
             </p>
             <p className="text-body-sm font-semibold text-muted-foreground">Revenue increase</p>
           </div>
           <div className="p-space-8 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xs shadow-xs hover:border-primary/30 transition-colors">
-            <p className="text-5xl md:text-6xl font-bold font-mono tracking-tight text-primary mb-space-2">
+            <p className="text-[3rem] leading-tight font-bold font-mono tracking-tight text-primary mb-space-2">
               <AnimatedCounter value="95%" />
             </p>
             <p className="text-body-sm font-semibold text-muted-foreground">Lead capture rate</p>
           </div>
           <div className="p-space-8 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xs shadow-xs hover:border-primary/30 transition-colors">
-            <p className="text-5xl md:text-6xl font-bold font-mono tracking-tight text-primary mb-space-2">
+            <p className="text-[3rem] leading-tight font-bold font-mono tracking-tight text-primary mb-space-2">
               <AnimatedCounter value="94%" />
             </p>
             <p className="text-body-sm font-semibold text-muted-foreground">Calendar fill rate</p>
           </div>
           <div className="p-space-8 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xs shadow-xs hover:border-primary/30 transition-colors">
-            <p className="text-5xl md:text-6xl font-bold font-mono tracking-tight text-primary mb-space-2">
+            <p className="text-[3rem] leading-tight font-bold font-mono tracking-tight text-primary mb-space-2">
               <AnimatedCounter value="< 2s" />
             </p>
             <p className="text-body-sm font-semibold text-muted-foreground">Response time</p>
