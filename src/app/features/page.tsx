@@ -856,36 +856,40 @@ export default function FeaturesPage() {
  <div className="rounded-2xl border-[hsl(var(--foreground)/0.08)] bg-card overflow-hidden shadow-lg">
  {/* Header Tab Bar */}
  <div className="bg-[hsl(var(--foreground)/0.02)] border-b border-[hsl(var(--foreground)/0.06)] px-space-5 py-space-3 flex items-center justify-between flex-wrap gap-space-3">
- <div className="flex gap-space-1.5">
- {(["api", "webhook", "sdk", "mcp"] as const).map((tab) => (
- <Button
- key={tab}
- type="button"
- onClick={() => setActiveCodeTab(tab)}
- className={cn(
- "px-space-3 py-space-1.5 text-caption font-mono font-semibold rounded-lg transition-colors cursor-pointer select-none",
- activeCodeTab === tab
- ? "bg-primary text-primary-foreground"
- : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.04)]"
- )}
- >
- {tab.toUpperCase()}
- </Button>
- ))}
- </div>
+           <div className="flex gap-space-1.5">
+            {(["api", "webhook", "sdk", "mcp"] as const).map((tab) => {
+              const isActive = activeCodeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveCodeTab(tab)}
+                  className={cn(
+                    "px-space-3 py-space-1.5 text-caption font-mono font-semibold rounded-lg transition-all cursor-pointer select-none border",
+                    isActive
+                      ? "bg-primary text-white border-primary shadow-xs"
+                      : "border-transparent bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  )}
+                >
+                  {tab.toUpperCase()}
+                </button>
+              );
+            })}
+          </div>
 
- <div className="flex items-center gap-space-3">
- <span className="text-caption font-mono text-muted-foreground uppercase tracking-wider hidden sm:inline">
- API Sandbox v2.4
- </span>
- <Button
- onClick={handleCopyCode}
- className="flex items-center gap-1.5 text-caption font-mono text-muted-foreground hover:text-foreground p-1.5 rounded-md hover:bg-[hsl(var(--foreground)/0.05)] transition-colors cursor-pointer"
- >
- {isCopied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
- <span>{isCopied ? "Copied" : "Copy"}</span>
- </Button>
- </div>
+          <div className="flex items-center gap-space-3">
+            <span className="text-caption font-mono text-muted-foreground uppercase tracking-wider hidden sm:inline">
+              API Sandbox v2.4
+            </span>
+            <button
+              type="button"
+              onClick={handleCopyCode}
+              className="flex items-center gap-1.5 text-caption font-mono text-muted-foreground hover:text-foreground px-2.5 py-1.5 rounded-md hover:bg-muted/40 border border-border/40 transition-colors cursor-pointer select-none"
+            >
+              {isCopied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+              <span>{isCopied ? "Copied" : "Copy"}</span>
+            </button>
+          </div>
  </div>
 
  {/* Code Sandbox Viewport */}
@@ -915,32 +919,32 @@ export default function FeaturesPage() {
  </h2>
  </div>
 
- <div className="grid grid-cols-2 md:grid-cols-4 gap-space-6 text-center">
- <div className="p-space-6 rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/40 backdrop-blur-xs">
- <p className="text-display-md font-mono font-bold text-primary mb-space-1">
- <AnimatedCounter value="+40%" />
- </p>
- <p className="text-caption text-muted-foreground font-medium">Revenue increase</p>
- </div>
- <div className="p-space-6 rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/40 backdrop-blur-xs">
- <p className="text-display-md font-mono font-bold text-primary mb-space-1">
- <AnimatedCounter value="95%" />
- </p>
- <p className="text-caption text-muted-foreground font-medium">Lead capture rate</p>
- </div>
- <div className="p-space-6 rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/40 backdrop-blur-xs">
- <p className="text-display-md font-mono font-bold text-primary mb-space-1">
- <AnimatedCounter value="94%" />
- </p>
- <p className="text-caption text-muted-foreground font-medium">Calendar fill rate</p>
- </div>
- <div className="p-space-6 rounded-2xl border-[hsl(var(--foreground)/0.06)] bg-card/40 backdrop-blur-xs">
- <p className="text-display-md font-mono font-bold text-primary mb-space-1">
- <AnimatedCounter value="< 2s" />
- </p>
- <p className="text-caption text-muted-foreground font-medium">Response time</p>
- </div>
- </div>
+         <div className="grid grid-cols-2 md:grid-cols-4 gap-space-6 text-center">
+          <div className="p-space-8 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xs shadow-xs hover:border-primary/30 transition-colors">
+            <p className="text-5xl md:text-6xl font-black font-mono tracking-tight text-primary mb-space-2">
+              <AnimatedCounter value="+40%" />
+            </p>
+            <p className="text-body-sm font-semibold text-muted-foreground">Revenue increase</p>
+          </div>
+          <div className="p-space-8 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xs shadow-xs hover:border-primary/30 transition-colors">
+            <p className="text-5xl md:text-6xl font-black font-mono tracking-tight text-primary mb-space-2">
+              <AnimatedCounter value="95%" />
+            </p>
+            <p className="text-body-sm font-semibold text-muted-foreground">Lead capture rate</p>
+          </div>
+          <div className="p-space-8 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xs shadow-xs hover:border-primary/30 transition-colors">
+            <p className="text-5xl md:text-6xl font-black font-mono tracking-tight text-primary mb-space-2">
+              <AnimatedCounter value="94%" />
+            </p>
+            <p className="text-body-sm font-semibold text-muted-foreground">Calendar fill rate</p>
+          </div>
+          <div className="p-space-8 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xs shadow-xs hover:border-primary/30 transition-colors">
+            <p className="text-5xl md:text-6xl font-black font-mono tracking-tight text-primary mb-space-2">
+              <AnimatedCounter value="< 2s" />
+            </p>
+            <p className="text-body-sm font-semibold text-muted-foreground">Response time</p>
+          </div>
+        </div>
  </GsapScrollSection>
  </section>
 

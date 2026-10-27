@@ -11,6 +11,7 @@ import "perfect-scrollbar/css/perfect-scrollbar.css";
 import "./globals.css";
 
 import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 
 export const metadata: Metadata = {
   title: "Operator | 24/7 AI That Books, Qualifies & Answers",
@@ -45,7 +46,7 @@ export default async function RootLayout({
     <AuthProvider initialUser={initialUser}>
       <html
         lang="en"
-        className={`${GeistSans.variable} h-full antialiased`}
+        className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
         suppressHydrationWarning
       >
         <head>

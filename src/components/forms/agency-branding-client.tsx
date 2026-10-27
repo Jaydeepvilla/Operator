@@ -40,7 +40,7 @@ export function AgencyBrandingClient({ initialBranding }: { initialBranding: any
  faviconUrl: initialBranding?.faviconUrl ||"",
  primaryColor: initialBranding?.primaryColor ||"#3b82f6",
  secondaryColor: initialBranding?.secondaryColor ||"#1e293b",
- typography: initialBranding?.typography ||"Inter",
+ typography: initialBranding?.typography || "Geist",
  emailSenderName: initialBranding?.emailSenderName ||"Support Desk",
  emailSenderDomain: initialBranding?.emailSenderDomain ||"agency.com",
  customCss: initialBranding?.customCss ||"",
@@ -156,7 +156,7 @@ export function AgencyBrandingClient({ initialBranding }: { initialBranding: any
  onChange={(e) => setBranding({ ...branding, typography: e.target.value })}
  className="w-full h-9 radius-md border border-input bg-transparent px-space-3 text-body-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring text-foreground"
  >
- <option value="Inter">Inter (Sans-serif - Recommended)</option>
+ <option value="Geist">Geist (Global Sans-Serif - Recommended)</option>
  <option value="Outfit">Outfit (Geometric Modern)</option>
  <option value="Roboto">Roboto (Neo-Grotesque)</option>
  <option value="Playfair Display">Playfair Display (Premium Serif)</option>
