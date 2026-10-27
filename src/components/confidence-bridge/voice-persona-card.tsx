@@ -175,7 +175,7 @@ export function VoicePersonaCard({ businessName }: VoicePersonaCardProps) {
  <div>
  <div className="flex items-center gap-2">
  <h3 className="text-sm font-bold text-foreground tracking-tight">Voice Persona</h3>
- <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-caption font-semibold text-emerald-500 border-emerald-500/20 whitespace-nowrap">
+ <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-caption font-medium text-emerald-500 border-emerald-500/20 whitespace-nowrap">
  <Heart className="h-2.5 w-2.5 fill-current" />
  Natural Cadence
  </span>
@@ -229,7 +229,7 @@ export function VoicePersonaCard({ businessName }: VoicePersonaCardProps) {
  <div className="flex items-center justify-between w-full mb-1">
  <div className="flex items-center gap-1.5">
  <div className={cn(
- "flex h-5 w-5 items-center justify-center rounded-full text-caption font-bold transition-colors",
+ "flex h-5 w-5 items-center justify-center rounded-full text-caption font-medium transition-colors",
  isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
  )}>
  {p.name[0]}

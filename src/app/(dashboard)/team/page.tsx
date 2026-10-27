@@ -483,7 +483,7 @@ export default function TeamPage() {
 
  {/* Access Role cards */}
  <div className="space-y-space-2">
- <span className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/55 block">Access Authorization Tier</span>
+ <span className="text-caption uppercase tracking-wider font-medium text-muted-foreground/55 block">Access Authorization Tier</span>
  <div className="space-y-space-2">
  
  {/* Staff Tile */}

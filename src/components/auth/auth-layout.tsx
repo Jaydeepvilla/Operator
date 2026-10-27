@@ -61,7 +61,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         >
           <Logo
             iconClassName="text-primary h-6 w-6 transition-transform duration-200 group-hover:scale-105"
-            className="gap-2 text-foreground font-black text-lg"
+            className="gap-2 text-foreground font-bold text-lg"
           />
         </Link>
       </div>

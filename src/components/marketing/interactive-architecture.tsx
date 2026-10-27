@@ -193,7 +193,7 @@ export function InteractiveArchitecture() {
  <div className="md:col-span-3 space-y-space-3.5 relative z-10">
  <div className="flex items-center gap-space-2 mb-space-4 px-space-1 justify-center md:justify-start">
  <div className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground)/0.35)] animate-pulse"/>
-  <span className="text-caption uppercase tracking-wider text-[hsl(var(--foreground)/0.45)] font-mono font-bold">
+  <span className="text-caption uppercase tracking-wider text-[hsl(var(--foreground)/0.45)] font-mono font-medium">
  Input Channels
  </span>
  </div>
@@ -413,7 +413,7 @@ export function InteractiveArchitecture() {
  </div>
  </div>
 
- <span className="text-caption font-mono uppercase tracking-widest text-[hsl(var(--foreground)/0.5)] font-bold transition-colors">
+ <span className="text-caption font-mono uppercase tracking-widest text-[hsl(var(--foreground)/0.5)] font-medium transition-colors">
  Operator Engine
  </span>
 
@@ -531,7 +531,7 @@ export function InteractiveArchitecture() {
  <div className="md:col-span-3 space-y-space-3.5 relative z-10">
  <div className="flex items-center gap-space-2 mb-space-4 px-space-1 justify-center md:justify-start">
  <div className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground)/0.35)] animate-pulse"/>
-  <span className="text-caption uppercase tracking-wider text-[hsl(var(--foreground)/0.45)] font-mono font-bold">
+  <span className="text-caption uppercase tracking-wider text-[hsl(var(--foreground)/0.45)] font-mono font-medium">
  Outcomes
  </span>
  </div>

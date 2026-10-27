@@ -183,13 +183,13 @@ export default function EscalationsPage() {
  const getSeverityBadge = (severity: string) => {
  switch (severity) {
  case "critical":
- return <Badge variant="destructive" className="uppercase font-semibold text-caption tracking-wider">Critical</Badge>;
+ return <Badge variant="destructive" className="uppercase font-medium text-caption tracking-wider">Critical</Badge>;
  case "high":
- return <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 uppercase font-semibold text-caption">High</Badge>;
+ return <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 uppercase font-medium text-caption">High</Badge>;
  case "medium":
- return <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 uppercase font-semibold text-caption">Medium</Badge>;
+ return <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 uppercase font-medium text-caption">Medium</Badge>;
  default:
- return <Badge variant="secondary" className="uppercase font-semibold text-caption">Low</Badge>;
+ return <Badge variant="secondary" className="uppercase font-medium text-caption">Low</Badge>;
  }
  };
 
@@ -430,7 +430,7 @@ export default function EscalationsPage() {
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-4">
  <div className="space-y-space-2 flex-1">
  <div className="flex flex-wrap items-center gap-space-2">
- <Badge variant={esc.reason === "emergency" ? "destructive" : "secondary"} className="uppercase text-caption font-semibold">
+ <Badge variant={esc.reason === "emergency" ? "destructive" : "secondary"} className="uppercase text-caption font-medium">
  {esc.reason.replace(/_/g, " ")}
  </Badge>
  <span className="text-caption text-muted-foreground flex items-center gap-1">

@@ -116,7 +116,7 @@ export function PaymentProvidersClient({
         style={{ background: "rgba(139,92,246,0.04)", borderColor: "rgba(139,92,246,0.15)", backdropFilter: "blur(20px)" }}>
         <div className="flex items-center gap-3 mb-2">
           <Globe className="h-5 w-5" style={{ color: "hsl(258,100%,75%)" }} />
-          <h4 className="text-sm font-black text-white">Dynamic Location & Tax Detection</h4>
+          <h4 className="text-sm font-bold text-white">Dynamic Location & Tax Detection</h4>
         </div>
         <p className="text-xs text-white/50 leading-relaxed">
           Based on your business address and hours timezone, we detected your region as{" "}
@@ -129,7 +129,7 @@ export function PaymentProvidersClient({
       {/* Recommended Providers */}
       {recommended.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-xs font-black uppercase tracking-wider text-white/40">Intelligent Recommendation</h4>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-white/40">Intelligent Recommendation</h4>
           <div className="grid grid-cols-1 gap-4">
             {recommended.map((provider) => {
               const conn = getConnection(provider.providerId);
@@ -143,17 +143,17 @@ export function PaymentProvidersClient({
                     boxShadow: isConnected ? "0 0 20px rgba(52,211,153,0.05)" : "0 0 30px rgba(139,92,246,0.08)"
                   }}>
                   {/* Recommended badge */}
-                  <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-caption font-black uppercase tracking-wider"
+                  <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-caption font-medium uppercase tracking-wider"
                     style={{ background: "linear-gradient(135deg, hsl(258,80%,55%), hsl(278,80%,50%))", color: "white" }}>
                     <Sparkles className="h-3 w-3 fill-white" /> Recommended
                   </div>
                   <div className="flex items-start gap-4 pr-24">
-                    <div className="h-12 w-12 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-lg"
+                    <div className="h-12 w-12 rounded-xl flex items-center justify-center text-white text-xs font-bold shadow-lg"
                       style={{ background: "linear-gradient(135deg, hsl(258,80%,55%), hsl(278,80%,50%))" }}>
                       {provider.name.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <h3 className="text-base font-black text-white">{provider.name}</h3>
+                      <h3 className="text-base font-bold text-white">{provider.name}</h3>
                       <p className="text-xs text-white/45 mt-1 leading-relaxed">{provider.description}</p>
                       
                       {/* Reason text */}
@@ -181,7 +181,7 @@ export function PaymentProvidersClient({
                         'primary',
                         'filled',
                         'medium',
-                        'text-xs font-black transition-all duration-200'
+                        'text-xs font-bold transition-all duration-200'
                       )}
                       style={{ background: isConnected ? "rgba(52,211,153,0.15)" : "rgba(255,255,255,0.06)", border: isConnected ? "1px solid rgba(52,211,153,0.3)" : "1px solid rgba(255,255,255,0.1)" }}>
                       {isConnected ? "✓ Connected (Configure)" : "Configure API Keys"}
@@ -201,7 +201,7 @@ export function PaymentProvidersClient({
       {/* Supported / Alternative Providers */}
       {supported.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-xs font-black uppercase tracking-wider text-white/40">Alternative Networks</h4>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-white/40">Alternative Networks</h4>
           <div className="grid grid-cols-2 gap-4">
             {supported.map((provider) => {
               const conn = getConnection(provider.providerId);
@@ -214,12 +214,12 @@ export function PaymentProvidersClient({
                     borderColor: isConnected ? "rgba(52,211,153,0.2)" : "rgba(255,255,255,0.07)"
                   }}>
                   <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg flex items-center justify-center text-white text-xs font-black"
+                    <div className="h-9 w-9 rounded-lg flex items-center justify-center text-white text-xs font-bold"
                       style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
                       {provider.name.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <h4 className="text-sm font-black text-white">{provider.name}</h4>
+                      <h4 className="text-sm font-bold text-white">{provider.name}</h4>
                       <span className="text-caption text-white/30">{provider.supportedCurrencies.join(", ")}</span>
                     </div>
                   </div>
@@ -233,7 +233,7 @@ export function PaymentProvidersClient({
                       'primary',
                       'filled',
                       'medium',
-                      'w-full text-xs font-black/80 mt-5 transition-all duration-200'
+                      'w-full text-xs font-bold/80 mt-5 transition-all duration-200'
                     )}
                     style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
                     {isConnected ? "✓ Connected" : "Connect Provider"}
@@ -254,7 +254,7 @@ export function PaymentProvidersClient({
               borderColor: "rgba(255,255,255,0.10)"
             }}>
             
-            <h3 className="text-lg font-black text-white mb-1">Configure {selectedProvider.name}</h3>
+            <h3 className="text-lg font-bold text-white mb-1">Configure {selectedProvider.name}</h3>
             <p className="text-xs text-white/40 mb-6">Enter API configuration values below to save connection profiles.</p>
 
             <form onSubmit={handleConnect} className="space-y-4">
@@ -276,7 +276,7 @@ export function PaymentProvidersClient({
 
               {/* Secrets Input */}
               <div className="space-y-2">
-                <label className="text-caption font-black uppercase tracking-wider text-white/40">API Private Key</label>
+                <label className="text-caption font-bold uppercase tracking-wider text-white/40">API Private Key</label>
                 <div className="relative">
                   <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/25 pointer-events-none" />
                   <Input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)}
@@ -286,7 +286,7 @@ export function PaymentProvidersClient({
               </div>
 
               <div className="space-y-2">
-                <label className="text-caption font-black uppercase tracking-wider text-white/40">Webhook Secret</label>
+                <label className="text-caption font-bold uppercase tracking-wider text-white/40">Webhook Secret</label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/25 pointer-events-none" />
                   <Input type="password" value={webhookSecret} onChange={(e) => setWebhookSecret(e.target.value)}

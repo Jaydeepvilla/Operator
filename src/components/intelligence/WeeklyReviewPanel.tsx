@@ -178,7 +178,7 @@ export function WeeklyReviewPanel({ weeklyReview: review }: WeeklyReviewPanelPro
               <ul className="space-y-2">
                 {review.businessWins.map((win, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-[12px]">
-                    <span className="h-4 w-4 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 mt-0.5 text-caption font-bold">
+                    <span className="h-4 w-4 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 mt-0.5 text-caption font-medium">
                       ✓
                     </span>
                     <span className="text-foreground leading-snug">{win}</span>

@@ -216,7 +216,7 @@ export function ContinuousLearningPanel() {
  <div className="grid grid-cols-2 md:grid-cols-4 gap-space-4">
  <Card className="border-border-default bg-card">
  <CardContent className="p-space-4 space-y-space-1">
- <span className="text-caption uppercase font-bold text-muted-foreground">Unanswered Gaps</span>
+ <span className="text-caption uppercase font-medium text-muted-foreground">Unanswered Gaps</span>
  <div className="text-display-xs font-bold text-foreground">{openGaps.length}</div>
  <p className="text-caption text-muted-foreground">Clustered customer questions</p>
  </CardContent>
@@ -224,7 +224,7 @@ export function ContinuousLearningPanel() {
 
  <Card className="border-border-default bg-card">
  <CardContent className="p-space-4 space-y-space-1">
- <span className="text-caption uppercase font-bold text-muted-foreground">Pending Candidates</span>
+ <span className="text-caption uppercase font-medium text-muted-foreground">Pending Candidates</span>
  <div className="text-display-xs font-bold text-amber-500">{pendingProposals.length}</div>
  <p className="text-caption text-muted-foreground">Level 3 review required</p>
  </CardContent>
@@ -232,7 +232,7 @@ export function ContinuousLearningPanel() {
 
  <Card className="border-border-default bg-card">
  <CardContent className="p-space-4 space-y-space-1">
- <span className="text-caption uppercase font-bold text-muted-foreground">Applied Improvements</span>
+ <span className="text-caption uppercase font-medium text-muted-foreground">Applied Improvements</span>
  <div className="text-display-xs font-bold text-emerald-500">{appliedProposals.length}</div>
  <p className="text-caption text-muted-foreground">With rollback snapshots</p>
  </CardContent>
@@ -240,7 +240,7 @@ export function ContinuousLearningPanel() {
 
  <Card className="border-border-default bg-card">
  <CardContent className="p-space-4 space-y-space-1">
- <span className="text-caption uppercase font-bold text-muted-foreground">Knowledge Conflicts</span>
+ <span className="text-caption uppercase font-medium text-muted-foreground">Knowledge Conflicts</span>
  <div className={cn("text-display-xs font-bold", conflicts.length > 0 ? "text-rose-500" : "text-foreground")}>
  {conflicts.length}
  </div>

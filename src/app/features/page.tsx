@@ -171,8 +171,7 @@ export default function FeaturesPage() {
  const [activeTour, setActiveTour] = useState(0);
  const [tourPaused, setTourPaused] = useState(false);
  const [activeCodeTab, setActiveCodeTab] = useState<"api" | "webhook" | "sdk" | "mcp">("api");
- const [activeWorkflowNode, setActiveWorkflowNode] = useState<string>("trigger");
- const [isCopied, setIsCopied] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
  // Tour Auto-cycle logic
  useEffect(() => {
@@ -204,7 +203,7 @@ export default function FeaturesPage() {
  <GsapScrollSection animation="fade-up" className="relative mx-auto max-w-5xl px-space-6 flex flex-col items-center text-center">
  <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Sparkles className="h-3 w-3 text-primary" />
- <span className="text-caption uppercase tracking-widest font-semibold text-primary">Engineered Capabilities</span>
+ <span className="text-caption uppercase tracking-widest font-medium text-primary">Engineered Capabilities</span>
  </div>
 
  <h1 className="text-display-lg md:text-display-xl tracking-tight leading-display text-foreground font-bold max-w-3xl mb-space-5">
@@ -250,7 +249,7 @@ export default function FeaturesPage() {
  <div className="text-center mb-space-12">
  <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Workflow className="h-3.5 w-3.5 text-primary" />
- <span className="text-caption uppercase tracking-widest font-semibold text-primary">Interactive Simulation</span>
+ <span className="text-caption uppercase tracking-widest font-medium text-primary">Interactive Simulation</span>
  </div>
  <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
  End-to-End Automation.
@@ -416,7 +415,7 @@ export default function FeaturesPage() {
  <div className="bg-card border-[hsl(var(--foreground)/0.08)] p-space-5 rounded-xl max-w-md mx-auto w-full shadow-xs animate-in fade-in duration-300">
  <div className="flex items-center justify-between border-b border-[hsl(var(--foreground)/0.05)] pb-space-3 mb-space-3">
  <span className="text-caption font-bold text-foreground font-mono">Google Calendar Matrix</span>
- <span className="text-caption uppercase font-mono tracking-widest text-emerald-500 bg-emerald-500/10 px-space-2 py-space-0.5 rounded-full font-bold">Confirmed</span>
+ <span className="text-caption uppercase font-mono tracking-widest text-emerald-500 bg-emerald-500/10 px-space-2 py-space-0.5 rounded-full font-medium">Confirmed</span>
  </div>
  <div className="space-y-space-2 font-mono text-caption">
  <div className="flex justify-between border-b border-[hsl(var(--foreground)/0.03)] pb-space-1.5">
@@ -454,7 +453,7 @@ export default function FeaturesPage() {
  <div className="bg-card border-[hsl(var(--foreground)/0.08)] p-space-5 rounded-xl max-w-sm mx-auto w-full shadow-xs animate-in fade-in duration-300">
  <div className="flex items-center justify-between border-b border-[hsl(var(--foreground)/0.05)] pb-space-3 mb-space-4">
  <span className="text-caption font-bold text-foreground font-mono">Stripe Deposit Gate</span>
- <span className="text-caption uppercase font-mono tracking-widest text-primary bg-primary/10 px-space-2 py-space-0.5 rounded-full font-bold">Verified</span>
+ <span className="text-caption uppercase font-mono tracking-widest text-primary bg-primary/10 px-space-2 py-space-0.5 rounded-full font-medium">Verified</span>
  </div>
  <div className="space-y-space-3">
  <div className="flex justify-between items-center">
@@ -517,7 +516,7 @@ export default function FeaturesPage() {
  <div className="text-center mb-space-16">
  <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Activity className="h-3.5 w-3.5 text-primary" />
- <span className="text-caption uppercase tracking-widest font-semibold text-primary">Full Platform Suite</span>
+ <span className="text-caption uppercase tracking-widest font-medium text-primary">Full Platform Suite</span>
  </div>
  <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
  Built for Action.
@@ -643,148 +642,14 @@ export default function FeaturesPage() {
  </section>
 
  {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- SECTION 4: WORKFLOW ARCHITECT (Interactive Visual Pipeline)
- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
- <section className="mx-auto max-w-5xl px-space-6 pb-space-28 z-10 relative">
- <GsapScrollSection animation="fade-up">
- <div className="text-center mb-space-12">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
- <Workflow className="h-3.5 w-3.5 text-primary" />
- <span className="text-caption uppercase tracking-widest font-semibold text-primary">Workflow Architect</span>
- </div>
- <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
- Automate Trigger Sequences.
- <br />
- <span className="text-primary">Customize AI actions instantly.</span>
- </h2>
- </div>
-
- <div className="relative rounded-3xl border-[hsl(var(--foreground)/0.08)] bg-card/25 backdrop-blur-xs p-space-6 md:p-space-10 overflow-hidden shadow-sm">
- <div className="absolute inset-0 dot-grid opacity-15 pointer-events-none" />
-
- <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-8 items-center relative z-10">
- {/* Left: Workflow Builder Node Switcher */}
- <div className="lg:col-span-5 space-y-space-3">
- {[
- { id: "trigger", step: "1", title: "Inbound Hook", desc: "Captures caller audio stream and resolves geographic routing.", color: "primary" },
- { id: "reasoning", step: "2", title: "Semantic Evaluator", desc: "Triages intent vectors, insurance data, and urgency score.", color: "indigo" },
- { id: "action", step: "3", title: "Integration Dispatch", desc: "Locks calendar, generates payment link, pushes EHR note.", color: "emerald" },
- ].map((node) => {
- const isActive = activeWorkflowNode === node.id;
- return (
- <NativeButton
- key={node.id}
- type="button"
- onClick={() => setActiveWorkflowNode(node.id)}
- className={[
- "w-full text-left p-space-4 border rounded-xl flex items-start gap-space-3.5 transition-all duration-200 cursor-pointer select-none",
- isActive
- ? "border-primary bg-primary/10 shadow-xs"
- : "border-[hsl(var(--foreground)/0.06)] bg-card/40 hover:border-[hsl(var(--foreground)/0.12)]"
- ].join(" ")}
- >
- <span className={[
- "h-6 w-6 rounded flex items-center justify-center shrink-0 mt-0.5 font-mono text-caption font-bold",
- isActive ? "bg-primary text-primary-foreground" : "bg-[hsl(var(--foreground)/0.06)] text-muted-foreground"
- ].join(" ")}>
- {node.step}
- </span>
- <div>
- <h4 className="text-body-sm font-semibold text-foreground">{node.title}</h4>
- <p className="text-caption text-muted-foreground mt-space-1 leading-relaxed">
- {node.desc}
- </p>
- </div>
- </NativeButton>
- );
- })}
- </div>
-
- {/* Right: Visual Pipeline Sandbox */}
- <div className="lg:col-span-7 bg-card border-[hsl(var(--foreground)/0.08)] rounded-2xl p-space-7 min-h-[320px] flex flex-col justify-between relative overflow-hidden shadow-lg">
- <div className="flex items-center justify-between border-b border-[hsl(var(--foreground)/0.08)] pb-space-3.5 mb-space-6 relative z-10">
- <div className="flex items-center gap-space-2">
- <Terminal className="h-4 w-4 text-primary" />
- <span className="text-caption font-mono tracking-widest text-muted-foreground uppercase font-semibold">
- Pipeline Node Inspector
- </span>
- </div>
- <div className="flex items-center gap-2">
- <span className="relative flex h-2 w-2">
- <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
- <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
- </span>
- <span className="text-caption font-mono uppercase text-emerald-500 font-bold">Live</span>
- </div>
- </div>
-
- {/* Active Node Payload Preview */}
- <div className="flex-1 flex flex-col justify-center relative z-10 w-full max-w-lg mx-auto">
- {activeWorkflowNode === "trigger" && (
- <div className="space-y-space-4 text-center animate-in fade-in duration-300">
- <div className="inline-flex px-space-4 py-space-2 rounded-xl bg-primary/10 border-primary/20 text-primary font-mono text-body-sm font-bold">
- Trigger: Inbound_SIP_Bridge
- </div>
- <p className="text-body-sm text-muted-foreground">
- Call captured on primary office number. Initialized duplex audio stream in 14ms.
- </p>
- <div className="flex items-center justify-center gap-space-3 font-mono text-caption text-muted-foreground">
- <span className="px-2.5 py-1 rounded bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.06)]">Codec: Opus 48kHz</span>
- <span className="px-2.5 py-1 rounded bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.06)]">Carrier: Vonage HD</span>
- </div>
- </div>
- )}
-
- {activeWorkflowNode === "reasoning" && (
- <div className="space-y-space-4 text-center animate-in fade-in duration-300">
- <div className="inline-flex px-space-4 py-space-2 rounded-xl bg-indigo-500/10 border-indigo-500/20 text-indigo-400 font-mono text-body-sm font-bold">
- Reasoning: Clinical_Triage
- </div>
- <p className="text-body-sm text-muted-foreground">
- Extracted intent: emergency_tooth_repair. Matched Delta Dental PPO copay parameters.
- </p>
- <div className="flex items-center justify-center gap-space-3 font-mono text-caption text-muted-foreground">
- <span className="px-2.5 py-1 rounded bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.06)]">Confidence: 99.4%</span>
- <span className="px-2.5 py-1 rounded bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.06)]">Urgency: High</span>
- </div>
- </div>
- )}
-
- {activeWorkflowNode === "action" && (
- <div className="space-y-space-4 text-center animate-in fade-in duration-300">
- <div className="inline-flex px-space-4 py-space-2 rounded-xl bg-emerald-500/10 border-emerald-500/20 text-emerald-400 font-mono text-body-sm font-bold">
- Action: Multi_Dispatch_Lock
- </div>
- <p className="text-body-sm text-muted-foreground">
- Calendar block locked for Dr. Mitchell tomorrow at 10:00 AM. Confirmation SMS dispatched. Lead record populated.
- </p>
- <div className="flex items-center justify-center gap-space-3 font-mono text-caption text-muted-foreground">
- <span className="px-2.5 py-1 rounded bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.06)]">Google Cal: Locked</span>
- <span className="px-2.5 py-1 rounded bg-[hsl(var(--foreground)/0.03)] border-[hsl(var(--foreground)/0.06)]">EHR: Synced</span>
- </div>
- </div>
- )}
- </div>
-
- <div className="border-t border-[hsl(var(--foreground)/0.06)] pt-space-3 text-caption font-mono text-muted-foreground/60 flex items-center justify-between">
- <span>Protocol: WebRTC/SIP RFC 3261</span>
- <span className="text-emerald-500 font-bold">Zero Dropped Packets</span>
- </div>
- </div>
- </div>
- </div>
- </GsapScrollSection>
- </section>
-
- {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- SECTION 5: INDUSTRY VERTICALS (Cross-Fade Animated Tabs)
+ SECTION 4: INDUSTRY VERTICALS (Cross-Fade Animated Tabs)
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
  <section className="mx-auto max-w-5xl px-space-6 pb-space-28 z-10 relative">
  <GsapScrollSection animation="fade-up">
  <div className="text-center mb-space-12">
  <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Building2 className="h-3.5 w-3.5 text-primary" />
- <span className="text-caption uppercase tracking-widest font-semibold text-primary">Industry Specializations</span>
+ <span className="text-caption uppercase tracking-widest font-medium text-primary">Industry Specializations</span>
  </div>
  <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
  Industry Verticals.
@@ -798,53 +663,14 @@ export default function FeaturesPage() {
  </section>
 
  {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- SECTION 6: LATENCY PIPELINE TIMELINE
- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
- <section className="mx-auto max-w-5xl px-space-6 pb-space-28 z-10 relative">
- <GsapScrollSection animation="fade-up">
- <div className="text-center mb-space-16">
- <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
- <Clock className="h-3.5 w-3.5 text-primary" />
- <span className="text-caption uppercase tracking-widest font-semibold text-primary">Sub-Second Processing</span>
- </div>
- <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
- Voice Triage Pipeline.
- <br />
- <span className="text-primary">Latency metrics breakdown.</span>
- </h2>
- </div>
-
- <div className="relative border-l border-[hsl(var(--foreground)/0.08)] pl-space-6 md:pl-space-8 space-y-space-8 max-w-3xl mx-auto">
- {[
- { step: "1. Audio SIP Stream Ingestion", latency: "< 80ms", desc: "Connects call audio bridge directly to Operator AI cores with high-fidelity duplex transmission pathways.", color: "primary" },
- { step: "2. Speech Recognition & Transcription", latency: "< 120ms", desc: "Converts spoken audio frequencies into clean text, filters background acoustic static, and parses semantic pauses.", color: "primary" },
- { step: "3. Triage Reasoning Core", latency: "< 250ms", desc: "Evaluates caller intent, ranks booking priority, checks active knowledge sheets, and verifies parameters.", color: "indigo" },
- { step: "4. Calendar Synced Lock", latency: "< 350ms", desc: "Queries scheduling systems (Google Calendar, Outlook, EHR grids) and confirms the reserved slot block.", color: "emerald" },
- ].map((item, idx) => (
- <div key={idx} className="relative">
- <span className="absolute -left-[31px] md:-left-[39px] top-1 h-4 w-4 rounded-full bg-primary border-background" />
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-2">
- <h4 className="text-body-md font-bold text-foreground">{item.step}</h4>
- <span className="text-caption font-mono text-primary font-bold">{item.latency}</span>
- </div>
- <p className="text-caption text-muted-foreground mt-space-1 leading-relaxed">
- {item.desc}
- </p>
- </div>
- ))}
- </div>
- </GsapScrollSection>
- </section>
-
- {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- SECTION 7: DEVELOPER PLATFORM (Polyglot Code Sandbox)
+ SECTION 5: DEVELOPER PLATFORM (Polyglot Code Sandbox)
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
  <section className="mx-auto max-w-5xl px-space-6 pb-space-28 z-10 relative">
  <GsapScrollSection animation="fade-up">
  <div className="text-center mb-space-12">
  <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <Code className="h-3.5 w-3.5 text-primary" />
- <span className="text-caption uppercase tracking-widest font-semibold text-primary">Developer Sandbox</span>
+ <span className="text-caption uppercase tracking-widest font-medium text-primary">Developer Sandbox</span>
  </div>
  <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
  Developer Platform.
@@ -903,14 +729,14 @@ export default function FeaturesPage() {
  </section>
 
  {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- SECTION 8: PROVEN METRICS (Animated Counters)
+ SECTION 6: PROVEN METRICS (Animated Counters)
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
  <section className="mx-auto max-w-5xl px-space-6 pb-space-28 z-10 relative">
  <GsapScrollSection animation="fade-up">
  <div className="text-center mb-space-16">
  <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border-primary/20 bg-primary/5 mb-space-6">
  <TrendingUp className="h-3.5 w-3.5 text-primary" />
- <span className="text-caption uppercase tracking-widest font-semibold text-primary">Performance Records</span>
+ <span className="text-caption uppercase tracking-widest font-medium text-primary">Performance Records</span>
  </div>
  <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
  Proven Metrics.
@@ -921,25 +747,25 @@ export default function FeaturesPage() {
 
          <div className="grid grid-cols-2 md:grid-cols-4 gap-space-6 text-center">
           <div className="p-space-8 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xs shadow-xs hover:border-primary/30 transition-colors">
-            <p className="text-5xl md:text-6xl font-black font-mono tracking-tight text-primary mb-space-2">
+            <p className="text-5xl md:text-6xl font-bold font-mono tracking-tight text-primary mb-space-2">
               <AnimatedCounter value="+40%" />
             </p>
             <p className="text-body-sm font-semibold text-muted-foreground">Revenue increase</p>
           </div>
           <div className="p-space-8 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xs shadow-xs hover:border-primary/30 transition-colors">
-            <p className="text-5xl md:text-6xl font-black font-mono tracking-tight text-primary mb-space-2">
+            <p className="text-5xl md:text-6xl font-bold font-mono tracking-tight text-primary mb-space-2">
               <AnimatedCounter value="95%" />
             </p>
             <p className="text-body-sm font-semibold text-muted-foreground">Lead capture rate</p>
           </div>
           <div className="p-space-8 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xs shadow-xs hover:border-primary/30 transition-colors">
-            <p className="text-5xl md:text-6xl font-black font-mono tracking-tight text-primary mb-space-2">
+            <p className="text-5xl md:text-6xl font-bold font-mono tracking-tight text-primary mb-space-2">
               <AnimatedCounter value="94%" />
             </p>
             <p className="text-body-sm font-semibold text-muted-foreground">Calendar fill rate</p>
           </div>
           <div className="p-space-8 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xs shadow-xs hover:border-primary/30 transition-colors">
-            <p className="text-5xl md:text-6xl font-black font-mono tracking-tight text-primary mb-space-2">
+            <p className="text-5xl md:text-6xl font-bold font-mono tracking-tight text-primary mb-space-2">
               <AnimatedCounter value="< 2s" />
             </p>
             <p className="text-body-sm font-semibold text-muted-foreground">Response time</p>
@@ -949,7 +775,7 @@ export default function FeaturesPage() {
  </section>
 
  {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- SECTION 9: FINAL CTA
+ SECTION 7: FINAL CTA
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
  <section className="relative py-space-28 md:py-space-36 overflow-hidden border-t border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.01)]">
  <div className="absolute inset-0 dot-grid grid-fade-y pointer-events-none opacity-20" />

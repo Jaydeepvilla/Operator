@@ -147,7 +147,7 @@ function StepIndicator({ current }: { current: Step }) {
  <div className="flex items-center gap-space-2">
  <div
  className={cn(
- "flex h-7 w-7 items-center justify-center rounded-full text-caption font-semibold transition-all duration-300",
+ "flex h-7 w-7 items-center justify-center rounded-full text-caption font-medium transition-all duration-300",
  done
  ? "bg-primary text-primary-foreground shadow-sm"
  : active
@@ -904,7 +904,7 @@ function ScreenVerify({
  onClick={() => setIsAddingService(true)}
  className="flex items-center gap-space-2 text-body-sm text-primary hover:opacity-80 transition-opacity font-medium py-space-1"
  >
- <span className="flex h-5 w-5 items-center justify-center rounded-full border-primary/40 text-caption font-semibold">+</span>
+ <span className="flex h-5 w-5 items-center justify-center rounded-full border-primary/40 text-caption font-medium">+</span>
  <span>Add a service</span>
  </Button>
  )}

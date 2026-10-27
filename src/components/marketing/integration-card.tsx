@@ -142,7 +142,7 @@ export function IntegrationCard({
               </div>
             </div>
             <div className="flex items-center gap-space-2">
-              <span className="text-caption font-mono uppercase tracking-wider px-space-2.5 py-space-1 rounded-full border border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.02)] text-muted-foreground font-semibold">
+              <span className="text-caption font-mono uppercase tracking-wider px-space-2.5 py-space-1 rounded-full border border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.02)] text-muted-foreground font-medium">
                 {integration.difficulty}
               </span>
               <span
@@ -166,7 +166,7 @@ export function IntegrationCard({
 
           {/* Title & Category */}
           <div className="mb-space-2">
-            <span className="text-caption font-mono tracking-widest uppercase font-semibold text-primary block mb-space-1">
+            <span className="text-caption font-mono tracking-widest uppercase font-medium text-primary block mb-space-1">
               {integration.category}
             </span>
             <h3 className="text-title-lg font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">

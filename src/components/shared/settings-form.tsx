@@ -908,7 +908,7 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  ) : "Unknown Device"}
  </span>
  {session.isCurrent && (
- <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-caption uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">
+ <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-caption uppercase font-medium tracking-wider px-2 py-0.5 rounded-full">
  Current Session
  </Badge>
  )}

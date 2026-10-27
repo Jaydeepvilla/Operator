@@ -101,7 +101,7 @@ export function KPICard({
             )}
             {alertCount > 0 && (
               <div className={cn(
-                "inline-flex items-center gap-space-1 px-space-2 py-space-0.5 rounded-full border text-caption font-semibold",
+                "inline-flex items-center gap-space-1 px-space-2 py-space-0.5 rounded-full border text-caption font-medium",
                 alertBg
               )}>
                 {AlertIcon && <AlertIcon className="w-3 h-3 shrink-0" />}

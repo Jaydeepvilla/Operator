@@ -68,7 +68,7 @@ export function FeatureCard({
             </div>
           )}
           {badge && (
-            <span className="text-caption uppercase font-mono tracking-wider font-semibold px-space-2.5 py-space-1 rounded-full border border-primary/20 bg-primary/5 text-primary">
+            <span className="text-caption uppercase font-mono tracking-wider font-medium px-space-2.5 py-space-1 rounded-full border border-primary/20 bg-primary/5 text-primary">
               {badge}
             </span>
           )}

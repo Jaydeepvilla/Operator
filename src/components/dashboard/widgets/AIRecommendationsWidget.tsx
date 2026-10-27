@@ -93,7 +93,7 @@ export function AIRecommendationsWidget({ recommendations }: AIRecommendationsWi
  className="flex flex-col sm:flex-row sm:items-start gap-space-3 p-space-3 rounded-xl border border-[hsl(var(--foreground)/0.07)] bg-background/80 backdrop-blur-sm hover:border-primary/20 hover:bg-background/80 transition-all duration-200"
  >
  {/* Numbered badge */}
- <span className="hidden sm:flex h-5 w-5 shrink-0 rounded-full bg-primary/10 text-primary text-caption font-bold items-center justify-center mt-0.5 ring-1 ring-primary/15">
+ <span className="hidden sm:flex h-5 w-5 shrink-0 rounded-full bg-primary/10 text-primary text-caption font-medium items-center justify-center mt-0.5 ring-1 ring-primary/15">
  {idx + 1}
  </span>
 

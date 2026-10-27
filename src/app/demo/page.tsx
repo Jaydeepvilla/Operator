@@ -308,7 +308,7 @@ export default function DemoPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-space-10">
               <div>
                 <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border border-primary/20 bg-primary/5 mb-space-6">
-                  <span className="text-caption uppercase tracking-widest text-primary font-semibold">Guided Demo</span>
+                  <span className="text-caption uppercase tracking-widest text-primary font-medium">Guided Demo</span>
                 </div>
                 <h2 className="text-heading-lg  tracking-tight-md text-foreground mb-space-4">
                   Personalized Walkthrough.
@@ -378,7 +378,7 @@ export default function DemoPage() {
           <div className="absolute inset-space-0 dot-grid grid-fade-y pointer-events-none" />
           <div className="relative mx-auto max-w-2xl px-space-6 text-center">
             <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border border-primary/20 bg-primary/5 mb-space-6">
-              <span className="text-caption uppercase tracking-widest text-primary font-semibold">Free Trial</span>
+              <span className="text-caption uppercase tracking-widest text-primary font-medium">Free Trial</span>
             </div>
             <h2 className="text-heading-lg sm:text-heading-lg  tracking-tight-sm text-foreground mb-space-5">
               No Commitment.

@@ -96,7 +96,7 @@ export function ChannelActivationHub({
           </div>
 
           <div className="space-y-space-1.5 max-w-md">
-            <div className="inline-flex items-center gap-space-2 px-space-3 py-space-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-caption font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-space-2 px-space-3 py-space-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-caption font-medium uppercase tracking-wider">
               <Sparkles className="h-3.5 w-3.5" />
               <span>Ready for Production</span>
             </div>
@@ -190,7 +190,7 @@ export function ChannelActivationHub({
           </Button>
         )}
         <div className="flex items-center gap-2">
-          <div className="inline-flex items-center gap-space-1.5 px-space-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-caption font-bold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-space-1.5 px-space-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-caption font-medium uppercase tracking-wider">
             <ShieldCheck className="h-3 w-3" />
             <span>Step 3 of 3: Channel Setup</span>
           </div>

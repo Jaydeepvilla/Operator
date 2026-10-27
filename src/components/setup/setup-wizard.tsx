@@ -81,12 +81,12 @@ export function SetupWizard({ state }: { state: SetupState }) {
                             {task.label}
                           </h4>
                           {isRecommended && (
-                            <span className="inline-flex items-center gap-space-1 px-space-2 py-space-0.5 rounded-full bg-amber-500/10 text-amber-600 text-caption uppercase font-bold tracking-wider">
+                            <span className="inline-flex items-center gap-space-1 px-space-2 py-space-0.5 rounded-full bg-amber-500/10 text-amber-600 text-caption uppercase font-medium tracking-wider">
                               <Zap className="h-3 w-3" /> Recommended
                             </span>
                           )}
                           {isCompleted && (
-                            <span className="inline-flex items-center px-space-2 py-space-0.5 rounded-full bg-green-500/10 text-green-600 text-caption uppercase font-bold tracking-wider">
+                            <span className="inline-flex items-center px-space-2 py-space-0.5 rounded-full bg-green-500/10 text-green-600 text-caption uppercase font-medium tracking-wider">
                               Completed
                             </span>
                           )}

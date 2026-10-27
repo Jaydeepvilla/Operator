@@ -121,7 +121,7 @@ export function LocalizationSettingsClient({
           style={{ background: "rgba(139,92,246,0.04)", borderColor: "rgba(139,92,246,0.15)", backdropFilter: "blur(20px)" }}>
           <div className="flex items-center gap-3 mb-2">
             <Sparkles className="h-5 w-5 text-violet-400" />
-            <h4 className="text-sm font-black text-white">Smart Regional Presets Activated</h4>
+            <h4 className="text-sm font-bold text-white">Smart Regional Presets Activated</h4>
           </div>
           <p className="text-xs text-white/50 leading-relaxed">
             By choosing <span className="text-white font-bold">{currentCountry.name}</span>, the engine preset week start to{" "}
@@ -261,7 +261,7 @@ export function LocalizationSettingsClient({
       <div className="pt-4 flex items-center justify-end">
         <Button onClick={handleSave} disabled={isPending}
           style={{ background: "linear-gradient(135deg, hsl(258,80%,55%), hsl(278,80%,50%))", color: "white" }}
-          className="h-11 px-6 rounded-xl text-sm font-black shadow-lg hover:scale-105 active:scale-95 transition-all duration-200">
+          className="h-11 px-6 rounded-xl text-sm font-bold shadow-lg hover:scale-105 active:scale-95 transition-all duration-200">
           {isPending ? "Applying Presets..." : "Apply Regional Changes"}
         </Button>
       </div>

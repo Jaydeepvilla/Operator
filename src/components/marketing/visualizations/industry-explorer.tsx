@@ -227,7 +227,7 @@ export function InteractiveIndustryExplorer() {
 
             {/* Header */}
             <div className="space-y-space-1">
-              <Badge variant="soft" className="text-caption uppercase tracking-widest font-semibold mb-space-1">
+              <Badge variant="soft" className="text-caption uppercase tracking-widest font-medium mb-space-1">
                 {data.name}
               </Badge>
               <h3 className="text-title-lg text-foreground font-semibold tracking-tight leading-snug">
@@ -240,7 +240,7 @@ export function InteractiveIndustryExplorer() {
               <div className="absolute top-space-0 left-space-0 w-1 h-full bg-gradient-to-b from-red-500/50 via-red-500/20 to-transparent" />
               <div className="flex items-center gap-space-2 mb-space-2 pl-space-2">
                 <AlertTriangle className="h-3.5 w-3.5 text-red-500/60 shrink-0" />
-                <span className="text-caption uppercase tracking-widest text-red-500/70 font-semibold">Core Challenge</span>
+                <span className="text-caption uppercase tracking-widest text-red-500/70 font-medium">Core Challenge</span>
               </div>
               <p className="text-body-sm text-muted-foreground leading-relaxed pl-space-2">
                 {data.challenge}
@@ -252,7 +252,7 @@ export function InteractiveIndustryExplorer() {
               <div className="absolute top-space-0 left-space-0 w-1 h-full bg-gradient-to-b from-primary/50 via-primary/20 to-transparent" />
               <div className="flex items-center gap-space-2 mb-space-2 pl-space-2">
                 <Zap className="h-3.5 w-3.5 text-primary/60 shrink-0" />
-                <span className="text-caption uppercase tracking-widest text-primary/70 font-semibold">AI Capabilities</span>
+                <span className="text-caption uppercase tracking-widest text-primary/70 font-medium">AI Capabilities</span>
               </div>
               <p className="text-body-sm text-muted-foreground leading-relaxed pl-space-2">
                 {data.solution}
@@ -312,11 +312,11 @@ export function InteractiveIndustryExplorer() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                 </span>
-                <span className="text-caption uppercase font-mono font-semibold tracking-widest text-muted-foreground">
+                <span className="text-caption uppercase font-mono font-medium tracking-widest text-muted-foreground">
                   Live Conversation
                 </span>
               </div>
-              <Badge variant="soft" className="text-caption uppercase tracking-widest font-semibold">
+              <Badge variant="soft" className="text-caption uppercase tracking-widest font-medium">
                 {data.channel}
               </Badge>
             </div>

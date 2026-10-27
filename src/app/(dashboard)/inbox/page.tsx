@@ -1091,13 +1091,13 @@ export default function UnifiedInboxPage() {
                     {/* Score & LTV */}
                     <div className="grid grid-cols-2 gap-space-2">
                       <div className="bg-background border border-border-subtle radius-lg p-space-2 shadow-xs">
-                        <span className="text-caption text-neutral-400 uppercase font-bold block">Lead Score</span>
+                        <span className="text-caption text-neutral-400 uppercase font-medium block">Lead Score</span>
                         <span className="text-caption font-bold text-foreground mt-0.5 block">
                           {selectedThread.conversation?.leadProfile?.leadScore || 0}
                         </span>
                       </div>
                       <div className="bg-background border border-border-subtle radius-lg p-space-2 shadow-xs">
-                        <span className="text-caption text-neutral-400 uppercase font-bold block">Est. LTV</span>
+                        <span className="text-caption text-neutral-400 uppercase font-medium block">Est. LTV</span>
                         <span className="text-caption font-bold text-emerald-600 mt-0.5 block">
                           ${selectedThread.conversation?.leadProfile?.lifetimeValue || 0}
                         </span>

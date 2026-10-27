@@ -577,7 +577,7 @@ export default function FounderAcademyPage() {
  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
  ) : (
  <div
- className={`h-5 w-5 rounded-full border flex items-center justify-center text-caption font-semibold ${
+ className={`h-5 w-5 rounded-full border flex items-center justify-center text-caption font-medium ${
  isSelected
  ? "border-primary text-primary"
  : "border-muted-foreground/40 text-muted-foreground"

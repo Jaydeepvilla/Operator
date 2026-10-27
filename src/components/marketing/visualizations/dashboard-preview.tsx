@@ -553,7 +553,7 @@ export function DashboardPreview() {
  <span className="text-caption font-semibold text-foreground leading-none truncate">
  Jaydeep C.
  </span>
- <span className="text-caption text-muted-foreground uppercase tracking-wider font-semibold mt-space-1 truncate">
+ <span className="text-caption text-muted-foreground uppercase tracking-wider font-medium mt-space-1 truncate">
  Admin
  </span>
  </div>
@@ -1118,7 +1118,7 @@ export function DashboardPreview() {
  >
  <span>{d}</span>
  {d === 9 && (
- <span className="text-caption uppercase tracking-widest opacity-90 font-sans font-semibold bg-white/20 px-space-2 py-space-0.5 radius-md">
+ <span className="text-caption uppercase tracking-widest opacity-90 font-sans font-medium bg-white/20 px-space-2 py-space-0.5 radius-md">
  Today
  </span>
  )}
@@ -1243,7 +1243,7 @@ export function DashboardPreview() {
  <p className="relative z-10 text-caption font-semibold text-muted-foreground uppercase tracking-widest mb-space-3">
  {card.label}
  </p>
- <p className="relative z-10 text-3xl text-foreground font-mono font-black leading-none py-space-2">
+ <p className="relative z-10 text-3xl text-foreground font-mono font-bold leading-none py-space-2">
  {card.value}
  </p>
  <p className="relative z-10 text-caption text-primary font-semibold mt-space-2 leading-snug">

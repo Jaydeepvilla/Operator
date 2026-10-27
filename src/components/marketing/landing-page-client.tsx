@@ -396,7 +396,7 @@ export function LandingPageClient() {
           <GsapReveal className="text-center mb-space-16">
             <div className="inline-flex items-center gap-space-2 px-space-4 py-space-1.5 radius-full border border-[hsl(var(--state-error-text)/0.2)] bg-[hsl(var(--state-error-text)/0.06)] mb-space-6">
               <PhoneOff className="h-3 w-3 text-[hsl(var(--state-error-text))]" />
-              <span className="text-caption uppercase tracking-widest text-[hsl(var(--state-error-text))] font-semibold">
+              <span className="text-caption uppercase tracking-widest text-[hsl(var(--state-error-text))] font-medium">
                 The Problem
               </span>
             </div>
@@ -454,7 +454,7 @@ export function LandingPageClient() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[hsl(var(--state-error-bg))] text-[hsl(var(--state-error-text))]">
                   <XCircle className="h-4 w-4" />
                 </div>
-                <span className="text-caption uppercase tracking-wider text-[hsl(var(--state-error-text))] font-semibold">
+                <span className="text-caption uppercase tracking-wider text-[hsl(var(--state-error-text))] font-medium">
                   Without Operator
                 </span>
               </div>
@@ -481,7 +481,7 @@ export function LandingPageClient() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 text-primary">
                   <Zap className="h-4 w-4" />
                 </div>
-                <span className="text-caption uppercase tracking-wider text-primary font-semibold">
+                <span className="text-caption uppercase tracking-wider text-primary font-medium">
                   With Operator
                 </span>
               </div>
@@ -523,7 +523,7 @@ export function LandingPageClient() {
           <GsapReveal className="text-center mb-space-16">
             <div className="inline-flex items-center gap-space-2 px-space-4 py-space-1.5 radius-full border border-primary/20 bg-primary/5 mb-space-6">
               <Activity className="h-3 w-3 text-primary" />
-              <span className="text-caption uppercase tracking-widest text-primary font-semibold">
+              <span className="text-caption uppercase tracking-widest text-primary font-medium">
                 How It Works
               </span>
             </div>
@@ -590,7 +590,7 @@ export function LandingPageClient() {
           <GsapReveal className="text-center mb-space-16">
             <div className="inline-flex items-center gap-space-2 px-space-4 py-space-1.5 radius-full border border-primary/20 bg-primary/5 mb-space-6">
               <Zap className="h-3 w-3 text-primary" />
-              <span className="text-caption uppercase tracking-widest text-primary font-semibold">
+              <span className="text-caption uppercase tracking-widest text-primary font-medium">
                 Live Demo
               </span>
             </div>
@@ -624,7 +624,7 @@ export function LandingPageClient() {
           <GsapReveal className="text-center mb-space-16">
             <div className="inline-flex items-center gap-space-2 px-space-4 py-space-1.5 radius-full border border-primary/20 bg-primary/5 mb-space-6">
               <Sparkles className="h-3 w-3 text-primary" />
-              <span className="text-caption uppercase tracking-widest text-primary font-semibold">
+              <span className="text-caption uppercase tracking-widest text-primary font-medium">
                 Features
               </span>
             </div>
@@ -677,7 +677,7 @@ export function LandingPageClient() {
           <GsapReveal className="text-center max-w-3xl mx-auto mb-space-14">
             <div className="inline-flex items-center gap-space-2 px-space-4 py-space-1.5 radius-full border border-primary/20 bg-primary/5 mb-space-6">
               <Activity className="h-3 w-3 text-primary" />
-              <span className="text-caption uppercase tracking-widest text-primary font-semibold">
+              <span className="text-caption uppercase tracking-widest text-primary font-medium">
                 Industries
               </span>
             </div>
@@ -714,7 +714,7 @@ export function LandingPageClient() {
         <div className="mx-auto max-w-5xl px-space-6">
           <GsapReveal className="text-center mb-space-16">
             <div className="inline-flex items-center gap-space-2 px-space-4 py-space-1.5 radius-full border border-primary/20 bg-primary/5 mb-space-6">
-              <span className="text-caption uppercase tracking-widest text-primary font-semibold">
+              <span className="text-caption uppercase tracking-widest text-primary font-medium">
                 Pricing
               </span>
             </div>
@@ -823,7 +823,7 @@ export function LandingPageClient() {
 
         <GsapReveal animation="scale-up" className="relative mx-auto max-w-2xl px-space-6 text-center">
           <div className="inline-flex items-center gap-space-2 px-space-4 py-space-1.5 radius-full border border-primary/20 bg-primary/5 mb-space-6">
-            <span className="text-caption uppercase tracking-widest text-primary font-semibold">
+            <span className="text-caption uppercase tracking-widest text-primary font-medium">
               Get Started
             </span>
           </div>

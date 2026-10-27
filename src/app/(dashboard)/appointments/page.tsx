@@ -648,7 +648,7 @@ export default function AppointmentsPage() {
  {/* Answers checklist summary */}
  {activeDetails.leadAnswers && activeDetails.leadAnswers.length > 0 && (
  <div className="space-y-space-2 pt-space-3 border-t border-slate-200/20 ">
- <span className="text-caption text-muted-foreground/60 uppercase tracking-wider block font-semibold flex items-center gap-space-1">
+ <span className="text-caption text-muted-foreground/60 uppercase tracking-wider block font-medium flex items-center gap-space-1">
  <ClipboardList className="h-3 w-3 text-muted-foreground/45 shrink-0"/> Captured Qualification
  </span>
  <div className="space-y-space-2 max-h-36 overflow-y-auto pr-space-1">
@@ -665,7 +665,7 @@ export default function AppointmentsPage() {
  {/* Summary items */}
  {activeDetails.summary && (
  <div className="space-y-space-1.5 pt-space-3 border-t border-slate-200/20 text-caption">
- <span className="text-caption text-muted-foreground/60 uppercase tracking-wider block font-semibold flex items-center gap-space-1">
+ <span className="text-caption text-muted-foreground/60 uppercase tracking-wider block font-medium flex items-center gap-space-1">
  <MessageSquare className="h-3 w-3 text-muted-foreground/45 shrink-0"/> AI Summary
  </span>
  <p className="text-muted-foreground leading-relaxed italic">"{activeDetails.summary.summaryText}"</p>
@@ -782,7 +782,7 @@ export default function AppointmentsPage() {
 
  {rescheduleDate && (
  <div className="space-y-space-2">
- <span className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75 block">Available Openings</span>
+ <span className="text-caption uppercase tracking-wider font-medium text-muted-foreground/75 block">Available Openings</span>
  {loadingSlots ? (
  <div className="text-caption text-muted-foreground flex items-center gap-space-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin text-primary"/> Fetching slots...</div>
  ) : availableSlots.length === 0 ? (

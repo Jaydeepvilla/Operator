@@ -142,7 +142,7 @@ export function PricingComparisonTable({
                     )}
                   >
                     {isPopular && (
-                      <span className="inline-flex items-center gap-1 text-caption font-mono uppercase tracking-widest text-primary font-bold px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 mb-1">
+                      <span className="inline-flex items-center gap-1 text-caption font-mono uppercase tracking-widest text-primary font-medium px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 mb-1">
                         <Sparkles className="h-2.5 w-2.5" /> Most Popular
                       </span>
                     )}

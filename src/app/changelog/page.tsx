@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
+import { StayUpToDateSection } from "@/components/marketing/stay-up-to-date";
 import {
   Sparkles,
   Zap,
@@ -285,25 +286,8 @@ export default function ChangelogPage() {
           </div>
         </section>
 
-        {/* Subscribe CTA */}
-        <section className="border-t border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.02)] py-space-16">
-          <div className="container mx-auto max-w-2xl px-space-6 text-center">
-            <h2 className="text-heading-lg  tracking-tight-xs mb-space-3">Stay up to date</h2>
-            <p className="text-body-sm text-muted-foreground mb-space-7 leading-relaxed">
-              Get notified when new features ship. No spam, only meaningful updates.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-space-2 justify-center max-w-sm mx-auto">
-              <Input
-                type="email"
-                className="flex-1 radius-lg border border-[hsl(var(--foreground)/0.08)] bg-[hsl(var(--foreground)/0.03)] px-space-4 py-space-2 text-body-sm text-foreground placeholder:text-muted-foreground/50 focus:border-[hsl(var(--primary)/0.4)] focus:outline-none"
-                placeholder="your@email.com" />
-              
-              <Button className=" px-space-5 py-space-2 text-body-sm text-primary-foreground duration-150 whitespace-nowrap">
-                Subscribe
-              </Button>
-            </div>
-          </div>
-        </section>
+        {/* Enhanced Stay Up To Date */}
+        <StayUpToDateSection />
       </main>
 
       <MarketingFooter />

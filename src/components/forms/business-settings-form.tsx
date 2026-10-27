@@ -293,7 +293,7 @@ export function BusinessSettingsForm({ settings, bookingRules }: BusinessSetting
           onChange={(e) => handleHourChange(day, "open", e.target.value)}
           disabled={dayHours.closed}
           className="w-32 text-caption h-8 bg-background border-[hsl(var(--foreground)/0.08)] disabled:opacity-30 disabled:cursor-not-allowed px-space-2 focus-visible:ring-primary/20" />
-         <span className="text-caption text-muted-foreground/50 uppercase font-bold tracking-wider text-caption">TO</span>
+         <span className="text-caption text-muted-foreground/50 uppercase font-medium tracking-wider text-caption">TO</span>
          <Input
           type="time"
           value={dayHours.close}

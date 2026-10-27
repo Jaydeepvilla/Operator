@@ -237,25 +237,25 @@ export function AdminUserPanel() {
  switch (status) {
  case "active":
  return (
- <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-caption font-bold uppercase tracking-wider px-2 py-0.5">
+ <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-caption font-medium uppercase tracking-wider px-2 py-0.5">
  Active
  </Badge>
  );
  case "suspended":
  return (
- <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-caption font-bold uppercase tracking-wider px-2 py-0.5">
+ <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-caption font-medium uppercase tracking-wider px-2 py-0.5">
  Suspended
  </Badge>
  );
  case "deactivated":
  return (
- <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/20 text-caption font-bold uppercase tracking-wider px-2 py-0.5">
+ <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/20 text-caption font-medium uppercase tracking-wider px-2 py-0.5">
  Deactivated
  </Badge>
  );
  default:
  return (
- <Badge className="bg-slate-500/10 text-slate-400 border-slate-500/20 text-caption font-bold uppercase tracking-wider px-2 py-0.5">
+ <Badge className="bg-slate-500/10 text-slate-400 border-slate-500/20 text-caption font-medium uppercase tracking-wider px-2 py-0.5">
  {status}
  </Badge>
  );

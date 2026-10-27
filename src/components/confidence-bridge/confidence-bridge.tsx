@@ -261,7 +261,7 @@ export function ConfidenceBridge({
                     </span>
                     <span
                       className={cn(
-                        "rounded-full px-2 py-0.2 text-caption font-bold border",
+                        "rounded-full px-2 py-0.2 text-caption font-medium border",
                         isAllVerified
                           ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                           : "bg-muted text-muted-foreground border-border"
@@ -321,7 +321,7 @@ export function ConfidenceBridge({
                   >
                     <span
                       className={cn(
-                        "flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-caption font-bold",
+                        "flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-caption font-medium",
                         isDone
                           ? "bg-emerald-500 text-white"
                           : isActive

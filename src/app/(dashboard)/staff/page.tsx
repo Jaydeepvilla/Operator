@@ -328,7 +328,7 @@ export default function StaffPage() {
  {isSelected && (
  <span className="absolute left-0 top-3 bottom-3 w-[3px] bg-primary rounded-r-full" />
  )}
- <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${getGradient(staff.name)} text-white text-caption font-bold flex items-center justify-center shrink-0 shadow-sm`}>
+ <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${getGradient(staff.name)} text-white text-caption font-medium flex items-center justify-center shrink-0 shadow-sm`}>
  {getInitials(staff.name)}
  </div>
  <div className="flex-1 min-w-0">

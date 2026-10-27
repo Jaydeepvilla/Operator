@@ -665,7 +665,7 @@ Platform-specific guides:
  <ol className="space-y-space-2.5 text-caption text-muted-foreground">
  {activeGuide.steps.map((step, idx) => (
  <li key={idx} className="flex items-start gap-space-2.5 leading-relaxed">
- <span className="h-5 w-5 shrink-0 rounded-full bg-primary/10 text-primary border-primary/20 text-caption font-bold flex items-center justify-center mt-0.5">
+ <span className="h-5 w-5 shrink-0 rounded-full bg-primary/10 text-primary border-primary/20 text-caption font-medium flex items-center justify-center mt-0.5">
  {idx + 1}
  </span>
  <span className="text-foreground/90">{step}</span>
@@ -1078,19 +1078,19 @@ Platform-specific guides:
  <div className="space-y-space-6 animate-fade-in">
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-space-4">
  <Card className="border-border/60 bg-card/40 p-space-4 space-y-space-1">
- <span className="text-caption uppercase tracking-wider text-muted-foreground font-semibold">Widget Opens</span>
+ <span className="text-caption uppercase tracking-wider text-muted-foreground font-medium">Widget Opens</span>
  <p className="text-h3 font-bold text-foreground">{analytics.widgetOpens || 0}</p>
  </Card>
  <Card className="border-border/60 bg-card/40 p-space-4 space-y-space-1">
- <span className="text-caption uppercase tracking-wider text-muted-foreground font-semibold">Conversations</span>
+ <span className="text-caption uppercase tracking-wider text-muted-foreground font-medium">Conversations</span>
  <p className="text-h3 font-bold text-primary">{analytics.conversationStarts || 0}</p>
  </Card>
  <Card className="border-border/60 bg-card/40 p-space-4 space-y-space-1">
- <span className="text-caption uppercase tracking-wider text-muted-foreground font-semibold">Bookings Created</span>
+ <span className="text-caption uppercase tracking-wider text-muted-foreground font-medium">Bookings Created</span>
  <p className="text-h3 font-bold text-emerald-500">{analytics.bookingsCount || 0}</p>
  </Card>
  <Card className="border-border/60 bg-card/40 p-space-4 space-y-space-1">
- <span className="text-caption uppercase tracking-wider text-muted-foreground font-semibold">Conversion Rate</span>
+ <span className="text-caption uppercase tracking-wider text-muted-foreground font-medium">Conversion Rate</span>
  <p className="text-h3 font-bold text-foreground">{analytics.conversionRate || 0}%</p>
  </Card>
  </div>
@@ -1101,7 +1101,7 @@ Platform-specific guides:
  {/* Right Column: Live Sticky Preview Studio (5 cols) */}
  <div className="lg:col-span-5 lg:sticky lg:top-space-6 space-y-space-4">
  <div className="flex items-center justify-between select-none">
- <span className="text-caption uppercase font-semibold tracking-wider text-muted-foreground/80 flex items-center gap-space-1.5">
+ <span className="text-caption uppercase font-medium tracking-wider text-muted-foreground/80 flex items-center gap-space-1.5">
  <Palette className="h-3.5 w-3.5 text-primary" /> Live Preview
  </span>
 

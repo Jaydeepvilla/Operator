@@ -124,7 +124,7 @@ export default function AboutPage() {
  <div className="mx-auto max-w-3xl px-space-6">
  <div className="mb-space-12 text-center">
  <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border-primary/20 bg-primary/5 mb-space-6">
- <span className="text-caption uppercase tracking-widest text-primary font-semibold">Why We Exist</span>
+ <span className="text-caption uppercase tracking-widest text-primary font-medium">Why We Exist</span>
  </div>
  <h2 className="text-heading-lg tracking-tight-sm text-foreground mb-space-6">
  Our Foundational Story.
@@ -157,7 +157,7 @@ export default function AboutPage() {
  <div className="mx-auto max-w-5xl px-space-6">
  <div className="mb-space-16 text-center">
  <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border-primary/20 bg-primary/5 mb-space-6">
- <span className="text-caption uppercase tracking-widest text-primary font-semibold">Our Values</span>
+ <span className="text-caption uppercase tracking-widest text-primary font-medium">Our Values</span>
  </div>
  <h2 className="text-heading-lg tracking-tight-sm text-foreground">
  Core Principles.
@@ -190,7 +190,7 @@ export default function AboutPage() {
  <div className="mx-auto max-w-3xl px-space-6">
  <div className="mb-space-16 text-center">
  <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border-primary/20 bg-primary/5 mb-space-6">
- <span className="text-caption uppercase tracking-widest text-primary font-semibold">Product Journey</span>
+ <span className="text-caption uppercase tracking-widest text-primary font-medium">Product Journey</span>
  </div>
  <h2 className="text-heading-lg tracking-tight-sm text-foreground">
  Timeline Roadmap.
@@ -220,7 +220,7 @@ export default function AboutPage() {
  </div>
  <div className="flex-1 radius-2xl border-[hsl(var(--foreground)/0.06)] bg-card/65 p-space-5 hover:border-primary/20 hover:scale-[1.01] transition-all">
  <div className="flex items-center gap-space-2 mb-space-2">
- <span className="text-caption uppercase tracking-wider text-primary sm:hidden font-semibold font-mono">{t.year} {t.q}</span>
+ <span className="text-caption uppercase tracking-wider text-primary sm:hidden font-medium font-mono">{t.year} {t.q}</span>
  <span className="text-body-sm font-semibold text-foreground">{t.event}</span>
  </div>
  <p className="text-body-sm text-muted-foreground leading-relaxed">{t.desc}</p>
@@ -237,7 +237,7 @@ export default function AboutPage() {
  <div className="mx-auto max-w-5xl px-space-6">
  <div className="mb-space-16 text-center">
  <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border-primary/20 bg-primary/5 mb-space-6">
- <span className="text-caption uppercase tracking-widest text-primary font-semibold">Leadership</span>
+ <span className="text-caption uppercase tracking-widest text-primary font-medium">Leadership</span>
  </div>
  <h2 className="text-heading-lg tracking-tight-sm text-foreground">
  The Team.
@@ -271,7 +271,7 @@ export default function AboutPage() {
  <div className="mx-auto max-w-3xl px-space-6">
  <div className="mb-space-12 text-center">
  <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border-primary/20 bg-primary/5 mb-space-6">
- <span className="text-caption uppercase tracking-widest text-primary font-semibold">Roadmap</span>
+ <span className="text-caption uppercase tracking-widest text-primary font-medium">Roadmap</span>
  </div>
  <h2 className="text-heading-lg tracking-tight-sm text-foreground">
  Future Vision.
@@ -301,7 +301,7 @@ export default function AboutPage() {
  <div className="absolute inset-space-0 dot-grid grid-fade-y pointer-events-none"/>
  <div className="relative mx-auto max-w-2xl px-space-6 text-center">
  <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 radius-full border-primary/20 bg-primary/5 mb-space-6">
- <span className="text-caption uppercase tracking-widest text-primary font-semibold">Join Us</span>
+ <span className="text-caption uppercase tracking-widest text-primary font-medium">Join Us</span>
  </div>
  <h2 className="text-heading-lg sm:text-heading-lg tracking-tight-sm text-foreground mb-space-5">
  Start Today.

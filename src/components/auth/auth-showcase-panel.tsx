@@ -145,7 +145,7 @@ function RingChart({
         />
       </svg>
       {label && (
-        <span className="absolute inset-0 flex items-center justify-center text-caption font-black text-white">
+        <span className="absolute inset-0 flex items-center justify-center text-caption font-bold text-white">
           {label}
         </span>
       )}
@@ -204,7 +204,7 @@ function DonutChart({
           <span className="text-[6.5px] text-white/35 leading-none mb-0.5">{centerSub}</span>
         )}
         {centerLabel && (
-          <span className="text-[16px] font-black text-white leading-none">{centerLabel}</span>
+          <span className="text-[16px] font-bold text-white leading-none">{centerLabel}</span>
         )}
       </div>
     </div>
@@ -253,7 +253,7 @@ function RevenueCard() {
           </div>
         </div>
       </div>
-      <p className="mt-2 text-[19px] font-black text-white leading-none tracking-tight">
+      <p className="mt-2 text-[19px] font-bold text-white leading-none tracking-tight">
         <span className="text-caption font-semibold text-white/45 mr-px">$</span>24,830
       </p>
       <p className="mt-1.5 text-[7px] text-white/30 leading-relaxed">
@@ -274,7 +274,7 @@ function TargetCard() {
       <div className="flex items-center gap-3 flex-1">
         <RingChart percent={80} size={60} stroke={5} accent="#7C5CFC" label="80%" />
         <div>
-          <p className="text-[22px] font-black text-white leading-none">3,415</p>
+          <p className="text-[22px] font-bold text-white leading-none">3,415</p>
           <p className="text-[7px] text-white/30 mt-0.5">/ 4,000</p>
           <p className="text-[7px] text-amber-400/75 mt-2 leading-snug">
             less than 20% of your<br />sales target will be achieved.
@@ -299,7 +299,7 @@ function AppointmentsCard() {
         </p>
         <span className="text-caption text-white/20">›</span>
       </div>
-      <p className="text-[19px] font-black text-white leading-none tracking-tight">
+      <p className="text-[19px] font-bold text-white leading-none tracking-tight">
         <span className="text-caption font-semibold text-white/45 mr-px">$</span>11,680
       </p>
       <p className="mt-1.5 text-[7px] text-white/30 leading-relaxed">
@@ -399,7 +399,7 @@ function TaskCard() {
       </div>
       <div className="flex items-end justify-between">
         <div className="flex items-baseline gap-1.5">
-          <p className="text-[22px] font-black text-white leading-none">92%</p>
+          <p className="text-[22px] font-bold text-white leading-none">92%</p>
           <span className="text-[7px] text-emerald-400 font-semibold">↑ 3%</span>
         </div>
         {/* Avatar stack — mirrors the face-bubbles in reference */}
@@ -510,7 +510,7 @@ export function MobileShowcaseCarousel() {
 
   return (
     <div className="relative overflow-hidden px-6 py-8 text-center" style={{ background: "#0F1120" }}>
-      <p className="text-caption font-black tracking-widest uppercase mb-2" style={{ color: "#7C5CFC" }}>
+      <p className="text-caption font-bold tracking-widest uppercase mb-2" style={{ color: "#7C5CFC" }}>
         AI Business Operating System
       </p>
       <p className="text-xl font-bold tracking-tight text-white leading-snug min-h-[50px]">
@@ -577,7 +577,7 @@ export function AuthShowcasePanel() {
                       : "absolute inset-0 opacity-0 translate-y-2 pointer-events-none"
                   )}
                 >
-                  <h2 className="text-[17px] xl:text-[19px] font-black text-white tracking-tight leading-tight max-w-xs mx-auto">
+                  <h2 className="text-[17px] xl:text-[19px] font-bold text-white tracking-tight leading-tight max-w-xs mx-auto">
                     {h.headline}
                   </h2>
                   <p className="text-caption text-white/35 leading-relaxed max-w-[260px] mx-auto mt-1.5">

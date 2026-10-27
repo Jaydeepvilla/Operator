@@ -117,7 +117,7 @@ export function SetupProgressCard({
                           {task.estimatedMinutes}m
                         </span>
                         {task.canGenerateWithAi && (
-                          <span className="text-caption uppercase font-bold text-primary bg-primary/10 px-space-1.5 py-space-0.5 rounded">
+                          <span className="text-caption uppercase font-medium text-primary bg-primary/10 px-space-1.5 py-space-0.5 rounded">
                             AI Ready
                           </span>
                         )}

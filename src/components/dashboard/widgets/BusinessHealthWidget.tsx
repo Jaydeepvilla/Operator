@@ -123,7 +123,7 @@ export function BusinessHealthWidget({ health }: BusinessHealthWidgetProps) {
               </span>
               <p className="text-caption text-muted-foreground/50 leading-relaxed">{formulaText}</p>
               {totalMissing > 0 && (
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-[hsl(var(--state-warning-border))] bg-[hsl(var(--state-warning-bg))] text-caption font-bold text-[hsl(var(--state-warning-text))]">
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-[hsl(var(--state-warning-border))] bg-[hsl(var(--state-warning-bg))] text-caption font-medium text-[hsl(var(--state-warning-text))]">
                   <AlertTriangle className="w-3 h-3 shrink-0" />
                   {totalMissing} missing requirement{totalMissing !== 1 ? "s" : ""}
                 </div>

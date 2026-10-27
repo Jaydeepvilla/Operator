@@ -100,7 +100,7 @@ export default function PricingPage() {
           <GsapScrollSection animation="fade-up" className="relative mx-auto max-w-4xl px-space-6 text-center">
             <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span className="text-caption uppercase tracking-widest font-semibold text-primary">Transparent Pricing</span>
+              <span className="text-caption uppercase tracking-widest font-medium text-primary">Transparent Pricing</span>
             </div>
 
             <h1 className="text-display-lg md:text-display-xl font-bold tracking-tight leading-display text-foreground mb-space-5">
@@ -142,7 +142,7 @@ export default function PricingPage() {
                 <span>Annual</span>
                 <span
                   className={cn(
-                    "px-2 py-0.5 rounded-full text-caption font-mono font-bold tracking-tight uppercase transition-colors",
+                    "px-2 py-0.5 rounded-full text-caption font-mono font-medium tracking-tight uppercase transition-colors",
                     yearly ? "bg-white/20 text-white" : "bg-primary/15 text-primary"
                   )}
                 >
@@ -181,7 +181,7 @@ export default function PricingPage() {
                   {/* Floating Popular Pill Badge */}
                   {isPopular && (
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
-                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-caption font-mono uppercase font-bold tracking-wider bg-gradient-to-r from-primary to-violet-600 text-white shadow-md shadow-primary/30">
+                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-caption font-mono uppercase font-medium tracking-wider bg-gradient-to-r from-primary to-violet-600 text-white shadow-md shadow-primary/30">
                         <Sparkles className="h-3 w-3" />
                         Most Popular
                       </span>
@@ -197,7 +197,7 @@ export default function PricingPage() {
                       </p>
 
                       <div className="flex items-baseline gap-space-2 mt-space-5 mb-space-1">
-                        <span className="text-5xl md:text-6xl font-black font-mono tracking-tight text-foreground">
+                        <span className="text-5xl md:text-6xl font-bold font-mono tracking-tight text-foreground">
                           ${displayPrice}
                         </span>
                         <span className="text-body-sm md:text-body-md text-muted-foreground font-mono font-semibold">/month</span>
@@ -212,7 +212,7 @@ export default function PricingPage() {
 
                     {/* Quick highlights list */}
                     <div className="space-y-space-2.5 mb-space-8">
-                      <span className="text-caption font-mono uppercase tracking-widest text-muted-foreground/70 font-semibold block mb-space-2">
+                      <span className="text-caption font-mono uppercase tracking-widest text-muted-foreground/70 font-medium block mb-space-2">
                         Included capabilities:
                       </span>
                       {Object.entries(plan.features).slice(0, 7).map(([featName, featVal]) => {
@@ -324,7 +324,7 @@ export default function PricingPage() {
             <div className="text-center mb-space-12">
               <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
                 <Zap className="h-3.5 w-3.5 text-primary" />
-                <span className="text-caption uppercase tracking-widest font-semibold text-primary">Granular Audit</span>
+                <span className="text-caption uppercase tracking-widest font-medium text-primary">Granular Audit</span>
               </div>
               <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
                 Detailed Breakdown.
@@ -396,7 +396,7 @@ export default function PricingPage() {
           <GsapScrollSection animation="fade-up" className="mx-auto max-w-3xl px-space-6">
             <div className="text-center mb-space-16">
               <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
-                <span className="text-caption uppercase tracking-widest font-semibold text-primary">Answers & Clarity</span>
+                <span className="text-caption uppercase tracking-widest font-medium text-primary">Answers & Clarity</span>
               </div>
               <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
                 Pricing FAQ.

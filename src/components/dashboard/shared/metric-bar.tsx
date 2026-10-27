@@ -41,7 +41,7 @@ export function MetricBar({ label, value, colorClass, showDot, empty, displayVal
         )}
         {label}
       </span>
-      <span className={`text-caption font-bold tabular-nums ${textColor}`}>
+      <span className={`text-caption font-medium tabular-nums ${textColor}`}>
         {displayValue ?? `${value}%`}
       </span>
     </div>

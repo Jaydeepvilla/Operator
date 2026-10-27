@@ -52,7 +52,7 @@ export function ScenarioCard({
   const getStatusBadge = () => {
     if (isRunning) {
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-caption font-semibold text-primary animate-pulse">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-caption font-medium text-primary animate-pulse">
           <Loader2 className="h-3 w-3 animate-spin" />
           Running Simulation…
         </span>
@@ -61,21 +61,21 @@ export function ScenarioCard({
     switch (status) {
       case "passed":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-caption font-bold text-emerald-600 dark:text-emerald-400 shadow-sm">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-caption font-medium text-emerald-600 dark:text-emerald-400 shadow-sm">
             <CheckCircle2 className="h-3.5 w-3.5" />
             Verified (Passed)
           </span>
         );
       case "failed":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-caption font-bold text-destructive">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-caption font-medium text-destructive">
             <AlertTriangle className="h-3.5 w-3.5" />
             Needs Attention
           </span>
         );
       case "stale":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-caption font-semibold text-amber-600 dark:text-amber-400">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-caption font-medium text-amber-600 dark:text-amber-400">
             <Clock className="h-3.5 w-3.5" />
             Stale · Re-test
           </span>

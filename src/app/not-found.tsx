@@ -8,7 +8,7 @@ export default function NotFound() {
       <div className="flex h-20 w-20 items-center justify-center radius-full bg-primary/10 text-primary mb-space-6">
         <Compass className="h-10 w-10 animate-pulse" />
       </div>
-      <span className="font-mono text-caption text-primary uppercase tracking-widest font-semibold mb-space-2">
+      <span className="font-mono text-caption text-primary uppercase tracking-widest font-medium mb-space-2">
         Error 404
       </span>
       <h1 className="text-heading-xl font-bold tracking-tight text-foreground mb-space-3">

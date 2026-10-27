@@ -151,7 +151,7 @@ export function ROISimulatorSection() {
  {/* Pill */}
  <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 rounded-full border-[hsl(var(--state-error-text)/0.3)] bg-[hsl(var(--state-error-text)/0.06)] mb-space-8">
  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--state-error-text))] animate-pulse"/>
- <span className="text-caption uppercase tracking-widest text-[hsl(var(--state-error-text))] font-semibold">Revenue Diagnostic</span>
+ <span className="text-caption uppercase tracking-widest text-[hsl(var(--state-error-text))] font-medium">Revenue Diagnostic</span>
  </div>
 
  {/* Headline */}
@@ -197,7 +197,7 @@ export function ROISimulatorSection() {
  <div className="text-center mb-space-16">
  <div className="inline-flex items-center gap-space-2 px-space-4 py-space-2 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
  <TrendingUp className="h-3 w-3 text-primary"/>
- <span className="text-caption uppercase tracking-widest text-primary font-semibold">ROI Calculator</span>
+ <span className="text-caption uppercase tracking-widest text-primary font-medium">ROI Calculator</span>
  </div>
  <h2 className="text-heading-xl font-semibold tracking-tight text-foreground mb-space-4">
  Calculate Your
@@ -285,7 +285,7 @@ export function ROISimulatorSection() {
  <div className="radius-xl bg-[hsl(var(--state-error-text)/0.06)] border border-[hsl(var(--state-error-text)/0.15)] p-space-4">
  <div className="flex items-center gap-space-2 mb-space-2">
  <TrendingDown className="h-3.5 w-3.5 text-[hsl(var(--state-error-text))]"/>
- <span className="text-caption uppercase tracking-wider text-[hsl(var(--state-error-text))] font-semibold">Without AI</span>
+ <span className="text-caption uppercase tracking-wider text-[hsl(var(--state-error-text))] font-medium">Without AI</span>
  </div>
  <p className="text-title-lg font-semibold text-[hsl(var(--state-error-text))]">{usd(animLeak)}</p>
  <p className="text-caption text-muted-foreground mt-space-1">annual revenue lost</p>
@@ -293,7 +293,7 @@ export function ROISimulatorSection() {
  <div className="radius-xl bg-primary/5 border border-primary/20 p-space-4">
  <div className="flex items-center gap-space-2 mb-space-2">
  <TrendingUp className="h-3.5 w-3.5 text-primary"/>
- <span className="text-caption uppercase tracking-wider text-primary font-semibold">With Operator</span>
+ <span className="text-caption uppercase tracking-wider text-primary font-medium">With Operator</span>
  </div>
  <p className="text-title-lg font-semibold text-primary">{usd(animRecovered)}</p>
  <p className="text-caption text-muted-foreground mt-space-1">revenue recovered</p>
@@ -310,7 +310,7 @@ export function ROISimulatorSection() {
  <div className="relative z-10">
  <div className="flex items-center gap-space-2 mb-space-4">
  <span className="h-2 w-2 radius-md bg-primary animate-pulse"/>
- <span className="text-caption uppercase tracking-widest text-primary font-semibold">Net Annual Yield</span>
+ <span className="text-caption uppercase tracking-widest text-primary font-medium">Net Annual Yield</span>
  </div>
  <p className="text-display-lg font-semibold text-foreground tracking-tight">
  {usd(animNet)}
