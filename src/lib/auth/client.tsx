@@ -7,6 +7,7 @@ export interface UserType {
   email: string;
   name: string | null;
   avatar: string | null;
+  onboardingCompleted?: boolean;
 }
 
 interface AuthContextType {

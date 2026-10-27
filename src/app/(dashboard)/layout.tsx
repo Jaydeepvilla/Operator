@@ -37,8 +37,8 @@ export default async function DashboardLayout({
     redirect(decision.destination);
   }
 
-  const { org } = await checkUserOrganization();
-  if (!org) {
+  const { org, isCompleted } = await checkUserOrganization();
+  if (!org || !isCompleted) {
     redirect("/onboarding");
   }
 

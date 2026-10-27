@@ -38,13 +38,14 @@ export function SessionAwareCta({
   }, []);
 
   const isAuthenticated = isClient && !isLoading && Boolean(user);
-  const targetHref = isAuthenticated ? signedInHref : signedOutHref;
-  const label = isAuthenticated ? signedInText : signedOutText;
+  const isComplete = Boolean(user?.onboardingCompleted);
+  const targetHref = isAuthenticated ? (isComplete ? signedInHref : "/onboarding") : signedOutHref;
+  const label = isAuthenticated ? (isComplete ? signedInText : "Continue setup") : signedOutText;
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     if (isAuthenticated) {
-      router.push(signedInHref);
+      router.push(isComplete ? signedInHref : "/onboarding");
     } else {
       router.push(signedOutHref);
     }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/auth/server";
+import { checkUserOrganization } from "@/server/actions/onboarding";
 
 export async function GET() {
   try {
@@ -7,12 +8,16 @@ export async function GET() {
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const { hasOrg, isCompleted } = await checkUserOrganization();
+
     return NextResponse.json({
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
         avatar: user.avatar,
+        onboardingCompleted: Boolean(hasOrg && isCompleted),
       },
     });
   } catch (error) {

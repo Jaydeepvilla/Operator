@@ -473,7 +473,53 @@ function ScreenGenerating({
  );
 }
 
-// ─── HoursField (inline editable) ────────────────────────────────────────────
+// ─── HoursField (structured selection option) ─────────────────────────────────
+
+const DAYS_OPTIONS = [
+  "Monday – Friday",
+  "Monday – Saturday",
+  "Monday – Sunday (Every day)",
+  "Monday – Thursday",
+  "Tuesday – Saturday",
+  "Saturday – Sunday (Weekends only)",
+];
+
+const TIME_OPTIONS = [
+  "06:00 AM", "06:30 AM", "07:00 AM", "07:30 AM", "08:00 AM", "08:30 AM",
+  "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+  "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM",
+  "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM",
+  "06:00 PM", "06:30 PM", "07:00 PM", "07:30 PM", "08:00 PM", "08:30 PM",
+  "09:00 PM", "10:00 PM", "11:00 PM",
+];
+
+function parseHours(val: string) {
+  let days = "Monday – Friday";
+  let open = "09:00 AM";
+  let close = "05:00 PM";
+
+  if (!val) return { days, open, close };
+
+  const parts = val.split(/:s*/);
+  if (parts.length >= 2) {
+    const rawDays = parts[0].trim();
+    const matchedDay = DAYS_OPTIONS.find((d) =>
+      d.toLowerCase().replace(/[\s–-]/g, "") === rawDays.toLowerCase().replace(/[\s–-]/g, "")
+    );
+    if (matchedDay) days = matchedDay;
+    else if (rawDays.toLowerCase().includes("sun") || rawDays.toLowerCase().includes("every")) days = "Monday – Sunday (Every day)";
+    else if (rawDays.toLowerCase().includes("sat")) days = "Monday – Saturday";
+
+    const times = parts[1].split(/\s*[–-]\s*/);
+    if (times.length >= 2) {
+      const matchOpen = TIME_OPTIONS.find((t) => t.replace(/^0/, "").toLowerCase() === times[0].trim().replace(/^0/, "").toLowerCase());
+      if (matchOpen) open = matchOpen;
+      const matchClose = TIME_OPTIONS.find((t) => t.replace(/^0/, "").toLowerCase() === times[1].trim().replace(/^0/, "").toLowerCase());
+      if (matchClose) close = matchClose;
+    }
+  }
+  return { days, open, close };
+}
 
 function HoursField({
   value,
@@ -483,89 +529,140 @@ function HoursField({
   onChange: (v: string) => void;
 }) {
   const [editing, setEditing] = React.useState(false);
-  const [draft, setDraft] = React.useState(value);
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const parsed = React.useMemo(() => parseHours(value), [value]);
+  const [selectedDays, setSelectedDays] = React.useState(parsed.days);
+  const [selectedOpen, setSelectedOpen] = React.useState(parsed.open);
+  const [selectedClose, setSelectedClose] = React.useState(parsed.close);
 
   React.useEffect(() => {
     if (editing) {
-      setDraft(value);
-      requestAnimationFrame(() => inputRef.current?.focus());
+      const p = parseHours(value);
+      setSelectedDays(p.days);
+      setSelectedOpen(p.open);
+      setSelectedClose(p.close);
     }
   }, [editing, value]);
 
   const save = () => {
-    onChange(draft.trim() || value);
+    const cleanDays = selectedDays.replace(/\s*\([^)]*\)/g, "").trim();
+    onChange(`${cleanDays}: ${selectedOpen} – ${selectedClose}`);
     setEditing(false);
   };
 
   const cancel = () => {
-    setDraft(value);
     setEditing(false);
   };
 
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-space-3 px-space-4 py-space-3 rounded-xl border transition-colors duration-200",
-        editing ? "border-primary/40 bg-primary/5" : "border-border/70 bg-card/50 hover:border-border"
-      )}
-    >
-      <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-
-      <div className="flex-1 min-w-0">
-        <p className="text-caption text-muted-foreground mb-0.5">Business hours</p>
-        {editing ? (
-          <Input
-            ref={inputRef}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") save();
-              if (e.key === "Escape") cancel();
-            }}
-            className={cn(
-              "w-full bg-transparent border-none outline-none",
-              "text-body-sm font-medium text-foreground placeholder:text-muted-foreground"
-            )}
-            placeholder="e.g. Mon–Fri 9:00 AM – 5:00 PM"
-          />
-        ) : (
-          <p className="text-body-sm font-medium text-foreground truncate">{value}</p>
-        )}
-      </div>
-
-      {editing ? (
-        <div className="flex items-center gap-space-2 shrink-0">
-          <Button
+  if (editing) {
+    return (
+      <div className="p-space-4 rounded-xl border border-primary/30 bg-primary/5 space-y-space-3 animate-fade-up">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-space-2 text-body-sm font-semibold text-foreground">
+            <Clock className="h-4 w-4 text-primary" />
+            <span>Select Business Hours</span>
+          </div>
+          <button
             type="button"
-            variant="default"
-            size="sm"
-            onClick={save}
-            className="text-caption font-medium h-7 px-2.5"
+            onClick={cancel}
+            className="text-muted-foreground hover:text-foreground p-1 cursor-pointer"
+            title="Close"
           >
-            Save
-          </Button>
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="space-y-space-3">
+          <div className="space-y-1">
+            <Label className="text-caption font-medium text-muted-foreground">Days of Operation</Label>
+            <Select value={selectedDays} onValueChange={setSelectedDays}>
+              <SelectTrigger className="h-10 rounded-xl bg-background text-body-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DAYS_OPTIONS.map((d) => (
+                  <SelectItem key={d} value={d}>
+                    {d}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-3">
+            <div className="space-y-1">
+              <Label className="text-caption font-medium text-muted-foreground">Opening Time</Label>
+              <Select value={selectedOpen} onValueChange={setSelectedOpen}>
+                <SelectTrigger className="h-10 rounded-xl bg-background text-body-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-56">
+                  {TIME_OPTIONS.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-caption font-medium text-muted-foreground">Closing Time</Label>
+              <Select value={selectedClose} onValueChange={setSelectedClose}>
+                <SelectTrigger className="h-10 rounded-xl bg-background text-body-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-56">
+                  {TIME_OPTIONS.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-space-2 pt-space-2 border-t border-border/40">
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={cancel}
-            className="text-caption font-medium h-7 px-2.5 text-muted-foreground"
+            className="text-caption font-medium h-8 px-3"
           >
             Cancel
           </Button>
+          <Button
+            type="button"
+            variant="default"
+            size="sm"
+            onClick={save}
+            className="text-caption font-medium h-8 px-4"
+          >
+            Save Hours
+          </Button>
         </div>
-      ) : (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => setEditing(true)}
-          className="ml-auto text-caption font-medium h-8 border-border/80 hover:bg-muted/50 shrink-0"
-        >
-          Edit Hours
-        </Button>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-space-3 px-space-4 py-space-3 rounded-xl border border-border/70 bg-card/50 hover:border-border transition-colors duration-200">
+      <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="text-caption text-muted-foreground mb-0.5">Business hours</p>
+        <p className="text-body-sm font-medium text-foreground truncate">{value}</p>
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => setEditing(true)}
+        className="ml-auto text-caption font-medium h-8 border-border/80 hover:bg-muted/50 shrink-0 cursor-pointer"
+      >
+        Edit Hours
+      </Button>
     </div>
   );
 }
@@ -1121,12 +1218,56 @@ function ScreenGoLive({ businessName, orgId }: { businessName: string; orgId: st
  <ConfidenceBridge
  businessName={businessName}
  orgId={orgId}
- onFinish={() => router.push("/dashboard")}
+ onFinish={() => { clearOnboardingDraft(); router.push("/dashboard"); }}
  />
  );
 }
 
 // ─── Root Wizard ──────────────────────────────────────────────────────────────
+
+// ─── Onboarding Draft Session Storage (24-Hour Expiry Window) ─────────────────
+
+const ONBOARDING_DRAFT_KEY = "operator_onboarding_draft_v1";
+const ONBOARDING_DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours retention
+
+function loadOnboardingDraft(): { url: string; step: Step; data: GeneratedData | null } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(ONBOARDING_DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.timestamp || Date.now() - parsed.timestamp > ONBOARDING_DRAFT_MAX_AGE_MS) {
+      localStorage.removeItem(ONBOARDING_DRAFT_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function saveOnboardingDraft(step: Step, url: string, data: GeneratedData | null) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(
+      ONBOARDING_DRAFT_KEY,
+      JSON.stringify({
+        timestamp: Date.now(),
+        step,
+        url,
+        data,
+      })
+    );
+  } catch {}
+}
+
+function clearOnboardingDraft() {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(ONBOARDING_DRAFT_KEY);
+  } catch {}
+}
+
 
 import { saveOnboardingProgressAction } from "@/server/actions/onboarding";
 
@@ -1170,6 +1311,29 @@ export function OnboardingWizard({
  );
  const [submitError, setSubmitError] = React.useState<string | null>(null);
  const [createdOrgId, setCreatedOrgId] = React.useState<string | null>(initialOrg?.id || null);
+  const [isClientLoaded, setIsClientLoaded] = React.useState(false);
+
+  // Restore saved draft on mount (if valid and not expired)
+  React.useEffect(() => {
+    if (!initialDraftData?.businessName && !initialOrg) {
+      const draft = loadOnboardingDraft();
+      if (draft) {
+        if (draft.url) setUrl(draft.url);
+        if (draft.data) setGenerated(draft.data);
+        if (draft.step && draft.step !== "launching" && draft.step !== "golive") {
+          setStep(draft.step);
+        }
+      }
+    }
+    setIsClientLoaded(true);
+  }, [initialDraftData, initialOrg]);
+
+  // Persist draft to localStorage on any updates
+  React.useEffect(() => {
+    if (isClientLoaded && step !== "launching" && step !== "golive") {
+      saveOnboardingDraft(step, url, generated);
+    }
+  }, [step, url, generated, isClientLoaded]);
 
  const handleUrlNext = (inputUrl: string) => {
  setUrl(inputUrl);
