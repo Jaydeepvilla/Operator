@@ -285,17 +285,19 @@ function ScreenUrl({
  </div>
  )}
 
- <Button
- type="button"
- onClick={() => {
- setNoWebsite((v) => !v);
- setUrl("");
- setError("");
- }}
- className="text-caption text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
- >
- {noWebsite ? "I have a website" : "I don't have a website yet"}
- </Button>
+ <div className="pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                setNoWebsite((v) => !v);
+                setUrl("");
+                setError("");
+              }}
+              className="text-body-sm text-muted-foreground hover:text-primary transition-colors underline underline-offset-4 cursor-pointer"
+            >
+              {noWebsite ? "← I have a website" : "I don't have a website yet"}
+            </button>
+          </div>
  </div>
 
  {/* Stats */}
@@ -588,12 +590,6 @@ function ScreenVerify({
   const meta = INDUSTRY_META[form.industry] || INDUSTRY_META["Other"];
   const Icon = meta.icon;
 
-  const stepsList = [
-    { id: "info" as const, step: 1, label: "Business Info", icon: Building2 },
-    { id: "services" as const, step: 2, label: "Services", icon: Star },
-    { id: "greeting" as const, step: 3, label: "AI Greeting", icon: Bot },
-  ];
-
   return (
     <div className="space-y-space-6 animate-fade-up" style={{ animationFillMode: "both" }}>
       {/* Header */}
@@ -627,52 +623,15 @@ function ScreenVerify({
         </p>
       </div>
 
-      {/* Clean 3-Step Wizard Navigation (Replaced Tabs) */}
-      <div className="flex items-center justify-between gap-space-2 p-1.5 rounded-xl bg-muted/30 border border-border/40">
-        {stepsList.map((s) => {
-          const isCurrent = subStep === s.id;
-          const isPast =
-            (s.id === "info" && (subStep === "services" || subStep === "greeting")) ||
-            (s.id === "services" && subStep === "greeting");
-          const SIcon = s.icon;
-
-          return (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => {
-                if (isPast) setSubStep(s.id);
-              }}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-caption font-medium transition-all select-none border",
-                isCurrent
-                  ? "bg-card text-foreground shadow-xs border-border/70 font-semibold"
-                  : isPast
-                  ? "border-transparent text-primary hover:text-foreground cursor-pointer"
-                  : "border-transparent text-muted-foreground/60 cursor-default"
-              )}
-            >
-              <span
-                className={cn(
-                  "flex h-4.5 w-4.5 items-center justify-center rounded-full text-[10px] font-mono",
-                  isCurrent
-                    ? "bg-primary text-primary-foreground font-bold"
-                    : isPast
-                    ? "bg-primary/20 text-primary font-bold"
-                    : "bg-muted text-muted-foreground"
-                )}
-              >
-                {isPast ? "✓" : s.step}
-              </span>
-              <span className="truncate">{s.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
       {/* ── SUB-STEP 1: Business Info ── */}
       {subStep === "info" && (
         <div className="space-y-space-4 animate-fade-up" style={{ animationFillMode: "both" }}>
+          <div>
+            <h3 className="text-body-md font-bold text-foreground">Business Info</h3>
+            <p className="text-body-sm text-muted-foreground mt-0.5">
+              Review and confirm your business details.
+            </p>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-3">
             <div className="space-y-space-1.5">
               <Label htmlFor="vfy-name" className="text-body-sm font-medium text-foreground">
@@ -792,12 +751,10 @@ function ScreenVerify({
                 setSubStep("services");
               }}
             >
-              <span>Next: Services</span>
+              <span>Next</span>
               <ArrowRight className="h-4 w-4" />
             </Button>
-            <p className="text-center text-caption text-muted-foreground mt-space-2.5">
-              Step 1 of 3 • Review basic company details
-            </p>
+            
           </div>
         </div>
       )}
@@ -806,7 +763,7 @@ function ScreenVerify({
       {subStep === "services" && (
         <div className="space-y-space-4 animate-fade-up" style={{ animationFillMode: "both" }}>
           <div>
-            <h3 className="text-body-md font-bold text-foreground">Services & Offerings</h3>
+            <h3 className="text-body-md font-bold text-foreground">Services</h3>
             <p className="text-body-sm text-muted-foreground mt-0.5">
               These services were detected from your website. Toggle off any you don't offer.
             </p>
@@ -986,13 +943,11 @@ function ScreenVerify({
                 className="flex-1 font-medium shadow-md flex items-center justify-center gap-2"
                 onClick={() => setSubStep("greeting")}
               >
-                <span>Next: AI Greeting</span>
+                <span>Next</span>
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
-            <p className="text-center text-caption text-muted-foreground mt-space-2.5">
-              Step 2 of 3 • {services.filter((s) => s.accepted).length} active services selected
-            </p>
+            
           </div>
         </div>
       )}
@@ -1001,7 +956,7 @@ function ScreenVerify({
       {subStep === "greeting" && (
         <div className="space-y-space-4 animate-fade-up" style={{ animationFillMode: "both" }}>
           <div>
-            <h3 className="text-body-md font-bold text-foreground">AI Greeting & Voice Persona</h3>
+            <h3 className="text-body-md font-bold text-foreground">AI Greeting</h3>
             <p className="text-body-sm text-muted-foreground mt-0.5">
               This is what callers will hear when Operator answers your phone line.
             </p>
@@ -1075,9 +1030,7 @@ function ScreenVerify({
                 )}
               </Button>
             </div>
-            <p className="text-center text-caption text-muted-foreground mt-space-2.5">
-              Step 3 of 3 • You can refine everything later in Settings & Knowledge Base
-            </p>
+            
           </div>
         </div>
       )}
