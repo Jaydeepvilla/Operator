@@ -116,26 +116,28 @@ export function DailyBriefWidget({
             {/* Range Pills */}
             <div className="inline-flex items-center p-1 rounded-xl bg-muted/60 border border-border/50 text-caption font-medium">
               {ranges.map((r) => (
-                <Button
+                <button
                   key={r.id}
+                  type="button"
                   onClick={() => onRangeChange?.(r.id)}
                   className={cn(
-                    "px-3 py-1 rounded-lg transition-all text-[12px] font-semibold",
+                    "px-3 py-1.5 rounded-lg transition-all text-[12px] font-semibold select-none",
                     range === r.id
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-primary text-white shadow-sm shadow-primary/25"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                   )}
                 >
                   {r.label}
-                </Button>
+                </button>
               ))}
             </div>
 
             {/* Refresh Button with Rotating Spinner */}
-            <Button
+            <button
+              type="button"
               onClick={onRefresh}
               disabled={isRefreshing}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/60 bg-background/80 hover:bg-muted/60 text-muted-foreground hover:text-foreground text-[12px] font-semibold transition-all shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/60 bg-background/80 hover:bg-muted/60 text-muted-foreground hover:text-foreground text-[12px] font-semibold transition-all shadow-sm disabled:opacity-50"
               title={`Last updated ${lastUpdatedText}. Click to refresh live metrics.`}
             >
               <RefreshCw
@@ -147,7 +149,7 @@ export function DailyBriefWidget({
               <span className="hidden sm:inline">
                 {isRefreshing ? "Syncing..." : lastUpdatedText}
               </span>
-            </Button>
+            </button>
 
             {/* Quick Test AI Button */}
             <DropdownMenu>

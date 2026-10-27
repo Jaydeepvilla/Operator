@@ -77,7 +77,7 @@ const DropdownMenuItem = React.forwardRef<
  <DropdownMenuPrimitive.Item
  ref={ref}
  className={cn(
- "relative flex cursor-pointer select-none items-center gap-space-2 radius-md px-space-2 py-space-2 text-body-sm outline-hidden transition-colors duration-150 hover:bg-[hsl(var(--foreground)/0.04)] focus:bg-accent focus:text-accent-foreground active:bg-[hsl(var(--foreground)/0.06)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+ "relative flex cursor-pointer select-none items-center gap-space-2 radius-md px-space-2 py-space-2 text-body-sm outline-hidden transition-colors duration-150 hover:bg-primary/10 hover:text-primary focus:bg-primary/15 focus:text-primary active:bg-primary/20 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
  inset &&"pl-space-8",
  className
  )}
@@ -93,7 +93,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
  <DropdownMenuPrimitive.CheckboxItem
  ref={ref}
  className={cn(
- "relative flex cursor-pointer select-none items-center radius-md py-space-2 pl-space-8 pr-space-2 text-body-sm outline-hidden transition-colors duration-150 hover:bg-[hsl(var(--foreground)/0.04)] focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+ "relative flex cursor-pointer select-none items-center radius-md py-space-2 pl-space-8 pr-space-2 text-body-sm outline-hidden transition-colors duration-150 hover:bg-primary/10 hover:text-primary focus:bg-primary/15 focus:text-primary data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
  className
  )}
  checked={checked}
@@ -117,7 +117,7 @@ const DropdownMenuRadioItem = React.forwardRef<
  <DropdownMenuPrimitive.RadioItem
  ref={ref}
  className={cn(
- "relative flex cursor-pointer select-none items-center radius-md py-space-2 pl-space-8 pr-space-2 text-body-sm outline-hidden transition-colors duration-150 hover:bg-[hsl(var(--foreground)/0.04)] focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+ "relative flex cursor-pointer select-none items-center radius-md py-space-2 pl-space-8 pr-space-2 text-body-sm outline-hidden transition-colors duration-150 hover:bg-primary/10 hover:text-primary focus:bg-primary/15 focus:text-primary data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
  className
  )}
  {...props}

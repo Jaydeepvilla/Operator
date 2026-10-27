@@ -92,10 +92,10 @@
  --sidebar-width: 260px;
 
  /* Button Semantic Design Tokens — White Brand (Dark Mode) */
- --btn-primary-bg: #ffffff;
- --btn-primary-fg: #0A0E17;
- --btn-primary-hover: #f0f0f0;
- --btn-primary-active: #e0e0e0;
+ --btn-primary-bg: #664de6;
+  --btn-primary-fg: #ffffff;
+  --btn-primary-hover: #7860f5;
+  --btn-primary-active: #573ec7;
  --btn-primary-disabled-bg: hsl(var(--foreground) / 0.08);
  --btn-primary-disabled-fg: hsl(var(--foreground) / 0.3);
 
@@ -187,10 +187,10 @@
  --sidebar-width: 260px;
 
  /* Button Semantic Design Tokens — Black Brand (Light Mode) */
- --btn-primary-bg: #0A0E17;
- --btn-primary-fg: #ffffff;
- --btn-primary-hover: #1a2133;
- --btn-primary-active: #050709;
+ --btn-primary-bg: #664de6;
+  --btn-primary-fg: #ffffff;
+  --btn-primary-hover: #7860f5;
+  --btn-primary-active: #573ec7;
  --btn-primary-disabled-bg: hsl(var(--foreground) / 0.08);
  --btn-primary-disabled-fg: hsl(var(--foreground) / 0.3);
 
@@ -204,6 +204,14 @@
 
 * {
  box-sizing: border-box;
+}
+
+/* Global native controls use brand color accent */
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"],
+progress {
+  accent-color: #664de6;
 }
 
 /* Force hand cursor on all clickable/interactive elements */

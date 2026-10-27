@@ -91,14 +91,15 @@ export function SetupProgressWidget({ progress }: SetupProgressWidgetProps) {
  <span>Est. {remainingMinutes}m left</span>
  </span>
  )}
- <Button
- onClick={() => setIsMinimized(!isMinimized)}
- className="flex items-center gap-1 text-caption font-medium text-muted-foreground hover:text-foreground px-2 py-1 rounded-md hover:bg-muted/50 transition-colors"
- title={isMinimized ? "Expand setup checklist" : "Minimize setup checklist"}
- >
- <span>{isMinimized ? "Expand" : "Collapse"}</span>
- {isMinimized ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
- </Button>
+ <button
+            type="button"
+            onClick={() => setIsMinimized(!isMinimized)}
+            className="flex items-center gap-1.5 text-caption font-medium text-muted-foreground hover:text-foreground px-2.5 py-1 rounded-lg bg-muted/50 hover:bg-muted border border-border/60 transition-colors"
+            title={isMinimized ? "Expand setup checklist" : "Minimize setup checklist"}
+          >
+            <span>{isMinimized ? "Expand" : "Collapse"}</span>
+            {isMinimized ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" />}
+          </button>
  </div>
  </div>
 
@@ -168,19 +169,19 @@ export function SetupProgressWidget({ progress }: SetupProgressWidgetProps) {
  {/* Title Row with Radio icon and Arrow */}
  <div className="flex items-center justify-between w-full min-w-0">
  <div className="flex items-center gap-space-2 min-w-0">
- <Button
- type="button"
- title="Click to mark as done"
- onClick={(e) => handleToggleTask(e, item.id, true)}
- disabled={updatingTaskId === item.id}
- className="p-1 -m-1 rounded-full hover:bg-primary/10 transition-colors z-10 shrink-0"
- >
+ <button
+                        type="button"
+                        title="Click to mark as done"
+                        onClick={(e) => handleToggleTask(e, item.id, true)}
+                        disabled={updatingTaskId === item.id}
+                        className="p-1 -m-1 rounded-full hover:bg-primary/10 transition-colors z-10 shrink-0 bg-transparent border-0 text-muted-foreground hover:text-primary"
+                      >
  {updatingTaskId === item.id ? (
  <div className="w-4 h-4 rounded-full border-primary border-t-transparent animate-spin" />
  ) : (
  <Circle className="w-4 h-4 text-muted-foreground/60 hover:text-primary transition-colors duration-150" />
  )}
- </Button>
+                      </button>
  <span className="text-body-sm font-bold text-foreground truncate leading-snug group-hover:text-primary transition-colors duration-150">
  {item.label}
  </span>
@@ -216,19 +217,19 @@ export function SetupProgressWidget({ progress }: SetupProgressWidgetProps) {
  key={item.id}
  className="group flex items-center gap-space-1.5 px-space-3 py-space-1 rounded-lg border-border/40 bg-muted/30 text-caption font-medium text-muted-foreground hover:border-border transition-colors"
  >
- <Button
- type="button"
- title="Click to unmark"
- onClick={(e) => handleToggleTask(e, item.id, false)}
- disabled={updatingTaskId === item.id}
- className="hover:scale-110 transition-transform shrink-0"
- >
+ <button
+                        type="button"
+                        title="Click to unmark"
+                        onClick={(e) => handleToggleTask(e, item.id, false)}
+                        disabled={updatingTaskId === item.id}
+                        className="hover:scale-110 transition-transform shrink-0 bg-transparent border-0 p-0 text-emerald-500"
+                      >
  {updatingTaskId === item.id ? (
  <div className="w-3.5 h-3.5 rounded-full border-emerald-500 border-t-transparent animate-spin" />
  ) : (
  <CheckCircle2 className="w-4 h-4 text-emerald-500 hover:text-amber-500 transition-colors" />
  )}
- </Button>
+                      </button>
  <Link href={item.href} className="line-through hover:text-foreground transition-colors">
                         {item.label}
                       </Link>

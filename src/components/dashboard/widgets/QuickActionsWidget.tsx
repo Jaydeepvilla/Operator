@@ -240,7 +240,7 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
                     Most Used
                   </span>
                 </div>
-                <Button
+                <button
                   type="button"
                   onClick={() => openModal("appointment")}
                   className="w-full text-left group relative flex flex-col items-start gap-space-2.5 p-space-4 rounded-xl border border-primary/30 bg-card hover:border-primary/60 hover:bg-primary/[0.03] hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer h-full"
@@ -262,12 +262,12 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
                       Schedule customer booking
                     </p>
                   </div>
-                </Button>
+                </button>
               </div>
 
               {/* 2. Add Customer (Modal Trigger) */}
               <div className="relative">
-                <Button
+                <button
                   type="button"
                   onClick={() => openModal("customer")}
                   className="w-full text-left group relative flex flex-col items-start gap-space-2.5 p-space-4 rounded-xl border border-border/80 bg-card hover:border-emerald-500/50 hover:bg-emerald-500/[0.02] hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer h-full"
@@ -289,12 +289,12 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
                       Save profile & lead info
                     </p>
                   </div>
-                </Button>
+                </button>
               </div>
 
               {/* 3. Import Knowledge (Modal Trigger) */}
               <div className="relative">
-                <Button
+                <button
                   type="button"
                   onClick={() => openModal("knowledge")}
                   className="w-full text-left group relative flex flex-col items-start gap-space-2.5 p-space-4 rounded-xl border border-border/80 bg-card hover:border-violet-500/50 hover:bg-violet-500/[0.02] hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer h-full"
@@ -316,7 +316,7 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
                       Add instant FAQ or topic
                     </p>
                   </div>
-                </Button>
+                </button>
               </div>
 
               {/* 4. AI Settings (Route Link) */}
