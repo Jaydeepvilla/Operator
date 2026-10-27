@@ -236,36 +236,6 @@ export function DashboardShell({
             )}
           </div>
         </div>
-        {/* User Footer */}
-        <div className="border-t border-[hsl(var(--foreground)/0.06)] p-space-3 shrink-0">
-          <div
-            className={cn(
-              "flex items-center min-w-0 group radius-md transition-colors duration-150 cursor-default",
-              collapsed
-                ? "justify-center py-space-2"
-                : "gap-space-3 px-space-2 py-space-2 -mx-space-1 hover:bg-[hsl(var(--foreground)/0.04)]"
-            )}
-          >
-            <UserAvatarMenu
-              avatarClass={collapsed ? "h-8 w-8" : "h-7 w-7"}
-              roleLabel={roleLabel}
-              orgName={orgName}
-            />
-            {!collapsed && (
-              <>
-                <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-caption font-medium text-foreground truncate">
-                    {user?.name || "Account"}
-                  </span>
-                  <span className="text-caption text-muted-foreground/70 truncate capitalize">
-                    {roleLabel}
-                  </span>
-                </div>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0 group-hover:text-muted-foreground/60 transition-colors" />
-              </>
-            )}
-          </div>
-        </div>
       </div>
     );
   };
