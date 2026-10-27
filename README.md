@@ -235,4 +235,4 @@ Key starting points:
 
 ## Production domain
 
-`nexxtechnologies.com`
+`operator.nexxtechnologies.com`

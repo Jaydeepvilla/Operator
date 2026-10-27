@@ -53,7 +53,7 @@ export function ChannelActivationHub({
 
   const embedSnippet = typeof window !== "undefined"
     ? `<script src="${window.location.origin}/widget.js" data-org-id="${orgId}"></script>`
-    : `<script src="https://operator-azure.vercel.app/widget.js" data-org-id="${orgId}"></script>`;
+    : `<script src="https://operator.nexxtechnologies.com/widget.js" data-org-id="${orgId}"></script>`;
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(embedSnippet);

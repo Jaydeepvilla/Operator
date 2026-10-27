@@ -12,7 +12,7 @@ export const BRAND_CONFIG = {
   aiName: PRODUCT_AI_NAME,
   companyName: COMPANY_NAME,
   defaultDomain: "operator.ai",
-  defaultAppUrl: "https://app.operator.ai",
+  defaultAppUrl: "https://operator.nexxtechnologies.com",
   defaultSupportEmail: "support@operator.ai",
   defaultPrivacyEmail: "privacy@operator.ai",
   defaultLegalEmail: "legal@operator.ai",

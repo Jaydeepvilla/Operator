@@ -138,7 +138,10 @@ export const voiceCampaign = {
           continue;
         }
         // Stream URL points to our websocket endpoint
-        const streamUrl = `wss://${process.env.NEXT_PUBLIC_APP_URL || "app.operator.ai"}/api/webhooks/voice/stream`;
+        const streamHost = (process.env.NEXT_PUBLIC_APP_URL || "operator.nexxtechnologies.com")
+          .replace(/^https?:\/\//, "")
+          .replace(/\/$/, "");
+        const streamUrl = `wss://${streamHost}/api/webhooks/voice/stream`;
         const res = await this.triggerOutboundCall({
           organizationId,
           phoneNumberId: phoneLine.id,

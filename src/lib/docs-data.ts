@@ -229,7 +229,7 @@ Navigate to **Website Widget** (\`/widget\`):
 - Copy your unique 1-line script tag:
 
 \`\`\`html
-<script src="https://app.operator.ai/widget.js" data-org-id="YOUR_ORGANIZATION_ID"></script>
+<script src="https://operator.nexxtechnologies.com/widget.js" data-org-id="YOUR_ORGANIZATION_ID"></script>
 \`\`\`
 
 - Paste it immediately before the closing \`</body>\` tag of your website HTML or CMS footer.
@@ -1076,7 +1076,7 @@ Features include:
 To embed the widget on any website, paste this single script tag right before the closing \`</body>\` tag:
 
 \`\`\`html
-<script src="https://app.operator.ai/widget.js" data-org-id="YOUR_ORGANIZATION_ID"></script>
+<script src="https://operator.nexxtechnologies.com/widget.js" data-org-id="YOUR_ORGANIZATION_ID"></script>
 \`\`\`
 
 You can copy your organization-specific script tag directly from **Website Widget > Installation** (\`/widget\`).
@@ -1665,7 +1665,7 @@ Operator provides dedicated, verified webhook endpoints for external services:
 Embed the Operator widget on any website using this standard script tag:
 
 \`\`\`html
-<script src="https://app.operator.ai/widget.js" data-org-id="YOUR_ORGANIZATION_ID"></script>
+<script src="https://operator.nexxtechnologies.com/widget.js" data-org-id="YOUR_ORGANIZATION_ID"></script>
 \`\`\`
 
 When loaded, the script checks domain whitelisting, retrieves the organization's branding theme, and renders the floating launcher.

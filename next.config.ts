@@ -119,10 +119,32 @@ const nextConfig: NextConfig = {
         has: [
           {
             type: "host",
+            value: "apps.nexxtechnologies.com",
+          },
+        ],
+        destination: "https://operator.nexxtechnologies.com/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "apps.nexxtechnolgoies.com",
+          },
+        ],
+        destination: "https://operator.nexxtechnologies.com/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
             value: "ai-appointments-git-main-jc16.vercel.app",
           },
         ],
-        destination: "https://apps.nexxtechnologies.com/:path*",
+        destination: "https://operator.nexxtechnologies.com/:path*",
         permanent: true,
       },
       {
@@ -133,7 +155,7 @@ const nextConfig: NextConfig = {
             value: "ai-appointments-jzovt71pf-jc16.vercel.app",
           },
         ],
-        destination: "https://apps.nexxtechnologies.com/:path*",
+        destination: "https://operator.nexxtechnologies.com/:path*",
         permanent: true,
       },
       {
@@ -144,7 +166,7 @@ const nextConfig: NextConfig = {
             value: "ai-appointments(.*)\\.vercel\\.app",
           },
         ],
-        destination: "https://apps.nexxtechnologies.com/:path*",
+        destination: "https://operator.nexxtechnologies.com/:path*",
         permanent: true,
       },
       {
@@ -155,7 +177,7 @@ const nextConfig: NextConfig = {
             value: "operator-azure(.*)\\.vercel\\.app",
           },
         ],
-        destination: "https://apps.nexxtechnologies.com/:path*",
+        destination: "https://operator.nexxtechnologies.com/:path*",
         permanent: true,
       },
     ];

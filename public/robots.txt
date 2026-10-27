@@ -38,5 +38,5 @@ Disallow: /api/
 Disallow: /_next/
 
 # Host and Sitemap locations
-Host: https://nexx-receptionist.ai
-Sitemap: https://nexx-receptionist.ai/sitemap.xml
+Host: https://operator.nexxtechnologies.com
+Sitemap: https://operator.nexxtechnologies.com/sitemap.xml

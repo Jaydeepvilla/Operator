@@ -34,7 +34,7 @@ To check: `git status` — `.env*` files should not appear.
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `NEXT_PUBLIC_APP_URL` | Yes | Live application URL (e.g., `https://apps.nexxtechnologies.com`) |
+| `NEXT_PUBLIC_APP_URL` | Yes | Live application URL (e.g., `https://operator.nexxtechnologies.com`) |
 | `GOOGLE_CLIENT_ID` | Optional | Google OAuth 2.0 Client ID |
 | `GEMINI_API_KEY` | Optional | For Google Gemini AI response generation and vector embeddings |
 | `RAZORPAY_KEY_ID` | Optional | Payment gateway public key |

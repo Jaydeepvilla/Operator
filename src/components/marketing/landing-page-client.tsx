@@ -339,7 +339,7 @@ export function LandingPageClient() {
                   </div>
                   <div className="flex items-center gap-space-2 bg-background/80 border border-border px-space-3 py-0.5 radius-full text-caption font-mono text-muted-foreground">
                     <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-xs">app.operator.ai</span>
+                    <span className="text-xs">operator.nexxtechnologies.com</span>
                   </div>
                   <div className="flex items-center gap-space-2 text-caption text-emerald-600 dark:text-emerald-400 font-mono text-xs hidden sm:flex">
                     <span>⚡ Live</span>
