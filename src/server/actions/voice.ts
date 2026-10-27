@@ -423,7 +423,7 @@ export async function initiateOutboundCallAction(params: {
       const accountSid = process.env.TWILIO_ACCOUNT_SID!;
       const authToken = process.env.TWILIO_AUTH_TOKEN!;
       const authHeader = "Basic " + Buffer.from(`${accountSid}:${authToken}`).toString("base64");
-      const appBaseUrl = process.env.NEXTAUTH_URL || "https://app.operator.com";
+      const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "https://operator.nexxtechnologies.com";
       const twimlUrl = `${appBaseUrl}/api/voice/twiml`;
 
       try {
