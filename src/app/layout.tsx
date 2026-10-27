@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/shared/theme-provider";
 import { ToastProvider } from "@/components/shared/toast";
 import { MotionProvider } from "@/components/motion";
 import { MazeSnippet } from "@/components/shared/maze-snippet";
+import { Analytics } from "@vercel/analytics/next";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 import "./globals.css";
 
@@ -56,6 +57,7 @@ export default async function RootLayout({
               <MotionProvider>{children}</MotionProvider>
             </ToastProvider>
           </ThemeProvider>
+          <Analytics />
         </body>
       </html>
     </AuthProvider>
