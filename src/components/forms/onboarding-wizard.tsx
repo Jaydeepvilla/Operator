@@ -473,7 +473,7 @@ function ScreenGenerating({
  );
 }
 
-// ─── HoursField (structured selection option) ─────────────────────────────────
+// ─── HoursField (structured selection options) ─────────────────────────────────
 
 const DAYS_OPTIONS = [
   "Monday – Friday",
@@ -497,26 +497,44 @@ function parseHours(val: string) {
   let days = "Monday – Friday";
   let open = "09:00 AM";
   let close = "05:00 PM";
-
   if (!val) return { days, open, close };
 
-  const parts = val.split(/:s*/);
-  if (parts.length >= 2) {
-    const rawDays = parts[0].trim();
-    const matchedDay = DAYS_OPTIONS.find((d) =>
-      d.toLowerCase().replace(/[\s–-]/g, "") === rawDays.toLowerCase().replace(/[\s–-]/g, "")
-    );
-    if (matchedDay) days = matchedDay;
-    else if (rawDays.toLowerCase().includes("sun") || rawDays.toLowerCase().includes("every")) days = "Monday – Sunday (Every day)";
-    else if (rawDays.toLowerCase().includes("sat")) days = "Monday – Saturday";
+  const low = val.toLowerCase();
+  if (low.includes("sun") || low.includes("every day") || low.includes("7 days")) {
+    days = "Monday – Sunday (Every day)";
+  } else if (low.includes("sat") && (low.includes("mon") || low.includes("tue"))) {
+    days = "Monday – Saturday";
+  } else if (low.includes("thur")) {
+    days = "Monday – Thursday";
+  } else if (low.includes("tue") && low.includes("sat")) {
+    days = "Tuesday – Saturday";
+  } else if (low.includes("sat") && low.includes("sun")) {
+    days = "Saturday – Sunday (Weekends only)";
+  } else if (low.includes("mon") && low.includes("fri")) {
+    days = "Monday – Friday";
+  }
 
-    const times = parts[1].split(/\s*[–-]\s*/);
-    if (times.length >= 2) {
-      const matchOpen = TIME_OPTIONS.find((t) => t.replace(/^0/, "").toLowerCase() === times[0].trim().replace(/^0/, "").toLowerCase());
-      if (matchOpen) open = matchOpen;
-      const matchClose = TIME_OPTIONS.find((t) => t.replace(/^0/, "").toLowerCase() === times[1].trim().replace(/^0/, "").toLowerCase());
-      if (matchClose) close = matchClose;
-    }
+  // Find times like 9:00 AM, 5:00 PM, 9am, 5pm, 09:00 AM
+  const timeRegex = /([0-1]?[0-9](?::[0-5][0-9])?\s*(?:am|pm))/gi;
+  const matches = val.match(timeRegex);
+  if (matches && matches.length >= 2) {
+    const norm = (str: string) => {
+      let s = str.trim().toUpperCase();
+      if (!s.includes(":")) {
+        s = s.replace(/(\d+)\s*(AM|PM)/, "$1:00 $2");
+      }
+      const parts = s.split(":");
+      let h = parseInt(parts[0], 10);
+      let rest = parts[1];
+      const hStr = h < 10 ? `0${h}` : `${h}`;
+      return `${hStr}:${rest.trim()}`;
+    };
+    const o = norm(matches[0]);
+    const c = norm(matches[1]);
+    const matchedOpen = TIME_OPTIONS.find((t) => t.toUpperCase() === o);
+    if (matchedOpen) open = matchedOpen;
+    const matchedClose = TIME_OPTIONS.find((t) => t.toUpperCase() === c);
+    if (matchedClose) close = matchedClose;
   }
   return { days, open, close };
 }
@@ -528,141 +546,89 @@ function HoursField({
   value: string;
   onChange: (v: string) => void;
 }) {
-  const [editing, setEditing] = React.useState(false);
   const parsed = React.useMemo(() => parseHours(value), [value]);
-  const [selectedDays, setSelectedDays] = React.useState(parsed.days);
-  const [selectedOpen, setSelectedOpen] = React.useState(parsed.open);
-  const [selectedClose, setSelectedClose] = React.useState(parsed.close);
 
-  React.useEffect(() => {
-    if (editing) {
-      const p = parseHours(value);
-      setSelectedDays(p.days);
-      setSelectedOpen(p.open);
-      setSelectedClose(p.close);
-    }
-  }, [editing, value]);
-
-  const save = () => {
-    const cleanDays = selectedDays.replace(/\s*\([^)]*\)/g, "").trim();
-    onChange(`${cleanDays}: ${selectedOpen} – ${selectedClose}`);
-    setEditing(false);
+  const handleDaysChange = (newDays: string) => {
+    const cleanDays = newDays.replace(/\s*\([^)]*\)/g, "").trim();
+    onChange(`${cleanDays}: ${parsed.open} – ${parsed.close}`);
   };
 
-  const cancel = () => {
-    setEditing(false);
+  const handleOpenChange = (newOpen: string) => {
+    const cleanDays = parsed.days.replace(/\s*\([^)]*\)/g, "").trim();
+    onChange(`${cleanDays}: ${newOpen} – ${parsed.close}`);
   };
 
-  if (editing) {
-    return (
-      <div className="p-space-4 rounded-xl border border-primary/30 bg-primary/5 space-y-space-3 animate-fade-up">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-space-2 text-body-sm font-semibold text-foreground">
-            <Clock className="h-4 w-4 text-primary" />
-            <span>Select Business Hours</span>
-          </div>
-          <button
-            type="button"
-            onClick={cancel}
-            className="text-muted-foreground hover:text-foreground p-1 cursor-pointer"
-            title="Close"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="space-y-space-3">
-          <div className="space-y-1">
-            <Label className="text-caption font-medium text-muted-foreground">Days of Operation</Label>
-            <Select value={selectedDays} onValueChange={setSelectedDays}>
-              <SelectTrigger className="h-10 rounded-xl bg-background text-body-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {DAYS_OPTIONS.map((d) => (
-                  <SelectItem key={d} value={d}>
-                    {d}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-3">
-            <div className="space-y-1">
-              <Label className="text-caption font-medium text-muted-foreground">Opening Time</Label>
-              <Select value={selectedOpen} onValueChange={setSelectedOpen}>
-                <SelectTrigger className="h-10 rounded-xl bg-background text-body-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="max-h-56">
-                  {TIME_OPTIONS.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1">
-              <Label className="text-caption font-medium text-muted-foreground">Closing Time</Label>
-              <Select value={selectedClose} onValueChange={setSelectedClose}>
-                <SelectTrigger className="h-10 rounded-xl bg-background text-body-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="max-h-56">
-                  {TIME_OPTIONS.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-end gap-space-2 pt-space-2 border-t border-border/40">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={cancel}
-            className="text-caption font-medium h-8 px-3"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="default"
-            size="sm"
-            onClick={save}
-            className="text-caption font-medium h-8 px-4"
-          >
-            Save Hours
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const handleCloseChange = (newClose: string) => {
+    const cleanDays = parsed.days.replace(/\s*\([^)]*\)/g, "").trim();
+    onChange(`${cleanDays}: ${parsed.open} – ${newClose}`);
+  };
 
   return (
-    <div className="flex items-center gap-space-3 px-space-4 py-space-3 rounded-xl border border-border/70 bg-card/50 hover:border-border transition-colors duration-200">
-      <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-      <div className="flex-1 min-w-0">
-        <p className="text-caption text-muted-foreground mb-0.5">Business hours</p>
-        <p className="text-body-sm font-medium text-foreground truncate">{value}</p>
+    <div className="space-y-space-3 p-space-4 rounded-xl border border-border/80 bg-card/60">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-space-2">
+          <Clock className="h-4 w-4 text-primary shrink-0" />
+          <Label className="text-body-sm font-medium text-foreground">
+            Business Hours <span className="text-destructive font-bold ml-0.5">*</span>
+          </Label>
+        </div>
+        <span className="text-caption font-medium text-muted-foreground/80">
+          {parsed.days.replace(/\s*\([^)]*\)/g, "").trim()} • {parsed.open} – {parsed.close}
+        </span>
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={() => setEditing(true)}
-        className="ml-auto text-caption font-medium h-8 border-border/80 hover:bg-muted/50 shrink-0 cursor-pointer"
-      >
-        Edit Hours
-      </Button>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-3">
+        {/* Days of Operation Dropdown */}
+        <div className="space-y-1">
+          <Label className="text-caption font-medium text-muted-foreground">Days of Operation</Label>
+          <Select value={parsed.days} onValueChange={handleDaysChange}>
+            <SelectTrigger className="h-10 rounded-xl bg-background text-body-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DAYS_OPTIONS.map((d) => (
+                <SelectItem key={d} value={d}>
+                  {d}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Opening Time Dropdown */}
+        <div className="space-y-1">
+          <Label className="text-caption font-medium text-muted-foreground">Opening Time</Label>
+          <Select value={parsed.open} onValueChange={handleOpenChange}>
+            <SelectTrigger className="h-10 rounded-xl bg-background text-body-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="max-h-56">
+              {TIME_OPTIONS.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Closing Time Dropdown */}
+        <div className="space-y-1">
+          <Label className="text-caption font-medium text-muted-foreground">Closing Time</Label>
+          <Select value={parsed.close} onValueChange={handleCloseChange}>
+            <SelectTrigger className="h-10 rounded-xl bg-background text-body-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="max-h-56">
+              {TIME_OPTIONS.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
     </div>
   );
 }
