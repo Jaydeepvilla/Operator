@@ -52,3 +52,11 @@ scratch/
 .doctor/
 
 
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+# Submodules / references
+cal.com/
+.aider-desk/
+.operator-doctor-baseline.json

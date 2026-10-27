@@ -4,6 +4,8 @@ import * as path from "path";
 export default defineConfig({
   testDir: "./tests",
   globalSetup: require.resolve("./tests/global-setup"),
+  workers: 1,
+  timeout: 60000,
   use: {
     headless: true,
     viewport: { width: 1280, height: 720 },
