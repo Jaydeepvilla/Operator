@@ -6,7 +6,10 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     let { amount, currency = "INR", receipt, notes } = body;
 
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    const keyId = process.env.RAZORPAY_KEY_ID || "rzp_test_TsrjKrqgpr3af8";
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || "6vwhav2pRm3Zs0qkkjrOuM5a";
+
+    if (!keyId || !keySecret) {
       return NextResponse.json(
         { error: "Razorpay credentials are not configured on the server." },
         { status: 401 }
