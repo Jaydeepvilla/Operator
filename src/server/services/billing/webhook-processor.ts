@@ -12,6 +12,7 @@ import {
 } from "../../db/schema";
 import { subscriptionEngine } from "./subscription-engine";
 import { getPlan } from "@/lib/billing/plans";
+import { billingSecurityService } from "./billing-security";
 
 export interface ProcessWebhookResult {
   processed: boolean;
@@ -288,6 +289,22 @@ export class WebhookProcessor {
           event;
         const orgId = paymentObj?.notes?.organizationId;
         if (orgId) {
+          const currentStatus = await subscriptionEngine.getSubscriptionStatus(orgId);
+          const incomingEventTimestamp = event.created_at ? event.created_at * 1000 : Date.now();
+          const currentStateTimestamp = currentStatus.currentPeriodStart ? new Date(currentStatus.currentPeriodStart).getTime() : 0;
+
+          const reversalCheck = billingSecurityService.preventStateReversal({
+            currentStatus: currentStatus.state,
+            currentStateTimestamp,
+            incomingStatus: "PAST_DUE",
+            incomingEventTimestamp,
+          });
+
+          if (!reversalCheck.allowed) {
+            console.warn(`[WebhookProcessor] Discarded replayed payment.failed event for org ${orgId}: ${reversalCheck.reason}`);
+            break;
+          }
+
           await subscriptionEngine.recordPaymentFailure(orgId, paymentObj.error_description || "Payment authorization failed");
         }
         break;
@@ -403,7 +420,22 @@ export class WebhookProcessor {
           if (sub.status === "active") {
             await subscriptionEngine.recordPaymentRecovery(orgId);
           } else if (sub.status === "past_due") {
-            await subscriptionEngine.recordPaymentFailure(orgId, "Stripe invoice past due");
+            const currentStatus = await subscriptionEngine.getSubscriptionStatus(orgId);
+            const incomingEventTimestamp = event.created ? event.created * 1000 : Date.now();
+            const currentStateTimestamp = currentStatus.currentPeriodStart ? new Date(currentStatus.currentPeriodStart).getTime() : 0;
+
+            const reversalCheck = billingSecurityService.preventStateReversal({
+              currentStatus: currentStatus.state,
+              currentStateTimestamp,
+              incomingStatus: "PAST_DUE",
+              incomingEventTimestamp,
+            });
+
+            if (reversalCheck.allowed) {
+              await subscriptionEngine.recordPaymentFailure(orgId, "Stripe invoice past due");
+            } else {
+              console.warn(`[WebhookProcessor] Discarded replayed Stripe past_due event for org ${orgId}: ${reversalCheck.reason}`);
+            }
           }
         }
         break;

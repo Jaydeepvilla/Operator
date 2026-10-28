@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrganizationAccess } from "@/lib/auth/server";
+import { requireOrganizationAccess, requireManagerAccess } from "@/lib/auth/server";
 import { learningEngine, proposalApplicator } from "@/server/services/learning-engine";
 import { knowledgeGapEngine } from "@/server/services/learning/knowledge-gap-engine";
 import { db } from "@/server/db";
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
-    const { organizationId, userId } = await requireOrganizationAccess();
+    const { organizationId, userId } = await requireManagerAccess();
 
     const body = await req.json();
     const { action, proposalId, gapId, notes } = body;

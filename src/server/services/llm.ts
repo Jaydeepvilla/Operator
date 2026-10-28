@@ -1,3 +1,22 @@
+
+/**
+ * Sanitizes text before sending to external LLM providers to prevent credit cards,
+ * CVVs, SSNs, passwords, or API keys from being unnecessarily transmitted.
+ */
+export function maskSensitivePiiForLLM(text: string): string {
+  if (!text || typeof text !== "string") return "";
+
+  return text
+    // Credit card numbers (13-19 digits with optional dashes/spaces)
+    .replace(/\b(?:\d[ -]*?){13,19}\b/g, "[CARD_NUMBER_REDACTED]")
+    // CVV / CVC (3-4 digits following cvv/cvc indicators)
+    .replace(/(cvv|cvc|security\s+code)[:\s=]+(\d{3,4})\b/gi, "$1: [CVV_REDACTED]")
+    // Social Security Numbers (XXX-XX-XXXX)
+    .replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[SSN_REDACTED]")
+    // Stripe/Razorpay live secret keys
+    .replace(/sk_(live|test)_[a-zA-Z0-9]+/g, "sk_$1_[REDACTED]")
+    .replace(/rzp_(live|test)_[a-zA-Z0-9]+/g, "rzp_$1_[REDACTED]");
+}
 import { GoogleGenAI } from "@google/genai";
 
 // Learning signal callback type for LLM fallback tracking
@@ -287,7 +306,7 @@ export class GeminiProvider implements LLMProvider {
     const contents = conversationMessages.length > 0
       ? conversationMessages.map((m) => ({
           role: m.role === "assistant" ? "model" : "user",
-          parts: [{ text: m.content }],
+          parts: [{ text: maskSensitivePiiForLLM(m.content) }],
         }))
       : [{ role: "user" as const, parts: [{ text: "Proceed." }] }];
 

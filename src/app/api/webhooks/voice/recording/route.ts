@@ -51,11 +51,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!recordingUrl) {
-      console.warn("[Voice Recording Webhook] Callback missed recording url.");
+    if (!recordingUrl || !/^https:\/\/([a-zA-Z0-9-]+\.)*(twilio\.com|amazonaws\.com|googleapis\.com)\//i.test(recordingUrl)) {
+      console.warn(`[Voice Recording Webhook] Rejected untrusted or non-https recording URL: ${recordingUrl}`);
       return new NextResponse(
-        `<Response><Say>No recording was detected. Goodbye.</Say><Hangup/></Response>`,
-        { status: 200, headers: { "Content-Type": "text/xml" } }
+        `<Response><Say>Invalid recording source. Goodbye.</Say><Hangup/></Response>`,
+        { status: 400, headers: { "Content-Type": "text/xml" } }
       );
     }
 
@@ -65,6 +65,14 @@ export async function POST(req: NextRequest) {
     });
 
     if (session) {
+      if (session.organizationId !== orgId) {
+        console.warn(`[Voice Recording Webhook] Tenant mismatch for session ${session.id}: expected ${session.organizationId}, got ${orgId}`);
+        return new NextResponse(
+          `<Response><Say>Access violation. Goodbye.</Say><Hangup/></Response>`,
+          { status: 403, headers: { "Content-Type": "text/xml" } }
+        );
+      }
+
       // Process voicemail in background/helper
       await voicemailProcessor.processVoicemail({
         organizationId: orgId,

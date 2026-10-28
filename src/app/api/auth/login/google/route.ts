@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGoogleOAuthConfig, getGoogleRedirectUri } from "@/lib/auth/google-config";
+import { validateIntendedDestination } from "@/lib/auth/router";
 import crypto from "crypto";
 
 export async function GET(request: NextRequest) {
@@ -24,7 +25,8 @@ export async function GET(request: NextRequest) {
   googleAuthUrl.searchParams.set("access_type", "offline");
   googleAuthUrl.searchParams.set("prompt", "select_account");
 
-  const intendedRedirect = request.nextUrl.searchParams.get("redirect");
+  const rawRedirect = request.nextUrl.searchParams.get("redirect");
+  const intendedRedirect = validateIntendedDestination(rawRedirect);
   const intent = request.nextUrl.searchParams.get("intent") || "login"; // "login" | "signup"
 
   const response = NextResponse.redirect(googleAuthUrl.toString());

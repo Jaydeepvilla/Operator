@@ -9,6 +9,9 @@ class SentryExampleAPIError extends Error {
 
 // A faulty API route to test Sentry's error monitoring
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return new Response("Not Found", { status: 404 });
+  }
   // Opt out of prerendering so the error is thrown at request time
   await connection();
   Sentry.logger.info("Sentry example API called");

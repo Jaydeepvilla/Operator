@@ -10,6 +10,7 @@ import {
   organizations
 } from "../../db/schema";
 import { eq, and, gte, lte, desc, inArray, sql } from "drizzle-orm";
+import { ReportingSecurityService } from "../reporting-security";
 
 export interface FinancialKPIs {
   mrr: number;
@@ -45,7 +46,8 @@ export const financialMetricsService = {
   /**
    * Calculate live real-time financial indicators across subscriptions, payments, and invoices.
    */
-  async calculateRealtimeMetrics(organizationId?: string): Promise<FinancialKPIs> {
+  async calculateRealtimeMetrics(organizationId: string): Promise<FinancialKPIs> {
+    const verifiedOrgId = ReportingSecurityService.assertAnalyticsQueryAuthorized({ organizationId });
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
@@ -58,11 +60,11 @@ export const financialMetricsService = {
       planMap.set(dp.id.toLowerCase(), { price: p, interval: dp.interval || "month" });
     }
 
-    // 2. Fetch all subscriptions scoped to organization if provided
-    const subConditions = organizationId ? eq(subscriptions.organizationId, organizationId) : undefined;
-    const allSubs = subConditions 
-      ? await db.select().from(subscriptions).where(subConditions)
-      : await db.select().from(subscriptions);
+    // 2. Fetch all subscriptions strictly scoped to organization
+    const allSubs = await db
+      .select()
+      .from(subscriptions)
+      .where(eq(subscriptions.organizationId, verifiedOrgId));
 
     let activeMRR = 0;
     let activePayingCount = 0;

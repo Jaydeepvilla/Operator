@@ -31,7 +31,7 @@ export const conversationsRepository = {
     return newConv;
   },
 
-  async update(id: string, updates: Partial<NewConversation>) {
+  async update(id: string, updates: Partial<NewConversation>, organizationId?: string) {
     const [updated] = await db
       .update(conversations)
       .set({ ...updates, updatedAt: new Date() })

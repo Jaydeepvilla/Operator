@@ -16,6 +16,7 @@ import { eq, and, or } from "drizzle-orm";
 import { WebhookMessagePayload, ProviderRegistry } from "./types";
 import { orchestratorService } from "../orchestrator";
 import { crmDeduplicationService } from "../crm/deduplication";
+import { MessagingSecurityService } from "../messaging-security";
 
 // Register providers
 import "./vonage";
@@ -41,6 +42,17 @@ export const omnichannelRouter = {
     } = payload;
 
     try {
+      // 0. Security Inbound Checks: process opt-out keywords (TCPA/GDPR) & block admin execution
+      MessagingSecurityService.processInboundOptOut({
+        organizationId,
+        recipient: senderUserId,
+        content,
+      });
+
+      MessagingSecurityService.assertInboundMessageCannotPerformAdminAction({
+        content,
+      });
+
       // 1. Resolve unified Contact/Lead profile with omnichannel deduplication across channels
       const { leadProfileId, isNew } = await crmDeduplicationService.resolveUnifiedProfile({
         organizationId,
@@ -199,13 +211,13 @@ export const omnichannelRouter = {
         });
       }
 
-      // Audit Log
+      // Audit Log with sanitized credentials/tokens
       await db.insert(communicationLogs).values({
         organizationId,
         level: "info",
         message: `Successfully routed incoming ${channelType} message from ${senderUserId}`,
         channel: channelType,
-        payload: { externalMessageId }
+        payload: MessagingSecurityService.sanitizeCommunicationLogPayload({ externalMessageId })
       });
 
     } catch (e: any) {
@@ -215,7 +227,7 @@ export const omnichannelRouter = {
         level: "error",
         message: `Failed to route incoming ${channelType} message: ${e?.message || "Unknown error"}`,
         channel: channelType,
-        payload: { payload }
+        payload: MessagingSecurityService.sanitizeCommunicationLogPayload({ payload })
       });
     }
   },
@@ -243,14 +255,61 @@ export const omnichannelRouter = {
         )
       });
 
-      if (!channel) throw new Error("Channel configuration not found");
-
       const connection = await db.query.channelConnections.findFirst({
         where: and(
           eq(channelConnections.organizationId, organizationId),
           eq(channelConnections.channelId, channelId)
         )
       });
+
+      // 1. Channel Operationality Check
+      MessagingSecurityService.assertChannelOperational({
+        targetOrgId: organizationId,
+        channel: channel
+          ? {
+              id: channel.id,
+              organizationId: channel.organizationId,
+              status: channel.status,
+              connection: connection
+                ? {
+                    status: connection.status,
+                    credentials: connection.credentials as Record<string, any>,
+                  }
+                : null,
+            }
+          : null,
+      });
+
+      if (!channel) throw new Error("Channel configuration not found");
+
+      // 2. Opt-Out Enforcement
+      MessagingSecurityService.assertNotOptedOut({
+        organizationId,
+        recipient: recipientId,
+        isTransactional: metadata?.isTransactional === true,
+      });
+
+      // 3. Outbound Velocity & Spam Prevention
+      MessagingSecurityService.enforceOutboundVelocityLimits({
+        organizationId,
+        recipient: recipientId,
+      });
+
+      // 4. Retry Deduplication
+      const idemp = MessagingSecurityService.checkMessageIdempotency({
+        organizationId,
+        recipientId,
+        content,
+        idempotencyKey: metadata?.idempotencyKey as string | undefined,
+      });
+      if (idemp.isDuplicate) {
+        console.info(`[Omnichannel Router] Suppressed duplicate message send for recipient ${recipientId}`);
+        return;
+      }
+
+      // 5. Input Sanitization (strip XSS/malicious links) & Masking of Private Customer Info
+      const inputCleaned = MessagingSecurityService.sanitizeUntrustedMessageInput(content, channel.type as any);
+      const { sanitizedContent } = MessagingSecurityService.sanitizeOutboundMessageContent(inputCleaned);
 
       const config = connection ? (connection.credentials as Record<string, any>) : {};
 
@@ -267,7 +326,7 @@ export const omnichannelRouter = {
           organizationId,
           conversationId,
           sender: senderVal,
-          content,
+          content: sanitizedContent,
           confidenceScore: "1.0"
         })
         .returning();
@@ -281,22 +340,34 @@ export const omnichannelRouter = {
           direction: "outgoing",
           senderId: channel.type === "email" ? (config.user || "assistant@operator.ai") : (config.fromNumber || "business-handle"),
           recipientId,
-          content,
+          content: sanitizedContent,
           status: "queued",
           metadata: { isAiGenerated, ...metadata }
         })
         .returning();
 
       // Trigger provider API call
-      const res = await provider.sendMessage(organizationId, config, recipientId, content);
+      const res = await provider.sendMessage(organizationId, config, recipientId, sanitizedContent);
+
+      // Validate delivery status transition & prevent failed from reporting as delivered
+      const nextStatus = MessagingSecurityService.validateMessageStateTransition(
+        "queued",
+        res.success ? "sent" : "failed",
+        res.success,
+        res.externalId
+      );
+      const deliveryStatus = MessagingSecurityService.updateMessageDeliveryStatus(nextStatus, {
+        status: res.success ? "sent" : "failed",
+        error: res.errorMessage
+      });
 
       // Update message delivery status
       await db
         .update(channelMessages)
         .set({
-          status: res.success ? "sent" : "failed",
+          status: deliveryStatus.status,
           externalId: res.externalId,
-          metadata: { ...chanMsg.metadata as any, error: res.errorMessage }
+          metadata: { ...chanMsg.metadata as any, error: deliveryStatus.error }
         })
         .where(eq(channelMessages.id, chanMsg.id));
 
@@ -318,6 +389,22 @@ export const omnichannelRouter = {
           })
           .where(eq(inboxThreads.id, thread.id));
       }
+
+      // Log outbound event with credential masking
+      await db.insert(communicationLogs).values({
+        organizationId,
+        level: res.success ? "info" : "error",
+        message: res.success
+          ? `Dispatched outgoing ${channel.type} message to ${recipientId}`
+          : `Failed to dispatch outgoing ${channel.type} message to ${recipientId}: ${res.errorMessage}`,
+        channel: channel.type,
+        payload: MessagingSecurityService.sanitizeCommunicationLogPayload({
+          recipientId,
+          externalId: res.externalId,
+          status: deliveryStatus.status,
+          error: deliveryStatus.error,
+        }),
+      });
 
     } catch (e: any) {
       console.error("[Omnichannel Router] Error sending outgoing message:", e);

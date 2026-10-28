@@ -25,6 +25,12 @@
       "skillPath": "skills/ads/SKILL.md",
       "computedHash": "82bc8f5727ae62898b121600e437af4d70d02edc9ccc84653e48d3d6b3e9a5ab"
     },
+    "aframe-webxr": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/aframe-webxr/SKILL.md",
+      "computedHash": "22f68f3808702b372f68fc45378010e222cd4192056bb17ab2ab024c5751071b"
+    },
     "agentic-browser-testing": {
       "source": "petrkindlmann/qa-skills",
       "sourceType": "github",
@@ -73,6 +79,18 @@
       "skillPath": "skills/analytics-tracking-testing/SKILL.md",
       "computedHash": "b65ffbdac820251ee2a0aed1010a5e8f6f4391734495066de11f553966e8f52b"
     },
+    "animated-component-libraries": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/animated-component-libraries/SKILL.md",
+      "computedHash": "d3b545d0de1747e76f71fe165cfc3428d2f1b17cff6fc9c4ce744bbe2ff36fd8"
+    },
+    "animejs": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/animejs/SKILL.md",
+      "computedHash": "e955f02951e1484e81d827e0092a6b5ddca5ac593a96d51cc9f6c606ecb49cb0"
+    },
     "api-testing": {
       "source": "petrkindlmann/qa-skills",
       "sourceType": "github",
@@ -90,6 +108,24 @@
       "sourceType": "github",
       "skillPath": "skills/attribution/SKILL.md",
       "computedHash": "12009174ad9d8fc9807e5b4dba049c53e9ccc6429e9060eadae1bb18961fc1b7"
+    },
+    "babylonjs-engine": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/babylonjs-engine/SKILL.md",
+      "computedHash": "eb58751a5f852eb9fc6dead37bff30c06aa8bed98f2e6e84e076a9f77944d9c7"
+    },
+    "barba-js": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/barba-js/SKILL.md",
+      "computedHash": "1bf45582e0e658da22c0d283c758be5fed79350e301048ba978046f00fc4855e"
+    },
+    "blender-web-pipeline": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/blender-web-pipeline/SKILL.md",
+      "computedHash": "d93cf2756b91e5d2e756f052b844280134bce4095a1b02be4104acf7d6a3cdfd"
     },
     "bug-reproduction": {
       "source": "petrkindlmann/qa-skills",
@@ -259,6 +295,12 @@
       "skillPath": "skills/free-tools/SKILL.md",
       "computedHash": "ad5b93189416e98e2f93bcfdd95082913776c916a5d3867bcfdac5455bbb1f5b"
     },
+    "gsap-scrolltrigger": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/gsap-scrolltrigger/SKILL.md",
+      "computedHash": "b2af007055d557ae3be7112ff413dac1223ad56c7c3ad6bd06f2089fd0f18ee2"
+    },
     "image": {
       "source": "coreyhaines31/marketingskills",
       "sourceType": "github",
@@ -283,11 +325,29 @@
       "skillPath": "skills/lead-magnets/SKILL.md",
       "computedHash": "447a88ab80b8a4c566bcb35121a72d2dbd4dbf16038e96540aa4d029d09a3c57"
     },
+    "lightweight-3d-effects": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/lightweight-3d-effects/SKILL.md",
+      "computedHash": "d5f716c3d9af8e7021950f5081391c30341401558627fb247702739cbc9fcda4"
+    },
     "link-building": {
       "source": "coreyhaines31/marketingskills",
       "sourceType": "github",
       "skillPath": "skills/link-building/SKILL.md",
       "computedHash": "78a8d17eb22830fdd350d5caf17f1e94a58d34cc485fc5790505602547d72805"
+    },
+    "locomotive-scroll": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/locomotive-scroll/SKILL.md",
+      "computedHash": "15475cec78707fd8ee518c5c9a4f2626ceb07cd6c00514e75d7036cda0ec86e6"
+    },
+    "lottie-animations": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/lottie-animations/SKILL.md",
+      "computedHash": "e00a91be81589b19452e1105b82759d68772f47e4c4775e0131eb35d65be9ee1"
     },
     "marketing-council": {
       "source": "coreyhaines31/marketingskills",
@@ -325,6 +385,18 @@
       "skillPath": "skills/mobile-testing/SKILL.md",
       "computedHash": "be8ca431bbfea5a764a82d8acfdae84ed070adf1a0c92881a4878717e240bba9"
     },
+    "modern-web-design": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/modern-web-design/SKILL.md",
+      "computedHash": "89af96893e4a67c5aa6d77791d077ce9af577a59ddc280e26e882d7c8b563dc6"
+    },
+    "motion-framer": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/motion-framer/SKILL.md",
+      "computedHash": "b18cf4fbfd179942f73d770f3f1d4597ea512fbdf67b2aa03f01cfd726558b6e"
+    },
     "observability-driven-testing": {
       "source": "petrkindlmann/qa-skills",
       "sourceType": "github",
@@ -360,6 +432,18 @@
       "sourceType": "github",
       "skillPath": "skills/performance-testing/SKILL.md",
       "computedHash": "5724d20f27d9ccf3eb39bae1b17a037877ef894a7a6d6acd01b239b5e142b654"
+    },
+    "pixijs-2d": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/pixijs-2d/SKILL.md",
+      "computedHash": "5aa25df55664221e76521d6c5c69fd9fb1c068681114dc70b65530c15e201bec"
+    },
+    "playcanvas-engine": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/playcanvas-engine/SKILL.md",
+      "computedHash": "155663377d31133ed38172feb5dc565e8b20c3ddba183d685c689fb028936e16"
     },
     "playwright-automation": {
       "source": "petrkindlmann/qa-skills",
@@ -451,6 +535,18 @@
       "skillPath": "skills/quality-postmortem/SKILL.md",
       "computedHash": "72fcc22a565cd7a9f7216e3e69572d3e2f2be9c60d65fafca9f4add4c9480dae"
     },
+    "react-spring-physics": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/react-spring-physics/SKILL.md",
+      "computedHash": "c1a87b97911f31daa00590225d017368f4464799178c1302d6b0da10ca96aad8"
+    },
+    "react-three-fiber": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/react-three-fiber/SKILL.md",
+      "computedHash": "b118f1385a1ec24604a70a4798e0fb5534b1f09ac8d96f019706ff3902bcb5fa"
+    },
     "referrals": {
       "source": "coreyhaines31/marketingskills",
       "sourceType": "github",
@@ -475,6 +571,12 @@
       "skillPath": "skills/risk-based-testing/SKILL.md",
       "computedHash": "5277a3ca7e311a95bc3f4b69d5795396a52cbb735ce7382080f32823a3dd1e32"
     },
+    "rive-interactive": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/rive-interactive/SKILL.md",
+      "computedHash": "119415d1e3cc9b71e93c28d62b3b9e0f90aa55f8d5020a195163c2c65b7ab0eb"
+    },
     "sales-enablement": {
       "source": "coreyhaines31/marketingskills",
       "sourceType": "github",
@@ -486,6 +588,12 @@
       "sourceType": "github",
       "skillPath": "skills/schema/SKILL.md",
       "computedHash": "486ebabc2bca9b371ff6394a86c5af650e588556a34b23f053525b4ebfb234e7"
+    },
+    "scroll-reveal-libraries": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/scroll-reveal-libraries/SKILL.md",
+      "computedHash": "d0baf416e82147931bc7f3f7f91d95e7f7171202fc0bb080d3a8e57f13dd0f99"
     },
     "security-testing": {
       "source": "petrkindlmann/qa-skills",
@@ -529,6 +637,12 @@
       "skillPath": "skills/site-architecture/SKILL.md",
       "computedHash": "b3b019fd6903ab9fbdade6fe8ee8ab365f9e0336701c5ca15a695a6b5acc8637"
     },
+    "skill-creator": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/skill-creator/SKILL.md",
+      "computedHash": "138aca6ca72a257addaea2e7deb88c2adc24c3bf4e33ab6e196ddcb57de9dcaf"
+    },
     "sms": {
       "source": "coreyhaines31/marketingskills",
       "sourceType": "github",
@@ -540,6 +654,18 @@
       "sourceType": "github",
       "skillPath": "skills/social/SKILL.md",
       "computedHash": "8fbfde477a34d243500855a5f4f47a9848dedba21713d53467dc603cd15001ef"
+    },
+    "spline-interactive": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/spline-interactive/SKILL.md",
+      "computedHash": "73c61d312b731d3e491cd635d19427767c80c4a1f4a9cc1cd18a3a530efa8aa6"
+    },
+    "substance-3d-texturing": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/substance-3d-texturing/SKILL.md",
+      "computedHash": "6a32a05c99f7bdf0cf0837ae4709b2f4c108c206135e6957b6fb1734089368bc"
     },
     "synthetic-monitoring": {
       "source": "petrkindlmann/qa-skills",
@@ -600,6 +726,12 @@
       "sourceType": "github",
       "skillPath": "skills/testing-in-production/SKILL.md",
       "computedHash": "3e0122703c4c1e99958040d31a5d5fabff92b5df2079a4cc44f0b62a6175e4c3"
+    },
+    "threejs-webgl": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/threejs-webgl/SKILL.md",
+      "computedHash": "b58ebf8170a5eca0e38b2eb6078665fe77c8c2f961dac573f9823016f5a6c7a4"
     },
     "unit-testing": {
       "source": "petrkindlmann/qa-skills",
@@ -666,6 +798,12 @@
       "sourceType": "github",
       "skillPath": "skills/web-design-guidelines/SKILL.md",
       "computedHash": "d8e7d3afe37dcc8a97b99ffb5afdb4d0919ae0092ea8b68f44eb201f035e33ac"
+    },
+    "web3d-integration-patterns": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/web3d-integration-patterns/SKILL.md",
+      "computedHash": "031b411386de803fb3612bbcec35077ea6bfa414765c950c834ae226ad71acf8"
     },
     "writing-guidelines": {
       "source": "vercel-labs/agent-skills",

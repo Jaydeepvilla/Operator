@@ -83,7 +83,10 @@ export const billingRepository = {
   },
 
   // --- Financial Analytics Dashboard ---
-  async getRevenueAnalytics(organizationId?: string) {
+  async getRevenueAnalytics(organizationId: string) {
+    if (!organizationId) {
+      throw new Error("Organization ID is required for revenue analytics");
+    }
     const { financialMetricsService } = await import("../services/billing/financial-metrics");
     const metrics = await financialMetricsService.calculateRealtimeMetrics(organizationId);
 

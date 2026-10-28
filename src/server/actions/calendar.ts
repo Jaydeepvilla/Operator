@@ -1,6 +1,6 @@
 "use server";
 
-import { requireOrganizationAccess } from "@/lib/auth/server";
+import { requireOrganizationAccess, requireAdminAccess } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { eq, and } from "drizzle-orm";
 import { db } from "../db";
@@ -28,7 +28,7 @@ export async function connectCalendarAction(data: {
   externalCalendarId?: string | null;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
 
     const expiresDate = data.expiresAt ? new Date(data.expiresAt) : null;
     
@@ -73,7 +73,7 @@ export async function connectCalendarAction(data: {
 
 export async function disconnectCalendarAction(connectionId: string) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
 
     const [existing] = await db
       .select()
@@ -143,7 +143,7 @@ export async function saveBookingRulesAction(data: {
   cancellationLeadTime: number;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
 
     const rules = await rulesRepository.upsert({
       organizationId,
@@ -156,4 +156,3 @@ export async function saveBookingRulesAction(data: {
     return { success: false, error: error?.message || "Failed to save booking rules" };
   }
 }
-

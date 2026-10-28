@@ -12,7 +12,23 @@ import { Suspense } from "react";
 function LoginSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTarget = searchParams.get("redirect") || "/onboarding";
+  const rawRedirect = searchParams.get("redirect");
+  const redirectTarget = React.useMemo(() => {
+    if (!rawRedirect) return "/onboarding";
+    const trimmed = rawRedirect.trim();
+    if (
+      !trimmed.startsWith("/") ||
+      trimmed.startsWith("//") ||
+      trimmed.startsWith("/\\") ||
+      trimmed.includes("\\") ||
+      trimmed.includes("://") ||
+      /[\x00-\x1f\x7f]/.test(trimmed) ||
+      trimmed.startsWith("/api/")
+    ) {
+      return "/dashboard";
+    }
+    return trimmed;
+  }, [rawRedirect]);
   const mode = searchParams.get("mode") || "signin"; // "signin" | "signup" | "account_exists"
   const isFirstTime = searchParams.get("firstTime") !== "false" || mode === "signup";
   const isAccountExists = mode === "account_exists";

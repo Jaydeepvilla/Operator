@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { getGoogleOAuthConfig, getGoogleRedirectUri } from "@/lib/auth/google-config";
 import { resolveOrCreateOAuthIdentity } from "@/lib/auth/identity";
-import { resolveUserDestination } from "@/lib/auth/router";
+import { resolveUserDestination, validateIntendedDestination } from "@/lib/auth/router";
 import { createSession } from "@/lib/auth/session";
 import { auditService } from "@/server/services/audit";
 
@@ -10,18 +11,26 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const error = searchParams.get("error");
   const state = searchParams.get("state");
-  const intendedRedirect = searchParams.get("redirect") || request.cookies.get("intended_redirect")?.value;
+  const rawRedirect = searchParams.get("redirect") || request.cookies.get("intended_redirect")?.value;
+  const intendedRedirect = validateIntendedDestination(rawRedirect);
   const oauthIntent = request.cookies.get("google_oauth_intent")?.value || "login"; // "login" | "signup"
 
   if (error || !code) {
     return NextResponse.redirect(
-      new URL(`/sign-in?error=${encodeURIComponent(error || "Google authorization was cancelled")}`, request.url)
+      new URL("/sign-in?error=Google+authorization+was+cancelled", request.url)
     );
   }
 
-  // SECURITY: Validate OAuth state parameter to prevent CSRF attacks
+  // SECURITY: Validate OAuth state parameter in constant time to prevent CSRF attacks
   const storedState = request.cookies.get("google_oauth_state")?.value;
-  if (!state || !storedState || state !== storedState) {
+  const isStateValid = Boolean(
+    state &&
+    storedState &&
+    Buffer.byteLength(state) === Buffer.byteLength(storedState) &&
+    crypto.timingSafeEqual(Buffer.from(state), Buffer.from(storedState))
+  );
+
+  if (!isStateValid) {
     console.warn("[Google OAuth] State mismatch — potential CSRF attack blocked.");
     const errRedirect = NextResponse.redirect(
       new URL("/sign-in?error=Invalid+OAuth+state.+Please+try+again.", request.url)
@@ -95,11 +104,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const isEmailVerified = Boolean(googleUser.email_verified || googleUser.verified_email);
+    if (!isEmailVerified) {
+      console.warn(`[Google OAuth] Rejected OAuth for unverified email: ${email}`);
+      return NextResponse.redirect(
+        new URL("/sign-in?error=Google+account+email+is+unverified", request.url)
+      );
+    }
+
     // 3. Canonical Identity Resolution (Atomically find or create User & Account)
     const identity = await resolveOrCreateOAuthIdentity({
       provider: "google",
       providerAccountId: String(providerAccountId),
       email,
+      emailVerified: isEmailVerified,
       name,
       firstName,
       lastName,
@@ -155,8 +173,9 @@ export async function GET(request: NextRequest) {
       uiMode = "signin";
     }
 
+    const safeDestination = validateIntendedDestination(destination) || "/dashboard";
     const successUrl = new URL("/login-success", request.url);
-    successUrl.searchParams.set("redirect", destination);
+    successUrl.searchParams.set("redirect", safeDestination);
     successUrl.searchParams.set("firstTime", String(identity.isNewUser));
     successUrl.searchParams.set("mode", uiMode);
 
@@ -197,7 +216,7 @@ export async function GET(request: NextRequest) {
   } catch (err: any) {
     console.error("[Google OAuth] Unexpected callback error:", err);
     return NextResponse.redirect(
-      new URL(`/sign-in?error=${encodeURIComponent(err.message || "An unexpected authentication error occurred")}`, request.url)
+      new URL("/sign-in?error=Authentication+failed.+Please+try+again.", request.url)
     );
   }
 }

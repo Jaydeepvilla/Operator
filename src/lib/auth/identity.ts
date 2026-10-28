@@ -17,6 +17,7 @@ export interface OAuthIdentityInput {
   provider: "google" | "apple" | "credentials";
   providerAccountId: string;
   email: string;
+  emailVerified?: boolean;
   name: string;
   firstName?: string;
   lastName?: string;
@@ -163,6 +164,9 @@ export async function resolveOrCreateOAuthIdentity(
     .limit(1);
 
   if (existingUser) {
+    if (input.emailVerified === false) {
+      throw new Error("Cannot link unverified OAuth identity to existing account.");
+    }
     if (existingUser.status === "suspended") {
       throw new Error("Your account has been suspended by an administrator.");
     }

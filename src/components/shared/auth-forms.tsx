@@ -574,8 +574,8 @@ export function SignUpForm() {
       });
       if (result.success) {
         if (result.requiresVerification) {
-          const devParams = result.devToken ? `&devToken=${result.devToken}` : "";
-          window.location.href = `/verify-email?email=${encodeURIComponent(email)}${devParams}`;
+          // devToken removed for security
+          window.location.href = `/verify-email?email=${encodeURIComponent(email)}`;
         } else {
           const destination = result.destination || "/onboarding";
           const isFirstTime = !result.isCompleted;

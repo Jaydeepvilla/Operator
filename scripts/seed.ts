@@ -11,10 +11,17 @@ import {
   businessSettings,
 } from "../src/server/db/schema";
 import { sql } from "drizzle-orm";
+import { DatabaseIntegrityService } from "../src/server/services/database-integrity";
 
 async function main() {
   console.log("🌱 Starting database seed...");
   try {
+    // DB-07: Guard against running demo seeds in production or remote databases
+    DatabaseIntegrityService.assertSeedExecutionPermitted(
+      process.env.NODE_ENV || "development",
+      process.env.DATABASE_URL,
+      process.env.FORCE_SEED === "true"
+    );
     // 1. Setup Local User (Syncing Auth with DB)
     const email = "demo+admin@example.com";
     const password = "Dem0P@ssw0rd!2026_";

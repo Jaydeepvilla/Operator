@@ -57,7 +57,7 @@ export const auth = cache(async (): Promise<AuthResult> => {
       .where(eq(users.id, session.userId))
       .limit(1);
 
-    if (!userRecord || userRecord.status === "suspended" || userRecord.deletedAt) {
+    if (!userRecord || userRecord.status === "suspended" || userRecord.status === "deactivated" || userRecord.deletedAt) {
       await deleteSession(token);
       return { userId: null, orgId: null };
     }
@@ -145,9 +145,11 @@ export const currentUser = cache(async () => {
 
 export {
   requireOrganizationAccess,
+  requireOwnerAccess,
   requireAdminAccess,
   requireManagerAccess,
   assertResourceOwnership,
+  assertUserOwnership,
   AuthorizationError,
   type AuthorizedContext,
   type OrgRole,

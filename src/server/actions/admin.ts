@@ -360,8 +360,8 @@ export async function getAdminUsersAction(params: {
   try {
     const { organizationId } = await assertAdmin();
 
-    const page = params.page || 1;
-    const limit = params.limit || 10;
+    const page = Math.max(Number(params.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(params.limit) || 10, 1), 100);
     const offset = (page - 1) * limit;
 
     // Build conditions based on search and status filters
@@ -463,7 +463,7 @@ export async function getAdminUserProfileDetailAction(targetUserId: string) {
     const logs = await db
       .select()
       .from(auditLogs)
-      .where(eq(auditLogs.userId, targetUserId))
+      .where(and(eq(auditLogs.userId, targetUserId), eq(auditLogs.organizationId, organizationId)))
       .orderBy(desc(auditLogs.createdAt))
       .limit(20);
 
@@ -887,8 +887,8 @@ export async function updateOrgMemberRoleAction(data: {
   try {
     const { userId: adminUserId, organizationId, role: actorRole } = await assertAdmin();
 
-    if (adminUserId === data.targetUserId && data.role !== "admin") {
-      return { success: false, error: "You cannot downgrade your own administrator role." };
+    if (adminUserId === data.targetUserId) {
+      return { success: false, error: "You cannot modify your own role." };
     }
 
     const [targetMembership] = await db
@@ -903,6 +903,10 @@ export async function updateOrgMemberRoleAction(data: {
 
     if (targetMembership.role === "owner" && actorRole !== "owner") {
       return { success: false, error: "Administrators cannot modify the role of an Owner." };
+    }
+
+    if ((data.role as string) === "owner" && actorRole !== "owner") {
+      return { success: false, error: "Only the organization Owner can assign the Owner role." };
     }
 
     const [updated] = await db
@@ -970,6 +974,9 @@ export async function removeOrgMemberAction(targetUserId: string) {
           eq(memberships.organizationId, organizationId)
         )
       );
+
+    // Immediately revoke all active sessions for the removed member
+    await logoutAllDevices(targetUserId);
 
     await auditService.log({
       userId: adminUserId,

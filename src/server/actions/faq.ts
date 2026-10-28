@@ -1,6 +1,6 @@
 "use server";
 
-import { requireOrganizationAccess, assertResourceOwnership } from "@/lib/auth/server";
+import { requireOrganizationAccess, requireManagerAccess, requireAdminAccess, assertResourceOwnership } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { faqRepository } from "../repositories/faq";
 import { syncService } from "../services/sync";
@@ -25,7 +25,7 @@ export async function createFaqAction(data: {
   category: string;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireManagerAccess();
 
     // Sanitise input lengths
     if (!data.question?.trim() || data.question.length > 1000) {
@@ -82,7 +82,7 @@ export async function updateFaqAction(
   }
 ) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireManagerAccess();
     // IDOR guard: confirm this FAQ belongs to the caller's org
     await assertResourceOwnership(faqItems, id, organizationId, "FAQ");
 
@@ -112,7 +112,7 @@ export async function updateFaqAction(
 
 export async function deleteFaqAction(id: string) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
     // IDOR guard
     const faq = await assertResourceOwnership(faqItems, id, organizationId, "FAQ");
     await faqRepository.delete(id, organizationId);
@@ -127,7 +127,7 @@ export async function deleteFaqAction(id: string) {
 
 export async function bulkDeleteFaqsAction(ids: string[]) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
     // Bulk-IDOR: only delete IDs that actually belong to this org
     const faqs = await db
       .select()
@@ -153,7 +153,7 @@ export async function bulkDeleteFaqsAction(ids: string[]) {
 
 export async function bulkToggleActiveFaqsAction(ids: string[], isActive: boolean) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireManagerAccess();
     // Only toggle IDs owned by this org
     await faqRepository.updateActiveMany(ids, organizationId, isActive);
 

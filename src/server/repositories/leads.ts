@@ -35,11 +35,15 @@ export interface NewLeadScore {
 }
 
 export const leadsRepository = {
-  async findProfileById(id: string) {
+  async findProfileById(id: string, organizationId?: string) {
+    const conditions = [eq(leadProfiles.id, id)];
+    if (organizationId) {
+      conditions.push(eq(leadProfiles.organizationId, organizationId));
+    }
     const [profile] = await db
       .select()
       .from(leadProfiles)
-      .where(eq(leadProfiles.id, id));
+      .where(and(...conditions));
     return profile || null;
   },
 
@@ -139,7 +143,7 @@ export const leadsRepository = {
     return newProfile;
   },
 
-  async updateProfile(id: string, updates: Partial<NewLeadProfile>) {
+  async updateProfile(id: string, updates: Partial<NewLeadProfile>, organizationId?: string) {
     const payload: any = { ...updates, updatedAt: new Date() };
 
     if (updates.phone !== undefined) {
@@ -160,16 +164,24 @@ export const leadsRepository = {
       }
     }
 
+    const conditions = [eq(leadProfiles.id, id)];
+    if (organizationId) {
+      conditions.push(eq(leadProfiles.organizationId, organizationId));
+    }
     const [updated] = await db
       .update(leadProfiles)
       .set(payload)
-      .where(eq(leadProfiles.id, id))
+      .where(and(...conditions))
       .returning();
     return updated;
   },
 
-  async deleteProfile(id: string) {
-    await db.delete(leadProfiles).where(eq(leadProfiles.id, id));
+  async deleteProfile(id: string, organizationId?: string) {
+    const conditions = [eq(leadProfiles.id, id)];
+    if (organizationId) {
+      conditions.push(eq(leadProfiles.organizationId, organizationId));
+    }
+    await db.delete(leadProfiles).where(and(...conditions));
   },
 
   // Answers CRUD

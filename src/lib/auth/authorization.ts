@@ -98,6 +98,13 @@ export async function requireOrganizationAccess(
 }
 
 /**
+ * Enforces Owner-level permissions in the active organization.
+ */
+export async function requireOwnerAccess(): Promise<AuthorizedContext> {
+  return requireOrganizationAccess(["owner"]);
+}
+
+/**
  * Enforces Administrator or Owner level permissions in the active organization.
  */
 export async function requireAdminAccess(): Promise<AuthorizedContext> {
@@ -109,6 +116,20 @@ export async function requireAdminAccess(): Promise<AuthorizedContext> {
  */
 export async function requireManagerAccess(): Promise<AuthorizedContext> {
   return requireOrganizationAccess(["owner", "admin", "manager"]);
+}
+
+/**
+ * Verifies that a resource belonging to a specific user is only accessible by that user.
+ * Throws a safe AuthorizationError if IDs do not match.
+ */
+export function assertUserOwnership(
+  resourceUserId: string,
+  actorUserId: string,
+  resourceLabel = "User record"
+): void {
+  if (!resourceUserId || !actorUserId || resourceUserId !== actorUserId) {
+    throw new AuthorizationError(`${resourceLabel} not found or access denied.`);
+  }
 }
 
 /**

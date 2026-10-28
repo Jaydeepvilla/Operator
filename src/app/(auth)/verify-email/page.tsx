@@ -169,7 +169,7 @@ function VerifyEmailContent() {
       )}
 
       {/* Dev Mode Bypass */}
-      {devToken && (
+      {process.env.NODE_ENV === "development" && devToken && (
         <div className="mt-space-4 p-space-4 bg-state-warning-bg border border-state-warning-text/20 radius-lg text-center">
           <p className="text-caption font-semibold text-state-warning-text mb-space-2">
             Since you are testing locally without SMTP credentials configured, here is your auto-generated link:

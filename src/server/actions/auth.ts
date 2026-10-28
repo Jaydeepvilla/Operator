@@ -23,7 +23,7 @@ import { currentUser, auth } from "@/lib/auth/server";
 import { resolveUserDestination } from "@/lib/auth/router";
 import { cookies, headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { checkLoginRateLimit, recordLoginAttempt } from "@/lib/auth/rate-limit";
+import { checkLoginRateLimit, recordLoginAttempt, checkPasswordResetRateLimit, checkTokenAttemptRateLimit } from "@/lib/auth/rate-limit";
 import { isReservedEmail, isDisposableEmail, analyzePasswordStrength } from "@/lib/auth/security-checks";
 import crypto from "crypto";
 import { notificationService } from "../services/notification";
@@ -83,22 +83,22 @@ export async function loginAction(input: any) {
       };
     }
 
-    // 3. Check suspension
-    if (user.status === "suspended") {
-      await recordLoginAttempt(email, false, ipAddress, userAgent);
-      return {
-        success: false,
-        error: "Your account has been suspended by an administrator.",
-      };
-    }
-
-    // 4. Verify password complexity & correctness
+    // 3. Verify password correctness (constant-time verification to prevent enumeration)
     const isValid = user.passwordHash ? await verifyPassword(password, user.passwordHash) : false;
     if (!isValid) {
       await recordLoginAttempt(email, false, ipAddress, userAgent);
       return {
         success: false,
         error: "Invalid email or password",
+      };
+    }
+
+    // 4. Check suspension after validating credentials (prevents account existence enumeration)
+    if (user.status === "suspended") {
+      await recordLoginAttempt(email, false, ipAddress, userAgent);
+      return {
+        success: false,
+        error: "Your account has been suspended by an administrator.",
       };
     }
 
@@ -177,7 +177,7 @@ export async function loginAction(input: any) {
       userId: user.id,
       action: "login",
       resource: "sessions",
-      resourceId: sessionToken,
+      resourceId: sessionToken.slice(0, 8) + "...",
       ipAddress,
       userAgent,
     });
@@ -348,7 +348,7 @@ export async function registerAction(input: any) {
     `;
 
     await notificationService.sendEmail(emailClean, subject, html);
-    console.info(`[Email Dispatch] Verification email link generated for ${emailClean}: ${verificationUrl}`);
+    console.info(`[Email Dispatch] Verification email dispatched to ${emailClean}`);
 
     await auditService.log({
       userId,
@@ -362,11 +362,10 @@ export async function registerAction(input: any) {
     return { 
       success: true, 
       requiresVerification: true,
-      devToken: token
     };
   } catch (error: any) {
     console.error("Register action error:", error);
-    return { success: false, error: error.message || "Failed to create account" };
+    return { success: false, error: "Failed to create account. Please verify your details and try again." };
   }
 }
 
@@ -380,6 +379,9 @@ export async function logoutAction() {
     if (token) {
       await deleteSession(token);
     }
+    cookieStore.delete("session_token");
+    cookieStore.delete("refresh_token");
+    cookieStore.delete("active_org_id");
     return { success: true };
   } catch (error) {
     console.error("Logout action error:", error);
@@ -395,40 +397,53 @@ export async function verifyEmailAction(input: { token: string }) {
     const { token } = input;
     if (!token) return { success: false, error: "Token is required" };
 
-    const [verification] = await db
-      .select()
-      .from(emailVerifications)
-      .where(and(eq(emailVerifications.token, token), eq(emailVerifications.isUsed, false)))
-      .limit(1);
-
-    if (!verification || Date.now() > verification.expiresAt.getTime()) {
-      return { success: false, error: "Invalid or expired verification token" };
-    }
-
     const { userAgent, ipAddress } = await getSafeRequestMetadata();
 
-    await db.transaction(async (tx) => {
-      // Mark email as verified
+    const rateLimit = await checkTokenAttemptRateLimit(ipAddress, "verify_email");
+    if (rateLimit.isLocked) {
+      return { success: false, error: "Too many attempts. Please try again later." };
+    }
+
+    const now = new Date();
+
+    // Atomic consumption to prevent race condition / token reuse
+    const verifiedUser = await db.transaction(async (tx) => {
+      const [updatedToken] = await tx
+        .update(emailVerifications)
+        .set({ isUsed: true })
+        .where(
+          and(
+            eq(emailVerifications.token, token),
+            eq(emailVerifications.isUsed, false),
+            gte(emailVerifications.expiresAt, now)
+          )
+        )
+        .returning();
+
+      if (!updatedToken) {
+        return null;
+      }
+
       await tx
         .update(users)
         .set({ isVerified: true, updatedAt: new Date() })
-        .where(eq(users.id, verification.userId));
+        .where(eq(users.id, updatedToken.userId));
 
-      // Mark token as used
-      await tx
-        .update(emailVerifications)
-        .set({ isUsed: true })
-        .where(eq(emailVerifications.id, verification.id));
+      return updatedToken.userId;
     });
 
+    if (!verifiedUser) {
+      return { success: false, error: "Invalid or expired verification token" };
+    }
+
     // Automatically create session on successful validation
-    await createSession(verification.userId, userAgent, ipAddress, true);
+    await createSession(verifiedUser, userAgent, ipAddress, true);
 
     await auditService.log({
-      userId: verification.userId,
+      userId: verifiedUser,
       action: "email_verification",
       resource: "users",
-      resourceId: verification.userId,
+      resourceId: verifiedUser,
       ipAddress,
       userAgent,
     });
@@ -436,7 +451,7 @@ export async function verifyEmailAction(input: { token: string }) {
     return { success: true };
   } catch (error: any) {
     console.error("verifyEmailAction error:", error);
-    return { success: false, error: error.message || "Verification failed" };
+    return { success: false, error: "Verification failed or token has expired." };
   }
 }
 
@@ -448,7 +463,13 @@ export async function resendVerificationAction(input: { email: string }) {
     const { email } = input;
     if (!email) return { success: false, error: "Email is required" };
 
+    const { ipAddress } = await getSafeRequestMetadata();
     const emailClean = email.toLowerCase().trim();
+
+    const rateLimit = await checkPasswordResetRateLimit(emailClean, ipAddress);
+    if (rateLimit.isLocked) {
+      return { success: false, error: "Too many verification requests. Please try again later." };
+    }
 
     const [user] = await db
       .select()
@@ -456,8 +477,10 @@ export async function resendVerificationAction(input: { email: string }) {
       .where(eq(users.email, emailClean))
       .limit(1);
 
-    if (!user) return { success: false, error: "No account found with this email" };
-    if (user.isVerified) return { success: false, error: "Email address is already verified" };
+    // Anti-enumeration: uniform response whether account exists or is already verified
+    if (!user || user.isVerified || user.status === "suspended") {
+      return { success: true, message: "If an unverified account matches that email, a verification link has been sent." };
+    }
 
     // Invalidate old tokens
     await db
@@ -486,12 +509,12 @@ export async function resendVerificationAction(input: { email: string }) {
     `;
 
     await notificationService.sendEmail(emailClean, subject, html);
-    console.info(`[Email Dispatch] Resending verification token link: ${verificationUrl}`);
+    console.info(`[Email Dispatch] Resending verification token dispatched to ${emailClean}`);
 
-    return { success: true };
+    return { success: true, message: "If an unverified account matches that email, a verification link has been sent." };
   } catch (error: any) {
     console.error("resendVerificationAction error:", error);
-    return { success: false, error: error.message || "Failed to resend verification email" };
+    return { success: false, error: "Failed to resend verification email. Please try again later." };
   }
 }
 
@@ -503,17 +526,23 @@ export async function forgotPasswordAction(input: any) {
     const { email } = input;
     if (!email) return { success: false, error: "Email is required" };
 
+    const { ipAddress } = await getSafeRequestMetadata();
     const emailClean = email.toLowerCase().trim();
 
+    const rateLimit = await checkPasswordResetRateLimit(emailClean, ipAddress);
+    if (rateLimit.isLocked) {
+      return { success: false, error: "Too many password reset requests. Please try again later." };
+    }
+
     const [user] = await db
-      .select({ id: users.id, firstName: users.firstName })
+      .select({ id: users.id, firstName: users.firstName, status: users.status })
       .from(users)
       .where(eq(users.email, emailClean))
       .limit(1);
 
-    if (!user) {
-      // Return success to prevent email enumeration attacks
-      return { success: true };
+    // Anti-enumeration: Return success whether user exists or not, and avoid resetting suspended accounts
+    if (!user || user.status === "suspended") {
+      return { success: true, message: "If an account matches that email, a password reset link has been sent." };
     }
 
     // Invalidate old reset tokens
@@ -542,12 +571,12 @@ export async function forgotPasswordAction(input: any) {
     `;
 
     await notificationService.sendEmail(emailClean, subject, html);
-    console.info(`[Email Dispatch] Password reset link generated: ${resetUrl}`);
+    console.info(`[Email Dispatch] Password reset dispatched to ${emailClean}`);
 
-    return { success: true };
+    return { success: true, message: "If an account matches that email, a password reset link has been sent." };
   } catch (error: any) {
     console.error("ForgotPasswordAction error:", error);
-    return { success: false, error: "Failed to request password reset" };
+    return { success: false, error: "Failed to request password reset. Please try again later." };
   }
 }
 
@@ -561,18 +590,38 @@ export async function resetPasswordAction(input: any) {
       return { success: false, error: "Token and password are required" };
     }
 
-    const [resetRecord] = await db
-      .select()
-      .from(passwordResetTokens)
-      .where(and(eq(passwordResetTokens.token, token), eq(passwordResetTokens.isUsed, false)))
-      .limit(1);
+    const { userAgent, ipAddress } = await getSafeRequestMetadata();
 
-    if (!resetRecord || Date.now() > resetRecord.expiresAt.getTime()) {
+    const rateLimit = await checkTokenAttemptRateLimit(ipAddress, "reset_password");
+    if (rateLimit.isLocked) {
+      return { success: false, error: "Too many attempts. Please try again later." };
+    }
+
+    const now = new Date();
+
+    // Atomic consumption to prevent race conditions and token reuse
+    const [resetRecord] = await db.transaction(async (tx) => {
+      return await tx
+        .update(passwordResetTokens)
+        .set({ isUsed: true })
+        .where(
+          and(
+            eq(passwordResetTokens.token, token),
+            eq(passwordResetTokens.isUsed, false),
+            gte(passwordResetTokens.expiresAt, now)
+          )
+        )
+        .returning();
+    });
+
+    if (!resetRecord) {
       return { success: false, error: "Invalid or expired reset token" };
     }
 
     const [user] = await db.select().from(users).where(eq(users.id, resetRecord.userId)).limit(1);
-    if (!user) return { success: false, error: "User record not found" };
+    if (!user || user.status === "suspended") {
+      return { success: false, error: "This account cannot be recovered. Please contact support." };
+    }
 
     // Validate new password complexity
     const strengthResult = analyzePasswordStrength(password, user.email, user.firstName || "", user.lastName || "");
@@ -585,26 +634,15 @@ export async function resetPasswordAction(input: any) {
 
     const passwordHashVal = await hashPassword(password);
 
-    await db.transaction(async (tx) => {
-      // 1. Update password
-      await tx
-        .update(users)
-        .set({ passwordHash: passwordHashVal, updatedAt: new Date() })
-        .where(eq(users.id, resetRecord.userId));
+    await db
+      .update(users)
+      .set({ passwordHash: passwordHashVal, updatedAt: new Date() })
+      .where(eq(users.id, resetRecord.userId));
 
-      // 2. Mark token as used
-      await tx
-        .update(passwordResetTokens)
-        .set({ isUsed: true })
-        .where(eq(passwordResetTokens.id, resetRecord.id));
-    });
-
-    const { userAgent, ipAddress } = await getSafeRequestMetadata();
-
-    // 3. Invalidate other active sessions (prevent credentials reuse)
+    // Invalidate other active sessions (prevent credentials reuse)
     await logoutAllDevices(resetRecord.userId);
 
-    // 4. Automatically log in user
+    // Automatically log in user
     await createSession(resetRecord.userId, userAgent, ipAddress, true);
 
     await auditService.log({
@@ -619,7 +657,7 @@ export async function resetPasswordAction(input: any) {
     return { success: true };
   } catch (error: any) {
     console.error("ResetPasswordAction error:", error);
-    return { success: false, error: error.message || "Failed to reset password" };
+    return { success: false, error: "Failed to reset password. Please try again." };
   }
 }
 

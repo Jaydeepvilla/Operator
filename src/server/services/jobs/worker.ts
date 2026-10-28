@@ -1,6 +1,6 @@
 import { eq, and, sql } from "drizzle-orm";
 import { db } from "@/server/db";
-import { backgroundJobs, smartNotifications, organizations } from "@/server/db/schema";
+import { backgroundJobs, smartNotifications, organizations, appointments } from "@/server/db/schema";
 import { logger } from "@/lib/logger";
 import { sanitizeErrorMessage } from "@/lib/observability/redaction";
 import { notificationService } from "@/server/services/notification";
@@ -142,6 +142,29 @@ export class BackgroundWorker {
           throw new Error("Missing reminderId or appointmentId");
         }
 
+        // Authoritatively verify business authorization for appointment
+        if (orgId) {
+          const [org] = await db
+            .select({ id: organizations.id })
+            .from(organizations)
+            .where(eq(organizations.id, orgId))
+            .limit(1);
+
+          if (!org) {
+            throw new Error(`Tenant authorization failed: Organization '${orgId}' does not exist.`);
+          }
+
+          const [apt] = await db
+            .select({ id: appointments.id })
+            .from(appointments)
+            .where(and(eq(appointments.id, appointmentId), eq(appointments.organizationId, orgId)))
+            .limit(1);
+
+          if (!apt) {
+            throw new Error(`Business authorization failed: Appointment '${appointmentId}' does not belong to organization '${orgId}'.`);
+          }
+        }
+
         const { notificationService } = await import("@/server/services/notification");
         const success = await notificationService.processReminderJob({
           reminderId,
@@ -237,7 +260,7 @@ export class BackgroundWorker {
    * Atomically claims pending or expired-lease jobs using PostgreSQL row-level locking (FOR UPDATE SKIP LOCKED).
    * Supports queue-name filtering to ensure workers only claim jobs they possess handlers for.
    */
-  async claimJobs(limit = 10, queueNames?: string[]): Promise<ClaimedJob[]> {
+  async claimJobs(limit = 10, queueNames?: string[], organizationId?: string): Promise<ClaimedJob[]> {
     const nowIso = new Date().toISOString();
     const leaseCutoffIso = new Date(Date.now() - this.LEASE_DURATION_MS).toISOString();
 
@@ -253,6 +276,10 @@ export class BackgroundWorker {
       ? sql`AND queue_name IN (${sql.join(targetQueues.map(q => sql`${q}`), sql`, `)})`
       : sql``;
 
+    const tenantCondition = organizationId
+      ? sql`AND payload->>'organizationId' = ${organizationId}`
+      : sql``;
+
     // 3. Atomic CTE claim
     const result = await db.execute(sql`
       WITH claimable AS (
@@ -265,6 +292,7 @@ export class BackgroundWorker {
           )
           AND attempts < max_attempts
           ${queueCondition}
+          ${tenantCondition}
         )
         ORDER BY run_at ASC
         LIMIT ${limit}
@@ -319,8 +347,8 @@ export class BackgroundWorker {
    * Wraps each job execution with a timeout to prevent single hanging tasks from exhausting
    * the serverless invocation budget.
    */
-  async processPendingJobs(limit = 10, queueNames?: string[]) {
-    const claimedJobs = await this.claimJobs(limit, queueNames);
+  async processPendingJobs(limit = 10, queueNames?: string[], organizationId?: string) {
+    const claimedJobs = await this.claimJobs(limit, queueNames, organizationId);
 
     if (claimedJobs.length === 0) {
       return { processed: 0, failed: 0, succeeded: 0 };
@@ -469,8 +497,12 @@ export class BackgroundWorker {
   /**
    * Retrieves operational health and backlog metrics for the background jobs queue.
    */
-  async getQueueMetrics(): Promise<QueueMetrics> {
+  async getQueueMetrics(organizationId?: string): Promise<QueueMetrics> {
     const now = new Date();
+
+    const tenantFilter = organizationId
+      ? sql`WHERE payload->>'organizationId' = ${organizationId}`
+      : sql``;
 
     const counts = await db.execute(sql`
       SELECT 
@@ -479,7 +511,8 @@ export class BackgroundWorker {
         COUNT(*) FILTER (WHERE status = 'completed') AS completed_count,
         COUNT(*) FILTER (WHERE status = 'failed') AS failed_count,
         MIN(run_at) FILTER (WHERE status = 'pending' AND run_at <= ${now.toISOString()}::timestamp) AS oldest_pending_run_at
-      FROM background_jobs;
+      FROM background_jobs
+      ${tenantFilter};
     `);
 
     const row = (counts[0] || {}) as Record<string, unknown>;

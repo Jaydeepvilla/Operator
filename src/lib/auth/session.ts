@@ -38,6 +38,16 @@ export async function createSession(
   rememberMe = false,
   fingerprint?: string
 ): Promise<{ sessionToken: string; refreshToken: string }> {
+  // Session Fixation Prevention: Invalidate any existing pre-auth session token
+  try {
+    const existingCookies = await cookies();
+    const oldSessionToken = existingCookies.get("session_token")?.value;
+    if (oldSessionToken) {
+      await db.delete(sessions).where(eq(sessions.id, oldSessionToken));
+      await db.delete(refreshTokens).where(eq(refreshTokens.sessionId, oldSessionToken));
+    }
+  } catch {}
+
   const sessionToken = crypto.randomBytes(32).toString("hex");
   
   // Expiration settings: 30 days if rememberMe, else 2 hours for standard session in DB
@@ -288,6 +298,7 @@ export async function deleteSession(token: string): Promise<void> {
     const cookieStore = await cookies();
     cookieStore.delete("session_token");
     cookieStore.delete("refresh_token");
+    cookieStore.delete("active_org_id");
   } catch (e) {}
 }
 
@@ -310,6 +321,7 @@ export async function logoutAllDevices(userId: string): Promise<void> {
     const cookieStore = await cookies();
     cookieStore.delete("session_token");
     cookieStore.delete("refresh_token");
+    cookieStore.delete("active_org_id");
   } catch (e) {
     // Ignore context errors if run outside request scope
   }

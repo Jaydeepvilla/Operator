@@ -3,9 +3,16 @@ import { db } from "@/server/db";
 import { users } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { isReservedEmail, isDisposableEmail } from "@/lib/auth/security-checks";
+import { checkEmailCheckRateLimit } from "@/lib/auth/rate-limit";
 
 export async function GET(request: NextRequest) {
   try {
+    const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0] || request.headers.get("x-real-ip") || undefined;
+    const rateLimit = await checkEmailCheckRateLimit(ipAddress);
+    if (rateLimit.isLocked) {
+      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+    }
+
     const { searchParams } = new URL(request.url);
     const email = searchParams.get("email");
 

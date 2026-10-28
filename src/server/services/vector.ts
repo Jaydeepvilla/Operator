@@ -323,6 +323,9 @@ export class PostgresRetrievalService implements RetrievalService {
     query: string,
     limit = 5
   ): Promise<SearchMatch[]> {
+    if (!organizationId || typeof organizationId !== "string") {
+      return [];
+    }
     try {
       const stopWords = new Set([
         "what", "is", "the", "a", "an", "and", "or", "to", "in", "of",

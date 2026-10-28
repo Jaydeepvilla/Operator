@@ -14,6 +14,11 @@ import { orchestratorService } from "../orchestrator";
 import { VoiceProviderRegistry } from "./types";
 import { llmRegistry } from "../llm";
 import { sanitizeVoiceResponse } from "@/lib/voice/sanitizer";
+import {
+  resolveCallOutcomeOnHangup,
+  validateSttConfidence,
+  maskCallDebugData,
+} from "./security";
 
 import "./deepgram";
 import "./kokoro";
@@ -60,7 +65,8 @@ export const voiceOrchestrator = {
       await db.insert(callEvents).values({
         organizationId: options.organizationId,
         sessionId: session.id,
-        eventType: "ringing"
+        eventType: "ringing",
+        payload: maskCallDebugData({ callerNumber: options.callerNumber })
       });
 
       return { sessionId: session.id, conversationId: conv.id };
@@ -79,17 +85,27 @@ export const voiceOrchestrator = {
     conversationId: string;
     speaker: "caller" | "agent";
     content: string;
+    confidence?: number | string;
   }): Promise<{ audioBuffer?: Buffer; textResponse: string }> {
     const { organizationId, sessionId, conversationId, speaker, content } = options;
 
     try {
+      // Gate low-confidence or inaudible speech recognition to prevent false confirmations
+      if (speaker === "caller") {
+        const sttCheck = validateSttConfidence(options.confidence ?? 1.0, content);
+        if (sttCheck.requiresClarification) {
+          const clarificationText = sttCheck.clarificationPrompt || "I'm sorry, I didn't quite catch that. Could you please repeat that?";
+          return { textResponse: clarificationText };
+        }
+      }
+
       // Save transcript line
       await db.insert(callTranscripts).values({
         organizationId,
         sessionId,
         speaker,
         content,
-        confidence: "1.0",
+        confidence: typeof options.confidence === "number" ? options.confidence.toString() : "1.0",
         relativeStartTime: 0,
         relativeEndTime: 0
       });
@@ -100,7 +116,7 @@ export const voiceOrchestrator = {
         conversationId,
         sender: speaker === "caller" ? "user" : "assistant",
         content,
-        confidenceScore: "1.0"
+        confidenceScore: typeof options.confidence === "number" ? options.confidence.toString() : "1.0"
       });
 
       // Event log
@@ -108,7 +124,7 @@ export const voiceOrchestrator = {
         organizationId,
         sessionId,
         eventType: "speech-to-text",
-        payload: { speaker, content }
+        payload: maskCallDebugData({ speaker, content })
       });
 
       if (speaker === "agent") {
@@ -175,7 +191,7 @@ export const voiceOrchestrator = {
         organizationId,
         sessionId,
         eventType: "text-to-speech",
-        payload: { response: responseText }
+        payload: maskCallDebugData({ response: responseText })
       });
 
       return {
@@ -201,11 +217,14 @@ export const voiceOrchestrator = {
     const { organizationId, sessionId, durationSeconds, endedReason } = options;
 
     try {
+      // Resolve whether call completed naturally or dropped prematurely
+      const callOutcome = resolveCallOutcomeOnHangup(endedReason);
+
       // Update Call Session status
       await db
         .update(callSessions)
         .set({
-          status: "completed",
+          status: callOutcome.status,
           durationSeconds,
           endedReason,
           updatedAt: new Date()
@@ -215,7 +234,8 @@ export const voiceOrchestrator = {
       await db.insert(callEvents).values({
         organizationId,
         sessionId,
-        eventType: "completed"
+        eventType: callOutcome.status === "dropped" ? "dropped" : "completed",
+        payload: maskCallDebugData({ endedReason, durationSeconds })
       });
 
       // Fetch transcripts to construct final summary
@@ -230,11 +250,13 @@ export const voiceOrchestrator = {
 
       let summaryText = "Empty call session. Call hung up immediately.";
       let actionItems: string[] = [];
-      let outcome = "abandoned";
+      let outcome = callOutcome.status === "dropped" ? "abandoned" : "general_info";
       let bookingStatus: "none" | "booked" | "requested" = "none";
       let escalationStatus: "none" | "escalated" = "none";
 
-      if (transcriptStr.trim()) {
+      if (callOutcome.status === "dropped") {
+        summaryText = `Call dropped prematurely due to ${endedReason}. No tasks completed.`;
+      } else if (transcriptStr.trim()) {
         try {
           const llm = llmRegistry.getProvider();
           const systemPrompt = `You are a post-call analysis assistant. Analyze the transcript of an Operator AI call and extract a JSON summary matching the following structure:

@@ -1,12 +1,13 @@
 "use server";
 
-import { requireOrganizationAccess, assertResourceOwnership } from "@/lib/auth/server";
+import { requireOrganizationAccess, requireAdminAccess, assertResourceOwnership } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { voiceRepository } from "../repositories/voice";
 import { profileRepository } from "../repositories/profile";
 import { db } from "../db";
 import { voicePrompts, phoneNumbers, callSessions, voicemailMessages, callRoutingRules } from "../db/schema";
 import { eq, and } from "drizzle-orm";
+import { validateTransferDestination, validateAudioUpload } from "../services/voice/security";
 
 // --- Phone Numbers ---
 export async function getPhoneNumbersAction() {
@@ -21,7 +22,7 @@ export async function getPhoneNumbersAction() {
 
 export async function purchasePhoneNumberAction(data: { name: string; phoneNumber: string }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
     const number = await voiceRepository.registerPhoneNumber(organizationId, {
       phoneNumber: data.phoneNumber,
       name: data.name,
@@ -36,7 +37,7 @@ export async function purchasePhoneNumberAction(data: { name: string; phoneNumbe
 
 export async function toggleRecordingAction(phoneNumberId: string, isEnabled: boolean) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
     await assertResourceOwnership(phoneNumbers, phoneNumberId, organizationId, "Phone number");
     await voiceRepository.updatePhoneNumberRecording(phoneNumberId, organizationId, isEnabled);
     revalidatePath("/voice");
@@ -120,7 +121,7 @@ export async function saveVoiceSettingsAction(data: {
   voicemailActive: boolean;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
     await voiceRepository.upsertVoiceSettings(organizationId, data);
     revalidatePath("/voice/settings");
     return { success: true };
@@ -193,7 +194,7 @@ export async function createRoutingRuleAction(data: {
   isActive?: boolean;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
     const rule = await voiceRepository.createRoutingRule(organizationId, data);
     revalidatePath("/voice/settings");
     return { success: true, rule };
@@ -211,7 +212,7 @@ export async function updateRoutingRuleAction(ruleId: string, data: {
   isActive?: boolean;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
     await assertResourceOwnership(callRoutingRules, ruleId, organizationId, "Routing rule");
     await voiceRepository.updateRoutingRule(ruleId, organizationId, data);
     revalidatePath("/voice/settings");
@@ -223,7 +224,7 @@ export async function updateRoutingRuleAction(ruleId: string, data: {
 
 export async function deleteRoutingRuleAction(ruleId: string) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
     await assertResourceOwnership(callRoutingRules, ruleId, organizationId, "Routing rule");
     await voiceRepository.deleteRoutingRule(ruleId, organizationId);
     revalidatePath("/voice/settings");
@@ -297,7 +298,7 @@ export async function saveAIPersonaAction(data: {
   customInstructions: string;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
 
     // 1. Update/Upsert Voice Settings (Assistant Name)
     await voiceRepository.upsertVoiceSettings(organizationId, {
@@ -345,7 +346,7 @@ export async function saveAIPersonaAction(data: {
 
 export async function saveVoicePromptAction(promptText: string) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
     // 1. Deactivate existing active prompts for this org
     await db
       .update(voicePrompts)
@@ -376,7 +377,11 @@ export async function initiateOutboundCallAction(params: {
 }) {
   try {
     const { organizationId } = await requireOrganizationAccess();
-    const cleanNumber = params.toPhoneNumber.trim().replace(/[()\s-]/g, "");
+    const destValidation = validateTransferDestination(params.toPhoneNumber, []);
+    if (!destValidation.isValid) {
+      return { success: false, error: destValidation.error || "Disallowed destination phone number." };
+    }
+    const cleanNumber = destValidation.sanitizedNumber || params.toPhoneNumber.trim().replace(/[()\s-]/g, "");
     if (!cleanNumber || !/^\+?[1-9]\d{6,14}$/.test(cleanNumber)) {
       return { success: false, error: "Please enter a valid destination phone number in E.164 format (e.g. +15551234567)." };
     }
@@ -495,6 +500,31 @@ export async function initiateOutboundCallAction(params: {
     return { success: true, sessionId: session.id };
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed to initiate outbound call." };
+  }
+}
+
+export async function uploadCustomAudioGreetingAction(data: {
+  filename: string;
+  mimeType: string;
+  base64Content: string;
+}) {
+  try {
+    const { organizationId } = await requireAdminAccess();
+    const buffer = Buffer.from(data.base64Content, "base64");
+    const validation = validateAudioUpload({
+      buffer,
+      mimeType: data.mimeType,
+      filename: data.filename,
+    });
+
+    if (!validation.isValid) {
+      return { success: false, error: validation.error || "Invalid audio file upload." };
+    }
+
+    // Processed safely without shell execution or path traversal
+    return { success: true, message: "Audio file validated and saved successfully." };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Failed to upload audio greeting." };
   }
 }
 

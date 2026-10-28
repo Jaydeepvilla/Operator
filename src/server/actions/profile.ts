@@ -1,6 +1,6 @@
 "use server";
 
-import { requireOrganizationAccess } from "@/lib/auth/server";
+import { requireOrganizationAccess, requireAdminAccess } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { organizationRepository } from "../repositories/organization";
 import { profileRepository } from "../repositories/profile";
@@ -38,7 +38,7 @@ export async function updateBusinessProfileAction(data: {
   socialLinks?: Record<string, string> | null;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
 
     // 1. Update Organization Table Fields
     await organizationRepository.update(organizationId, {
@@ -90,4 +90,3 @@ export async function updateBusinessProfileAction(data: {
     return { success: false, error: error?.message || "Failed to update profile" };
   }
 }
-

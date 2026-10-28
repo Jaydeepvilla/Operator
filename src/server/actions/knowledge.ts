@@ -18,11 +18,22 @@ import { WebsiteIngestionPipeline } from "../services/crawler/ingestion";
 import { db } from "../db";
 import { faqItems, services, knowledgeDocuments, knowledgeCategories, knowledgeChunks } from "../db/schema";
 import { eq, and, ilike, or, like, inArray } from "drizzle-orm";
+import { knowledgeUploadSecurity } from "../services/knowledge-upload-security";
 
-import { requireOrganizationAccess, assertResourceOwnership } from "@/lib/auth/server";
+import { requireOrganizationAccess, requireManagerAccess, requireAdminAccess, assertResourceOwnership } from "@/lib/auth/server";
 
 async function getVerifiedOrgId() {
   const { organizationId } = await requireOrganizationAccess();
+  return organizationId;
+}
+
+async function getVerifiedManagerOrgId() {
+  const { organizationId } = await requireManagerAccess();
+  return organizationId;
+}
+
+async function getVerifiedAdminOrgId() {
+  const { organizationId } = await requireAdminAccess();
   return organizationId;
 }
 
@@ -79,7 +90,8 @@ export async function createKnowledgeCategoryAction(data: {
   aiInstructions?: string;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const orgId = await getVerifiedManagerOrgId();
+
     const { userId } = await auth();
 
     const nameTrimmed = data.name.trim();
@@ -143,7 +155,8 @@ export async function updateKnowledgeCategoryAction(
   }
 ) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const orgId = await getVerifiedManagerOrgId();
+
     const { userId } = await auth();
     // IDOR guard
     await assertCategoryOwnership(orgId, id);
@@ -192,9 +205,30 @@ export async function updateKnowledgeCategoryAction(
 
 export async function deleteKnowledgeCategoryAction(id: string) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const orgId = await getVerifiedAdminOrgId();
     // IDOR guard
     await assertCategoryOwnership(orgId, id);
+
+    // Prevent deletion if knowledge documents still depend on this category
+    const [dependentDoc] = await db
+      .select({ id: knowledgeDocuments.id })
+      .from(knowledgeDocuments)
+      .where(
+        and(
+          eq(knowledgeDocuments.organizationId, orgId),
+          eq(knowledgeDocuments.categoryId, id),
+          eq(knowledgeDocuments.isArchived, false)
+        )
+      )
+      .limit(1);
+
+    if (dependentDoc) {
+      return {
+        success: false,
+        error: "Cannot delete this category because active knowledge documents depend on it. Reassign or archive the documents first.",
+      };
+    }
+
     await categoriesRepository.delete(id, orgId);
     revalidatePath("/kb");
     return { success: true };
@@ -205,7 +239,8 @@ export async function deleteKnowledgeCategoryAction(id: string) {
 
 export async function archiveKnowledgeCategoryAction(id: string, isArchived: boolean) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const orgId = await getVerifiedManagerOrgId();
+
     const { userId } = await auth();
     // IDOR guard
     await assertCategoryOwnership(orgId, id);
@@ -243,7 +278,8 @@ export async function uploadKnowledgeDocumentAction(data: {
   metadata?: Record<string, any>;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const orgId = await getVerifiedManagerOrgId();
+
 
     // Validate file type
     const normalizedType = data.fileType.toLowerCase().replace("application/pdf", "pdf").replace("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx").replace("text/plain", "txt").replace("text/markdown", "md").replace("text/csv", "csv");
@@ -335,7 +371,8 @@ export async function updateKnowledgeDocumentContentAction(data: {
   categoryId?: string | null;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const orgId = await getVerifiedManagerOrgId();
+
     await assertDocumentOwnership(orgId, data.documentId);
 
     const doc = await documentsRepository.getById(data.documentId);
@@ -393,7 +430,8 @@ export async function updateKnowledgeDocumentContentAction(data: {
 
 export async function renameKnowledgeDocumentAction(id: string, name: string) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const orgId = await getVerifiedManagerOrgId();
+
     // IDOR guard
     await assertDocumentOwnership(orgId, id);
     if (!name?.trim() || name.length > 300) {
@@ -409,7 +447,8 @@ export async function renameKnowledgeDocumentAction(id: string, name: string) {
 
 export async function archiveKnowledgeDocumentAction(id: string, isArchived: boolean) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const orgId = await getVerifiedManagerOrgId();
+
     // IDOR guard
     await assertDocumentOwnership(orgId, id);
     await documentsRepository.update(id, orgId, { isArchived });
@@ -422,9 +461,13 @@ export async function archiveKnowledgeDocumentAction(id: string, isArchived: boo
 
 export async function deleteKnowledgeDocumentAction(id: string) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const orgId = await getVerifiedAdminOrgId();
     // IDOR guard
     await assertDocumentOwnership(orgId, id);
+    // Purge associated knowledge chunks atomically
+    await db
+      .delete(knowledgeChunks)
+      .where(and(eq(knowledgeChunks.documentId, id), eq(knowledgeChunks.organizationId, orgId)));
     await documentsRepository.delete(id, orgId);
     revalidatePath("/kb");
     return { success: true };
@@ -553,7 +596,8 @@ export async function executeWebsiteIngestionAction(data: {
   duplicateHandling: string;
 }) {
   try {
-    const orgId = await getVerifiedOrgId();
+    const orgId = await getVerifiedManagerOrgId();
+
     const importRecord = await importsRepository.getById(data.importId);
     if (!importRecord || importRecord.organizationId !== orgId) {
       throw new Error("Import run record not found or access denied");
@@ -776,7 +820,10 @@ export async function searchKnowledgeAction(query: string) {
     return {
       success: true,
       results: {
-        documents: docs,
+        documents: knowledgeUploadSecurity.enforceTenantSearchIsolation(
+          knowledgeUploadSecurity.filterStaleOrArchivedSearchIndex(docs),
+          orgId
+        ),
         faqs,
         services: svcs,
       },

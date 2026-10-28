@@ -101,19 +101,19 @@ export function analyzePasswordStrength(
   const suggestions: string[] = [];
 
   // Check core requirements for consolidated suggestion
-  const hasLength = password.length >= 6;
+  const hasLength = password.length >= 8 && password.length <= 128;
   const hasLower = /[a-z]/.test(password);
   const hasNum = /[0-9]/.test(password);
   const hasSym = /[!@#$%^&*()_+\-=\[\]\{\};':",.\/<>?]/.test(password);
   const hasUpper = /[A-Z]/.test(password);
 
   if (!hasLength || !hasLower || !hasNum || !hasSym) {
-    suggestions.push("Password must be at least 6 characters long and include a lowercase letter, a digit, and a symbol.");
+    suggestions.push("Password must be between 8 and 128 characters long and include uppercase, lowercase, a digit, and a symbol.");
   }
 
   // Length requirement
   if (!hasLength) {
-    unmetRequirements.push("At least 6 characters");
+    unmetRequirements.push("Between 8 and 128 characters");
   }
 
   // Case checks
@@ -161,7 +161,7 @@ export function analyzePasswordStrength(
 
   // Score calculation
   let scorePoints = 0;
-  if (password.length >= 6) scorePoints++;
+  if (password.length >= 8 && password.length <= 128) scorePoints++;
   if (password.length >= 12) scorePoints++;
   if (/[a-z]/.test(password) && /[A-Z]/.test(password)) scorePoints++;
   if (/[0-9]/.test(password)) scorePoints++;

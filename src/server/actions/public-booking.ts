@@ -16,6 +16,13 @@ import { availabilityService } from "../services/availability";
 import { bookingService } from "../services/booking";
 import { customerPaymentService } from "../services/billing/customer-payment-service";
 import { customerPaymentsRepository } from "../repositories/customer-payments";
+import {
+  checkPublicBookingSpamLimit,
+  checkBookingIdempotency,
+  recordBookingIdempotency,
+  validateServiceDuration,
+  sanitizeConfirmationContent,
+} from "../services/booking-security";
 
 export async function getPublicBusinessDetailsAction(slug: string) {
   try {
@@ -133,6 +140,15 @@ export async function createPublicBookingAction(input: CreatePublicBookingInput)
       return { success: false, error: "Please choose an appointment date and time." };
     }
 
+    const spamCheck = checkPublicBookingSpamLimit(customerEmail, customerEmail);
+    if (spamCheck.isLimited) {
+      return { success: false, error: spamCheck.reason || "Booking rate limit exceeded. Please try again later." };
+    }
+
+    const sanitizedCustomerName = sanitizeConfirmationContent(customerName);
+    const sanitizedEmail = customerEmail.trim().toLowerCase();
+    const sanitizedPhone = customerPhone ? customerPhone.trim() : null;
+
     const org = await organizationRepository.getBySlug(slug);
     if (!org) {
       return { success: false, error: "Business not found." };
@@ -146,6 +162,28 @@ export async function createPublicBookingAction(input: CreatePublicBookingInput)
 
     if (!service || !service.isActive || service.isArchived) {
       return { success: false, error: "The selected service is not available." };
+    }
+
+    const durationCheck = validateServiceDuration(service.duration);
+    if (!durationCheck.isValid) {
+      return { success: false, error: durationCheck.error || "The service has an invalid duration." };
+    }
+
+    const idempotencyKey = `${org.id}:${serviceId}:${staffMemberId || "any"}:${date}:${time}:${sanitizedEmail}`;
+    const idempCheck = checkBookingIdempotency(idempotencyKey);
+    if (idempCheck.isDuplicate && idempCheck.appointmentId) {
+      return {
+        success: true,
+        appointment: {
+          id: idempCheck.appointmentId,
+          customerName: sanitizedCustomerName,
+          customerEmail: sanitizedEmail,
+          startTime: new Date(),
+          endTime: new Date(),
+          status: "confirmed",
+        },
+        requiresPayment: false,
+      };
     }
 
     // Parse date & time accurately according to the business timezone
@@ -205,12 +243,14 @@ export async function createPublicBookingAction(input: CreatePublicBookingInput)
       serviceId,
       staffMemberId: staffMemberId || "",
       startTime,
-      customerName: customerName.trim(),
-      customerEmail: customerEmail.trim().toLowerCase(),
-      customerPhone: customerPhone ? customerPhone.trim() : null,
+      customerName: sanitizedCustomerName,
+      customerEmail: sanitizedEmail,
+      customerPhone: sanitizedPhone,
       isPublic: true,
       requirePayment: requireDeposit,
     });
+
+    recordBookingIdempotency(idempotencyKey, result.id);
 
     return {
       success: true,

@@ -117,12 +117,14 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Process recognized speech through voiceOrchestrator
+    const confidence = body.Confidence ? parseFloat(body.Confidence) : 1.0;
     const result = await voiceOrchestrator.processStreamingSpeech({
       organizationId: orgId,
       sessionId,
       conversationId,
       speaker: "caller",
       content: speechResult,
+      confidence,
     });
 
     const assistantText = result.textResponse;

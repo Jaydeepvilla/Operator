@@ -1,6 +1,7 @@
 "use server";
 
 import { requireOrganizationAccess, requireAdminAccess } from "@/lib/auth/server";
+import { logoutAllDevices } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 import { db } from "../db";
 import { users, memberships } from "../db/schema";
@@ -127,6 +128,9 @@ export async function removeTeamMemberAction(membershipId: string) {
       .delete(memberships)
       .where(and(eq(memberships.id, membershipId), eq(memberships.organizationId, organizationId)));
 
+    // Immediately revoke all active sessions for the removed member
+    await logoutAllDevices(target.userId);
+
     revalidatePath("/team");
     return { success: true };
   } catch (error: any) {
@@ -151,7 +155,7 @@ export async function updateTeamMemberRoleAction(
       return { success: false, error: "Team member not found" };
     }
 
-    if (target.userId === actorUserId && role !== actorRole) {
+    if (target.userId === actorUserId) {
       return { success: false, error: "You cannot modify your own role." };
     }
 

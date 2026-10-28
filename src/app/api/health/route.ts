@@ -3,6 +3,7 @@ import { db } from "@/server/db";
 import { sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { sanitizeErrorMessage } from "@/lib/observability/redaction";
+import { InfrastructureSecurityService } from "@/server/services/infrastructure-security";
 
 const startTime = Date.now();
 
@@ -60,26 +61,31 @@ export async function GET() {
   }
 
   // 4. Razorpay key presence diagnostic
+  const isProduction = process.env.NODE_ENV === "production";
   const rzpKey = process.env.RAZORPAY_KEY_ID || "";
   checks.razorpay = {
-    status: "ok",
-    error: rzpKey ? `Configured (${rzpKey.slice(0, 8)}...)` : "Missing in env (using test fallback)",
+    status: rzpKey ? "ok" : isProduction ? "error" : "ok",
+    error: rzpKey ? `Configured (${rzpKey.slice(0, 8)}...)` : "Missing in env",
   };
 
-  // 5. Overall status
-  const allHealthy = Object.values(checks).every((c) => c.status === "ok");
+  // 5. Overall status using InfrastructureSecurityService
+  const { isHealthy, httpStatus, degradedDependencies } = InfrastructureSecurityService.evaluateOverallHealth(
+    checks,
+    isProduction
+  );
 
   const payload = {
-    status: allHealthy ? "healthy" : "degraded",
+    status: isHealthy ? "healthy" : "degraded",
     version: process.env.npm_package_version ?? "0.1.0",
     environment: process.env.NODE_ENV ?? "development",
     uptimeSeconds: Math.round((Date.now() - startTime) / 1000),
     timestamp: new Date().toISOString(),
+    degradedDependencies: degradedDependencies.length > 0 ? degradedDependencies : undefined,
     checks,
   };
 
   return NextResponse.json(payload, {
-    status: allHealthy ? 200 : 503,
+    status: httpStatus,
     headers: {
       "Cache-Control": "no-store, no-cache",
       "Content-Type": "application/json",

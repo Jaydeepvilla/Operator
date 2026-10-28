@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyRazorpaySignature } from "@/lib/razorpay";
+import { billingSecurityService } from "@/server/services/billing/billing-security";
 
 export async function POST(req: NextRequest) {
   try {
@@ -33,20 +34,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isValid = verifyRazorpaySignature({
+    const verification = billingSecurityService.validatePaymentVerificationStrict({
       orderId: razorpay_order_id,
       paymentId: razorpay_payment_id,
       signature: razorpay_signature,
+      secret: keySecret,
+      providerStatus: body.provider_status || body.status,
     });
 
-    if (!isValid) {
+    if (!verification.success) {
       return NextResponse.json(
         {
           success: false,
-          error: "Payment verification failed: Invalid signature mismatch.",
+          error: verification.error || "Payment verification failed: Invalid signature mismatch.",
         },
         { status: 400 }
       );
+    }
+
+    // Prevent payment success followed by booking failure from going unreconciled
+    let reconciliationNotice: any = null;
+    if (body.bookingFailed && body.organizationId) {
+      reconciliationNotice = billingSecurityService.reconcilePaymentWithoutBooking({
+        paymentId: razorpay_payment_id,
+        organizationId: body.organizationId,
+        amount: (body.amountInPaise || 14900) / 100,
+        bookingError: body.bookingError || "Downstream appointment booking failed",
+      });
     }
 
     const today = new Date();
@@ -89,6 +103,7 @@ export async function POST(req: NextRequest) {
       payment_id: razorpay_payment_id,
       order_id: razorpay_order_id,
       invoice,
+      reconciliation: reconciliationNotice,
     });
   } catch (error: any) {
     console.error("Razorpay signature verification error:", error);

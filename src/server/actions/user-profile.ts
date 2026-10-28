@@ -16,9 +16,10 @@ import { eq, and, ne, desc } from "drizzle-orm";
 import { auth, currentUser } from "@/lib/auth/server";
 import { logoutAllDevices, logoutDevice } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { analyzePasswordStrength } from "@/lib/auth/security-checks";
+import { checkPasswordChangeRateLimit } from "@/lib/auth/rate-limit";
 import { auditService } from "../services/audit";
 
 /**
@@ -238,7 +239,25 @@ export async function changePasswordAction(data: any) {
     const { userId } = await auth();
     if (!userId) return { success: false, error: "Unauthorized" };
 
+    let ipAddress: string | undefined;
+    try {
+      const reqHeaders = await headers();
+      ipAddress = reqHeaders.get("x-forwarded-for")?.split(",")[0] || reqHeaders.get("x-real-ip") || undefined;
+    } catch {}
+
+    const rateLimit = await checkPasswordChangeRateLimit(userId, ipAddress);
+    if (rateLimit.isLocked) {
+      return { success: false, error: "Too many password change attempts. Please try again later." };
+    }
+
     const { currentPassword, newPassword } = data;
+    if (!currentPassword || !newPassword) {
+      return { success: false, error: "Current and new passwords are required" };
+    }
+
+    if (typeof newPassword !== "string" || newPassword.length < 8 || newPassword.length > 128) {
+      return { success: false, error: "New password must be between 8 and 128 characters long" };
+    }
 
     const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
     if (!user || !user.passwordHash) {
@@ -308,7 +327,7 @@ export async function changePasswordAction(data: any) {
     return { success: true };
   } catch (error: any) {
     console.error("changePasswordAction error:", error);
-    return { success: false, error: error.message || "Failed to change password" };
+    return { success: false, error: "Failed to change password. Please verify your current password and try again." };
   }
 }
 

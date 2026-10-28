@@ -1,33 +1,43 @@
 "use server";
 
-import { requireOrganizationAccess, assertResourceOwnership, AuthorizationError } from "@/lib/auth/server";
+import { auth, requireOrganizationAccess, requireAdminAccess, assertResourceOwnership, AuthorizationError } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "../db";
-import { staffMembers, serviceAssignments, staffSchedules, staffAvailability, services, memberships } from "../db/schema";
+import { staffMembers, serviceAssignments, staffSchedules, staffAvailability, services, memberships, appointments, businessSettings } from "../db/schema";
 import { staffRepository } from "../repositories/staff";
 
-export async function getStaffListAction(overrideOrgId?: string) {
+export async function getStaffListAction(publicOrgId?: string) {
   try {
-    const authResult = await requireOrganizationAccess();
-    let organizationId = authResult.organizationId;
+    const authContext = await auth();
+    let organizationId: string;
 
-    if (overrideOrgId && overrideOrgId !== organizationId) {
-      const [membership] = await db
+    if (authContext.userId) {
+      // Authenticated caller: Server-authorized context takes absolute precedence.
+      // User-supplied business identifier is strictly prevented from overriding session context.
+      const authResult = await requireOrganizationAccess();
+      organizationId = authResult.organizationId;
+    } else {
+      // Unauthenticated public widget caller: must provide organizationId and pass fail-closed public booking checks
+      if (!publicOrgId) {
+        throw new Error("Organization identifier is required for public staff query.");
+      }
+
+      const [settings] = await db
         .select()
-        .from(memberships)
-        .where(
-          and(
-            eq(memberships.userId, authResult.userId),
-            eq(memberships.organizationId, overrideOrgId)
-          )
-        )
+        .from(businessSettings)
+        .where(eq(businessSettings.organizationId, publicOrgId))
         .limit(1);
 
-      if (!membership) {
-        throw new AuthorizationError("Access denied: You are not a member of this organization.");
+      if (
+        !settings ||
+        !settings.bookingPreferences ||
+        typeof settings.bookingPreferences !== "object" ||
+        Array.isArray(settings.bookingPreferences)
+      ) {
+        throw new Error("Public booking is disabled for this organization.");
       }
-      organizationId = overrideOrgId;
+      organizationId = publicOrgId;
     }
     const list = await staffRepository.list(organizationId);
     
@@ -145,8 +155,28 @@ export async function updateStaffAction(
 
 export async function deleteStaffAction(id: string) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
     await assertResourceOwnership(staffMembers, id, organizationId, "Staff member");
+
+    // Prevent deletion if active appointments depend on this staff member
+    const [dependentAppointment] = await db
+      .select({ id: appointments.id })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.organizationId, organizationId),
+          eq(appointments.staffMemberId, id),
+          inArray(appointments.status, ["confirmed", "pending", "rescheduled"])
+        )
+      )
+      .limit(1);
+
+    if (dependentAppointment) {
+      return {
+        success: false,
+        error: "Cannot delete this staff member because active appointments are assigned to them. Please reassign the appointments first.",
+      };
+    }
 
     await staffRepository.delete(id, organizationId);
 

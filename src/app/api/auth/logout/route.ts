@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { deleteSession } from "@/lib/auth/session";
+import { validateIntendedDestination } from "@/lib/auth/router";
 
 export async function POST() {
   try {
@@ -32,22 +33,11 @@ export async function GET(request: NextRequest) {
   }
 
   const rawRedirect = request.nextUrl.searchParams.get("redirect");
-  let redirectUrl = "/sign-in?logout=true";
+  const validatedRedirect = validateIntendedDestination(rawRedirect);
+  let redirectUrl = validatedRedirect || "/sign-in?logout=true";
 
-  if (rawRedirect) {
-    const trimmed = rawRedirect.trim();
-    if (
-      trimmed.startsWith("/") &&
-      !trimmed.startsWith("//") &&
-      !trimmed.startsWith("/\\") &&
-      !trimmed.includes("\\") &&
-      !trimmed.includes("://")
-    ) {
-      redirectUrl = trimmed;
-      if (redirectUrl.startsWith("/sign-in") && !redirectUrl.includes("logout=true")) {
-        redirectUrl += (redirectUrl.includes("?") ? "&" : "?") + "logout=true";
-      }
-    }
+  if (redirectUrl.startsWith("/sign-in") && !redirectUrl.includes("logout=true")) {
+    redirectUrl += (redirectUrl.includes("?") ? "&" : "?") + "logout=true";
   }
 
   const response = NextResponse.redirect(new URL(redirectUrl, request.url));

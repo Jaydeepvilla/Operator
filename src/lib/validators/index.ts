@@ -44,7 +44,7 @@ export type OnboardingStep3Input = z.infer<typeof onboardingStep3Schema>;
 
 export const loginSchema = z.object({
   email: z.string().email("Enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
+  password: z.string().min(1, "Password is required").max(128, "Password cannot exceed 128 characters"),
   rememberMe: z.boolean().optional().default(true),
 });
 
@@ -53,7 +53,7 @@ export const registrationSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 8 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters").max(128, "Password cannot exceed 128 characters"),
   acceptTerms: z.boolean().refine((val) => val === true, "Accept the Terms of Service to continue"),
   acceptPrivacy: z.boolean().refine((val) => val === true, "Accept the Privacy Policy to continue"),
   marketingConsent: z.boolean().optional().default(false),
@@ -65,6 +65,6 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z.object({
   token: z.string().min(1, "Reset token is missing or invalid"),
-  password: z.string().min(6, "Password must be at least 8 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters").max(128, "Password cannot exceed 128 characters"),
 });
 

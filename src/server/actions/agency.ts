@@ -5,6 +5,9 @@ import { revalidatePath } from "next/cache";
 import { agencyRepository } from "../repositories/agency";
 import { agencyProvisioning } from "../services/agency/provisioning";
 import { agencyImpersonation } from "../services/agency/impersonation";
+import { db } from "../db";
+import { agencySubscriptions } from "../db/schema";
+import { eq, and } from "drizzle-orm";
 
 async function getVerifiedUser() {
   const { userId } = await auth();
@@ -324,6 +327,27 @@ export async function createResellerPlanAction(data: { name: string; price: stri
 export async function deleteResellerPlanAction(planId: string) {
   try {
     const { agency } = await getVerifiedAgencyContext();
+
+    // Prevent deletion if an active agency subscription or client depends on this plan
+    const [dependentSub] = await db
+      .select({ id: agencySubscriptions.id })
+      .from(agencySubscriptions)
+      .where(
+        and(
+          eq(agencySubscriptions.agencyId, agency.id),
+          eq(agencySubscriptions.planId, planId),
+          eq(agencySubscriptions.status, "active")
+        )
+      )
+      .limit(1);
+
+    if (dependentSub) {
+      return {
+        success: false,
+        error: "Cannot delete this plan because an active subscription currently depends on it.",
+      };
+    }
+
     await agencyRepository.deleteResellerPlan(agency.id, planId);
     revalidatePath("/agency/billing");
     return { success: true };

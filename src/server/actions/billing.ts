@@ -10,6 +10,7 @@ import {
   billingAccounts, 
   payments, 
   invoices, 
+  refunds,
   businessPaymentSettings, 
   organizations 
 } from "../db/schema";
@@ -25,6 +26,7 @@ import {
   PaymentUnavailableError
 } from "../services/billing/config";
 import { requireOrganizationAccess, requireAdminAccess } from "@/lib/auth/server";
+import { billingSecurityService } from "../services/billing/billing-security";
 
 async function getVerifiedOrgContext() {
   const { organizationId, userId } = await requireOrganizationAccess();
@@ -123,7 +125,7 @@ export async function createCheckoutSessionAction(params: {
   const { planId } = params;
 
   try {
-    const { organizationId } = await getVerifiedOrgContext();
+    const { organizationId } = await getVerifiedAdminContext();
 
     // 1. Validate Plan ID and resolve authoritative PlanConfig
     const validPlans = ["starter", "pro", "business", "enterprise", "professional"];
@@ -131,6 +133,20 @@ export async function createCheckoutSessionAction(params: {
       throw new CheckoutValidationError(`Invalid plan selection: ${planId || "none"}.`, {
         correlationId,
       });
+    }
+
+    // Check checkout idempotency to prevent duplicate charges on rapid double-clicks
+    const idempotencyCheck = billingSecurityService.checkCheckoutIdempotency({
+      organizationId,
+      planId,
+    });
+    if (idempotencyCheck.isDuplicate && idempotencyCheck.existingSession) {
+      return {
+        success: true,
+        url: idempotencyCheck.existingSession.url,
+        sessionId: idempotencyCheck.existingSession.sessionId,
+        correlationId,
+      };
     }
 
     // 2. Select Payment Provider (Razorpay as primary or fallback)
@@ -180,6 +196,13 @@ export async function createCheckoutSessionAction(params: {
         },
       });
 
+      billingSecurityService.recordCheckoutSession({
+        organizationId,
+        planId: localizedPlan.id,
+        sessionId: session.id,
+        url: session.url,
+      });
+
       return {
         success: true,
         url: session.url,
@@ -218,6 +241,13 @@ export async function createCheckoutSessionAction(params: {
       },
     });
 
+    billingSecurityService.recordCheckoutSession({
+      organizationId,
+      planId: localizedPlan.id,
+      sessionId: session.id,
+      url: session.url,
+    });
+
     return {
       success: true,
       url: session.url,
@@ -238,7 +268,8 @@ export async function createCheckoutSessionAction(params: {
 export async function upgradeSubscriptionAction(newPlanId: string) {
   const correlationId = generateCorrelationId();
   try {
-    const { organizationId } = await getVerifiedOrgContext();
+    const { organizationId, role } = await getVerifiedAdminContext();
+    billingSecurityService.assertPlanChangeAuthorized(role, newPlanId);
     const currentStatus = await subscriptionEngine.getSubscriptionStatus(organizationId);
 
     const targetPlan = getPlan(newPlanId);
@@ -277,10 +308,16 @@ export async function upgradeSubscriptionAction(newPlanId: string) {
  * Subscription cancellation request:
  * Keeps subscription active until current period end according to SaaS best practices.
  */
-export async function cancelSubscriptionAction() {
+export async function cancelSubscriptionAction(targetOrgId?: string) {
   const correlationId = generateCorrelationId();
   try {
-    const { organizationId } = await getVerifiedOrgContext();
+    const { organizationId, role } = await getVerifiedAdminContext();
+    // Prevent unauthorized cancellation of another account's subscription
+    billingSecurityService.assertSubscriptionCancellationAuthorized(
+      role,
+      organizationId,
+      targetOrgId || organizationId
+    );
     const canceledSub = await subscriptionEngine.requestCancellation(organizationId);
 
     revalidatePath("/billing");
@@ -301,7 +338,7 @@ export async function cancelSubscriptionAction() {
 export async function revokeCancellationAction() {
   const correlationId = generateCorrelationId();
   try {
-    const { organizationId } = await getVerifiedOrgContext();
+    const { organizationId } = await getVerifiedAdminContext();
     await subscriptionEngine.revokeCancellation(organizationId);
 
     revalidatePath("/billing");
@@ -457,7 +494,7 @@ export async function updateProviderSettingsAction(data: {
   credentials: Record<string, string>;
 }) {
   try {
-    const { organizationId } = await getVerifiedOrgContext();
+    const { organizationId } = await getVerifiedAdminContext();
 
     // Check if configuration already exists
     const existing = await db.query.businessPaymentSettings.findFirst({
@@ -538,3 +575,109 @@ export async function getOrganizationInvoicesAction() {
     return { success: false, error: error?.message || "We couldn't load your invoice history. Try again shortly.", invoices: [] };
   }
 }
+
+/**
+ * Retrieves a single invoice, enforcing tenant isolation to prevent access to another business's invoices.
+ */
+export async function getInvoiceAction(invoiceId: string) {
+  try {
+    const { organizationId } = await getVerifiedOrgContext();
+    const invoice = await db.query.invoices.findFirst({
+      where: eq(invoices.id, invoiceId),
+      with: {
+        billingAccount: true,
+      },
+    });
+
+    if (!invoice) {
+      return { success: false, error: "Invoice not found" };
+    }
+
+    // Prevent access to another business's invoices
+    billingSecurityService.assertInvoiceOwnership(
+      invoice.billingAccount.organizationId,
+      organizationId
+    );
+
+    return { success: true, invoice };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Failed to load invoice" };
+  }
+}
+
+/**
+ * Issues an administrative refund with authorization and refundable balance validation.
+ */
+export async function issueRefundAction(params: {
+  paymentId: string;
+  amount?: number;
+  reason?: string;
+}) {
+  try {
+    const { organizationId, role } = await getVerifiedAdminContext();
+    const payment = await db.query.payments.findFirst({
+      where: eq(payments.id, params.paymentId),
+      with: {
+        billingAccount: true,
+      },
+    });
+
+    if (!payment) {
+      return { success: false, error: "Payment record not found" };
+    }
+
+    const existingRefunds = await db.query.refunds.findMany({
+      where: eq(refunds.paymentId, payment.id),
+    });
+
+    const totalRefunded = existingRefunds
+      .filter((r) => r.status === "succeeded" || r.status === "completed")
+      .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+
+    const paymentAmt = parseFloat(payment.amount) || 0;
+    const refundableBalance = Math.max(0, paymentAmt - totalRefunded);
+    const refundAmount = params.amount !== undefined ? params.amount : refundableBalance;
+
+    // Prevent unauthorized refunds and over-refunding
+    billingSecurityService.assertRefundAuthorization({
+      callerRole: role,
+      callerOrgId: organizationId,
+      paymentOrgId: payment.billingAccount.organizationId,
+      requestedAmount: refundAmount,
+      refundableBalance,
+    });
+
+    const [createdRefund] = await db
+      .insert(refunds)
+      .values({
+        paymentId: payment.id,
+        amount: refundAmount.toFixed(2),
+        status: "succeeded",
+        reason: params.reason || "Administrative refund",
+      })
+      .returning();
+
+    const refundState = billingSecurityService.recordRefundFinancialState({
+      paymentAmount: paymentAmt,
+      totalRefundedSoFar: totalRefunded,
+      incomingRefundAmount: refundAmount,
+    });
+
+    if (refundState.isFullRefund && payment.invoiceId) {
+      await db
+        .update(invoices)
+        .set({ status: "refunded" })
+        .where(eq(invoices.id, payment.invoiceId));
+    }
+
+    revalidatePath("/billing");
+    return {
+      success: true,
+      refund: createdRefund,
+      remainingBalance: refundState.remainingBalance,
+    };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Failed to process refund" };
+  }
+}
+

@@ -45,6 +45,8 @@ next-env.d.ts
 # agents & editor directories
 .agent/
 .agents/
+.claude/
+agent/
 .cursor/
 reports/
 *.rej

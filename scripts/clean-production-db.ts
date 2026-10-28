@@ -1,9 +1,17 @@
 import "dotenv/config";
 import { db } from "../src/server/db";
 import { sql } from "drizzle-orm";
+import { DatabaseIntegrityService } from "../src/server/services/database-integrity";
 
 async function cleanProductionDatabase() {
   console.log("🧹 Cleaning all demo credentials and demo data from database...");
+
+  // DB-08: Prevent test / wipe scripts from deleting real customer data
+  DatabaseIntegrityService.assertDestructiveOperationPermitted(
+    "Truncate All Tables",
+    process.env.DATABASE_URL || "",
+    process.env.NODE_ENV || "development"
+  );
 
   const tablesResult = await db.execute(sql`
     SELECT table_name 

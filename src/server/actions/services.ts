@@ -1,37 +1,48 @@
 "use server";
 
-import { requireOrganizationAccess, assertResourceOwnership, AuthorizationError } from "@/lib/auth/server";
+import { auth, requireOrganizationAccess, requireManagerAccess, requireAdminAccess, assertResourceOwnership, AuthorizationError } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { servicesRepository, NewService } from "../repositories/services";
 import { syncService } from "../services/sync";
 import { db } from "../db";
-import { services, serviceCategories, memberships } from "../db/schema";
-import { eq, and } from "drizzle-orm";
+import { services, serviceCategories, memberships, appointments, businessSettings } from "../db/schema";
+import { eq, and, inArray } from "drizzle-orm";
 import { verificationEngine } from "../services/verification/engine";
 import { settingsRepository } from "../repositories/settings";
 
-export async function getServicesAction(overrideOrgId?: string) {
+export async function getServicesAction(publicOrgId?: string) {
   try {
-    const authResult = await requireOrganizationAccess();
-    let organizationId = authResult.organizationId;
+    const authContext = await auth();
+    let organizationId: string;
 
-    if (overrideOrgId && overrideOrgId !== organizationId) {
-      const [membership] = await db
+    if (authContext.userId) {
+      // Authenticated caller: Server-authorized context takes absolute precedence.
+      // User-supplied business identifier is strictly prevented from overriding session context.
+      const authResult = await requireOrganizationAccess();
+      organizationId = authResult.organizationId;
+    } else {
+      // Unauthenticated public widget caller: must provide organizationId and pass fail-closed public booking checks
+      if (!publicOrgId) {
+        throw new Error("Organization identifier is required for public services query.");
+      }
+
+      const [settings] = await db
         .select()
-        .from(memberships)
-        .where(
-          and(
-            eq(memberships.userId, authResult.userId),
-            eq(memberships.organizationId, overrideOrgId)
-          )
-        )
+        .from(businessSettings)
+        .where(eq(businessSettings.organizationId, publicOrgId))
         .limit(1);
 
-      if (!membership) {
-        throw new AuthorizationError("Access denied: You are not a member of this organization.");
+      if (
+        !settings ||
+        !settings.bookingPreferences ||
+        typeof settings.bookingPreferences !== "object" ||
+        Array.isArray(settings.bookingPreferences)
+      ) {
+        throw new Error("Public booking is disabled for this organization.");
       }
-      organizationId = overrideOrgId;
+      organizationId = publicOrgId;
     }
+
     const list = await servicesRepository.list(organizationId);
     const categories = await servicesRepository.listCategories(organizationId);
     return { success: true, services: list, categories };
@@ -48,7 +59,7 @@ export async function createServiceAction(data: {
   price: string;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireManagerAccess();
 
     // Input validation
     if (!data.name?.trim() || data.name.length > 200) {
@@ -133,7 +144,7 @@ export async function updateServiceAction(
   }
 ) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireManagerAccess();
     // IDOR guard: assert service belongs to tenant
     await assertResourceOwnership(services, id, organizationId, "Service");
 
@@ -186,7 +197,7 @@ export async function updateServiceAction(
 
 export async function archiveServiceAction(id: string) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireManagerAccess();
     // IDOR guard: assert service belongs to tenant
     const service = await assertResourceOwnership(services, id, organizationId, "Service");
 
@@ -215,9 +226,29 @@ export async function archiveServiceAction(id: string) {
 
 export async function deleteServiceAction(id: string) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
     // IDOR guard: assert service belongs to tenant
     const service = await assertResourceOwnership(services, id, organizationId, "Service");
+
+    // Prevent deletion if active appointments depend on this service
+    const [dependentAppointment] = await db
+      .select({ id: appointments.id })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.organizationId, organizationId),
+          eq(appointments.serviceId, id),
+          inArray(appointments.status, ["confirmed", "pending", "rescheduled"])
+        )
+      )
+      .limit(1);
+
+    if (dependentAppointment) {
+      return {
+        success: false,
+        error: "Cannot delete this service because active appointments depend on it. Please reschedule, cancel, or archive the service instead.",
+      };
+    }
 
     const [deleted] = await db
       .delete(services)

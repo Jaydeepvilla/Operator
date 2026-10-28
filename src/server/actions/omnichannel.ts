@@ -20,12 +20,13 @@ import { omnichannelRepository } from "../repositories/omnichannel";
 import { omnichannelRouter } from "../services/omnichannel/router";
 import { orchestratorService } from "../services/orchestrator";
 import { activityRepository } from "../repositories/activity";
+import { MessagingSecurityService } from "../services/messaging-security";
 
 // --- Inbox Thread Actions ---
 
 export async function getInboxThreadsAction() {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
     
     // Fetch threads
     const threads = await db.query.inboxThreads.findMany({
@@ -50,7 +51,7 @@ export async function getInboxThreadsAction() {
 
 export async function getThreadMessagesAction(conversationId: string) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
 
     const messages = await db.query.channelMessages.findMany({
       where: and(
@@ -74,8 +75,44 @@ export async function sendStaffReplyAction(options: {
   content: string;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
     await assertResourceOwnership(inboxThreads, options.threadId, organizationId, "Inbox thread");
+
+    // Guarantee 2: Prevent unauthorized users from sending messages on behalf of a business
+    MessagingSecurityService.assertUserAuthorizedToSendMessage({
+      sessionUserId: userId,
+      sessionOrgId: organizationId,
+      targetOrgId: organizationId,
+      userRole: role,
+    });
+
+    // Guarantee 1: Prevent messages from being sent to the wrong customer
+    const thread = await db.query.inboxThreads.findFirst({
+      where: and(eq(inboxThreads.id, options.threadId), eq(inboxThreads.organizationId, organizationId)),
+      with: {
+        conversation: {
+          with: {
+            leadProfile: true,
+          },
+        },
+      },
+    });
+
+    if (thread?.conversation?.leadProfile) {
+      const lp = thread.conversation.leadProfile;
+      MessagingSecurityService.assertRecipientCustomerMatch({
+        organizationId,
+        customerId: lp.id,
+        recipientPhone: options.recipientId.includes("@") ? undefined : options.recipientId,
+        recipientEmail: options.recipientId.includes("@") ? options.recipientId : undefined,
+        customerRecord: {
+          id: lp.id,
+          organizationId: lp.organizationId,
+          phone: lp.phone,
+          email: lp.email,
+        },
+      });
+    }
 
     await omnichannelRouter.sendOutgoingMessage({
       organizationId,
@@ -108,7 +145,7 @@ export async function sendStaffReplyAction(options: {
  */
 export async function toggleThreadAiAutonomyAction(threadId: string, status: "active" | "paused") {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
 
     const [updated] = await db
       .update(inboxThreads)
@@ -131,7 +168,7 @@ export async function generateDraftAiReplyAction(options: {
   userMessage?: string;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
     await assertResourceOwnership(conversations, options.conversationId, organizationId, "Conversation");
 
     const result = await orchestratorService.processMessage({
@@ -155,7 +192,7 @@ export async function generateDraftAiReplyAction(options: {
 
 export async function assignThreadAction(threadId: string, staffId: string | null) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
 
     await db
       .update(inboxThreads)
@@ -171,7 +208,7 @@ export async function assignThreadAction(threadId: string, staffId: string | nul
 
 export async function updateThreadStatusAction(threadId: string, status: "open" | "closed" | "snoozed") {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
 
     await db
       .update(inboxThreads)
@@ -189,7 +226,7 @@ export async function updateThreadStatusAction(threadId: string, status: "open" 
 
 export async function getChannelsAction() {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
 
     const channels = await db.query.communicationChannels.findMany({
       where: eq(communicationChannels.organizationId, organizationId),
@@ -212,7 +249,7 @@ export async function connectChannelAction(options: {
   metadata: Record<string, any>;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
 
     // Create channel
     const channel = await omnichannelRepository.createChannel({
@@ -247,7 +284,7 @@ export async function saveChannelSettingsAction(options: {
   businessHoursOnly: boolean;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
 
     await omnichannelRepository.updateSettings(organizationId, options.channelId, {
       aiEnabled: options.aiEnabled,
@@ -267,7 +304,7 @@ export async function saveChannelSettingsAction(options: {
 
 export async function getTemplatesAction() {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
     const templates = await omnichannelRepository.listTemplates(organizationId);
     return { success: true, templates };
   } catch (error: any) {
@@ -285,7 +322,7 @@ export async function saveTemplateAction(options: {
   variables: string[];
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
 
     if (options.id) {
       await assertResourceOwnership(messageTemplates, options.id, organizationId, "Message template");
@@ -319,7 +356,7 @@ export async function saveTemplateAction(options: {
 
 export async function deleteTemplateAction(id: string) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
     await assertResourceOwnership(messageTemplates, id, organizationId, "Message template");
     await omnichannelRepository.deleteTemplate(id, organizationId);
     revalidatePath("/templates");
@@ -333,7 +370,7 @@ export async function deleteTemplateAction(id: string) {
 
 export async function getContactsAction() {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
     const contacts = await db.query.leadProfiles.findMany({
       where: eq(leadProfiles.organizationId, organizationId),
       orderBy: [desc(leadProfiles.createdAt)]
@@ -355,7 +392,7 @@ export async function updateContactAction(options: {
   lifetimeValue?: number;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
     await assertResourceOwnership(leadProfiles, options.id, organizationId, "Contact profile");
 
     await db
@@ -382,7 +419,7 @@ export async function createContactAction(data: {
   tags?: string[];
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
     if (!data.name || !data.name.trim()) {
       return { success: false, error: "Customer name is required" };
     }
@@ -425,7 +462,7 @@ export async function createContactAction(data: {
 
 export async function getOmnichannelAnalyticsAction() {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
 
     const [sentMsgs, receivedMsgs, channels] = await Promise.all([
       db.query.channelMessages.findMany({
@@ -487,7 +524,7 @@ export async function getOmnichannelAnalyticsAction() {
 
 export async function getStaffMembersAction() {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { userId, organizationId, role } = await requireOrganizationAccess();
     const staff = await db.query.staffMembers.findMany({
       where: eq(staffMembers.organizationId, organizationId),
     });

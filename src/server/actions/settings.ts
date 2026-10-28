@@ -1,6 +1,6 @@
 "use server";
 
-import { requireOrganizationAccess } from "@/lib/auth/server";
+import { requireOrganizationAccess, requireAdminAccess, requireOwnerAccess } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { settingsRepository } from "../repositories/settings";
 import { DEFAULT_BUSINESS_HOURS } from "@/lib/constants/templates";
@@ -13,6 +13,7 @@ import {
   organizations as organizationsTable
 } from "../db/schema";
 import { eq, and } from "drizzle-orm";
+import { ConfigSecurityService } from "../services/config-security";
 
 export async function getBusinessSettingsAction() {
   try {
@@ -42,8 +43,13 @@ export async function saveBusinessHoursAction(
   holidays: string[]
 ) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
-    await settingsRepository.update(organizationId, { businessHours, holidays });
+    const authContext = await requireAdminAccess();
+    ConfigSecurityService.assertBusinessScheduleModificationAuthorized({
+      callerRole: authContext.role,
+      callerOrgId: authContext.organizationId,
+      targetOrgId: authContext.organizationId,
+    });
+    await settingsRepository.update(authContext.organizationId, { businessHours, holidays });
     revalidatePath("/settings");
     revalidatePath("/dashboard");
     return { success: true };
@@ -59,7 +65,7 @@ export async function saveGeneralSettingsAction(data: {
   leadAssignmentRules: Record<string, any>;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
     await settingsRepository.update(organizationId, data);
     revalidatePath("/settings");
     return { success: true };
@@ -70,7 +76,7 @@ export async function saveGeneralSettingsAction(data: {
 
 export async function triggerWebsiteImportAction(url: string) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
 
     // Store URL and set status to imported to indicate success
     await settingsRepository.update(organizationId, {
@@ -88,7 +94,7 @@ export async function triggerWebsiteImportAction(url: string) {
 
 export async function saveEscalationRulesAction(rules: Record<string, any>) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const { organizationId } = await requireAdminAccess();
     const settings = await settingsRepository.getByOrg(organizationId);
     const existingNotificationPrefs = (settings?.notificationPreferences as Record<string, any>) || {};
 
@@ -108,8 +114,14 @@ export async function saveEscalationRulesAction(rules: Record<string, any>) {
 
 export async function saveBookingPreferencesAction(bookingPreferences: Record<string, any>) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
-    await settingsRepository.update(organizationId, { bookingPreferences });
+    const authContext = await requireAdminAccess();
+    ConfigSecurityService.assertBookingPolicyModificationAuthorized({
+      callerRole: authContext.role,
+      callerOrgId: authContext.organizationId,
+      targetOrgId: authContext.organizationId,
+      policies: bookingPreferences,
+    });
+    await settingsRepository.update(authContext.organizationId, { bookingPreferences });
     revalidatePath("/settings/booking");
     revalidatePath("/settings");
     revalidatePath("/dashboard");
@@ -177,7 +189,14 @@ export async function updateBusinessLocalizationAction(data: {
   measurementUnit: string;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const authContext = await requireAdminAccess();
+    ConfigSecurityService.assertBusinessScheduleModificationAuthorized({
+      callerRole: authContext.role,
+      callerOrgId: authContext.organizationId,
+      targetOrgId: authContext.organizationId,
+      timezone: data.timezone,
+    });
+    const organizationId = authContext.organizationId;
 
     const existing = await db.query.businessLocalization.findFirst({
       where: eq(businessLocalizationTable.organizationId, organizationId),
@@ -216,7 +235,23 @@ export async function updateOrganizationSettingsAction(data: {
   timezone?: string;
 }) {
   try {
-    const { organizationId } = await requireOrganizationAccess();
+    const authContext = await requireOwnerAccess();
+    ConfigSecurityService.assertBusinessIdentityModificationAuthorized({
+      callerUserId: authContext.userId,
+      callerOrgId: authContext.organizationId,
+      targetOrgId: authContext.organizationId,
+      userRole: authContext.role,
+      updates: { name: data.name },
+    });
+    if (data.timezone) {
+      ConfigSecurityService.assertBusinessScheduleModificationAuthorized({
+        callerRole: authContext.role,
+        callerOrgId: authContext.organizationId,
+        targetOrgId: authContext.organizationId,
+        timezone: data.timezone,
+      });
+    }
+    const organizationId = authContext.organizationId;
     if (!data.name?.trim()) {
       return { success: false, error: "Business name is required." };
     }
@@ -241,5 +276,3 @@ export async function updateOrganizationSettingsAction(data: {
     return { success: false, error: error?.message || "Failed to update business settings" };
   }
 }
-
-
