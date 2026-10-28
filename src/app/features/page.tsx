@@ -207,12 +207,15 @@ export default function FeaturesPage() {
  </div>
 
  <h1 className="text-display-lg md:text-display-xl tracking-tight leading-display text-foreground font-bold max-w-3xl mb-space-5">
- The AI Business Operating System.
- <br />
- <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-[hsl(260_80%_65%)] to-[hsl(280_75%_55%)]">
- Redefined.
- </span>
- </h1>
+					The AI Business Operating
+					<br />
+					<span className="inline-block sm:whitespace-nowrap">
+						System.{" "}
+						<span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-[hsl(260_80%_65%)] to-[hsl(280_75%_55%)]">
+							Redefined.
+						</span>
+					</span>
+				</h1>
 
  <p className="mx-auto max-w-2xl text-body-md md:text-body-lg text-muted-foreground leading-relaxed mb-space-10">
  An omnipresent front desk that runs phone operations, qualifies leads, secures deposits, and coordinates calendars 24/7. Not a generic chatbot — a complete office scheduler.
