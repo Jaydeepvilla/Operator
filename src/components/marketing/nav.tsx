@@ -37,6 +37,10 @@ export function MarketingNav() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   return (
     <header
       className={`left-space-0 right-space-0 z-50 w-full transition-all duration-300 ${

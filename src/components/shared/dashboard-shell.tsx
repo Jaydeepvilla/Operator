@@ -19,8 +19,7 @@ import { useSidebar } from "@/components/shared/sidebar-context";
 import { cn } from "@/components/shared/utils";
 import { LogoIcon } from "@/components/shared/logo";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { m, AnimatePresence } from "framer-motion";
-import { pageTransition } from "@/components/motion";
+import { m } from "framer-motion";
 
 import { getButtonClasses } from '@/design-system/button-tokens';
 
@@ -166,10 +165,22 @@ export function DashboardShell({
   const { isCollapsed, toggleSidebar } = useSidebar();
   const pathname = usePathname();
   const { user } = useAuth();
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+
+  // Auto-close mobile drawer whenever pathname changes
+  React.useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   // ─── Sidebar Content ─────────────────────────────────────────────────────────
 
-  const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => {
+  const SidebarContent = ({
+    isMobile = false,
+    onNavigate,
+  }: {
+    isMobile?: boolean;
+    onNavigate?: () => void;
+  }) => {
     const collapsed = isMobile ? false : isCollapsed;
 
     return (
@@ -185,6 +196,7 @@ export function DashboardShell({
         >
           <Link
             href="/"
+            onClick={onNavigate}
             className={cn(
               "flex h-8 w-8 items-center justify-center radius-lg shrink-0 transition-all duration-200 cursor-pointer hover:scale-105",
               collapsed && "hover:opacity-90"
@@ -223,16 +235,16 @@ export function DashboardShell({
               collapsed ? "px-1" : "px-2"
             )}
           >
-            <SidebarNavGroup title="Overview" links={OVERVIEW_LINKS} />
-            <SidebarNavGroup title="Operations" links={OPERATIONS_LINKS} />
-            <SidebarNavGroup title="Operator AI" links={AI_LINKS} />
-            <SidebarNavGroup title="Business" links={BUSINESS_LINKS} />
-            <SidebarNavGroup title="Learning & Demo" links={LEARNING_LINKS} />
+            <SidebarNavGroup title="Overview" links={OVERVIEW_LINKS} onNavigate={onNavigate} />
+            <SidebarNavGroup title="Operations" links={OPERATIONS_LINKS} onNavigate={onNavigate} />
+            <SidebarNavGroup title="Operator AI" links={AI_LINKS} onNavigate={onNavigate} />
+            <SidebarNavGroup title="Business" links={BUSINESS_LINKS} onNavigate={onNavigate} />
+            <SidebarNavGroup title="Learning & Demo" links={LEARNING_LINKS} onNavigate={onNavigate} />
 
             {isAgency && (
               <>
                 <div className="h-px bg-[hsl(var(--foreground)/0.06)] my-1.5 mx-2" />
-                <SidebarNavGroup title="Agency" links={AGENCY_LINKS} />
+                <SidebarNavGroup title="Agency" links={AGENCY_LINKS} onNavigate={onNavigate} />
               </>
             )}
           </div>
@@ -269,14 +281,14 @@ export function DashboardShell({
         <header className="sticky top-0 z-10 flex h-14 shrink-0 w-full items-center justify-between page-header px-space-5">
           {/* Left: Mobile menu + breadcrumb */}
           <div className="flex items-center gap-space-3">
-            <Sheet>
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden h-8 w-8" aria-label="Open navigation menu">
                   <Menu className="h-4 w-4" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-space-0">
-                <SidebarContent isMobile />
+                <SidebarContent isMobile onNavigate={() => setMobileOpen(false)} />
               </SheetContent>
             </Sheet>
 
@@ -288,19 +300,13 @@ export function DashboardShell({
           {headerActions}
         </header>
 
-        {/* Page Content — scrolls within the shell, never the browser */}
-        <AnimatePresence mode="wait">
-          <m.main
-            key={pathname}
-            variants={pageTransition}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="flex-1 min-h-0 overflow-y-auto p-space-6 md:p-space-8 sidebar-scroll flex flex-col"
-          >
-            {children}
-          </m.main>
-        </AnimatePresence>
+        {/* Page Content — instant mount without blocking exit wait */}
+        <main
+          key={pathname}
+          className="flex-1 min-h-0 overflow-y-auto p-space-6 md:p-space-8 sidebar-scroll flex flex-col animate-fade-in"
+        >
+          {children}
+        </main>
       </m.div>
     </div>
   );

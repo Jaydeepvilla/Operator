@@ -4,8 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/components/shared/utils";
 import { useSidebar } from "@/components/shared/sidebar-context";
-import { m, AnimatePresence } from "framer-motion";
-import { fade } from "@/components/motion";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/shared/tooltip";
 import {
   LayoutDashboard,
@@ -86,9 +84,10 @@ interface SidebarLinkProps {
 interface SidebarGroupProps {
   title: string;
   links: SidebarLinkProps[];
+  onNavigate?: () => void;
 }
 
-export function SidebarNavGroup({ title, links }: SidebarGroupProps) {
+export function SidebarNavGroup({ title, links, onNavigate }: SidebarGroupProps) {
   const pathname = usePathname();
   const { isCollapsed } = useSidebar();
 
@@ -99,15 +98,12 @@ export function SidebarNavGroup({ title, links }: SidebarGroupProps) {
         {isCollapsed ? (
           <div className="h-px bg-[hsl(var(--sidebar-border))] my-1.5 mx-2" />
         ) : (
-          <AnimatePresence>
-            <m.p 
-              {...fade}
-              className="px-2.5 pb-1 pt-2.5 text-caption uppercase tracking-widest text-[hsl(var(--sidebar-section-label))] font-semibold select-none" 
-              aria-hidden="true"
-            >
-              {title}
-            </m.p>
-          </AnimatePresence>
+          <p 
+            className="px-2.5 pb-1 pt-2.5 text-caption uppercase tracking-widest text-[hsl(var(--sidebar-section-label))] font-semibold select-none" 
+            aria-hidden="true"
+          >
+            {title}
+          </p>
         )}
 
         {links.map((link) => {
@@ -126,6 +122,7 @@ export function SidebarNavGroup({ title, links }: SidebarGroupProps) {
             <Link
               key={link.href}
               href={link.href}
+              onClick={onNavigate}
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex items-center radius-md transition-all duration-150 group relative select-none w-full my-0.5 cursor-pointer",
@@ -146,16 +143,13 @@ export function SidebarNavGroup({ title, links }: SidebarGroupProps) {
                     : "text-[hsl(var(--sidebar-item-fg))] group-hover:text-foreground"
                 )}
               />
-              <AnimatePresence mode="wait">
-                {!isCollapsed && (
-                  <m.span 
-                    {...fade}
-                    className={cn("truncate text-body-sm", isActive ? "font-medium" : "font-normal")}
-                  >
-                    {link.label}
-                  </m.span>
-                )}
-              </AnimatePresence>
+              {!isCollapsed && (
+                <span 
+                  className={cn("truncate text-body-sm transition-opacity duration-150", isActive ? "font-medium" : "font-normal")}
+                >
+                  {link.label}
+                </span>
+              )}
 
               {/* Active indicator dot for collapsed mode */}
               {isActive && isCollapsed && (
