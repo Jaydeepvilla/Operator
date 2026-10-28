@@ -20,7 +20,12 @@ async function sendEmailNotification(to: string, subject: string, html: string):
         },
         body: JSON.stringify({ from: fromEmail, to: [to], subject, html }),
       });
-      return resp.ok;
+      if (!resp.ok) {
+        const errJson = await resp.json().catch(() => ({}));
+        console.error(`[NotificationService] Resend email dispatch failed (HTTP ${resp.status}):`, errJson);
+        return false;
+      }
+      return true;
     } catch (err) {
       console.error("[NotificationService] Resend email dispatch failed:", err);
     }
