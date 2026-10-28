@@ -272,6 +272,37 @@ test.describe("Onboarding Intelligence & Website Extraction Suite", () => {
         return;
       }
 
+      // 5. Header/Footer plain text contacts without tel/mailto links
+      if (url === "/footer-header-contacts") {
+        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+        res.end(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>Home | Apex Wellness Center</title>
+              <meta property="og:site_name" content="Apex Wellness Center">
+            </head>
+            <body>
+              <header>
+                <div class="top-nav">
+                  <span>Questions? Call (555) 789-0123</span>
+                  <span>Email: support@apexwellness.com</span>
+                </div>
+              </header>
+              <main>
+                <h1>Holistic Health & Recovery</h1>
+                <p>Specialized physical therapy and massage in New York.</p>
+              </main>
+              <footer>
+                <p>Apex Wellness Center, 350 5th Ave, New York, NY 10118</p>
+                <p>Direct line: 555-789-0123</p>
+              </footer>
+            </body>
+          </html>
+        `);
+        return;
+      }
+
       // 404 fallback
       res.writeHead(404, { "Content-Type": "text/plain" });
       res.end("Not Found");
@@ -643,5 +674,20 @@ test.describe("Onboarding Intelligence & Website Extraction Suite", () => {
       await db.delete(memberships).where(eq(memberships.organizationId, orgId));
       await db.delete(organizations).where(eq(organizations.id, orgId));
     }
+  });
+
+  test("10. Auto-fills phone, email, and business name from plain text header/footer without mailto/tel", async () => {
+    const profile = await BusinessWebsiteIntelligenceService.extractBusinessProfile(
+      `${baseUrl}/footer-header-contacts`
+    );
+
+    // Business name resolved from og:site_name or cleaned title, not generic "Home"
+    expect(profile.businessName).toBe("Apex Wellness Center");
+
+    // Email and Phone auto-filled from header/footer text
+    expect(profile.email).toBe("support@apexwellness.com");
+    expect(profile.phone).toBe("(555) 789-0123");
+    expect(profile.address).toContain("350 5th Ave");
+    expect(profile.address).toContain("New York");
   });
 });

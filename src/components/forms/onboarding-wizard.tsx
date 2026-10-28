@@ -103,7 +103,7 @@ function buildGeneratedData(input: string, detectedIndustry: string): GeneratedD
  if (isUrl) {
  const domain = input.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
  const nameParts = domain.split(".")[0];
- businessName = nameParts.charAt(0).toUpperCase() + nameParts.slice(1);
+ businessName = nameParts.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
  website = input.startsWith("http") ? input : `https://${input}`;
  email = `contact@${domain}`;
  } else if (input && input !== "no-website") {
@@ -361,14 +361,21 @@ function ScreenGenerating({
  setTimeout(() => {
  if (cancelled) return;
  if (scrapedData) {
- onComplete({
- businessName: scrapedData.businessName || "My Business",
- industry: scrapedData.industry || "Other",
- timezone: scrapedData.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York",
- email: scrapedData.email || "",
- phone: scrapedData.phone || "",
- address: scrapedData.address || "",
- website: scrapedData.website || (url === "no-website" ? "" : url),
+          const cleanHost = (url && url !== "no-website")
+            ? url.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0]
+            : "";
+          const fallbackEmail = cleanHost && cleanHost.includes(".")
+            ? `contact@${cleanHost}`
+            : "info@mybusiness.com";
+
+          onComplete({
+            businessName: scrapedData.businessName || "My Business",
+            industry: scrapedData.industry || "Other",
+            timezone: scrapedData.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York",
+            email: scrapedData.email || fallbackEmail,
+            phone: scrapedData.phone || "",
+            address: scrapedData.address || "",
+            website: scrapedData.website || (url === "no-website" ? "" : url),
  services:
  Array.isArray(scrapedData.services) && scrapedData.services.length > 0
  ? scrapedData.services

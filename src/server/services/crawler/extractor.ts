@@ -5,6 +5,7 @@ export interface ExtractedPageData {
   url: string;
   canonicalUrl?: string;
   title: string;
+  siteName?: string;
   description?: string;
   content: string;
   wordCount: number;
@@ -13,12 +14,16 @@ export interface ExtractedPageData {
   tags: string[];
   contentHash: string;
   links: string[];
+  linksWithText?: { url: string; text: string }[];
   jsonLd?: any[];
   contactInfo?: {
     email?: string;
     phone?: string;
     address?: string;
     hours?: string;
+    emails?: string[];
+    phones?: string[];
+    addresses?: string[];
   };
 }
 
@@ -51,34 +56,52 @@ export class ContentExtractor {
       }
     });
 
-    // 2. Extract telephone, email, and address from explicit markup & attributes
-    let extractedPhone = "";
-    const telLink = $('a[href^="tel:"]').first().attr("href");
-    if (telLink) {
-      extractedPhone = telLink.replace(/^tel:\s*/i, "").trim();
-    } else {
-      const itemPhone = $('[itemprop="telephone"]').first().text().trim();
-      if (itemPhone) extractedPhone = itemPhone;
-    }
+    // 2. Comprehensive Contact Information & Meta Extraction
+    const pageEmails = new Set<string>();
+    const pagePhones = new Set<string>();
+    const pageAddresses = new Set<string>();
 
-    let extractedEmail = "";
-    const mailtoLink = $('a[href^="mailto:"]').first().attr("href");
-    if (mailtoLink) {
-      extractedEmail = mailtoLink.replace(/^mailto:\s*/i, "").split("?")[0].trim();
-    } else {
-      const itemEmail = $('[itemprop="email"]').first().text().trim();
-      if (itemEmail) extractedEmail = itemEmail;
-    }
+    // 2a. Extract telephone links across entire DOM (e.g. <a href="tel:...">)
+    $('a[href^="tel:"]').each((_, el) => {
+      const href = $(el).attr("href");
+      if (href) {
+        const cleanPhone = href.replace(/^tel:\s*/i, "").trim();
+        const digits = cleanPhone.replace(/\D/g, "");
+        if (digits.length >= 7 && digits.length <= 15) {
+          pagePhones.add(cleanPhone);
+        }
+      }
+    });
 
-    let extractedAddress = "";
-    const itemAddress = $('[itemprop="address"]').first().text().replace(/\s+/g, " ").trim();
-    if (itemAddress) {
-      extractedAddress = itemAddress;
-    } else {
-      const addressTag = $("address").first().text().replace(/\s+/g, " ").trim();
-      if (addressTag) extractedAddress = addressTag;
-    }
+    // 2b. Extract mailto links across entire DOM (e.g. <a href="mailto:...">)
+    $('a[href^="mailto:"]').each((_, el) => {
+      const href = $(el).attr("href");
+      if (href) {
+        const cleanEmail = href.replace(/^mailto:\s*/i, "").split("?")[0].trim();
+        if (cleanEmail && cleanEmail.includes("@") && !cleanEmail.endsWith(".png") && !cleanEmail.endsWith(".jpg") && !cleanEmail.endsWith(".svg") && !cleanEmail.includes("example.com") && !cleanEmail.includes("wix.com")) {
+          pageEmails.add(cleanEmail);
+        }
+      }
+    });
 
+    // 2c. Schema/Microdata attributes
+    $('[itemprop="telephone"]').each((_, el) => {
+      const p = $(el).text().trim();
+      const digits = p.replace(/\D/g, "");
+      if (digits.length >= 7 && digits.length <= 15) pagePhones.add(p);
+    });
+
+    $('[itemprop="email"]').each((_, el) => {
+      const e = $(el).text().trim();
+      if (e && e.includes("@") && !e.includes("example.com")) pageEmails.add(e);
+    });
+
+    $('[itemprop="address"], address').each((_, el) => {
+      const a = $(el).text().replace(/\s+/g, " ").trim();
+      if (a && a.length > 5 && a.length < 250) pageAddresses.add(a);
+    });
+
+    // 2d. Hours Extraction
     let itemHours = $('[itemprop="openingHours"]').first().text().replace(/\s+/g, " ").trim();
     if (!itemHours) {
       const hoursEl = $('.hours, #hours, [class*="hours"], [id*="hours"]').first().text().replace(/\s+/g, " ").trim();
@@ -87,16 +110,67 @@ export class ContentExtractor {
       }
     }
     if (!itemHours) {
-      // Check for textual patterns like "Clinical Hours: Mon-Fri 08:00-17:00 CST" or "Office Hours: Mon-Fri 9:00 AM - 6:00 PM EST"
       const bodyText = $("body").text();
       const hoursMatch = bodyText.match(/(?:Office|Business|Opening|Clinical|Operating)?\s*Hours:\s*([A-Za-z0-9–—\-:., ]+(?:AM|PM|am|pm|\d{2}:\d{2})[^\n\r]*)/i);
       if (hoursMatch) {
         itemHours = hoursMatch[1].replace(/\s+/g, " ").trim();
       }
     }
+
+    // 2e. Capture header, footer, and contact container text BEFORE removal
+    const headerFooterText = $("header, footer, nav, .header, .footer, #footer, #header, address, [class*='contact'], [id*='contact'], [class*='topbar'], [id*='topbar']")
+      .text()
+      .replace(/\s+/g, " ")
+      .trim();
+
+    // 2f. Regex scanning over header/footer and full page text
+    const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
+    const phoneRegex = /(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,5}/g;
+
+    const textToScan = `${headerFooterText} ${$("body").text()}`;
+    const foundEmails = textToScan.match(emailRegex) || [];
+    const foundPhones = textToScan.match(phoneRegex) || [];
+
+    for (const e of foundEmails) {
+      const clean = e.trim().toLowerCase();
+      if (
+        !clean.endsWith(".png") &&
+        !clean.endsWith(".jpg") &&
+        !clean.endsWith(".svg") &&
+        !clean.endsWith(".webp") &&
+        !clean.includes("example.com") &&
+        !clean.includes("wix.com") &&
+        !clean.includes("wordpress.com") &&
+        !clean.includes("sentry.io")
+      ) {
+        pageEmails.add(e.trim());
+      }
+    }
+
+    for (const p of foundPhones) {
+      const clean = p.trim();
+      const digits = clean.replace(/\D/g, "");
+      // Valid phone numbers have between 7 and 15 digits, and are not standard dates (e.g. 2026-10-28)
+      if (digits.length >= 7 && digits.length <= 15 && !/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+        pagePhones.add(clean);
+      }
+    }
+
+    const addressRegex = /\b\d{1,5}\s+[\w\s.,#-]+(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Drive|Dr|Way|Lane|Ln|Suite|Ste|Floor|Fl)\b[^\n\r<]{0,60},\s*[A-Z]{2}\s+\d{5}(?:-\d{4})?/gi;
+    const foundAddresses = textToScan.match(addressRegex) || [];
+    for (const a of foundAddresses) {
+      const clean = a.trim();
+      if (clean.length > 10 && clean.length < 200) {
+        pageAddresses.add(clean);
+      }
+    }
+
+    // 2g. Extract Internal Links and Anchor Text
     const links: string[] = [];
+    const linksWithText: { url: string; text: string }[] = [];
     $("a[href]").each((_, el) => {
       const href = $(el).attr("href");
+      const linkText = $(el).text().replace(/\s+/g, " ").trim();
       if (href) {
         const cleanHref = href.trim();
         // Ignore mailto, tel, javascript, anchors
@@ -109,6 +183,9 @@ export class ContentExtractor {
           try {
             const resolved = new URL(cleanHref, pageUrl).toString();
             links.push(resolved);
+            if (linkText) {
+              linksWithText.push({ url: resolved, text: linkText });
+            }
           } catch {
             // Invalid relative URL, skip
           }
@@ -116,7 +193,12 @@ export class ContentExtractor {
       }
     });
 
-    // 3. Extract Metadata
+    // 3. Extract Metadata & OpenGraph Site Name
+    const siteName =
+      $('meta[property="og:site_name"]').attr("content")?.trim() ||
+      $('meta[name="application-name"]').attr("content")?.trim() ||
+      undefined;
+
     const pageTitle =
       $('meta[property="og:title"]').attr("content") ||
       $("title").text().trim() ||
@@ -131,18 +213,16 @@ export class ContentExtractor {
     const canonicalUrl =
       $('link[rel="canonical"]').attr("href") || pageUrl;
 
-    // 4. Capture header/footer text before removal for contact/hours context
-    const headerFooterText = $("header, footer, nav, .header, .footer, #footer, #header")
-      .text()
-      .replace(/\s+/g, " ")
-      .trim();
-
-    // 5. Remove boilerplate and noise tags
+    // 4. Remove boilerplate and noise tags
     $(
       "script, style, noscript, iframe, svg, canvas, nav, header, footer, aside, form, " +
       ".nav, .navbar, .menu, .footer, .header, .sidebar, .cookie-banner, #cookie-consent, " +
       ".ad, .advertisement, .modal, .popup, [aria-hidden='true']"
     ).remove();
+
+    const extractedEmail = Array.from(pageEmails)[0] || "";
+    const extractedPhone = Array.from(pagePhones)[0] || "";
+    const extractedAddress = Array.from(pageAddresses)[0] || "";
 
     // 6. Structured Content Conversion to Markdown
     const markdownLines: string[] = [];
@@ -251,6 +331,17 @@ export class ContentExtractor {
       }
     }
 
+    // 3b. Append explicit contact details section to markdown content if available
+    const contactLines: string[] = [];
+    if (pageEmails.size > 0) contactLines.push(`Email: ${Array.from(pageEmails).join(", ")}`);
+    if (pagePhones.size > 0) contactLines.push(`Phone: ${Array.from(pagePhones).join(", ")}`);
+    if (pageAddresses.size > 0) contactLines.push(`Address: ${Array.from(pageAddresses).join(" | ")}`);
+    if (itemHours) contactLines.push(`Hours: ${itemHours}`);
+
+    if (contactLines.length > 0 && !cleanText.includes("Contact & Operating Information")) {
+      cleanText += `\n\n## Contact & Operating Information\n${contactLines.join("\n")}\n`;
+    }
+
     // 4. Word and Token Metrics
     const words = cleanText ? cleanText.split(/\s+/).filter(Boolean).length : 0;
     const estimatedChunks = Math.max(1, Math.ceil(words / 150));
@@ -263,6 +354,7 @@ export class ContentExtractor {
       url: pageUrl,
       canonicalUrl,
       title: pageTitle,
+      siteName,
       description,
       content: cleanText,
       wordCount: words,
@@ -271,12 +363,16 @@ export class ContentExtractor {
       tags,
       contentHash,
       links: Array.from(new Set(links)),
+      linksWithText,
       jsonLd,
       contactInfo: {
         email: extractedEmail || undefined,
         phone: extractedPhone || undefined,
         address: extractedAddress || undefined,
         hours: itemHours || undefined,
+        emails: Array.from(pageEmails),
+        phones: Array.from(pagePhones),
+        addresses: Array.from(pageAddresses),
       },
     };
   }

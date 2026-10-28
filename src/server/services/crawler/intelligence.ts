@@ -97,29 +97,38 @@ export class BusinessWebsiteIntelligenceService {
     ];
 
     // 3. Discover Priority Internal Pages (Services & Contact)
-    const discoveredLinks = this.prioritizeInternalLinks(homepageData.links, rootHostname, fullUrl);
+    const discoveredLinks = this.prioritizeInternalLinks(
+      homepageData.linksWithText && homepageData.linksWithText.length > 0
+        ? homepageData.linksWithText
+        : homepageData.links,
+      rootHostname,
+      fullUrl
+    );
 
-    // Bounded crawl: fetch up to 3 highest-priority internal subpages
-    for (const subpageUrl of discoveredLinks.slice(0, 3)) {
-      try {
-        const subValidation = await validateSafeUrl(subpageUrl);
-        if (!subValidation.valid) continue;
+    // Bounded crawl: fetch up to 4 priority subpages in parallel (balanced across services and contact)
+    const subpagesToFetch = discoveredLinks.allPriority.slice(0, 4);
+    await Promise.allSettled(
+      subpagesToFetch.map(async (subpageUrl) => {
+        try {
+          const subValidation = await validateSafeUrl(subpageUrl);
+          if (!subValidation.valid) return;
 
-        const subFetch = await safeFetch(subpageUrl, { timeoutMs: 8000 });
-        if (subFetch.ok && subFetch.html) {
-          const subData = ContentExtractor.extract(subFetch.html, subpageUrl);
-          pagesInspected.push({
-            url: subpageUrl,
-            title: subData.title,
-            category: subData.suggestedCategory,
-            html: subFetch.html,
-            data: subData,
-          });
+          const subFetch = await safeFetch(subpageUrl, { timeoutMs: 6000 });
+          if (subFetch.ok && subFetch.html) {
+            const subData = ContentExtractor.extract(subFetch.html, subpageUrl);
+            pagesInspected.push({
+              url: subpageUrl,
+              title: subData.title,
+              category: subData.suggestedCategory,
+              html: subFetch.html,
+              data: subData,
+            });
+          }
+        } catch {
+          // Continue with other pages if one subpage fails
         }
-      } catch {
-        // Continue with other pages if one subpage fails
-      }
-    }
+      })
+    );
 
     // 4. Aggregate Extracted Signals (JSON-LD, HTML Contacts, Text)
     const allJsonLd: any[] = [];
@@ -143,6 +152,19 @@ export class BusinessWebsiteIntelligenceService {
       if (page.data.contactInfo?.phone) collectedPhones.add(page.data.contactInfo.phone);
       if (page.data.contactInfo?.address) collectedAddresses.add(page.data.contactInfo.address);
       if (page.data.contactInfo?.hours) collectedHours.add(page.data.contactInfo.hours);
+
+      if (page.data.contactInfo?.emails) {
+        for (const e of page.data.contactInfo.emails) collectedEmails.add(e);
+      }
+      if (page.data.contactInfo?.phones) {
+        for (const p of page.data.contactInfo.phones) collectedPhones.add(p);
+      }
+      if (page.data.contactInfo?.addresses) {
+        for (const a of page.data.contactInfo.addresses) collectedAddresses.add(a);
+      }
+
+      // Regex scan raw HTML of the page
+      this.extractContactsFromRawHtml(page.html, collectedEmails, collectedPhones);
     }
 
     // 5. Check Structured Data (JSON-LD) for LocalBusiness / Services
@@ -155,18 +177,32 @@ export class BusinessWebsiteIntelligenceService {
     // Regex fallback on accumulated page text for email & phone
     const fullCorpus = combinedMarkdown.join("\n");
     const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
-    const phoneRegex = /(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})/g;
+    const phoneRegex = /(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,5}/g;
 
     const regexEmails = fullCorpus.match(emailRegex) || [];
     const regexPhones = fullCorpus.match(phoneRegex) || [];
 
     for (const e of regexEmails) {
-      if (!e.endsWith(".png") && !e.endsWith(".jpg") && !e.endsWith(".svg") && !e.includes("example.com") && !e.includes("wix.com")) {
-        collectedEmails.add(e);
+      const clean = e.trim().toLowerCase();
+      if (
+        !clean.endsWith(".png") &&
+        !clean.endsWith(".jpg") &&
+        !clean.endsWith(".svg") &&
+        !clean.endsWith(".webp") &&
+        !clean.includes("example.com") &&
+        !clean.includes("wix.com") &&
+        !clean.includes("wordpress.com") &&
+        !clean.includes("sentry.io")
+      ) {
+        collectedEmails.add(e.trim());
       }
     }
     for (const p of regexPhones) {
-      collectedPhones.add(p);
+      const clean = p.trim();
+      const digits = clean.replace(/\D/g, "");
+      if (digits.length >= 7 && digits.length <= 15 && !/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+        collectedPhones.add(clean);
+      }
     }
 
     // 6. Invoke AI Extraction with Google Gemini (Prompt-Injection Fortified with 8s timeout)
@@ -195,13 +231,22 @@ export class BusinessWebsiteIntelligenceService {
     const primaryHours = Array.from(collectedHours)[0] || aiProfile?.hours || "";
 
     // Business Name Resolution
-    let resolvedBusinessName = structuredInfo.name || aiProfile?.businessName || "";
-    if (!resolvedBusinessName || resolvedBusinessName.length > 50 || resolvedBusinessName.toLowerCase() === "home") {
-      resolvedBusinessName = homepageData.title.split(/[-|–•]/)[0].trim();
-      if (!resolvedBusinessName || resolvedBusinessName.length > 50 || resolvedBusinessName.toLowerCase() === "home") {
-        const base = rootHostname.replace(/^www\./, "").split(".")[0];
-        resolvedBusinessName = base.charAt(0).toUpperCase() + base.slice(1);
-      }
+    let resolvedBusinessName = structuredInfo.name?.trim() || "";
+    if (!resolvedBusinessName && homepageData.siteName) {
+      resolvedBusinessName = homepageData.siteName.trim();
+    }
+    if (!resolvedBusinessName && aiProfile?.businessName) {
+      resolvedBusinessName = aiProfile.businessName.trim();
+    }
+    if (
+      !resolvedBusinessName ||
+      resolvedBusinessName.length > 50 ||
+      this.isGenericBusinessName(resolvedBusinessName)
+    ) {
+      resolvedBusinessName = this.cleanBusinessNameFromTitle(
+        homepageData.title,
+        rootHostname
+      );
     }
 
     // Industry Resolution
@@ -255,20 +300,114 @@ export class BusinessWebsiteIntelligenceService {
   }
 
   /**
-   * Filters and prioritizes internal links that likely lead to Services or Contact details
+   * Scans raw HTML strings for valid emails and telephone numbers
    */
-  private static prioritizeInternalLinks(links: string[], rootHostname: string, rootUrl: string): string[] {
-    const internalLinks = new Set<string>();
+  private static extractContactsFromRawHtml(html: string, emails: Set<string>, phones: Set<string>) {
+    if (!html) return;
+    const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
+    const phoneRegex = /(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,5}/g;
 
-    for (const link of links) {
+    const htmlEmails = html.match(emailRegex) || [];
+    for (const e of htmlEmails) {
+      const clean = e.trim().toLowerCase();
+      if (
+        !clean.endsWith(".png") &&
+        !clean.endsWith(".jpg") &&
+        !clean.endsWith(".svg") &&
+        !clean.endsWith(".webp") &&
+        !clean.includes("example.com") &&
+        !clean.includes("wix.com") &&
+        !clean.includes("wordpress.com") &&
+        !clean.includes("sentry.io")
+      ) {
+        emails.add(e.trim());
+      }
+    }
+
+    const htmlPhones = html.match(phoneRegex) || [];
+    for (const p of htmlPhones) {
+      const clean = p.trim();
+      const digits = clean.replace(/\D/g, "");
+      if (digits.length >= 7 && digits.length <= 15 && !/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+        phones.add(clean);
+      }
+    }
+  }
+
+  /**
+   * Determines if an extracted name is a generic placeholder rather than the business name
+   */
+  private static isGenericBusinessName(name: string): boolean {
+    const lower = name.toLowerCase().trim();
+    const generic = [
+      "home", "welcome", "homepage", "home page", "index", "official site",
+      "official website", "about", "about us", "contact", "contact us", "services",
+      "our services", "my business", "untitled page", "untitled", "site"
+    ];
+    return generic.includes(lower);
+  }
+
+  /**
+   * Intelligently extracts the real business name from page title and root hostname
+   */
+  private static cleanBusinessNameFromTitle(title: string, rootHostname: string): string {
+    const genericWords = new Set([
+      "home", "welcome", "homepage", "home page", "index", "official site",
+      "official website", "about", "about us", "contact", "contact us", "services",
+      "our services", "best", "top", "leading", "home page", "my business"
+    ]);
+
+    if (!title || title.trim() === "Untitled Page") {
+      const base = rootHostname.replace(/^www\./, "").split(".")[0];
+      return base.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+
+    const parts = title.split(/\s*[-|–—•:»]\s*/).map((p) => p.trim()).filter(Boolean);
+    const meaningfulParts = parts.filter((p) => !genericWords.has(p.toLowerCase()));
+
+    if (meaningfulParts.length > 0) {
+      let candidate = meaningfulParts[0];
+      candidate = candidate.replace(/^welcome to\s+/i, "");
+      candidate = candidate.replace(/^the official (?:website|site) of\s+/i, "");
+
+      if (candidate.length >= 2 && candidate.length <= 60 && !genericWords.has(candidate.toLowerCase())) {
+        return candidate;
+      }
+
+      if (meaningfulParts.length > 1) {
+        return meaningfulParts[1];
+      }
+    }
+
+    const base = rootHostname.replace(/^www\./, "").split(".")[0];
+    return base.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  /**
+   * Filters and prioritizes internal links, ensuring contact and service pages are balanced
+   */
+  private static prioritizeInternalLinks(
+    links: Array<string | { url: string; text?: string }>,
+    rootHostname: string,
+    rootUrl: string
+  ): { serviceLinks: string[]; contactLinks: string[]; allPriority: string[] } {
+    const internalLinks = new Map<string, string>(); // url -> linkText
+
+    for (const item of links) {
+      const urlStr = typeof item === "string" ? item : item?.url;
+      const text = typeof item === "object" ? item?.text || "" : "";
+      if (!urlStr) continue;
+
       try {
-        const u = new URL(link);
+        const u = new URL(urlStr);
         if (u.hostname.toLowerCase() === rootHostname) {
           u.hash = "";
           u.search = "";
           const clean = u.toString();
           if (clean !== rootUrl && clean !== `${rootUrl}/`) {
-            internalLinks.add(clean);
+            if (!internalLinks.has(clean)) {
+              internalLinks.set(clean, text);
+            }
           }
         }
       } catch {
@@ -276,26 +415,31 @@ export class BusinessWebsiteIntelligenceService {
       }
     }
 
-    const priorityList: { url: string; score: number }[] = [];
+    const serviceLinks: string[] = [];
+    const contactLinks: string[] = [];
 
-    for (const urlStr of internalLinks) {
-      const lower = urlStr.toLowerCase();
-      let score = 0;
+    for (const [urlStr, linkText] of internalLinks.entries()) {
+      const lower = `${urlStr} ${linkText}`.toLowerCase();
 
-      for (const kw of SERVICE_PATH_KEYWORDS) {
-        if (lower.includes(kw)) score += 10;
-      }
-      for (const kw of CONTACT_PATH_KEYWORDS) {
-        if (lower.includes(kw)) score += 5;
-      }
+      const isService = SERVICE_PATH_KEYWORDS.some((kw) => lower.includes(kw));
+      const isContact = CONTACT_PATH_KEYWORDS.some((kw) => lower.includes(kw));
 
-      if (score > 0) {
-        priorityList.push({ url: urlStr, score });
-      }
+      if (isService) serviceLinks.push(urlStr);
+      if (isContact) contactLinks.push(urlStr);
     }
 
-    priorityList.sort((a, b) => b.score - a.score);
-    return priorityList.map((p) => p.url);
+    // Build balanced priority list: up to 2 services and up to 2 contact pages first
+    const prioritySet = new Set<string>();
+    for (const s of serviceLinks.slice(0, 2)) prioritySet.add(s);
+    for (const c of contactLinks.slice(0, 2)) prioritySet.add(c);
+    for (const s of serviceLinks) prioritySet.add(s);
+    for (const c of contactLinks) prioritySet.add(c);
+
+    return {
+      serviceLinks,
+      contactLinks,
+      allPriority: Array.from(prioritySet),
+    };
   }
 
   /**
@@ -321,7 +465,10 @@ export class BusinessWebsiteIntelligenceService {
     for (const item of jsonLdList) {
       if (!item || typeof item !== "object") continue;
 
-      const type = typeof item["@type"] === "string" ? item["@type"] : "";
+      const rawType = item["@type"];
+      const types: string[] = Array.isArray(rawType) ? rawType.map(String) : [String(rawType || "")];
+      const type = types.join(" ");
+
       const isBusiness =
         type.includes("Business") ||
         type.includes("Clinic") ||
@@ -338,12 +485,24 @@ export class BusinessWebsiteIntelligenceService {
         type.includes("Gym") ||
         type.includes("Restaurant") ||
         type.includes("Service") ||
-        Boolean(item.address || item.telephone || item.hasOfferCatalog);
+        Boolean(item.address || item.telephone || item.hasOfferCatalog || item.contactPoint);
 
       if (isBusiness) {
         if (item.name && !name) name = String(item.name).trim();
-        if (item.telephone && !phone) phone = String(item.telephone).trim();
-        if (item.email && !email) email = String(item.email).trim();
+        if (item.telephone && !phone) phone = String(item.telephone).replace(/^tel:\s*/i, "").trim();
+        if (item.email && !email) email = String(item.email).replace(/^mailto:\s*/i, "").trim();
+
+        // ContactPoint support (telephone, email)
+        const contactPoints = Array.isArray(item.contactPoint)
+          ? item.contactPoint
+          : item.contactPoint && typeof item.contactPoint === "object"
+          ? [item.contactPoint]
+          : [];
+
+        for (const cp of contactPoints) {
+          if (cp.telephone && !phone) phone = String(cp.telephone).replace(/^tel:\s*/i, "").trim();
+          if (cp.email && !email) email = String(cp.email).replace(/^mailto:\s*/i, "").trim();
+        }
 
         // Address
         if (item.address) {
@@ -371,11 +530,11 @@ export class BusinessWebsiteIntelligenceService {
 
         // Industry Mapping
         if (type.includes("Dent")) industry = "Dental Clinic";
-        else if (type.includes("Medical") || type.includes("Physician")) industry = "Medical Clinic";
-        else if (type.includes("Salon") || type.includes("Hair")) industry = "Salon";
-        else if (type.includes("Spa")) industry = "Spa";
-        else if (type.includes("Legal") || type.includes("Attorney")) industry = "Law Firm";
-        else if (type.includes("Gym") || type.includes("Exercise")) industry = "Gym";
+        else if (type.includes("Medical") || type.includes("Physician") || type.includes("Health") || type.includes("Spine")) industry = "Medical Clinic";
+        else if (type.includes("Salon") || type.includes("Hair") || type.includes("Barber")) industry = "Salon";
+        else if (type.includes("Spa") || type.includes("Massage")) industry = "Spa";
+        else if (type.includes("Legal") || type.includes("Attorney") || type.includes("Law")) industry = "Law Firm";
+        else if (type.includes("Gym") || type.includes("Exercise") || type.includes("Fitness")) industry = "Gym";
         else if (type.includes("RealEstate")) industry = "Real Estate";
       }
 

@@ -473,14 +473,42 @@ export async function scrapeAndAnalyzeWebsiteAction(rawUrl: string) {
 
     const profile = await BusinessWebsiteIntelligenceService.extractBusinessProfile(rawUrl);
 
+    // Fallback resolution for email:
+    // 1. Scraped website email
+    // 2. Logged-in user's account email
+    // 3. Sensible contact@<domain> fallback
+    let resolvedEmail = profile.email?.trim() || "";
+    let resolvedPhone = profile.phone?.trim() || "";
+
+    try {
+      const { userId } = await auth();
+      if (userId) {
+        const currentUser = await userRepository.getById(userId);
+        if (!resolvedEmail && currentUser?.email) {
+          resolvedEmail = currentUser.email;
+        }
+      }
+    } catch {
+      // Safe to ignore session retrieval failures during background scraping
+    }
+
+    if (!resolvedEmail && rawUrl && rawUrl !== "no-website") {
+      try {
+        const cleanHost = rawUrl.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+        if (cleanHost && cleanHost.includes(".")) {
+          resolvedEmail = `contact@${cleanHost}`;
+        }
+      } catch {}
+    }
+
     return {
       success: true,
       scraped: {
         businessName: profile.businessName,
         industry: profile.industry,
         website: profile.website,
-        email: profile.email,
-        phone: profile.phone,
+        email: resolvedEmail,
+        phone: resolvedPhone,
         address: profile.address,
         hours: profile.hours,
         timezone: profile.timezone,
