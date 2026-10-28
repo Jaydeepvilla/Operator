@@ -20,7 +20,7 @@ export default async function VoiceSettingsPage() {
   const initialRules = rulesRes.success && rulesRes.rules ? rulesRes.rules : [];
 
   return (
-    <div className="space-y-space-4 animate-fade-in w-full h-full flex flex-col overflow-hidden">
+    <div className="space-y-space-6 animate-fade-in w-full pb-space-12">
       <div className="shrink-0">
         <h1 className="text-title-lg font-semibold tracking-tight-md text-foreground">
           Voice Settings & Routing

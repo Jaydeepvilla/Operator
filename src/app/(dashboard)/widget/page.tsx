@@ -524,37 +524,37 @@ Platform-specific guides:
  </div>
  )}
 
- {/* Horizontal Segmented Tabs (Clean, zero scrollbars!) */}
- <div className="flex items-center gap-space-1.5 p-space-1 radius-xl bg-background/60 border-border/50 overflow-x-auto no-scrollbar">
- {[
- { id: "install", label: "Integration & Script", icon: Code },
- { id: "branding", label: "Appearance & Styling", icon: Palette },
- { id: "triggers", label: "Greetings & Actions", icon: MessageSquare },
- { id: "domains", label: "Allowed Domains", icon: Globe },
- { id: "analytics", label: "Analytics", icon: BarChart2 },
- ].map((tab) => {
- const Icon = tab.icon;
- const isSelected = activeTab === tab.id;
- return (
- <Button
- key={tab.id}
- type="button"
- onClick={() => setActiveTab(tab.id as any)}
- className={cn(
- "flex items-center gap-space-2 px-space-4 py-space-2 text-caption font-medium radius-lg transition-all cursor-pointer whitespace-nowrap select-none",
- isSelected
- ? "bg-primary text-white shadow-xs font-semibold"
- : "text-muted-foreground hover:text-foreground hover:bg-background/80"
- )}
- >
- <Icon className="h-4 w-4 shrink-0" />
- <span>{tab.label}</span>
- </Button>
- );
- })}
- </div>
+ {/* Horizontal Studio Navigation Tabs */}
+      <div className="flex flex-wrap items-center gap-space-2">
+        {[
+          { id: "install", label: "Integration & Script", icon: Code },
+          { id: "branding", label: "Appearance & Styling", icon: Palette },
+          { id: "triggers", label: "Greetings & Actions", icon: MessageSquare },
+          { id: "domains", label: "Allowed Domains", icon: Globe },
+          { id: "analytics", label: "Analytics", icon: BarChart2 },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isSelected = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id as any)}
+              className={cn(
+                "group flex items-center gap-space-2 px-space-4 py-space-2 text-caption font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap select-none border",
+                isSelected
+                  ? "bg-primary text-white border-primary shadow-xs"
+                  : "bg-card/80 hover:bg-card text-foreground/80 hover:text-foreground border-border/70 hover:border-border"
+              )}
+            >
+              <Icon className={cn("h-4 w-4 shrink-0 transition-colors", isSelected ? "text-white" : "text-muted-foreground group-hover:text-foreground")} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
 
- {/* Main 2-Column Split: Controls on Left, Sticky Real-Time Preview on Right */}
+      {/* Main 2-Column Split: Controls on Left, Sticky Real-Time Preview on Right */}
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-8 items-start w-full">
  {/* Left Column: Active Configuration Panel (7 cols) */}
  <div className="lg:col-span-7 space-y-space-6 min-w-0">
@@ -630,28 +630,28 @@ Platform-specific guides:
  </div>
 
  {/* Platform Selector Buttons */}
- <div className="flex flex-wrap gap-space-1.5">
- {PLATFORM_GUIDES.map((platform) => {
- const isSelected = selectedPlatform === platform.id;
- return (
- <Button
- key={platform.id}
- type="button"
- onClick={() => setSelectedPlatform(platform.id)}
- className={cn(
- "px-space-3 py-space-1.5 text-caption font-medium radius-md transition-all cursor-pointer border",
- isSelected
- ? "bg-primary text-white border-primary shadow-xs font-semibold"
- : "bg-background/40 hover:bg-background text-muted-foreground hover:text-foreground border-border/40"
- )}
- >
- {platform.name}
- </Button>
- );
- })}
- </div>
+              <div className="flex flex-wrap gap-space-2">
+                {PLATFORM_GUIDES.map((platform) => {
+                  const isSelected = selectedPlatform === platform.id;
+                  return (
+                    <button
+                      key={platform.id}
+                      type="button"
+                      onClick={() => setSelectedPlatform(platform.id)}
+                      className={cn(
+                        "px-space-3.5 py-space-2 text-caption font-semibold rounded-lg transition-all cursor-pointer border select-none",
+                        isSelected
+                          ? "bg-primary text-white border-primary shadow-xs"
+                          : "bg-card/80 hover:bg-card text-foreground/80 hover:text-foreground border-border/70 hover:border-border"
+                      )}
+                    >
+                      {platform.name}
+                    </button>
+                  );
+                })}
+              </div>
 
- {/* Active Guide Steps */}
+              {/* Active Guide Steps */}
  {(() => {
  const activeGuide = PLATFORM_GUIDES.find((p) => p.id === selectedPlatform) || PLATFORM_GUIDES[0];
  return (
@@ -1107,31 +1107,35 @@ Platform-specific guides:
  </span>
 
  {/* View Mode Switcher: Chat View vs Bubble View */}
- <div className="flex items-center gap-space-1 p-space-0.5 radius-lg bg-background/50 border-border/40 text-caption">
- <Button
- type="button"
- onClick={() => setPreviewMode("chat")}
- className={cn(
- "px-space-2.5 py-space-1 radius-md transition-colors cursor-pointer",
- previewMode === "chat" ? "bg-primary text-white font-semibold shadow-xs" : "text-muted-foreground hover:text-foreground"
- )}
- >
- Chat View
- </Button>
- <Button
- type="button"
- onClick={() => setPreviewMode("bubble")}
- className={cn(
- "px-space-2.5 py-space-1 radius-md transition-colors cursor-pointer",
- previewMode === "bubble" ? "bg-primary text-white font-semibold shadow-xs" : "text-muted-foreground hover:text-foreground"
- )}
- >
- Floating Bubble
- </Button>
- </div>
- </div>
+          <div className="flex items-center gap-space-1.5 p-space-1 radius-lg bg-background/60 border border-border/40 text-caption">
+            <button
+              type="button"
+              onClick={() => setPreviewMode("chat")}
+              className={cn(
+                "px-space-3 py-space-1.5 text-caption font-semibold rounded-md transition-all cursor-pointer border select-none",
+                previewMode === "chat"
+                  ? "bg-primary text-white border-primary shadow-xs"
+                  : "bg-card/80 hover:bg-card text-foreground/80 hover:text-foreground border-border/60 hover:border-border"
+              )}
+            >
+              Chat View
+            </button>
+            <button
+              type="button"
+              onClick={() => setPreviewMode("bubble")}
+              className={cn(
+                "px-space-3 py-space-1.5 text-caption font-semibold rounded-md transition-all cursor-pointer border select-none",
+                previewMode === "bubble"
+                  ? "bg-primary text-white border-primary shadow-xs"
+                  : "bg-card/80 hover:bg-card text-foreground/80 hover:text-foreground border-border/60 hover:border-border"
+              )}
+            >
+              Floating Bubble
+            </button>
+          </div>
+        </div>
 
- {/* Interactive Device Shell */}
+        {/* Interactive Device Shell */}
  <div
  className="radius-2xl border backdrop-blur-md overflow-hidden flex flex-col shadow-lg transition-all duration-300"
  style={{

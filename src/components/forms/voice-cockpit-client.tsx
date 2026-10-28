@@ -240,7 +240,7 @@ export function VoiceCockpitClient({
   };
 
  return (
- <div className="flex-1 min-h-0 flex flex-col gap-space-4">
+ <div className="w-full flex flex-col gap-space-6">
  {/* Analytics Summary Cards */}
  <div className="grid gap-space-4 sm:grid-cols-2 lg:grid-cols-4 shrink-0">
  {/* Calls Card */}
@@ -335,9 +335,9 @@ export function VoiceCockpitClient({
  </div>
  </div>
  {/* Main viewport area */}
- <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-space-4">
+ <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-6 items-stretch">
  {/* Left Column: Live Activity + Outbound AI Dialer (col-span-4) */}
- <div className="lg:col-span-4 flex flex-col gap-space-4 min-h-0">
+ <div className="lg:col-span-4 flex flex-col gap-space-4 min-h-[500px]">
  {/* Live Activity Monitoring Card */}
  <div className="flex flex-col bg-card border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft- shrink-0">
  <div className="p-space-4 border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)] shrink-0 flex items-center justify-between">
@@ -452,7 +452,7 @@ export function VoiceCockpitClient({
  </div>
 
  {/* Center Column: Live Transcription Viewer (col-span-5) */}
- <div className="lg:col-span-5 flex flex-col min-h-0">
+ <div className="lg:col-span-5 flex flex-col min-h-[500px]">
  <div className="flex-1 min-h-0 flex flex-col bg-card border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft-">
  <div className="p-space-4 border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)] shrink-0 flex flex-wrap items-center justify-between gap-space-3">
  <div>
@@ -523,7 +523,7 @@ export function VoiceCockpitClient({
  </div>
 
  {/* Right Column: Voicemail Messages Inbox (col-span-3) */}
- <div className="lg:col-span-3 flex flex-col min-h-0">
+ <div className="lg:col-span-3 flex flex-col min-h-[500px]">
  <div className="flex-1 min-h-0 flex flex-col bg-card border-[hsl(var(--foreground)/0.06)] radius-xl overflow-hidden soft-">
  <div className="p-space-4 border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.005)] shrink-0 flex items-center justify-between">
  <div className="flex items-center gap-space-2">
@@ -533,7 +533,7 @@ export function VoiceCockpitClient({
  <span className="text-caption bg-primary/10 text-primary font-semibold px-space-1.5 py-space-0.5 rounded-full">{voicemails.length}</span>
  </div>
 
- <ScrollArea className="flex-1 bg-[hsl(var(--foreground)/0.002)]" horizontal={false} vertical={voicemails.length > 2}>
+ <ScrollArea className="flex-1 min-h-[360px] bg-[hsl(var(--foreground)/0.002)]" horizontal={false} vertical={voicemails.length > 2}>
  <div className="p-space-3 space-y-space-3">
  {voicemails.length === 0 ? (
  <div className="flex flex-col items-center justify-center text-center h-full min-h-48 py-space-6 text-muted-foreground/60 gap-space-1.5">

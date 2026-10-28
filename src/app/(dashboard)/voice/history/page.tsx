@@ -15,7 +15,7 @@ export default async function VoiceHistoryPage() {
   const initialSessions = response.success && response.sessions ? response.sessions : [];
 
   return (
-    <div className="space-y-space-4 animate-fade-in w-full h-full flex flex-col overflow-hidden">
+    <div className="space-y-space-6 animate-fade-in w-full pb-space-12">
       <div className="shrink-0">
         <h1 className="text-title-lg font-semibold tracking-tight-md text-foreground">
           Call Logs History
