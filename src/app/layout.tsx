@@ -4,6 +4,7 @@ import { AuthProvider } from "@/lib/auth/client";
 import { currentUser } from "@/lib/auth/server";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { ToastProvider } from "@/components/shared/toast";
+import { ConfirmProvider } from "@/components/shared/confirm-dialog";
 import { MotionProvider } from "@/components/motion";
 import { MazeSnippet } from "@/components/shared/maze-snippet";
 import { Analytics } from "@vercel/analytics/next";
@@ -55,7 +56,9 @@ export default async function RootLayout({
         <body suppressHydrationWarning className="min-h-full flex flex-col bg-background text-foreground antialiased font-sans">
           <ThemeProvider>
             <ToastProvider>
-              <MotionProvider>{children}</MotionProvider>
+              <ConfirmProvider>
+                <MotionProvider>{children}</MotionProvider>
+              </ConfirmProvider>
             </ToastProvider>
           </ThemeProvider>
           <Analytics />

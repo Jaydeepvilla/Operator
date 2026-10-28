@@ -441,7 +441,7 @@ export default function FounderAcademyPage() {
  }
 
  async function handleResetProgress() {
- if (!confirm("Are you sure you want to reset your learning progress? This will reset all module completions.")) return;
+ if (!await confirm("Are you sure you want to reset your learning progress? This will reset all module completions.")) return;
  setActionLoading(true);
  try {
  const res = await resetProgressAction();

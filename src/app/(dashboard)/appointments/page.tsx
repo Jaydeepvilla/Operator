@@ -369,36 +369,38 @@ export default function AppointmentsPage() {
  });
 
  return (
- <div className="space-y-space-4 animate-fade-in w-full pb-space-8">
- {/* Header */}
- <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-3 shrink-0">
+ <div className="space-y-space-4 animate-fade-in w-full pb-space-8">{/* Header — Full Width */}
+ <div className="w-full shrink-0">
  <PageTitle
  title="Appointments"
  description="All upcoming, past, and cancelled bookings. Manage your calendar from here."
- className="mb-0"
+ className="mb-space-3"
  />
- {/* View Selectors */}
+ </div>
+
+ {/* View Selectors — Below full width heading, clean borderless pill strip */}
+ <div className="flex items-center justify-between pb-space-2 shrink-0">
  <Tabs
  value={currentView}
  onValueChange={(v) => setCurrentView(v as typeof currentView)}
- className="shrink-0"
+ className="w-auto"
  >
- <TabsList className="h-9">
- <TabsTrigger value="list" className="gap-1.5">
+ <TabsList className="h-9 border-none bg-muted/50 dark:bg-muted/20 p-1 radius-lg gap-1">
+ <TabsTrigger value="list" className="gap-1.5 text-caption font-semibold">
  <List className="h-3.5 w-3.5 shrink-0" />
  List View
  </TabsTrigger>
- <TabsTrigger value="day" disabled className="gap-1.5 opacity-60 cursor-not-allowed">
+ <TabsTrigger value="day" disabled className="gap-1.5 opacity-60 cursor-not-allowed text-caption">
  <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
  Day
- <span className="ml-0.5 px-1 py-0.5 text-caption font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 rounded-sm leading-none">
+ <span className="ml-0.5 px-1 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 rounded-sm leading-none">
  Soon
  </span>
  </TabsTrigger>
- <TabsTrigger value="week" disabled className="gap-1.5 opacity-60 cursor-not-allowed">
+ <TabsTrigger value="week" disabled className="gap-1.5 opacity-60 cursor-not-allowed text-caption">
  <CalendarRange className="h-3.5 w-3.5 shrink-0" />
  Week
- <span className="ml-0.5 px-1 py-0.5 text-caption font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 rounded-sm leading-none">
+ <span className="ml-0.5 px-1 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 rounded-sm leading-none">
  Soon
  </span>
  </TabsTrigger>
@@ -419,20 +421,20 @@ export default function AppointmentsPage() {
  ) : (
  <div className="space-y-space-4">
  {/* Filter Row */}
- <div className="flex flex-col md:flex-row gap-space-4 bg-slate-50/30 backdrop-blur-md border border-slate-200/40 p-space-4 radius-xl shadow-xs transition-all duration-300 ease-out hover:shadow-sm shrink-0">
+ <div className="flex flex-col md:flex-row gap-space-4 bg-card/60 backdrop-blur-md border border-border/50 p-space-4 radius-xl shadow-xs transition-all duration-300 ease-out shrink-0">
  <div className="relative flex-1">
  <Search className="absolute left-space-3 top-space-2.5 h-4 w-4 text-muted-foreground/50"/>
  <Input
  value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
  placeholder="Search bookings by customer name, email, or phone..."
- className="pl-space-9 bg-background/50 hover:bg-background border-slate-200/50 hover:border-primary/30 text-caption radius-lg shadow-inner transition-all duration-300 ease-out focus-visible:ring-2 focus-visible:ring-primary/10"
+ className="pl-space-9 bg-background/80 hover:bg-background border-border/60 hover:border-primary/40 focus:border-primary text-caption radius-lg shadow-inner transition-all duration-200"
  />
  </div>
  <div className="flex gap-space-2">
  <div className="w-40">
  <Select value={selectedStaffId} onValueChange={setSelectedStaffId}>
- <SelectTrigger className="bg-background/50 hover:bg-background text-caption border-slate-200/50 hover:border-primary/30 transition-all duration-300 ease-out active:scale-[0.99] h-9 radius-lg shadow-xs focus:ring-2 focus:ring-primary/10">
+ <SelectTrigger className="bg-background/80 hover:bg-background text-caption border-border/60 hover:border-primary/40 transition-all duration-200 h-9 radius-lg shadow-xs focus:ring-2 focus:ring-primary/10">
  <div className="flex items-center gap-space-1.5 font-medium">
  <User className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0"/>
  <SelectValue placeholder="Staff Member"/>
@@ -448,7 +450,7 @@ export default function AppointmentsPage() {
  </div>
  <div className="w-40">
  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
- <SelectTrigger className="bg-background/50 hover:bg-background text-caption border-slate-200/50 hover:border-primary/30 transition-all duration-300 ease-out active:scale-[0.99] h-9 radius-lg shadow-xs focus:ring-2 focus:ring-primary/10">
+ <SelectTrigger className="bg-background/80 hover:bg-background text-caption border-border/60 hover:border-primary/40 transition-all duration-200 h-9 radius-lg shadow-xs focus:ring-2 focus:ring-primary/10">
  <div className="flex items-center gap-space-1.5 font-medium">
  <Filter className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0"/>
  <SelectValue placeholder="Status Filter"/>

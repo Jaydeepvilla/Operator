@@ -48,6 +48,7 @@ import { NativeTable, NativeButton, NativeTextarea } from "@/components/shared/n
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/shared/toast";
 import { formatUserErrorMessage } from "@/lib/errors";
+import { useConfirm } from "@/components/shared/confirm-dialog";
 
 const faqFormSchema = z.object({
  question: z.string().min(8, "Question must be at least 8 characters"),
@@ -159,7 +160,7 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  };
 
  const handleDelete = async (id: string) => {
- if (confirm("Are you sure you want to delete this FAQ item?")) {
+ if (await confirm("Are you sure you want to delete this FAQ item?")) {
  const res = await deleteFaqAction(id);
  if (!res.success) {
  toast.error("Failed to delete FAQ", formatUserErrorMessage(res.error));
@@ -185,7 +186,7 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  };
 
  const handleBulkDelete = async () => {
- if (confirm(`Are you sure you want to delete the ${selectedIds.length} selected FAQs?`)) {
+ if (await confirm(`Are you sure you want to delete the ${selectedIds.length} selected FAQs?`)) {
  const res = await bulkDeleteFaqsAction(selectedIds);
  if (res.success) {
  setSelectedIds([]);

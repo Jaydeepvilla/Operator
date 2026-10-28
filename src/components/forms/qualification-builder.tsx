@@ -63,6 +63,7 @@ import {
 } from "@/server/actions/flows";
 import { useToast } from "@/components/shared/toast";
 import { formatUserErrorMessage } from "@/lib/errors";
+import { useConfirm } from "@/components/shared/confirm-dialog";
 import { z } from"zod";
 import { cn } from"@/components/shared/utils";
 import { NativeButton } from "@/components/shared/native";
@@ -424,7 +425,7 @@ export function QualificationBuilder({ initialQuestions }: Props) {
  };
 
  const handleDelete = async (id: string) => {
- if (!confirm("Are you sure you want to delete this question?")) return;
+ if (!await confirm("Are you sure you want to delete this question?")) return;
  setDeletingId(id);
  const res = await deleteFlowQuestionAction(id);
  setDeletingId(null);

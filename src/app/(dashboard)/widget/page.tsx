@@ -43,6 +43,7 @@ import { Label } from "@/components/shared/label";
 import { PageTitle } from "@/components/shared/page-title";
 import { useToast } from "@/components/shared/toast";
 import { formatUserErrorMessage } from "@/lib/errors";
+import { useConfirm } from "@/components/shared/confirm-dialog";
 import { cn } from "@/components/shared/utils";
 
 const PRESET_COLORS = [
@@ -347,8 +348,8 @@ export default function WidgetSettingsPage() {
  };
 
  const handleDeleteDomain = async (id: string) => {
- const confirm = window.confirm("Are you sure you want to delete this domain whitelist?");
- if (!confirm) return;
+ const ok = await confirm("Are you sure you want to delete this domain whitelist?");
+ if (!ok) return;
  const res = await deleteDomainAction(id);
  if (res.success) {
  toast.success("Domain Removed", "Domain whitelist entry deleted.");

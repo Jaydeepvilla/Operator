@@ -17,6 +17,7 @@ import {
  Info
 } from "lucide-react";
 import { Button } from "@/components/shared/button";
+import { useConfirm } from "@/components/shared/confirm-dialog";
 import { PageTitle } from "@/components/shared/page-title";
 import { Input } from "@/components/shared/input";
 import { Label } from "@/components/shared/label";
@@ -103,8 +104,8 @@ export default function TemplatesPage() {
  };
 
  const handleDelete = async (id: string) => {
- const confirm = window.confirm("Are you sure you want to delete this template?");
- if (!confirm) return;
+ const ok = await confirm("Are you sure you want to delete this template?");
+ if (!ok) return;
 
  const res = await deleteTemplateAction(id);
  if (res.success) {

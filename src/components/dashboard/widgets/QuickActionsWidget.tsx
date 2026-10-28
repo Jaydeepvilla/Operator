@@ -33,6 +33,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/shared/dialog";
+import { DateTimePicker } from "@/components/shared/date-time-picker";
 import { Input } from "@/components/shared/input";
 import { Button } from "@/components/shared/button";
 import { NativeSelect } from "@/components/shared/native";
@@ -423,7 +424,7 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
 
               <div>
                 <label className="text-[12px] font-semibold text-foreground block mb-1">
-                  Customer Name *
+                  Customer Name <span className="text-rose-500 font-bold">*</span>
                 </label>
                 <div className="relative">
                   <User className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
@@ -472,17 +473,13 @@ export function QuickActionsWidget({ onActionSuccess }: QuickActionsWidgetProps)
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-[12px] font-semibold text-foreground block mb-1">
-                    Date & Time *
+                    Date & Time <span className="text-rose-500 font-bold">*</span>
                   </label>
-                  <div className="relative">
-                    <Input
-                      type="datetime-local"
-                      value={aptDateTime}
-                      onChange={(e) => setAptDateTime(e.target.value)}
-                      className="text-body-sm"
-                      required
-                    />
-                  </div>
+                  <DateTimePicker
+                    value={aptDateTime}
+                    onChange={setAptDateTime}
+                    required
+                  />
                 </div>
 
                 <div>

@@ -38,6 +38,7 @@ import { useToast } from "@/components/shared/toast";
 import { formatUserErrorMessage } from "@/lib/errors";
 import { cn } from "@/components/shared/utils";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { Switch } from "@/components/shared/switch";
 import { NativeTextarea, NativeTable } from "@/components/shared/native";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -372,25 +373,11 @@ export function VoiceSettingsClient({
  <Label className="text-caption font-semibold text-foreground">Voicemail Inbox Active</Label>
  <p className="text-caption text-muted-foreground/80">Capture messages if lines are busy</p>
  </div>
- <Button
- type="button"
- role="switch"
- aria-checked={settings.voicemailActive}
- onClick={() => setSettings({ ...settings, voicemailActive: !settings.voicemailActive })}
- className={cn(
- "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
- settings.voicemailActive ? "bg-primary" : "bg-neutral-300 dark:bg-neutral-700"
- )}
- >
- <span className="sr-only">Toggle voicemail inbox</span>
- <span
- aria-hidden="true"
- className={cn(
- "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-md transform ring-0 transition duration-200 ease-in-out",
- settings.voicemailActive ? "translate-x-5" : "translate-x-0"
- )}
+ <Switch
+   checked={settings.voicemailActive}
+   onCheckedChange={(checked) => setSettings({ ...settings, voicemailActive: checked })}
+   aria-label="Toggle voicemail inbox"
  />
- </Button>
  </div>
 
  {settingsStatus &&

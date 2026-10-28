@@ -189,7 +189,7 @@ export default function StaffPage() {
 
  const handleDeleteStaff = async () => {
  if (!selectedStaffId) return;
- if (!window.confirm("Are you sure you want to delete this staff profile?")) return;
+ if (!await confirm("Are you sure you want to delete this staff profile?")) return;
  const res = await deleteStaffAction(selectedStaffId);
  if (res.success) { setSelectedStaffId(null); await loadStaff(); }
  else setErrorMsg(res.error || "Failed to delete staff member");

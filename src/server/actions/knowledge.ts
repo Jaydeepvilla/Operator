@@ -69,7 +69,39 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 export async function getKnowledgeCategoriesAction() {
   try {
     const orgId = await getVerifiedOrgId();
-    const categories = await categoriesRepository.list(orgId);
+    let categories = await categoriesRepository.list(orgId);
+
+    // Auto-seed default taxonomy categories if empty so dropdowns always have options
+    if (!categories || categories.length === 0) {
+      const defaultCategories = [
+        { name: "General Knowledge", description: "Standard business details, overview, and identity", icon: "BookOpen", priority: "high", sortOrder: 1 },
+        { name: "Services & Pricing", description: "Catalog of offered services, rates, tiers, and fees", icon: "Tag", priority: "high", sortOrder: 2 },
+        { name: "Policies & Cancellations", description: "Cancellation terms, deposits, arrival rules, and booking policies", icon: "FileText", priority: "high", sortOrder: 3 },
+        { name: "Staff & Schedules", description: "Operating hours, staff roster, shifts, and emergency contacts", icon: "Users", priority: "medium", sortOrder: 4 },
+        { name: "Frequently Asked Questions", description: "Direct Q&A answers for customer inquiries", icon: "HelpCircle", priority: "medium", sortOrder: 5 },
+      ];
+
+      for (const cat of defaultCategories) {
+        try {
+          const slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+          await categoriesRepository.create({
+            organizationId: orgId,
+            name: cat.name,
+            slug,
+            description: cat.description,
+            icon: cat.icon,
+            priority: cat.priority,
+            sortOrder: cat.sortOrder,
+            status: "active",
+            visibility: "public",
+          });
+        } catch (seedErr) {
+          console.warn("[KnowledgeCategory] Default seed notice:", seedErr);
+        }
+      }
+      categories = await categoriesRepository.list(orgId);
+    }
+
     return { success: true, categories };
   } catch (error: any) {
     return { success: false, error: error?.message || "We couldn't load categories. Try again." };
@@ -309,10 +341,22 @@ export async function uploadKnowledgeDocumentAction(data: {
     }
 
     // 2. Insert Document record
+    let finalCategoryId: string | null = null;
+    if (data.categoryId) {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.categoryId);
+      if (isUuid) {
+        finalCategoryId = data.categoryId;
+      } else {
+        const slug = data.categoryId.replace(/^cat_/, "").toLowerCase();
+        const found = await categoriesRepository.getBySlug(orgId, slug);
+        finalCategoryId = found?.id || null;
+      }
+    }
+
     const document = await documentsRepository.create({
       organizationId: orgId,
       sourceId: source.id,
-      categoryId: data.categoryId || null,
+      categoryId: finalCategoryId,
       name: data.name,
       fileType: data.fileType.toLowerCase(),
       fileSize: data.fileSize,

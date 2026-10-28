@@ -19,20 +19,39 @@ export interface LabelProps
 const Label = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
   LabelProps
->(({ className, error, required, children, ...props }, ref) => (
-  <LabelPrimitive.Root
-    ref={ref}
-    className={cn(
-      labelVariants(),
-      error && "text-error-500",
-      className
-    )}
-    {...props}
-  >
-    {children}
-    {required && <span className="text-error-500 ml-space-1" aria-hidden="true">*</span>}
-  </LabelPrimitive.Root>
-));
+>(({ className, error, required, children, ...props }, ref) => {
+  const renderContent = () => {
+    if (typeof children === "string" && children.trim().endsWith("*")) {
+      const textWithoutStar = children.trim().slice(0, -1).trimEnd();
+      return (
+        <>
+          {textWithoutStar}
+          <span className="text-rose-500 ml-1 font-bold" aria-hidden="true">*</span>
+        </>
+      );
+    }
+    return (
+      <>
+        {children}
+        {required && <span className="text-rose-500 ml-1 font-bold" aria-hidden="true">*</span>}
+      </>
+    );
+  };
+
+  return (
+    <LabelPrimitive.Root
+      ref={ref}
+      className={cn(
+        labelVariants(),
+        error && "text-rose-500",
+        className
+      )}
+      {...props}
+    >
+      {renderContent()}
+    </LabelPrimitive.Root>
+  );
+});
 Label.displayName = LabelPrimitive.Root.displayName;
 
 export { Label };

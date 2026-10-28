@@ -74,7 +74,7 @@ const listVariants = cva(
  segmented: "bg-[hsl(var(--foreground)/0.04)] border-[hsl(var(--foreground)/0.06)] shadow-inner-sm",
  },
  orientation: {
- horizontal: "w-full flex-row overflow-x-auto",
+ horizontal: "w-full flex-row overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
  vertical: "flex-col overflow-y-auto overflow-x-hidden items-start",
  },
  size: {

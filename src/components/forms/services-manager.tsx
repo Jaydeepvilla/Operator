@@ -38,6 +38,7 @@ import {
 } from"@/server/actions/services";
 import { useToast } from "@/components/shared/toast";
 import { formatUserErrorMessage } from "@/lib/errors";
+import { useConfirm } from "@/components/shared/confirm-dialog";
 import { z } from"zod";
 import { cn } from"@/components/shared/utils";
 import { NativeButton, NativeTextarea } from "@/components/shared/native";
@@ -165,7 +166,7 @@ export function ServicesManager({ initialServices, categories }: ServicesManager
  };
 
  const handleArchive = async (id: string) => {
- if (confirm("Are you sure you want to archive this service?")) {
+ if (await confirm("Are you sure you want to archive this service?")) {
  const res = await archiveServiceAction(id);
  if (!res.success) {
  toast.error("Failed to archive service", formatUserErrorMessage(res.error));
@@ -176,7 +177,7 @@ export function ServicesManager({ initialServices, categories }: ServicesManager
  };
 
  const handleDelete = async (id: string) => {
- if (confirm("Are you sure you want to permanently delete this service?")) {
+ if (await confirm("Are you sure you want to permanently delete this service?")) {
  const res = await deleteServiceAction(id);
  if (!res.success) {
  toast.error("Failed to delete service", formatUserErrorMessage(res.error));

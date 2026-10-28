@@ -265,7 +265,7 @@ export function KnowledgeCenterClient({
  };
 
  const handleDeleteCategory = async (id: string) => {
- if (confirm("Are you sure you want to delete this category?")) {
+ if (await confirm("Are you sure you want to delete this category?")) {
  const res = await deleteKnowledgeCategoryAction(id);
  if (res.success) {
  toast.success("Category Deleted", "Category removed from knowledge base.");
@@ -416,7 +416,7 @@ export function KnowledgeCenterClient({
  };
 
  const handleDeleteDocument = async (id: string) => {
- if (confirm("Are you sure you want to permanently delete this document and all associated chunks?")) {
+ if (await confirm("Are you sure you want to permanently delete this document and all associated chunks?")) {
  const res = await deleteKnowledgeDocumentAction(id);
  if (res.success) {
  toast.success("Document Deleted", "Document and associated vectors deleted.");
@@ -1905,7 +1905,13 @@ const handleExecuteIngestion = async () => {
  <SelectValue placeholder="Select Category"/>
  </SelectTrigger>
  <SelectContent>
- {categories.map((c: any) => (
+ {(categories && categories.length > 0 ? categories : [
+   { id: "cat_general", name: "General Knowledge" },
+   { id: "cat_services", name: "Services & Pricing" },
+   { id: "cat_policies", name: "Company Policies & Guidelines" },
+   { id: "cat_faq", name: "Frequently Asked Questions" },
+   { id: "cat_operations", name: "Operations & Procedures" },
+ ]).map((c: any) => (
  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
  ))}
  </SelectContent>
@@ -2267,7 +2273,7 @@ const handleExecuteIngestion = async () => {
  <Button
  variant="ghost"
  onClick={async () => {
- if (confirm(`Remove page "${page.title}" from the Knowledge Base?`)) {
+ if (await confirm(`Remove page "${page.title}" from the Knowledge Base?`)) {
  const res = await deleteKnowledgeDocumentAction(matchingDoc.id);
  if (res.success) {
  toast.success("Page Removed", `"${page.title}" removed from knowledge base.`);

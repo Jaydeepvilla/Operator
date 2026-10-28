@@ -79,7 +79,7 @@ export default function DemoCenterPage() {
   }
 
   async function handleResetData() {
-    if (!confirm("Reset demo environment? This clears demo appointments and exceptions for a clean demonstration.")) {
+    if (!await confirm("Reset demo environment? This clears demo appointments and exceptions for a clean demonstration.")) {
       return;
     }
     setActionLoading(true);

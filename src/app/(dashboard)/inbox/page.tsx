@@ -946,7 +946,7 @@ export default function UnifiedInboxPage() {
               size="sm"
               className="w-full"
             >
-              <TabsList className="grid grid-cols-3 w-full bg-bg-layer-2 border border-border-subtle p-0.5 radius-md h-8">
+              <TabsList className="grid grid-cols-3 w-full bg-bg-layer-2 border border-border-subtle p-0.5 radius-md h-8 overflow-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <TabsTrigger value="copilot" className="text-caption font-bold py-1 flex items-center gap-1">
                   <Brain className="h-3 w-3 text-primary" />
                   <span>Copilot</span>
