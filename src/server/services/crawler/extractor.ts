@@ -61,7 +61,24 @@ export class ContentExtractor {
     const pagePhones = new Set<string>();
     const pageAddresses = new Set<string>();
 
-    // 2a. Extract telephone links across entire DOM (e.g. <a href="tel:...">)
+    // 2a. Decode Cloudflare email protection data-cfemail
+    $('[data-cfemail]').each((_, el) => {
+      const enc = $(el).attr("data-cfemail");
+      if (enc) {
+        try {
+          const k = parseInt(enc.slice(0, 2), 16);
+          let email = "";
+          for (let n = 2; n < enc.length; n += 2) {
+            email += String.fromCharCode(parseInt(enc.slice(n, n + 2), 16) ^ k);
+          }
+          if (email && email.includes("@") && !email.includes("example.com")) {
+            pageEmails.add(email.trim().toLowerCase());
+          }
+        } catch {}
+      }
+    });
+
+    // 2b. Extract telephone links across entire DOM (e.g. <a href="tel:...">)
     $('a[href^="tel:"]').each((_, el) => {
       const href = $(el).attr("href");
       if (href) {
@@ -73,7 +90,7 @@ export class ContentExtractor {
       }
     });
 
-    // 2b. Extract mailto links across entire DOM (e.g. <a href="mailto:...">)
+    // 2c. Extract mailto links across entire DOM (e.g. <a href="mailto:...">)
     $('a[href^="mailto:"]').each((_, el) => {
       const href = $(el).attr("href");
       if (href) {
@@ -84,7 +101,7 @@ export class ContentExtractor {
       }
     });
 
-    // 2c. Schema/Microdata attributes
+    // 2d. Schema/Microdata attributes
     $('[itemprop="telephone"]').each((_, el) => {
       const p = $(el).text().trim();
       const digits = p.replace(/\D/g, "");
@@ -96,28 +113,28 @@ export class ContentExtractor {
       if (e && e.includes("@") && !e.includes("example.com")) pageEmails.add(e);
     });
 
-    $('[itemprop="address"], address').each((_, el) => {
+    $('[itemprop="address"], address, .address, #address, [class*="address"], [class*="location"], [id*="location"], .footer-address, .contact-address').each((_, el) => {
       const a = $(el).text().replace(/\s+/g, " ").trim();
-      if (a && a.length > 5 && a.length < 250) pageAddresses.add(a);
+      if (a && a.length > 5 && a.length < 250 && /\d/.test(a)) pageAddresses.add(a);
     });
 
-    // 2d. Hours Extraction
+    // 2e. Hours Extraction
     let itemHours = $('[itemprop="openingHours"]').first().text().replace(/\s+/g, " ").trim();
     if (!itemHours) {
-      const hoursEl = $('.hours, #hours, [class*="hours"], [id*="hours"]').first().text().replace(/\s+/g, " ").trim();
+      const hoursEl = $('.hours, #hours, [class*="hours"], [id*="hours"], .opening-hours, .business-hours').first().text().replace(/\s+/g, " ").trim();
       if (hoursEl && hoursEl.length < 150) {
         itemHours = hoursEl;
       }
     }
     if (!itemHours) {
       const bodyText = $("body").text();
-      const hoursMatch = bodyText.match(/(?:Office|Business|Opening|Clinical|Operating)?\s*Hours:\s*([A-Za-z0-9–—\-:., ]+(?:AM|PM|am|pm|\d{2}:\d{2})[^\n\r]*)/i);
+      const hoursMatch = bodyText.match(/(?:Office|Business|Opening|Clinical|Operating)?\s*Hours[:\s]*([A-Za-z0-9–—\-:., ]+(?:AM|PM|am|pm|\d{1,2}:\d{2})[^\n\r]*)/i);
       if (hoursMatch) {
         itemHours = hoursMatch[1].replace(/\s+/g, " ").trim();
       }
     }
 
-    // 2e. Capture header, footer, and contact container text BEFORE removal
+    // 2f. Capture header, footer, and contact container text BEFORE removal
     const headerFooterText = $("header, footer, nav, .header, .footer, #footer, #header, address, [class*='contact'], [id*='contact'], [class*='topbar'], [id*='topbar']")
       .text()
       .replace(/\s+/g, " ")
@@ -130,6 +147,17 @@ export class ContentExtractor {
     const textToScan = `${headerFooterText} ${$("body").text()}`;
     const foundEmails = textToScan.match(emailRegex) || [];
     const foundPhones = textToScan.match(phoneRegex) || [];
+
+    // Scan explicitly labeled phones (e.g. Phone: +1 555-0199)
+    const labeledPhoneRegex = /(?:phone|tel|telephone|call|mobile|cell|contact|toll[- ]?free|office|support|helpline)[:\s]*([+0-9()\s.-]{7,25})/gi;
+    let pMatch: RegExpExecArray | null;
+    while ((pMatch = labeledPhoneRegex.exec(textToScan)) !== null) {
+      const p = pMatch[1].trim();
+      const digits = p.replace(/\D/g, "");
+      if (digits.length >= 7 && digits.length <= 15 && !/^\d{4}-\d{2}-\d{2}$/.test(p)) {
+        pagePhones.add(p);
+      }
+    }
 
     for (const e of foundEmails) {
       const clean = e.trim().toLowerCase();

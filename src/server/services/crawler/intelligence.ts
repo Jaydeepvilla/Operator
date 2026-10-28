@@ -16,6 +16,7 @@ import { validateSafeUrl, safeFetch } from "./ssrf";
 import { ContentExtractor, ExtractedPageData } from "./extractor";
 import { llmRegistry, ChatMessage } from "../llm";
 import { INDUSTRIES } from "@/lib/constants";
+import * as cheerio from "cheerio";
 
 export interface ExtractedServiceItem {
   name: string;
@@ -50,8 +51,60 @@ export interface ExtractedBusinessProfile {
 }
 
 // Service & Contact Path Prioritization Patterns
-const SERVICE_PATH_KEYWORDS = ["service", "treatment", "menu", "pricing", "offering", "what-we-do", "plans", "classes"];
-const CONTACT_PATH_KEYWORDS = ["contact", "about", "location", "hours", "find-us", "visit"];
+
+export const CATEGORY_DEFAULT_SERVICES: Record<string, Array<{ name: string; duration: number; price?: string; description?: string }>> = {
+  "Dental Clinic": [
+    { name: "General Dental Consultation & Exam", duration: 30, price: "95", description: "Comprehensive dental examination and evaluation." },
+    { name: "Teeth Cleaning & Hygiene", duration: 45, price: "120", description: "Professional dental cleaning and plaque removal." },
+    { name: "Emergency Dental Appointment", duration: 30, price: "150", description: "Urgent dental pain assessment and treatment." },
+    { name: "Teeth Whitening Consultation", duration: 30, price: "199", description: "Cosmetic smile enhancement consultation." },
+  ],
+  "Medical Clinic": [
+    { name: "General Doctor Consultation", duration: 30, price: "120", description: "Primary care physical checkup and health assessment." },
+    { name: "Follow-up Appointment", duration: 20, price: "75", description: "Review of treatment progress and prescriptions." },
+    { name: "Comprehensive Health Check", duration: 60, price: "250", description: "Full diagnostic wellness evaluation and lab review." },
+  ],
+  "Salon": [
+    { name: "Haircut & Styling", duration: 45, price: "60", description: "Precision wash, cut, and professional styling." },
+    { name: "Blowout & Conditioning", duration: 45, price: "50", description: "Deep hydration mask and signature blowout." },
+    { name: "Full Color & Gloss", duration: 90, price: "140", description: "Custom all-over color treatment and gloss finish." },
+  ],
+  "Spa": [
+    { name: "Signature Massage (60 min)", duration: 60, price: "110", description: "Deeply relaxing full body Swedish or therapeutic massage." },
+    { name: "Custom Hydrating Facial", duration: 60, price: "95", description: "Rejuvenating botanical facial and skin therapy." },
+    { name: "Deep Tissue Therapy (90 min)", duration: 90, price: "160", description: "Targeted tension relief and muscle recovery." },
+  ],
+  "Law Firm": [
+    { name: "Initial Legal Consultation", duration: 30, price: "150", description: "Confidential case evaluation and strategy assessment." },
+    { name: "Document & Contract Review", duration: 60, price: "300", description: "Comprehensive review of legal agreements." },
+  ],
+  "Consultant": [
+    { name: "Discovery Consultation", duration: 30, price: "100", description: "Initial goals review and strategic scoping session." },
+    { name: "Strategy & Advisory Session", duration: 60, price: "250", description: "In-depth strategic roadmap and execution review." },
+  ],
+  "Real Estate": [
+    { name: "Property Viewing Tour", duration: 45, description: "Guided walkthrough of selected properties." },
+    { name: "Home Valuation & Consultation", duration: 45, description: "Market analysis and listing price consultation." },
+  ],
+  "Gym": [
+    { name: "Personal Training Session", duration: 60, price: "80", description: "One-on-one customized fitness and strength training." },
+    { name: "Fitness & Nutrition Assessment", duration: 45, price: "65", description: "Body composition analysis and goal setting." },
+  ],
+  "Other": [
+    { name: "General Consultation", duration: 30, description: "Initial consultation and needs assessment." },
+    { name: "Standard Appointment", duration: 45, description: "Standard business service appointment." },
+  ],
+};
+
+const SERVICE_PATH_KEYWORDS = [
+  "service", "services", "treatment", "treatments", "menu", "pricing", "plans",
+  "offering", "offerings", "what-we-do", "practice-area", "practice-areas",
+  "classes", "procedures", "specialties", "solutions", "care", "packages"
+];
+const CONTACT_PATH_KEYWORDS = [
+  "contact", "contact-us", "about", "about-us", "location", "locations",
+  "hours", "find-us", "visit", "visit-us", "reach-us", "connect", "get-in-touch"
+];
 
 export class BusinessWebsiteIntelligenceService {
   /**
@@ -271,6 +324,19 @@ export class BusinessWebsiteIntelligenceService {
       resolvedServices = this.extractServicesFromDomAndText(fullCorpus, pagesInspected);
     }
 
+    if (resolvedServices.length === 0) {
+      const fallbackList = CATEGORY_DEFAULT_SERVICES[resolvedIndustry] || CATEGORY_DEFAULT_SERVICES["Other"];
+      resolvedServices = fallbackList.map((s) => ({
+        name: s.name,
+        duration: s.duration,
+        durationInferred: false,
+        price: s.price,
+        description: s.description,
+        accepted: true,
+        category: "Main Services",
+      }));
+    }
+
     // Clean, deduplicate, and normalize services
     resolvedServices = this.normalizeServices(resolvedServices);
 
@@ -392,6 +458,7 @@ export class BusinessWebsiteIntelligenceService {
     rootUrl: string
   ): { serviceLinks: string[]; contactLinks: string[]; allPriority: string[] } {
     const internalLinks = new Map<string, string>(); // url -> linkText
+    const cleanRootHost = rootHostname.replace(/^www\./i, "").toLowerCase();
 
     for (const item of links) {
       const urlStr = typeof item === "string" ? item : item?.url;
@@ -400,7 +467,8 @@ export class BusinessWebsiteIntelligenceService {
 
       try {
         const u = new URL(urlStr);
-        if (u.hostname.toLowerCase() === rootHostname) {
+        const uHost = u.hostname.replace(/^www\./i, "").toLowerCase();
+        if (uHost === cleanRootHost) {
           u.hash = "";
           u.search = "";
           const clean = u.toString();
@@ -709,28 +777,97 @@ IMPORTANT: If duration is not explicitly published, set duration to null. Never 
    */
   private static extractServicesFromDomAndText(
     fullCorpus: string,
-    pages: { url: string; title: string; category?: string; data: ExtractedPageData }[]
+    pages: { url: string; title: string; category?: string; html?: string; data: ExtractedPageData }[]
   ): ExtractedServiceItem[] {
     const services: ExtractedServiceItem[] = [];
+    const seenNames = new Set<string>();
+
+    const addService = (name: string, duration?: number, price?: string, description?: string) => {
+      const cleanName = name.replace(/\s+/g, " ").trim();
+      const lower = cleanName.toLowerCase();
+      if (cleanName.length < 3 || cleanName.length > 80) return;
+      if (
+        lower.includes("copyright") ||
+        lower.includes("privacy") ||
+        lower.includes("contact") ||
+        lower.includes("terms") ||
+        lower.includes("all rights") ||
+        lower.includes("read more") ||
+        lower.includes("learn more")
+      ) return;
+
+      if (!seenNames.has(lower)) {
+        seenNames.add(lower);
+        services.push({
+          name: cleanName,
+          duration: duration && duration > 0 ? duration : undefined,
+          durationInferred: !duration || duration <= 0,
+          price: price ? String(price).replace(/[^0-9.]/g, "") : undefined,
+          description: description?.trim() || undefined,
+          accepted: true,
+        });
+      }
+    };
+
+    // 1. Cheerio-based extraction from all inspected pages
+    for (const page of pages) {
+      if (!page.html) continue;
+      const $ = cheerio.load(page.html);
+
+      // 1a. Query service / treatment / pricing cards
+      $('[class*="service"], [class*="treatment"], [class*="pricing"], [class*="package"], [class*="offering"], .menu-item, [class*="menu-item"]').each((_, el) => {
+        const card = $(el);
+        const titleEl = card.find('h2, h3, h4, h5, strong, .title, [class*="title"], [class*="name"]').first();
+        const rawTitle = titleEl.text().trim();
+        if (!rawTitle || rawTitle.length < 3 || rawTitle.length > 80) return;
+
+        const cardText = card.text();
+        const priceMatch = cardText.match(/\$(\d+(?:\.\d{2})?)/);
+        const price = priceMatch ? priceMatch[1] : undefined;
+
+        const durationMatch = cardText.match(/(\d+)\s*(min(?:ute)?s?|hours?|hrs?)\b/i);
+        let duration: number | undefined = undefined;
+        if (durationMatch) {
+          const num = parseInt(durationMatch[1], 10);
+          const unit = durationMatch[2].toLowerCase();
+          duration = unit.startsWith("h") ? num * 60 : num;
+        }
+
+        const descEl = card.find('p, [class*="desc"], [class*="detail"]').first();
+        const desc = descEl.length > 0 && descEl.text().trim() !== rawTitle ? descEl.text().trim().slice(0, 200) : undefined;
+
+        addService(rawTitle, duration, price, desc);
+      });
+
+      // 1b. Query tables in service/pricing pages
+      $('table').each((_, tbl) => {
+        $(tbl).find('tr').each((_, tr) => {
+          const cells = $(tr).find('td, th');
+          if (cells.length >= 2) {
+            const firstCell = cells.first().text().trim();
+            const rowText = $(tr).text();
+            const priceMatch = rowText.match(/\$(\d+(?:\.\d{2})?)/);
+            const durationMatch = rowText.match(/(\d+)\s*(min(?:ute)?s?|hours?|hrs?)\b/i);
+            let duration: number | undefined = undefined;
+            if (durationMatch) {
+              const num = parseInt(durationMatch[1], 10);
+              const unit = durationMatch[2].toLowerCase();
+              duration = unit.startsWith("h") ? num * 60 : num;
+            }
+            if (firstCell && (priceMatch || durationMatch)) {
+              addService(firstCell, duration, priceMatch ? priceMatch[1] : undefined);
+            }
+          }
+        });
+      });
+    }
+
+    // 2. Scan textCorpus lines
     const lines = fullCorpus.split("\n");
     let inServiceSection = false;
 
-    // Check if any subpage is dedicated to services
-    const hasServicesPage = pages.some(
-      (p) =>
-        p.category === "Services" ||
-        p.data?.suggestedCategory === "Services" ||
-        p.url.toLowerCase().includes("service") ||
-        p.title.toLowerCase().includes("service")
-    );
-    if (hasServicesPage) {
-      inServiceSection = true;
-    }
-
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-
-      // Heading detection
       if (/^#{1,4}\s+(.*)/.test(line)) {
         const headingText = line.replace(/^#{1,4}\s+/, "").trim();
         const lowerHeading = headingText.toLowerCase();
@@ -740,80 +877,42 @@ IMPORTANT: If duration is not explicitly published, set duration to null. Never 
           continue;
         }
 
-        // If we are in a services section and hit an h2/h3/h4 that is a candidate service
         if (inServiceSection && /^#{2,4}\s+/.test(line)) {
-          if (
-            headingText.length >= 3 &&
-            headingText.length <= 80 &&
-            !headingText.toLowerCase().includes("copyright") &&
-            !headingText.toLowerCase().includes("privacy") &&
-            !headingText.toLowerCase().includes("contact")
-          ) {
-            // Scan next 4 lines for price e.g. "$250" or duration e.g. "30 min"
-            let foundPrice: string | undefined;
-            let foundDuration: number | undefined = undefined;
-            for (let j = i + 1; j < Math.min(lines.length, i + 5); j++) {
-              const nextLine = lines[j];
-              const priceMatch = nextLine.match(/\$(\d+(?:\.\d{2})?)/);
-              if (priceMatch) {
-                foundPrice = priceMatch[1];
-              }
-              const durationMatch = nextLine.match(/(\d+)\s*(min(?:ute)?s?|hours?|hrs?)\b/i);
-              if (durationMatch) {
-                const dur = parseInt(durationMatch[1], 10);
-                const unit = durationMatch[2].toLowerCase();
-                if (unit.startsWith("h")) {
-                  foundDuration = dur * 60;
-                } else if (dur > 0) {
-                  foundDuration = dur;
-                }
-              }
-            }
-            services.push({
-              name: headingText,
-              duration: foundDuration,
-              durationInferred: foundDuration === undefined,
-              price: foundPrice,
-              accepted: true,
-            });
-          }
-        }
-        continue;
-      }
-
-      if (inServiceSection) {
-        // Bullet list item or numbered item
-        if (/^[-*•]\s+(.+)/.test(line) || /^\d+\.\s+(.+)/.test(line)) {
-          const itemText = line.replace(/^[-*•\d.]\s+/, "").trim();
-          if (
-            itemText.length >= 3 &&
-            itemText.length <= 80 &&
-            !itemText.toLowerCase().includes("copyright") &&
-            !itemText.toLowerCase().includes("privacy")
-          ) {
-            const priceMatch = itemText.match(/\$(\d+(?:\.\d{2})?)/);
-            const durationMatch = itemText.match(/(\d+)\s*(min(?:ute)?s?|hours?|hrs?)\b/i);
-            const cleanName = itemText
-              .replace(/\s*-\s*\$\d+.*$/, "")
-              .replace(/\s*\(\$\d+.*\)$/, "")
-              .replace(/\s*-\s*\d+\s*min.*$/i, "")
-              .trim();
-
-            let foundDuration: number | undefined = undefined;
+          let foundPrice: string | undefined;
+          let foundDuration: number | undefined = undefined;
+          for (let j = i + 1; j < Math.min(lines.length, i + 5); j++) {
+            const nextLine = lines[j];
+            const priceMatch = nextLine.match(/\$(\d+(?:\.\d{2})?)/);
+            if (priceMatch) foundPrice = priceMatch[1];
+            const durationMatch = nextLine.match(/(\d+)\s*(min(?:ute)?s?|hours?|hrs?)\b/i);
             if (durationMatch) {
               const dur = parseInt(durationMatch[1], 10);
               const unit = durationMatch[2].toLowerCase();
               foundDuration = unit.startsWith("h") ? dur * 60 : dur;
             }
-            services.push({
-              name: cleanName,
-              duration: foundDuration,
-              durationInferred: foundDuration === undefined,
-              price: priceMatch ? priceMatch[1] : undefined,
-              accepted: true,
-            });
           }
+          addService(headingText, foundDuration, foundPrice);
         }
+        continue;
+      }
+
+      if (inServiceSection && (/^[-*•]\s+(.+)/.test(line) || /^\d+\.\s+(.+)/.test(line))) {
+        const itemText = line.replace(/^[-*•\d.]\s+/, "").trim();
+        const priceMatch = itemText.match(/\$(\d+(?:\.\d{2})?)/);
+        const durationMatch = itemText.match(/(\d+)\s*(min(?:ute)?s?|hours?|hrs?)\b/i);
+        const cleanName = itemText
+          .replace(/\s*-\s*\$\d+.*$/, "")
+          .replace(/\s*\(\$\d+.*\)$/, "")
+          .replace(/\s*-\s*\d+\s*min.*$/i, "")
+          .trim();
+
+        let foundDuration: number | undefined = undefined;
+        if (durationMatch) {
+          const dur = parseInt(durationMatch[1], 10);
+          const unit = durationMatch[2].toLowerCase();
+          foundDuration = unit.startsWith("h") ? dur * 60 : dur;
+        }
+        addService(cleanName, foundDuration, priceMatch ? priceMatch[1] : undefined);
       }
     }
 

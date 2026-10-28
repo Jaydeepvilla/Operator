@@ -651,6 +651,14 @@ function ScreenVerify({
 }) {
   const [form, setForm] = React.useState(data);
   const [services, setServices] = React.useState(data.services);
+
+  // Sync internal state when data prop updates (e.g. from background website scrape)
+  React.useEffect(() => {
+    if (data) {
+      setForm(data);
+      setServices(data.services || []);
+    }
+  }, [data]);
   const [subStep, setSubStep] = React.useState<"info" | "services" | "greeting">("info");
   const [isLaunching, setIsLaunching] = React.useState(false);
   const [isAddingService, setIsAddingService] = React.useState(false);

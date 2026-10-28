@@ -13,86 +13,11 @@ export const SETUP_TASKS: SetupTask[] = [
     difficulty: "Easy",
     dependencies: [],
     isCompleted: (state: SetupState) => {
-      const p = state.profile;
-      const bp = (state.settings as any)?.bookingPreferences;
-      if (bp?.uncompletedTasks?.includes("profile")) return false;
-      if (bp?.confirmedTasks?.includes("profile")) return true;
-      return !!p?.description && !!p?.name && p?.name !== "My Business" && p?.description !== "Standard business profile";
-    },
-    href: "/profile",
-  },
-  {
-    id: "hours",
-    category: "Business Info",
-    label: "Business Hours",
-    description: "Set your working hours so the AI knows when you're open.",
-    whyItMatters: "If a caller asks 'Are you open?', the AI needs accurate hours to respond correctly rather than guessing.",
-    estimatedTimeMinutes: 2,
-    impact: "Medium",
-    difficulty: "Easy",
-    dependencies: [],
-    isCompleted: (state: SetupState) => {
-      const bp = (state.settings as any)?.bookingPreferences;
-      if (bp?.uncompletedTasks?.includes("hours")) return false;
-      return !!bp?.hoursConfigured || !!bp?.confirmedTasks?.includes("hours");
-    },
-    href: "/settings",
-  },
-  // Phase: Knowledge Base
-  {
-    id: "faqs",
-    category: "Knowledge Base",
-    label: "FAQs",
-    description: "Add common questions so your AI can answer them instantly.",
-    whyItMatters: "Most calls are repetitive questions. By adding FAQs, you train the AI to handle them without interrupting you.",
-    estimatedTimeMinutes: 5,
-    impact: "High",
-    difficulty: "Medium",
-    dependencies: ["profile"],
-    isCompleted: (state: SetupState) => {
-      const bp = (state.settings as any)?.bookingPreferences;
-      if (bp?.uncompletedTasks?.includes("faqs")) return false;
-      if (bp?.confirmedTasks?.includes("faqs")) return true;
-      return !!bp?.faqsConfigured;
-    },
-    href: "/faqs",
-  },
-  {
-    id: "kb",
-    category: "Knowledge Base",
-    label: "Website Import",
-    description: "Import your website content to train your AI.",
-    whyItMatters: "Your website already contains gold. Instead of typing FAQs manually, let the AI read your site to learn everything.",
-    estimatedTimeMinutes: 1,
-    impact: "High",
-    difficulty: "Easy",
-    dependencies: ["profile"],
-    isCompleted: (state: SetupState) => {
-      const bp = (state.settings as any)?.bookingPreferences;
-      if (bp?.uncompletedTasks?.includes("kb")) return false;
-      if (bp?.confirmedTasks?.includes("kb")) return true;
-      if (state.settings?.websiteImportUrl && state.settings?.websiteImportStatus === "completed") return true;
-      if (state.documents && state.documents.some((d: any) => d.status === "completed" || (d.metadata as any)?.url)) return true;
-      return false;
-    },
-    href: "/kb",
-  },
-  // Phase: Appointments
-  {
-    id: "services",
-    category: "Appointments",
-    label: "Services",
-    description: "Add the services you offer so customers can book them.",
-    whyItMatters: "The AI cannot book appointments unless it knows exactly what services you offer and how long they take.",
-    estimatedTimeMinutes: 3,
-    impact: "High",
-    difficulty: "Medium",
-    dependencies: [],
-    isCompleted: (state: SetupState) => {
       const bp = (state.settings as any)?.bookingPreferences;
       if (bp?.uncompletedTasks?.includes("services")) return false;
       if (bp?.confirmedTasks?.includes("services")) return true;
-      return !!bp?.servicesConfigured;
+      const serviceItems = state.services || (state as any).servicesList || [];
+      return Array.isArray(serviceItems) && serviceItems.length > 0;
     },
     href: "/services",
   },
