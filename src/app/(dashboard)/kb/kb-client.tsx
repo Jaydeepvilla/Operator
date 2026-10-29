@@ -630,7 +630,7 @@ const handleExecuteIngestion = async () => {
 
  <div className="flex flex-col lg:flex-row gap-space-6 items-start w-full">
  {/* Sidebar Sub-Navigation */}
- <aside className="w-full lg:w-60 shrink-0 flex flex-row lg:flex-col lg:overflow-x-visible pb-space-2 lg:pb-space-0 border-b lg:border-b-0 lg:border-r border-[hsl(var(--foreground)/0.06)] lg:pr-space-6 gap-space-1.5 whitespace-nowrap lg:whitespace-normal"><ScrollArea className="h-full w-full" vertical={false}>
+ <aside className="w-full lg:w-60 shrink-0 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible pb-space-2 lg:pb-space-0 border-b lg:border-b-0 lg:border-r border-[hsl(var(--foreground)/0.06)] lg:pr-space-6 gap-space-1.5 whitespace-nowrap lg:whitespace-normal [scrollbar-width:none] [&::-webkit-scrollbar]:hidden no-scrollbar">
  {[
  { id:"overview", label:"Knowledge Overview", icon: BookOpen },
  { id:"documents", label:"Documents", icon: FileText },
@@ -643,26 +643,26 @@ const handleExecuteIngestion = async () => {
  const Icon = tab.icon;
  const isActive = activeTab === tab.id;
  return (
- <Button
+ <button
  key={tab.id}
- variant="ghost"
+ type="button"
  onClick={() => setActiveTab(tab.id)}
  className={cn(
- "flex items-center justify-start gap-space-3 px-space-4 py-space-3 text-body-sm font-medium transition-all duration-200 cursor-pointer w-auto lg:w-full text-left radius-lg relative select-none",
+ "flex items-center justify-start gap-3 px-3.5 py-2.5 text-body-sm font-medium transition-all duration-150 cursor-pointer w-auto lg:w-full text-left rounded-xl relative select-none",
  isActive
- ?"bg-[hsl(var(--primary)/0.08)] text-primary font-semibold hover:bg-[hsl(var(--primary)/0.12)] hover:text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
- :"text-muted-foreground/70 hover:text-foreground hover:bg-[hsl(var(--foreground)/0.035)]"
+ ?"bg-primary/10 text-primary font-semibold hover:bg-primary/15 shadow-xs"
+ :"text-muted-foreground hover:text-foreground hover:bg-muted/40"
  )}
  >
  {isActive && (
- <span className="absolute left-space-0 top-space-2 bottom-space-2 w-1 bg-primary radius-r-md hidden lg:block shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]"/>
+ <span className="absolute left-0 top-2 bottom-2 w-1 bg-primary rounded-r-md hidden lg:block shadow-[0_0_8px_rgba(var(--primary),0.5)]"/>
  )}
  <Icon className={cn("h-4.5 w-4.5 shrink-0", isActive ?"text-primary":"text-muted-foreground/60")} />
  <span className="leading-none">{tab.label}</span>
- </Button>
+ </button>
  );
  })}
- </ScrollArea></aside>
+ </aside>
 
  {/* Main Content viewport */}
  <div className="flex-1 w-full space-y-space-6 min-w-0">
