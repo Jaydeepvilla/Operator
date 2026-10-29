@@ -199,20 +199,31 @@ export function ConfidenceBridge({
               </p>
             </div>
 
-            {/* Optional Voice Persona Drawer Trigger */}
-            <Button
-              onClick={() => setVoiceDrawerOpen((prev) => !prev)}
-              className={cn(
-                "inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all shadow-xs shrink-0",
-                voiceDrawerOpen
-                  ? "border-primary bg-primary/10 text-primary ring-1 ring-primary/20"
-                  : "border-border/80 bg-card/80 hover:bg-muted text-foreground"
-              )}
-            >
-              <Volume2 className="h-3.5 w-3.5 text-primary" />
-              <span>Voice Persona</span>
-              <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", voiceDrawerOpen && "rotate-180")} />
-            </Button>
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Optional Voice Persona Drawer Trigger */}
+              <Button
+                onClick={() => setVoiceDrawerOpen((prev) => !prev)}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all shadow-xs",
+                  voiceDrawerOpen
+                    ? "border-primary bg-primary/10 text-primary ring-1 ring-primary/20"
+                    : "border-border/80 bg-card/80 hover:bg-muted text-foreground"
+                )}
+              >
+                <Volume2 className="h-3.5 w-3.5 text-primary" />
+                <span>Voice Persona</span>
+                <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", voiceDrawerOpen && "rotate-180")} />
+              </Button>
+
+              <Button
+                onClick={handleFinish}
+                size="sm"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold px-3.5 py-1.5 shadow-sm"
+              >
+                <span>Go to Dashboard</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
 
           {/* Collapsible Voice Persona Drawer */}

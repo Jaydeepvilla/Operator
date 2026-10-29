@@ -9,34 +9,34 @@ import {
 import { ORG_ID } from "./business";
 
 export async function seedKnowledge(): Promise<void> {
-  console.log("📚 Seeding knowledge base (categories, documents, chunks, processing jobs)...");
+  console.log("📚 Seeding knowledge base for Operator Demo Salon...");
 
   // 1. Seed Categories
-  const catSopId = "aaaaaaaa-1111-1111-1111-111111111111";
-  const catPoliciesId = "aaaaaaaa-2222-2222-2222-222222222222";
-  const catFaqsId = "aaaaaaaa-3333-3333-3333-333333333333";
+  const catPoliciesId = "aaaaaaaa-1111-1111-1111-111111111111";
+  const catFaqsId = "aaaaaaaa-2222-2222-2222-222222222222";
+  const catServicesId = "aaaaaaaa-3333-3333-3333-333333333333";
 
   await db.insert(knowledgeCategories).values([
-    { 
-      id: catSopId, 
-      organizationId: ORG_ID, 
-      name: "Standard Operating Procedures", 
-      slug: "standard-operating-procedures", 
-      description: "Operational protocols for staff, treatment room cleaning, and shifts." 
-    },
     { 
       id: catPoliciesId, 
       organizationId: ORG_ID, 
       name: "Salon Booking Policies", 
       slug: "salon-booking-policies", 
-      description: "Cancellation guidelines, booking limits, and payment rules." 
+      description: "Booking lead times, cancellation guidelines, and no-show policies." 
     },
     { 
       id: catFaqsId, 
       organizationId: ORG_ID, 
       name: "Customer FAQ Resources", 
       slug: "customer-faq-resources", 
-      description: "General guides to resolve customer questions about services." 
+      description: "Common questions regarding operating hours, appointments, and location." 
+    },
+    { 
+      id: catServicesId, 
+      organizationId: ORG_ID, 
+      name: "Service Information & Guides", 
+      slug: "service-information-guides", 
+      description: "Haircut, styling, and herbal facial descriptions and durations." 
     }
   ]).onConflictDoNothing();
 
@@ -46,118 +46,93 @@ export async function seedKnowledge(): Promise<void> {
 
   await db.insert(knowledgeSources).values([
     { id: sourceWebId, organizationId: ORG_ID, name: "Website Importer", type: "website", isActive: true, metadata: {} },
-    { id: sourceUploadId, organizationId: ORG_ID, name: "Manual Uploads", type: "file", isActive: true, metadata: {} }
+    { id: sourceUploadId, organizationId: ORG_ID, name: "Policy Manuals & Documents", type: "file", isActive: true, metadata: {} }
   ]).onConflictDoNothing();
 
   // 3. Seed Documents, Jobs, and Chunks
-  const docsData = [
+  const docId = "cccccccc-1001-1111-1111-111111111111";
+  const jobId = "dddddddd-1001-1111-1111-111111111111";
+
+  await db.insert(knowledgeDocuments).values({
+    id: docId,
+    organizationId: ORG_ID,
+    categoryId: catPoliciesId,
+    sourceId: sourceUploadId,
+    name: "Operator Demo Salon — Policy and Service Handbook.pdf",
+    fileType: "pdf",
+    fileSize: 45000,
+    filePath: "/documents/operator-demo-salon-handbook.pdf",
+    status: "completed",
+    metadata: { author: "Operator AI Staff", version: "2026.1" },
+  }).onConflictDoUpdate({
+    target: knowledgeDocuments.id,
+    set: {
+      name: "Operator Demo Salon — Policy and Service Handbook.pdf",
+      status: "ready",
+      updatedAt: new Date(),
+    }
+  });
+
+  await db.insert(documentProcessingJobs).values({
+    id: jobId,
+    organizationId: ORG_ID,
+    documentId: docId,
+    status: "completed",
+    startedAt: new Date(),
+    completedAt: new Date(),
+    logs: "Processed successfully",
+  }).onConflictDoNothing();
+
+  const chunks = [
     {
-      id: "cccccccc-1001-1111-1111-111111111111",
-      categoryId: catSopId,
-      sourceId: sourceUploadId,
-      name: "Glow & Grace — Staff Welcome Guide.pdf",
-      fileType: "pdf",
-      status: "queued",
-      jobStatus: "queued",
-      logs: "Waiting in processing queue for worker resource assignment...",
-      chunks: []
+      id: "eeeeeeee-1001-1111-1111-111111111111",
+      chunkIndex: 0,
+      content: "Operator Demo Salon Services: We offer precision Haircut (30 minutes duration, priced at INR 500) including clarifying wash; Executive Hair Styling (45 minutes duration, priced at INR 800) with argan oil styling; and our signature Rejuvenating Herbal Facial (60 minutes duration, priced at INR 1500) featuring botanical cleanse and restorative massage.",
+      tokenCount: 65,
     },
     {
-      id: "cccccccc-1002-1111-1111-111111111111",
-      categoryId: catSopId,
-      sourceId: sourceUploadId,
-      name: "Salon Inventory & Backbar Audit.xlsx",
-      fileType: "docx",
-      status: "processing",
-      jobStatus: "processing",
-      logs: "Starting processing job...\nUploading source document to storage...\nExtracting spreadsheet tables...",
-      chunks: []
+      id: "eeeeeeee-1002-1111-1111-111111111111",
+      chunkIndex: 1,
+      content: "Business Operating Hours: Operator Demo Salon is open Tuesday through Friday from 10:00 AM to 8:00 PM, Saturday from 9:00 AM to 9:00 PM, and Sunday from 10:00 AM to 6:00 PM. We are closed every Monday for deep sanitization and staff rest.",
+      tokenCount: 52,
     },
     {
-      id: "cccccccc-1003-1111-1111-111111111111",
-      categoryId: catSopId,
-      sourceId: sourceUploadId,
-      name: "Esthetician Training Manual 2026.docx",
-      fileType: "docx",
-      status: "processing",
-      jobStatus: "processing",
-      logs: "Starting processing job...\nSource document uploaded successfully.\nExtracting text content from DOCX file...",
-      chunks: []
+      id: "eeeeeeee-1003-1111-1111-111111111111",
+      chunkIndex: 2,
+      content: "Booking Policy: Appointments can be booked up to 14 days in advance. A minimum of 2 hours advance notice is required for online and chat bookings.",
+      tokenCount: 30,
     },
     {
-      id: "cccccccc-1004-1111-1111-111111111111",
-      categoryId: catSopId,
-      sourceId: sourceUploadId,
-      name: "Glow & Grace — Cleanliness Protocols.txt",
-      fileType: "txt",
-      status: "completed",
-      jobStatus: "completed",
-      logs: "Indexing completed.\nIngestion pipeline finished successfully!",
-      chunks: [
-        "Cleanliness Protocols and Hygiene Policies. Pets and non-service dogs are strictly prohibited from entering the salon floor or treatment rooms due to state board sanitary regulations. Certified service animals with proper harness are allowed.",
-        "Esthetician hygiene standards: Wipe down all beds and tools with disinfectant wipes after every service. Handwashing is required before and after styling or massage sessions."
-      ]
+      id: "eeeeeeee-1004-1111-1111-111111111111",
+      chunkIndex: 3,
+      content: "Cancellation Policy and No-Show Policy: Guests may cancel or reschedule their appointment free of charge up to 2 hours before the scheduled appointment start time. Late cancellations or no-shows without 2 hours prior notice may be subject to a 20% demonstration fee.",
+      tokenCount: 48,
     },
     {
-      id: "cccccccc-1005-1111-1111-111111111111",
-      categoryId: catPoliciesId,
-      sourceId: sourceUploadId,
-      name: "Treatment Room Booking Instructions.pdf",
-      fileType: "pdf",
-      status: "completed",
-      jobStatus: "completed",
-      logs: "Indexing completed.\nIngestion pipeline finished successfully!",
-      chunks: [
-        "Treatment Room Booking Guidelines. To reserve a facial treatment room, log into the booking console, select the esthetician room tier, and reserve the slot. Double booking of esthetician blocks is not permitted.",
-        "Estheticians must clean and vacate rooms 10 minutes prior to the end of their scheduled block to ensure smooth client transitions."
-      ]
-    },
-    {
-      id: "cccccccc-1006-1111-1111-111111111111",
-      categoryId: catPoliciesId,
-      sourceId: sourceUploadId,
-      name: "Glow & Grace — Cancellation & No-Show Fees.pdf",
-      fileType: "pdf",
-      status: "completed",
-      jobStatus: "completed",
-      logs: "Indexing completed.\nIngestion pipeline finished successfully!",
-      chunks: [
-        "Booking and Cancellation Policy. Clients must cancel or reschedule appointments at least 24 hours prior to the scheduled start time.",
-        "Cancellations made less than 24 hours in advance are subject to a cancellation fee equal to 50% of the scheduled service price. No-shows will be charged 100% of the service fee."
-      ]
+      id: "eeeeeeee-1005-1111-1111-111111111111",
+      chunkIndex: 4,
+      content: "Location and Contact Information: Operator Demo Salon is located at Plot 42, Bandra Kurla Complex, Mumbai, Maharashtra 400051, India. Contact us via phone at +91 98765 43210 or email at concierge@operatordemosalon.test. Valet parking is available for all guests.",
+      tokenCount: 46,
     }
   ];
 
-  for (const doc of docsData) {
-    await db.insert(knowledgeDocuments).values({
-      id: doc.id,
+  for (const chunk of chunks) {
+    await db.insert(knowledgeChunks).values({
+      id: chunk.id,
       organizationId: ORG_ID,
-      categoryId: doc.categoryId,
-      sourceId: doc.sourceId,
-      name: doc.name,
-      fileType: doc.fileType,
-      status: doc.status as any,
-      metadata: {},
-    }).onConflictDoNothing();
-
-    await db.insert(documentProcessingJobs).values({
-      organizationId: ORG_ID,
-      documentId: doc.id,
-      status: doc.jobStatus as any,
-      logs: doc.logs,
-    }).onConflictDoNothing();
-
-    for (let chunkIdx = 0; chunkIdx < doc.chunks.length; chunkIdx++) {
-      await db.insert(knowledgeChunks).values({
-        organizationId: ORG_ID,
-        documentId: doc.id,
-        content: doc.chunks[chunkIdx],
-        chunkIndex: chunkIdx,
-        tokenCount: Math.ceil(doc.chunks[chunkIdx].length / 4),
-        metadata: { index: chunkIdx },
-      }).onConflictDoNothing();
-    }
+      documentId: docId,
+      chunkIndex: chunk.chunkIndex,
+      content: chunk.content,
+      tokenCount: chunk.tokenCount,
+    }).onConflictDoUpdate({
+      target: knowledgeChunks.id,
+      set: {
+        content: chunk.content,
+        tokenCount: chunk.tokenCount,
+        updatedAt: new Date(),
+      }
+    });
   }
 
-  console.log(`... Seeded ${docsData.length} knowledge documents with processing jobs & chunks`);
+  console.log(`✅ Seeded ${chunks.length} knowledge chunks for Operator Demo Salon`);
 }

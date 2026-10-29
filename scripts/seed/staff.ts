@@ -1,5 +1,5 @@
 import { db } from "../../src/server/db";
-import { staffMembers, staffSchedules } from "../../src/server/db/schema";
+import { staffMembers, staffSchedules, serviceAssignments } from "../../src/server/db/schema";
 import { ORG_ID } from "./business";
 
 export interface SeededStaff {
@@ -10,63 +10,27 @@ export interface SeededStaff {
 }
 
 export async function seedStaff(): Promise<SeededStaff[]> {
-  console.log("👥 Seeding staff members...");
+  console.log("👥 Seeding salon staff members for Operator Demo Salon...");
 
-  // Static UUIDs to maintain idempotency
+  // Static UUIDs for idempotency
   const staffData = [
     {
       id: "77777777-1111-1111-1111-111111111111",
-      name: "Olivia Vane",
-      role: "admin", // Master Esthetician & Manager
-      email: "olivia.v@glowandgrace.com",
-      phone: "+15551112222",
+      name: "Priya Sharma",
+      role: "admin", // Lead Stylist & Salon Manager
+      email: "priya.sharma@operatordemosalon.test",
+      phone: "+919876543211",
       avatarUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop",
       bufferTime: 10,
     },
     {
       id: "77777777-2222-2222-2222-222222222222",
-      name: "Marcus Vance",
-      role: "staff", // Senior Massage Therapist
-      email: "marcus.v@glowandgrace.com",
-      phone: "+15552223333",
+      name: "Rahul Mehta",
+      role: "staff", // Senior Aesthetician & Skin Specialist
+      email: "rahul.mehta@operatordemosalon.test",
+      phone: "+919876543212",
       avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
       bufferTime: 15,
-    },
-    {
-      id: "77777777-3333-3333-3333-333333333333",
-      name: "Sophia Martinez",
-      role: "staff", // Advanced Skin Therapist
-      email: "sophia.m@glowandgrace.com",
-      phone: "+15553334444",
-      avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
-      bufferTime: 5,
-    },
-    {
-      id: "77777777-4444-4444-4444-444444444444",
-      name: "Chloe Dubois",
-      role: "staff", // Nail Artist & Brow Specialist
-      email: "chloe.d@glowandgrace.com",
-      phone: "+15554445555",
-      avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop",
-      bufferTime: 10,
-    },
-    {
-      id: "77777777-5555-5555-5555-555555555555",
-      name: "Liam O'Connor",
-      role: "staff", // Licensed Massage Practitioner
-      email: "liam.o@glowandgrace.com",
-      phone: "+15555556666",
-      avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop",
-      bufferTime: 15,
-    },
-    {
-      id: "77777777-6666-6666-6666-666666666666",
-      name: "Elena Rostova",
-      role: "staff", // Clinical Dermal Specialist
-      email: "elena.r@glowandgrace.com",
-      phone: "+15556667777",
-      avatarUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop",
-      bufferTime: 5,
     }
   ];
 
@@ -81,18 +45,29 @@ export async function seedStaff(): Promise<SeededStaff[]> {
       avatarUrl: staff.avatarUrl,
       bufferTime: staff.bufferTime,
       isActive: true,
-    }).onConflictDoNothing();
+    }).onConflictDoUpdate({
+      target: staffMembers.id,
+      set: {
+        name: staff.name,
+        role: staff.role,
+        email: staff.email,
+        phone: staff.phone,
+        bufferTime: staff.bufferTime,
+        isActive: true,
+        updatedAt: new Date(),
+      }
+    });
 
     // Seed Schedules (Tuesday to Sunday, Monday closed)
     // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
     for (let day = 0; day <= 6; day++) {
       if (day === 1) continue; // Skip Monday (closed)
 
-      let shifts = [{ start: "09:00", end: "17:00" }];
-      if (day === 0) { // Sunday shifts are shorter
-        shifts = [{ start: "10:00", end: "16:00" }];
-      } else if (day === 4 || day === 5) { // Thursday/Friday shifts are longer
-        shifts = [{ start: "09:00", end: "20:00" }];
+      let shifts = [{ start: "10:00", end: "20:00" }];
+      if (day === 0) { // Sunday shifts: 10:00 to 18:00
+        shifts = [{ start: "10:00", end: "18:00" }];
+      } else if (day === 6) { // Saturday shifts: 09:00 to 21:00
+        shifts = [{ start: "09:00", end: "21:00" }];
       }
 
       await db.insert(staffSchedules).values({
@@ -104,6 +79,27 @@ export async function seedStaff(): Promise<SeededStaff[]> {
     }
   }
 
-  console.log(`✅ Seeded ${staffData.length} Staff members with schedules`);
+  // Link staff to services
+  const svcHaircut = "55555555-1001-1111-1111-111111111111";
+  const svcStyling = "55555555-1002-1111-1111-111111111111";
+  const svcFacial = "55555555-1003-1111-1111-111111111111";
+
+  const assignments = [
+    { id: "88888888-1001-1111-1111-111111111111", serviceId: svcHaircut, staffMemberId: staffData[0].id },
+    { id: "88888888-1002-1111-1111-111111111111", serviceId: svcStyling, staffMemberId: staffData[0].id },
+    { id: "88888888-1003-1111-1111-111111111111", serviceId: svcFacial, staffMemberId: staffData[1].id },
+    { id: "88888888-1004-1111-1111-111111111111", serviceId: svcHaircut, staffMemberId: staffData[1].id },
+  ];
+
+  for (const assign of assignments) {
+    await db.insert(serviceAssignments).values({
+      id: assign.id,
+      organizationId: ORG_ID,
+      serviceId: assign.serviceId,
+      staffMemberId: assign.staffMemberId,
+    }).onConflictDoNothing();
+  }
+
+  console.log(`✅ Seeded ${staffData.length} Staff members with schedules and service assignments`);
   return staffData.map(s => ({ id: s.id, name: s.name, email: s.email, role: s.role }));
 }

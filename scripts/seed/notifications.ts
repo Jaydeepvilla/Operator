@@ -3,13 +3,13 @@ import { smartNotifications } from "../../src/server/db/schema";
 import { ORG_ID } from "./business";
 
 export async function seedNotifications(): Promise<void> {
-  console.log("🔔 Seeding Action Center notifications (smartNotifications)...");
+  console.log("🔔 Seeding Action Center notifications for Operator Demo Salon...");
 
   await db.insert(smartNotifications).values([
     {
       id: "99999999-6666-1111-1111-111111111111",
       organizationId: ORG_ID,
-      title: "OAuth Authentication Security Notice",
+      title: "Authentication Security Check",
       description: "Ensure your OAuth redirect URIs and API credentials are appropriately set in production settings to authorize user synchronization.",
       priority: "urgent",
       severity: "critical",
@@ -17,39 +17,39 @@ export async function seedNotifications(): Promise<void> {
       isRead: false,
       isDismissed: false,
       actionUrl: "/settings",
-      metadata: { error: "Signature verification failed" }
+      metadata: { error: "Security validation passed" }
     },
     {
       id: "99999999-6666-2222-2222-222222222222",
       organizationId: ORG_ID,
-      title: "Weak Knowledge Base Coverage",
-      description: "Our AI model reports a 35% gap in handling billing-related customer questions. We suggest adding 4 new FAQs detailing cancellation refunds.",
+      title: "Knowledge Base Coverage Verified",
+      description: "Operator AI successfully indexed salon policies, haircut durations, and booking guidelines with 98% factual grounding.",
       priority: "high",
-      severity: "warning",
+      severity: "info",
       category: "ai_improvement",
       isRead: false,
       isDismissed: false,
       actionUrl: "/faqs",
-      metadata: { gapPercentage: 35, topic: "refunds" }
+      metadata: { accuracyScore: 98, topic: "salon_policies" }
     },
     {
       id: "99999999-6666-3333-3333-333333333333",
       organizationId: ORG_ID,
-      title: "Missed Call Spike Detected",
-      description: "You have missed 12 incoming calls this morning. Consider adjusting voice receptionist availability during peak lunch hours (12:00 - 14:00).",
+      title: "Peak Booking Hour Alert",
+      description: "High appointment booking volume detected between 16:00 and 19:00 IST. The AI receptionist has confirmed 4 new slots automatically.",
       priority: "high",
-      severity: "warning",
+      severity: "info",
       category: "alert",
       isRead: false,
       isDismissed: false,
-      actionUrl: "/voice/dashboard",
-      metadata: { missedCount: 12 }
+      actionUrl: "/appointments",
+      metadata: { bookingsConfirmed: 4 }
     },
     {
       id: "99999999-6666-4444-4444-444444444444",
       organizationId: ORG_ID,
-      title: "Connect WhatsApp Communication Channel",
-      description: "Increase customer bookings by up to 45% by connecting your WhatsApp Business API line to let Jessica handle scheduling automatically.",
+      title: "WhatsApp Channel Connected",
+      description: "Customer bookings are active via WhatsApp Business API (+91 98765 43210) for automated receptionist scheduling.",
       priority: "medium",
       severity: "info",
       category: "setup",
@@ -61,12 +61,12 @@ export async function seedNotifications(): Promise<void> {
     {
       id: "99999999-6666-5555-5555-555555555555",
       organizationId: ORG_ID,
-      title: "Configure Custom Salon Voice",
-      description: "Branding Tip: Customize your Operator AI's vocal signature. Olivia's voice is ready to test on Kokoro TTS.",
+      title: "AI Receptionist Voice Active",
+      description: "Vocal signature configured: Priya (Warm Receptionist) is active on the Operator Demo Salon inbound telephony line.",
       priority: "low",
       severity: "info",
       category: "setup",
-      isRead: true, // marked read
+      isRead: true,
       isDismissed: false,
       actionUrl: "/voice/settings",
       metadata: {}
@@ -74,17 +74,17 @@ export async function seedNotifications(): Promise<void> {
     {
       id: "99999999-6666-6666-6666-666666666666",
       organizationId: ORG_ID,
-      title: "AI Training Optimization Completed",
-      description: "System training is complete: Jessica has successfully indexed 'Glow & Grace — Cleanliness Protocols.txt'. Accuracy score has increased to 96%.",
+      title: "AI Training Handbook Synced",
+      description: "System training is complete: Priya has successfully indexed 'Operator Demo Salon — Policies and Service Handbook.pdf'. Accuracy score: 98%.",
       priority: "medium",
       severity: "info",
       category: "ai_improvement",
       isRead: false,
       isDismissed: false,
       actionUrl: "/kb",
-      metadata: { accuracy: 96 }
+      metadata: { accuracy: 98 }
     }
   ]).onConflictDoNothing();
 
-  console.log("✅ Seeded 6 smartNotifications into Action Center");
+  console.log("✅ Seeded 6 smartNotifications into Action Center for Operator Demo Salon");
 }

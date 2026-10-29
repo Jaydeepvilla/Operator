@@ -1,0 +1,89 @@
+{
+  "product": "Operator AI Receptionist",
+  "version": "2.4.0-production",
+  "targetBusiness": "Operator Demo Salon (Mumbai)",
+  "video": {
+    "path": "D:\\AI  PRojects\\Nexx Services\\receptionist\\dynamicos\\artifacts\\operator-client-demo\\operator-client-demo.mp4",
+    "fileSizeMb": "6.43",
+    "totalDurationSeconds": 172,
+    "resolution": "1920x1080",
+    "frameRate": 30,
+    "videoCodec": "H.264 (libx264, yuv420p)",
+    "audioCodec": "AAC (192kbps, 48kHz stereo)",
+    "format": "MP4",
+    "recordingType": "100% Native Playwright Screen Recording (No slideshows, no HUD overlays)"
+  },
+  "chapters": [
+    {
+      "chapter": 1,
+      "title": "Executive Dashboard & Operations",
+      "route": "/dashboard",
+      "durationSeconds": 16.82,
+      "narration": "Welcome to Operator — the autonomous AI receptionist and front desk platform for appointment-based businesses. Today, we'll demonstrate how Operator Demo Salon in Mumbai automates customer inquiries, manages staff schedules, and books clients twenty-four-seven."
+    },
+    {
+      "chapter": 2,
+      "title": "Business Setup & Operating Hours",
+      "route": "/onboarding",
+      "durationSeconds": 17.26,
+      "narration": "Setting up your business begins with your profile and schedule. For Operator Demo Salon, we've configured our hours from Tuesday to Sunday, ten AM to eight PM. Operator automatically respects these hours so appointments are never booked outside working times."
+    },
+    {
+      "chapter": 3,
+      "title": "Services Catalog & Pricing in Rupees",
+      "route": "/services",
+      "durationSeconds": 22.78,
+      "narration": "Next is your service catalog. You can define exact treatments, appointment durations, and transparent pricing in rupees — including precision haircuts at 500 rupees, bridal hair styling at 1,200 rupees, and facials at 1,800 rupees. Operator uses this catalog to answer questions and schedule appointments."
+    },
+    {
+      "chapter": 4,
+      "title": "Staff Specialists & Shifts",
+      "route": "/staff",
+      "durationSeconds": 19.15,
+      "narration": "Under Staff Management, add your specialists and specify their working shifts and eligible treatments. For example, Priya Sharma is our senior stylist handling bridal styling. When clients request Priya, Operator checks her specific shift and availability before offering open slots."
+    },
+    {
+      "chapter": 5,
+      "title": "AI Receptionist Persona & Policies",
+      "route": "/receptionist",
+      "durationSeconds": 17.42,
+      "narration": "Customize your AI receptionist's persona, speaking tone, and custom greeting. In the Knowledge Base, Operator learns your rules — such as our mandatory two-hour cancellation notice and location directions — ensuring accurate, policy-compliant responses every time."
+    },
+    {
+      "chapter": 6,
+      "title": "Website Concierge & Live Preview",
+      "route": "/widget",
+      "durationSeconds": 16.73,
+      "narration": "Deploying Operator to your website is seamless. Customize your brand colors and greetings in the Widget Studio, copy the one-line embed code, and preview the live concierge. Visitors on your website can immediately check pricing and schedule appointments."
+    },
+    {
+      "chapter": 7,
+      "title": "Live Booking Demonstration",
+      "route": "/dashboard",
+      "durationSeconds": 16.73,
+      "narration": "Booking a new appointment takes seconds. When a client books, Operator captures their name, phone number, and requested treatment. Let's record a booking for Aanya Kapoor for bridal styling with Priya Sharma. Confirmed instantly with one click."
+    },
+    {
+      "chapter": 8,
+      "title": "Appointments Hub & Calendar View",
+      "route": "/appointments",
+      "durationSeconds": 14.4,
+      "narration": "All bookings appear instantly in the Appointments Hub. Your front desk team has complete visibility over customer contact details, assigned stylists, and appointment statuses, fully synchronized with your team's Google Calendars."
+    },
+    {
+      "chapter": 9,
+      "title": "Operations & Analytics Dashboard",
+      "route": "/dashboard",
+      "durationSeconds": 15.86,
+      "narration": "Back on the Executive Dashboard, business owners gain real-time operational clarity. Monitor appointment volume, live inquiries, conversion rates, and call logs to ensure zero leads are lost during peak rush hours or after doors close."
+    },
+    {
+      "chapter": 10,
+      "title": "Closing & NexxTechnologies",
+      "route": "/",
+      "durationSeconds": 14.45,
+      "narration": "With Operator running your front desk, you eliminate missed inquiries, fill your appointment schedule, and free your team to focus on client care. Contact NexxTechnologies today to transform your front desk with Operator AI."
+    }
+  ],
+  "timestamp": "2026-10-29T08:59:39.870Z"
+}

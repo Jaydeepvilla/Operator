@@ -10,7 +10,7 @@ import { ORG_ID } from "./business";
 import { SeededContact } from "./contacts";
 
 export async function seedConversations(contacts: SeededContact[]): Promise<void> {
-  console.log("💬 Seeding communication channels, threads, and inbox dialogs...");
+  console.log("💬 Seeding communication channels, threads, and inbox dialogs for Operator Demo Salon...");
 
   // 1. Seed communication channels
   const chanSmsId = "dddddddd-1111-1111-1111-111111111111";
@@ -18,17 +18,10 @@ export async function seedConversations(contacts: SeededContact[]): Promise<void
   const chanEmailId = "dddddddd-3333-3333-3333-333333333333";
 
   await db.insert(communicationChannels).values([
-    { id: chanSmsId, organizationId: ORG_ID, type: "sms", name: "Main Line SMS (+15559876543)", status: "active", config: {} },
+    { id: chanSmsId, organizationId: ORG_ID, type: "sms", name: "Main Line SMS (+919876543210)", status: "active", config: {} },
     { id: chanWhatsAppId, organizationId: ORG_ID, type: "whatsapp", name: "WhatsApp Business API", status: "active", config: {} },
-    { id: chanEmailId, organizationId: ORG_ID, type: "email", name: "Glow & Grace Concierge Email", status: "active", config: {} }
+    { id: chanEmailId, organizationId: ORG_ID, type: "email", name: "Operator Demo Salon Concierge Email", status: "active", config: {} }
   ]).onConflictDoNothing();
-
-  // We will seed 5 threads with distinct statuses & channels:
-  // - Thread 1: WhatsApp - Unread / Active (new booking request)
-  // - Thread 2: SMS - Escalated (customer complaining about parking)
-  // - Thread 3: Email - Resolved / Closed (billing receipt sent)
-  // - Thread 4: SMS - Open / Active (general question about peels)
-  // - Thread 5: WhatsApp - Closed (cancellation requested and handled)
 
   const dialogs = [
     {
@@ -40,9 +33,9 @@ export async function seedConversations(contacts: SeededContact[]): Promise<void
       threadStatus: "open",
       unreadCount: 1,
       messages: [
-        { sender: "user", content: "Hi! I wanted to check if you have any opening for a HydraFacial this Saturday afternoon?" },
-        { sender: "assistant", content: "Hello! Yes, we have two spots open for a HydraFacial this Saturday: 2:00 PM with Sophia Martinez or 4:30 PM with Elena Rostova. Would you like me to book one of these for you?" },
-        { sender: "user", content: "Oh, 2:00 PM with Sophia works perfectly for me! What do I need to confirm?" }
+        { sender: "user", content: "Hi! I wanted to check if you have any opening for a Haircut this Saturday afternoon?" },
+        { sender: "assistant", content: "Hello Aarav! Yes, we have two openings for a Haircut this Saturday: 2:00 PM with Priya Sharma or 4:30 PM with Rahul Mehta. Would you like me to reserve one of these for you?" },
+        { sender: "user", content: "2:00 PM with Priya works great! Please confirm." }
       ]
     },
     {
@@ -50,13 +43,14 @@ export async function seedConversations(contacts: SeededContact[]): Promise<void
       threadId: "ffffffff-1002-1111-1111-111111111111",
       channelId: chanSmsId,
       contact: contacts[1],
-      convStatus: "escalated",
+      convStatus: "active",
       threadStatus: "open",
       unreadCount: 0,
       messages: [
-        { sender: "user", content: "Help! I am in the parking garage and the validator machine is saying my validation card is invalid." },
-        { sender: "assistant", content: "I am sorry for the trouble! Please let the parking attendant know you are visiting Glow & Grace, or you can bring the card back up and we will validate it again at the front desk." },
-        { sender: "user", content: "There is no attendant here. I'm stuck at the gate. Can someone call the building manager?" }
+        { sender: "user", content: "Could you tell me how long the Rejuvenating Herbal Facial takes?" },
+        { sender: "assistant", content: "Our signature Rejuvenating Herbal Facial is a 60-minute therapeutic session that includes deep pore cleansing, botanical enzyme exfoliation, antioxidant masking, and a relaxing facial massage for INR 1,500." },
+        { sender: "user", content: "That sounds wonderful. What is your cancellation policy if my meeting runs late?" },
+        { sender: "assistant", content: "You can reschedule or cancel free of charge up to 2 hours before your scheduled appointment time!" }
       ]
     },
     {
@@ -64,100 +58,49 @@ export async function seedConversations(contacts: SeededContact[]): Promise<void
       threadId: "ffffffff-1003-1111-1111-111111111111",
       channelId: chanEmailId,
       contact: contacts[2],
-      convStatus: "closed",
-      threadStatus: "closed",
-      unreadCount: 0,
-      messages: [
-        { sender: "user", content: "Hello, could you please send me a detailed PDF copy of my billing receipt for the Microneedling session on June 15th? I need to submit it to my HSA provider." },
-        { sender: "assistant", content: "Certainly! I have generated your itemized HSA invoice receipt. A copy has been sent to your email on file. Let me know if you need anything else." },
-        { sender: "user", content: "Got it, thank you so much for the prompt help!" }
-      ]
-    },
-    {
-      conversationId: "eeeeeeee-1004-1111-1111-111111111111",
-      threadId: "ffffffff-1004-1111-1111-111111111111",
-      channelId: chanSmsId,
-      contact: contacts[3],
       convStatus: "active",
-      threadStatus: "open",
-      unreadCount: 0,
-      messages: [
-        { sender: "user", content: "Is it okay to wear makeup right after getting the Signature Glow Facial?" },
-        { sender: "assistant", content: "We recommend waiting at least 4 to 6 hours before applying makeup after a facial. This gives your pores time to breathe and absorb the hydrating botanical serums completely." },
-        { sender: "user", content: "Okay, perfect, I will bring a wide-brim hat instead." }
-      ]
-    },
-    {
-      conversationId: "eeeeeeee-1005-1111-1111-111111111111",
-      threadId: "ffffffff-1005-1111-1111-111111111111",
-      channelId: chanWhatsAppId,
-      contact: contacts[4],
-      convStatus: "closed",
       threadStatus: "closed",
       unreadCount: 0,
       messages: [
-        { sender: "user", content: "I need to cancel my brow wax for tomorrow morning. Something came up." },
-        { sender: "assistant", content: "I understand! I can cancel that for you. Please note that cancellations made less than 24 hours prior to booking incur a 50% cancellation charge. Would you like to reschedule instead to avoid this?" },
-        { sender: "user", content: "Ah, let's reschedule to next week Thursday at 3:00 PM if available." },
-        { sender: "assistant", content: "Rescheduled! Your Brow Waxing is now set for next Thursday at 3:00 PM. The cancellation charge has been waived. You will receive an SMS confirmation shortly." }
+        { sender: "user", content: "Do you have parking available at the salon?" },
+        { sender: "assistant", content: "Yes! Operator Demo Salon provides complimentary valet parking directly at our entrance in Plot 42, Bandra Kurla Complex." },
+        { sender: "user", content: "Thank you for the quick assistance!" }
       ]
     }
   ];
 
   for (const d of dialogs) {
-    // A. Insert Conversation
     await db.insert(conversations).values({
       id: d.conversationId,
       organizationId: ORG_ID,
       leadProfileId: d.contact.id,
-      status: d.convStatus as any,
+      status: d.convStatus,
+      metadata: { channelId: d.channelId }
     }).onConflictDoNothing();
 
-    // B. Insert Messages
-    let lastMsgId: string | null = null;
-    for (let msgIdx = 0; msgIdx < d.messages.length; msgIdx++) {
-      const msg = d.messages[msgIdx];
-      const messageId = `11000000-1100-4100-1100-${(100000000000 + seededMessagesCount).toString()}`;
-      seededMessagesCount++;
-      lastMsgId = messageId;
-
-      await db.insert(conversationMessages).values({
-        id: messageId,
-        organizationId: ORG_ID,
-        conversationId: d.conversationId,
-        sender: msg.sender,
-        content: msg.content,
-        intentDetected: msg.sender === "user" ? "inquiry" : null,
-        confidenceScore: "0.95"
-      }).onConflictDoNothing();
-
-      await db.insert(channelMessages).values({
-        id: messageId,
-        organizationId: ORG_ID,
-        channelId: d.channelId,
-        conversationId: d.conversationId,
-        direction: msg.sender === "user" ? "incoming" : "outgoing",
-        senderId: msg.sender === "user" ? d.contact.phone : "assistant",
-        recipientId: msg.sender === "user" ? "assistant" : d.contact.phone,
-        content: msg.content,
-        status: "read",
-      }).onConflictDoNothing();
-    }
-
-    // C. Insert Inbox Thread
     await db.insert(inboxThreads).values({
       id: d.threadId,
       organizationId: ORG_ID,
       conversationId: d.conversationId,
       channelId: d.channelId,
-      lastMessageId: lastMsgId,
+      status: d.threadStatus,
       unreadCount: d.unreadCount,
-      status: d.threadStatus as any,
-      updatedAt: new Date(),
+      aiAutonomy: "active"
     }).onConflictDoNothing();
+
+    for (let i = 0; i < d.messages.length; i++) {
+      const msg = d.messages[i];
+      const msgId = `12121212-${d.conversationId.slice(9, 13)}-${i + 1}000-1111-111111111111`;
+      await db.insert(conversationMessages).values({
+        id: msgId,
+        organizationId: ORG_ID,
+        conversationId: d.conversationId,
+        sender: msg.sender as any,
+        content: msg.content,
+        confidenceScore: "0.98",
+      }).onConflictDoNothing();
+    }
   }
 
-  console.log(`✅ Seeded ${dialogs.length} active threads and conversations`);
+  console.log(`✅ Seeded active threads and conversations for Operator Demo Salon`);
 }
-
-let seededMessagesCount = 0;

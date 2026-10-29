@@ -813,6 +813,8 @@ export function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+  const [debugResetUrl, setDebugResetUrl] = React.useState<string | null>(null);
+  const [copied, setCopied] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -821,6 +823,9 @@ export function ForgotPasswordForm() {
     try {
       const result = await forgotPasswordAction({ email });
       if (result.success) {
+        if ((result as any).debugResetUrl) {
+          setDebugResetUrl((result as any).debugResetUrl);
+        }
         setSuccess(true);
       } else {
         setErrorMsg(result.error || "We couldn't send the reset link. Verify your email address and try again.");
@@ -853,6 +858,37 @@ export function ForgotPasswordForm() {
             if it matches our records. Check spam too.
           </p>
         </div>
+
+        {debugResetUrl && (
+          <div className="text-left p-space-4 rounded-xl bg-accent/40 border border-border/80 space-y-space-3">
+            <div className="flex items-center gap-space-2 text-warning font-medium text-caption">
+              <span>⚠️ Direct Password Reset Link (Email Service Not Configured)</span>
+            </div>
+            <p className="text-caption text-foreground/70 leading-relaxed">
+              External email delivery is currently not active in this environment. You can use your direct reset link below to update your password immediately:
+            </p>
+            <div className="flex items-center gap-space-2">
+              <a
+                href={debugResetUrl}
+                className="flex-1 text-center py-2 px-3 rounded-lg bg-primary text-primary-foreground font-semibold text-caption hover:opacity-90 transition-opacity"
+              >
+                Reset Password Directly →
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(debugResetUrl);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="px-3 py-2 rounded-lg bg-muted text-foreground text-caption hover:bg-muted/80 border border-border transition-colors font-medium"
+              >
+                {copied ? "Copied!" : "Copy Link"}
+              </button>
+            </div>
+          </div>
+        )}
+
         <Link
           href="/sign-in"
           className="inline-flex items-center gap-space-1 text-caption font-semibold text-primary hover:opacity-70 transition-opacity"

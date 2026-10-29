@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import crypto from 'crypto';
 import { db } from '../src/server/db';
-import { appointments, services, staffMembers, businessSettings } from '../src/server/db/schema';
+import { appointments, services, staffMembers, businessSettings, serviceAssignments } from '../src/server/db/schema';
 import { eq, and, notInArray, lt, gt } from 'drizzle-orm';
 import { bookingService } from '../src/server/services/booking';
 import { availabilityService } from '../src/server/services/availability';
@@ -59,15 +59,22 @@ test.describe('Operator Phase 3 — Booking Engine & Concurrency Safety Suite', 
       role: 'Consultant',
       isActive: true,
     });
+
+    // Assign staff member to service
+    await db.insert(serviceAssignments).values({
+      id: crypto.randomUUID(),
+      organizationId: testOrgId,
+      serviceId,
+      staffMemberId: staffId,
+    });
   });
 
   test('Booking A — Slot Booking: Database persistence and confirmation', async () => {
-    const targetDate = '2026-11-02'; // Monday
+    const targetDate = '2026-11-03'; // Tuesday
     const slots = await availabilityService.getAvailableSlots(testOrgId, serviceId, targetDate, staffId);
     expect(slots.length).toBeGreaterThan(0);
 
-    const [h, m] = slots[0].startTime.split(':').map(Number);
-    const bookingTime = new Date(Date.UTC(2026, 10, 2, h + 5, m, 0)); // America/New_York UTC-5
+    const bookingTime = new Date(`${targetDate}T${slots[0].startTime}:00+05:30`);
 
     const appt = await bookingService.createAppointment({
       organizationId: testOrgId,
@@ -97,12 +104,11 @@ test.describe('Operator Phase 3 — Booking Engine & Concurrency Safety Suite', 
   });
 
   test('Booking B — Double-Booking Rejection: Advisory lock and conflict rejection', async () => {
-    const targetDate = '2026-11-02';
+    const targetDate = '2026-11-03';
     const slots = await availabilityService.getAvailableSlots(testOrgId, serviceId, targetDate, staffId);
     expect(slots.length).toBeGreaterThan(1);
 
-    const [h, m] = slots[1].startTime.split(':').map(Number);
-    const targetSlot = new Date(Date.UTC(2026, 10, 2, h + 5, m, 0));
+    const targetSlot = new Date(`${targetDate}T${slots[1].startTime}:00+05:30`);
 
     // Book the first appointment
     await bookingService.createAppointment({
@@ -155,12 +161,11 @@ test.describe('Operator Phase 3 — Booking Engine & Concurrency Safety Suite', 
 
   test('Booking C — Cancellation & Rescheduling: Lifecycle updates in database', async () => {
     test.setTimeout(60000);
-    const targetDate = '2026-11-02';
+    const targetDate = '2026-11-03';
     const slots = await availabilityService.getAvailableSlots(testOrgId, serviceId, targetDate, staffId);
     expect(slots.length).toBeGreaterThan(2);
 
-    const [h, m] = slots[2].startTime.split(':').map(Number);
-    const originalTime = new Date(Date.UTC(2026, 10, 2, h + 5, m, 0));
+    const originalTime = new Date(`${targetDate}T${slots[2].startTime}:00+05:30`);
 
     const appt = await bookingService.createAppointment({
       organizationId: testOrgId,
@@ -207,12 +212,11 @@ test.describe('Operator Phase 3 — Booking Engine & Concurrency Safety Suite', 
   });
 
   test('Booking D — Timezone & Boundary Accuracy: Preserves exact UTC instant across local conversions', async () => {
-    const targetDate = '2026-11-02';
+    const targetDate = '2026-11-03';
     const slots = await availabilityService.getAvailableSlots(testOrgId, serviceId, targetDate, staffId);
     expect(slots.length).toBeGreaterThan(3);
 
-    const [h, m] = slots[3].startTime.split(':').map(Number);
-    const utcTime = new Date(Date.UTC(2026, 10, 2, h + 5, m, 0));
+    const utcTime = new Date(`${targetDate}T${slots[3].startTime}:00+05:30`);
 
     const appt = await bookingService.createAppointment({
       organizationId: testOrgId,

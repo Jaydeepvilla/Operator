@@ -9,116 +9,136 @@ import {
 import { ORG_ID } from "./business";
 
 export async function seedAI(): Promise<void> {
-  console.log("🤖 Seeding AI FAQs, qualification flows, voice prompts, and voice analytics...");
+  console.log("🤖 Seeding AI FAQs, qualification flows, and voice settings for Operator Demo Salon...");
 
   // 1. Seed FAQs
-  await db.insert(faqItems).values([
+  const salonFaqs = [
     {
+      id: "fa000000-1001-1111-1111-111111111111",
       organizationId: ORG_ID,
-      question: "What is your cancellation policy?",
-      answer: "Appointments must be cancelled or rescheduled at least 24 hours in advance to avoid a fee. Cancellations under 24 hours incur a fee of 50% of the service price. No-shows will be charged 100% of the service price.",
+      question: "What is your cancellation and no-show policy?",
+      answer: "Appointments may be cancelled or rescheduled up to 2 hours prior to the scheduled start time free of charge. Cancellations under 2 hours or no-shows may incur a 20% demonstration fee.",
       category: "Policies",
       isActive: true,
       order: 1
     },
     {
+      id: "fa000000-1002-1111-1111-111111111111",
       organizationId: ORG_ID,
-      question: "Are pets allowed in the treatment rooms?",
-      answer: "Under state health board regulations, pets and non-service dogs are strictly prohibited from entering treatment rooms. Certified service animals with proper harnesses are allowed.",
-      category: "Policies",
+      question: "What are your business hours?",
+      answer: "Operator Demo Salon is open Tuesday through Friday from 10:00 AM to 8:00 PM, Saturday from 9:00 AM to 9:00 PM, and Sunday from 10:00 AM to 6:00 PM. We are closed every Monday.",
+      category: "General",
       isActive: true,
       order: 2
     },
     {
+      id: "fa000000-1003-1111-1111-111111111111",
       organizationId: ORG_ID,
-      question: "Do you offer parking validations?",
-      answer: "Yes, we offer complimentary 2-hour parking validations for the garage located directly beneath the building at the Madison St entrance.",
-      category: "General",
+      question: "What services do you offer and what are their prices?",
+      answer: "We offer three core services: Haircut (30 minutes, INR 500), Hair Styling (45 minutes, INR 800), and our signature Rejuvenating Herbal Facial (60 minutes, INR 1500).",
+      category: "Services",
       isActive: true,
       order: 3
     },
     {
+      id: "fa000000-1004-1111-1111-111111111111",
       organizationId: ORG_ID,
-      question: "Which skin products do you use in your facials?",
-      answer: "We use dermatologist-tested, hypoallergenic clean beauty products, primarily SkinCeuticals and Dermalogica, customized to your specific skin tolerance.",
-      category: "Services",
+      question: "Where are you located?",
+      answer: "We are located at Plot 42, Bandra Kurla Complex, Mumbai, Maharashtra 400051, India. Valet parking is available for all guests.",
+      category: "General",
       isActive: true,
       order: 4
     },
     {
+      id: "fa000000-1005-1111-1111-111111111111",
       organizationId: ORG_ID,
-      question: "Can I book a massage if I am pregnant?",
-      answer: "Yes, our Maternity Harmony Massage is specifically designed for expecting mothers. We recommend consulting with your doctor before booking.",
-      category: "Services",
+      question: "Do you accept walk-ins or are appointments required?",
+      answer: "We strongly recommend booking in advance through our AI receptionist or website. Walk-ins are accommodated strictly based on daily stylist availability.",
+      category: "General",
       isActive: true,
       order: 5
     },
     {
+      id: "fa000000-1006-1111-1111-111111111111",
       organizationId: ORG_ID,
-      question: "Do you support walk-ins?",
-      answer: "Glow & Grace operates strictly by appointment only to ensure dedicated care. You can easily check real-time availability and book on our website or by texting us.",
-      category: "General",
+      question: "How far in advance can I book an appointment?",
+      answer: "Appointments can be scheduled up to 14 days in advance with at least 2 hours advance notice required for same-day bookings.",
+      category: "Policies",
       isActive: true,
       order: 6
     }
-  ]).onConflictDoNothing();
+  ];
+
+  for (const faq of salonFaqs) {
+    await db.insert(faqItems).values(faq).onConflictDoUpdate({
+      target: faqItems.id,
+      set: {
+        question: faq.question,
+        answer: faq.answer,
+        category: faq.category,
+        isActive: faq.isActive,
+        order: faq.order,
+        updatedAt: new Date(),
+      }
+    });
+  }
 
   // 2. Seed Qualification Flows
   await db.insert(qualificationFlows).values([
     {
       id: "99999999-5555-1111-1111-111111111111",
       organizationId: ORG_ID,
-      question: "What is your primary skincare concern?",
+      question: "What service are you looking to book today?",
       answerType: "single_select",
-      options: ["Acne & Breakouts", "Dryness & Flaking", "Aging & Fine Lines", "Redness & Rosacea", "General Maintenance"],
+      options: ["Haircut", "Hair Styling", "Facial", "Multiple Services"],
       isRequired: true,
       order: 1
     },
     {
       id: "99999999-5555-2222-2222-222222222222",
       organizationId: ORG_ID,
-      question: "Have you ever had a chemical peel or microdermabrasion before?",
-      answerType: "single_select",
-      options: ["Yes, regularly", "Yes, but a long time ago", "No, never"],
-      isRequired: true,
-      order: 2
-    },
-    {
-      id: "99999999-5555-3333-3333-333333333333",
-      organizationId: ORG_ID,
-      question: "Are you currently using any prescription skincare products (e.g., Retin-A, Accutane)?",
+      question: "Do you have any skin or scalp sensitivities we should be aware of?",
       answerType: "text",
+      options: [],
       isRequired: false,
-      order: 3
-    },
-    {
-      id: "99999999-5555-4444-4444-444444444444",
-      organizationId: ORG_ID,
-      question: "Please rate your skin sensitivity on a scale from 1 (very resilient) to 5 (extremely reactive).",
-      answerType: "number",
-      isRequired: true,
-      order: 4
+      order: 2
     }
   ]).onConflictDoNothing();
 
   // 3. Seed Voice Settings
   await db.insert(voiceSettings).values({
+    id: "99999999-7777-1111-1111-111111111111",
     organizationId: ORG_ID,
-    voiceName: "Jessica",
-    speakingSpeed: "1.05",
-    greetingMessage: "Hello! Thank you for calling Glow & Grace Esthetics. I'm Jessica, your AI assistant. How can I help you manage your booking or explore services today?",
-    fallbackNumber: "+15559876543",
+    voiceName: "Priya",
+    speakingSpeed: "1.0",
+    greetingMessage: "Hello! Welcome to Operator Demo Salon in Mumbai. I am your AI receptionist. How can I help you with your haircut, hair styling, or herbal facial booking today?",
+    fallbackNumber: "+919876543210",
     businessHoursMode: "hybrid",
     voicemailActive: true
-  }).onConflictDoNothing();
+  }).onConflictDoUpdate({
+    target: voiceSettings.id,
+    set: {
+      voiceName: "Priya",
+      greetingMessage: "Hello! Welcome to Operator Demo Salon in Mumbai. I am your AI receptionist. How can I help you with your haircut, hair styling, or herbal facial booking today?",
+      fallbackNumber: "+919876543210",
+      updatedAt: new Date(),
+    }
+  });
 
   // 4. Seed Voice Prompt
   await db.insert(voicePrompts).values({
+    id: "99999999-8888-1111-1111-111111111111",
     organizationId: ORG_ID,
-    name: "Standard Spa Guide Receptionist",
-    promptText: "You are Jessica, a friendly and polished Operator AI for Glow & Grace Esthetics, a luxury wellness and skin studio. Your tone must remain warm, professional, and helpful. You have access to FAQs, schedules, and pricing. Help the client find open slots, answer cancellation rules (24 hrs notice, 50% fee), or route to human staff for emergency exceptions.",
+    name: "Operator Demo Salon AI Receptionist",
+    promptText: "You are Priya, the AI receptionist for Operator Demo Salon, an upscale salon and beauty studio located in Bandra Kurla Complex, Mumbai. You speak with a warm, professional, courteous tone. You assist guests with booking Haircut (INR 500, 30 min), Hair Styling (INR 800, 45 min), and Rejuvenating Herbal Facial (INR 1500, 60 min). We are open Tuesday through Sunday (closed Mondays). Answer questions about our policies (2 hours cancellation notice, up to 14 days advance booking) and help clients select convenient open slots.",
     isActive: true
-  }).onConflictDoNothing();
+  }).onConflictDoUpdate({
+    target: voicePrompts.id,
+    set: {
+      promptText: "You are Priya, the AI receptionist for Operator Demo Salon, an upscale salon and beauty studio located in Bandra Kurla Complex, Mumbai. You speak with a warm, professional, courteous tone. You assist guests with booking Haircut (INR 500, 30 min), Hair Styling (INR 800, 45 min), and Rejuvenating Herbal Facial (INR 1500, 60 min). We are open Tuesday through Sunday (closed Mondays). Answer questions about our policies (2 hours cancellation notice, up to 14 days advance booking) and help clients select convenient open slots.",
+      isActive: true,
+    }
+  });
 
   // 5. Seed Voice Analytics for the past 30 days
   const now = new Date();
@@ -127,38 +147,25 @@ export async function seedAI(): Promise<void> {
     logDate.setDate(now.getDate() - i);
     const dateStr = logDate.toISOString().split("T")[0];
 
-    // Seed weekly patterns (weekends have fewer calls, mid-week has more)
-    const isWeekend = logDate.getDay() === 0 || logDate.getDay() === 6;
-    const isMonday = logDate.getDay() === 1;
+    const dayOfWeek = logDate.getDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const isMonday = dayOfWeek === 1;
 
-    let callsAnswered = Math.floor(Math.random() * 20) + 15; // 15 to 35
-    let callsMissed = Math.floor(Math.random() * 4) + 1; // 1 to 5
-    let bookingsCount = Math.floor(callsAnswered * 0.4); // 40% conversion
-    let transfersCount = Math.floor(callsAnswered * 0.1); // 10% transfer rate
-
-    if (isMonday) {
-      callsAnswered = Math.floor(Math.random() * 8) + 4; // salon closed
-      callsMissed = Math.floor(Math.random() * 5) + 3;
-      bookingsCount = Math.floor(callsAnswered * 0.2);
-      transfersCount = 0;
-    } else if (isWeekend) {
-      callsAnswered = Math.floor(Math.random() * 15) + 10;
-      callsMissed = Math.floor(Math.random() * 3) + 1;
-      bookingsCount = Math.floor(callsAnswered * 0.5); // higher weekend intent
-      transfersCount = Math.floor(callsAnswered * 0.05);
-    }
+    const totalCalls = isMonday ? 4 : isWeekend ? 15 : 28;
+    const missedCalls = isMonday ? 1 : 2;
+    const answeredCalls = totalCalls - missedCalls;
 
     await db.insert(voiceAnalytics).values({
       organizationId: ORG_ID,
       dateStr: dateStr,
-      callsAnswered: callsAnswered,
-      callsMissed: callsMissed,
-      bookingsCount: bookingsCount,
-      transfersCount: transfersCount,
-      averageDurationSeconds: Math.floor(Math.random() * 60) + 90, // 90 to 150 seconds
-      csatAverage: (4.5 + Math.random() * 0.45).toFixed(2), // 4.5 to 4.95
+      callsAnswered: answeredCalls,
+      callsMissed: missedCalls,
+      bookingsCount: Math.floor(answeredCalls * 0.4),
+      transfersCount: 1,
+      averageDurationSeconds: 125,
+      csatAverage: "4.8",
     }).onConflictDoNothing();
   }
 
-  console.log("✅ Seeded AI components & 30 days of Voice analytics data");
+  console.log("✅ Seeded AI components & 30 days of Voice analytics data for Operator Demo Salon");
 }

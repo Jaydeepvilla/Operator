@@ -573,6 +573,11 @@ export async function forgotPasswordAction(input: any) {
     const emailSent = await notificationService.sendEmail(emailClean, subject, html);
     if (!emailSent) {
       console.warn(`[Auth] Email delivery failed or unverified domain. Direct reset link for testing: ${resetUrl}`);
+      return {
+        success: true,
+        message: "If an account matches that email, a password reset link has been sent.",
+        debugResetUrl: resetUrl,
+      };
     } else {
       console.info(`[Email Dispatch] Password reset dispatched to ${emailClean}`);
     }

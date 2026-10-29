@@ -10,95 +10,129 @@ export interface SeededContact {
 }
 
 export async function seedContacts(): Promise<SeededContact[]> {
-  console.log("👤 Seeding 100+ contacts (leadProfiles)...");
+  console.log("👤 Seeding fictional test contacts for Operator Demo Salon...");
 
-  // Create solid lists of names to generate highly realistic, non-repeating pairs
-  const firstNames = [
-    "Emma", "Liam", "Olivia", "Noah", "Ava", "Oliver", "Sophia", "Elijah", "Isabella", "James",
-    "Mia", "Benjamin", "Charlotte", "Lucas", "Amelia", "Mason", "Harper", "Ethan", "Evelyn", "Alexander",
-    "Abigail", "Henry", "Emily", "Jacob", "Elizabeth", "Michael", "Sofia", "Daniel", "Avery", "Logan",
-    "Ella", "Jackson", "Madison", "Sebastian", "Scarlett", "Jack", "Victoria", "Aiden", "Aria", "Owen",
-    "Grace", "Samuel", "Chloe", "Matthew", "Camila", "Joseph", "Penelope", "Levi", "Riley", "Mateo",
-    "Layla", "David", "Lillian", "John", "Nora", "Wyatt", "Zoey", "Carter", "Mila", "Julian",
-    "Aubrey", "Luke", "Hannah", "Grayson", "Lily", "Isaac", "Addison", "Jayden", "Eleanor", "Theodore",
-    "Natalie", "Gabriel", "Luna", "Ryan", "Savannah", "Emilio", "Brooklyn", "Connor", "Leah", "Santiago",
-    "Zoe", "Christian", "Stella", "Landon", "Hazel", "Aaron", "Ellie", "Hunter", "Paisley", "Jonathan",
-    "Audrey", "Nolan", "Skyler", "Adrian", "Claire", "Connor", "Anna", "Ezra", "Bella", "Jeremiah",
-    "Naomi", "Carlos", "Alice", "Jose", "Eva", "Ian", "Ruby", "Mateo", "Julia", "Aaron", "Ivy"
+  // Primary deterministic test customers
+  const primaryContacts = [
+    {
+      id: "66666666-1001-1111-1111-111111111111",
+      name: "Aarav Patel",
+      email: "aarav.patel.demo@example.com",
+      phone: "+919811122233",
+      status: "Booked",
+      leadScore: 95,
+      tags: ["VIP Client", "Hair Regular"],
+      notes: "Prefers Priya Sharma for precision fade and herbal wash.",
+    },
+    {
+      id: "66666666-1002-1111-1111-111111111111",
+      name: "Ananya Iyer",
+      email: "ananya.iyer.demo@example.com",
+      phone: "+919822233344",
+      status: "Qualified",
+      leadScore: 88,
+      tags: ["Skincare VIP", "Herbal Facial Regular"],
+      notes: "Enjoys botanical skin treatments with Rahul Mehta.",
+    },
+    {
+      id: "66666666-1003-1111-1111-111111111111",
+      name: "Vikram Malhotra",
+      email: "vikram.malhotra.demo@example.com",
+      phone: "+919833344455",
+      status: "Hot",
+      leadScore: 80,
+      tags: ["Styling Inquiry", "Event Prep"],
+      notes: "Booked consultation for custom texturized hair styling.",
+    },
+    {
+      id: "66666666-1004-1111-1111-111111111111",
+      name: "Rohan Verma",
+      email: "rohan.verma.demo@example.com",
+      phone: "+919844455566",
+      status: "New",
+      leadScore: 70,
+      tags: ["New Guest"],
+      notes: "First time salon inquiry via website chat widget.",
+    },
+    {
+      id: "66666666-1005-1111-1111-111111111111",
+      name: "Meera Joshi",
+      email: "meera.joshi.demo@example.com",
+      phone: "+919855566677",
+      status: "Qualified",
+      leadScore: 85,
+      tags: ["Facial Treatment"],
+      notes: "Interested in monthly herbal rejuvenating facials.",
+    }
   ];
 
-  const lastNames = [
-    "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez",
-    "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin",
-    "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson",
-    "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores",
-    "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell", "Carter", "Roberts",
-    "Gomez", "Phillips", "Evans", "Turner", "Diaz", "Parker", "Cruz", "Edwards", "Collins", "Reyes",
-    "Stewart", "Morris", "Morales", "Murphy", "Cook", "Rogers", "Gutierrez", "Ortiz", "Morgan", "Cooper",
-    "Peterson", "Bailey", "Reed", "Kelly", "Howard", "Ramos", "Kim", "Cox", "Ward", "Richardson",
-    "Watson", "Brooks", "Chavez", "Wood", "James", "Bennett", "Gray", "Mendoza", "Ruiz", "Hughes",
-    "Price", "Alvarez", "Castillo", "Sanders", "Patel", "Myers", "Long", "Ross", "Foster", "Jimenez",
-    "Porter", "Wallace", "Dupont", "Russo", "Ferrari", "Kovalenko", "Sato", "Suzuki", "Cohen", "Levy"
-  ];
+  const seeded: SeededContact[] = [];
 
-  const statuses = ["New", "Qualified", "Hot", "Booked", "Escalated", "Closed"];
-  
-  const tagList = [
-    ["VIP Client", "Prefers Olivia"],
-    ["Sensitive Skin", "Chemical Peel Alert"],
-    ["Massage Regular", "Deep Tissue Pref"],
-    ["New Client", "Intro Discount Sent"],
-    ["Weekend Only", "SMS Contact Pref"],
-    ["No-Show History", "Pre-Pay Required"],
-    ["Facial Addict", "Hydrafacial Pref"],
-    ["Brow Shape Regular"],
-    ["Lash Extensions Care"],
-    [],
-  ];
-
-  const seededContacts: SeededContact[] = [];
-
-  // Generate 110 unique contacts
-  for (let i = 0; i < 110; i++) {
-    const firstName = firstNames[i % firstNames.length];
-    const lastName = lastNames[i % lastNames.length];
-    const name = `${firstName} ${lastName}`;
-    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${i}@gg-salon-seed.com`;
-    const phone = `+1555${(1000000 + i).toString().slice(1)}`; // +1 555 000 001, etc.
-    const status = statuses[i % statuses.length];
-    const score = Math.floor(Math.random() * 85) + 15; // 15 to 99
-    const ltv = Math.floor(Math.random() * 8) * 150 + (i % 2 === 0 ? 95 : 0); // up to 1200+
-    const tags = tagList[i % tagList.length];
-    const notes = i % 3 === 0 
-      ? `Customer interested in regular skin treatments. Reported ${firstName} has slight sensitivity to harsh alcohols.` 
-      : `Prefers soft ambient music. Usually books online.`;
-    
-    // We will generate a static UUID pattern for contacts based on index so it is idempotent
-    const contactId = `88888888-8888-4888-8888-${(100000000000 + i).toString()}`;
-
+  for (const c of primaryContacts) {
     await db.insert(leadProfiles).values({
-      id: contactId,
+      id: c.id,
       organizationId: ORG_ID,
-      name,
-      email,
-      phone,
-      status,
-      leadScore: score,
-      summary: `${name} is a ${status.toLowerCase()} client with a lead score of ${score}.`,
-      lifetimeValue: ltv,
-      tags,
-      notes,
-      conversationCount: Math.floor(Math.random() * 4) + 1,
-    }).onConflictDoNothing();
+      name: c.name,
+      email: c.email,
+      normalizedEmail: c.email.toLowerCase().trim(),
+      phone: c.phone,
+      normalizedPhone: c.phone.replace(/\D/g, ""),
+      status: c.status,
+      leadScore: c.leadScore,
+      tags: c.tags,
+      notes: c.notes,
+    }).onConflictDoUpdate({
+      target: leadProfiles.id,
+      set: {
+        name: c.name,
+        email: c.email,
+        normalizedEmail: c.email.toLowerCase().trim(),
+        phone: c.phone,
+        normalizedPhone: c.phone.replace(/\D/g, ""),
+        status: c.status,
+        leadScore: c.leadScore,
+        tags: c.tags,
+        notes: c.notes,
+        updatedAt: new Date(),
+      }
+    });
 
-    seededContacts.push({
-      id: contactId,
-      name,
-      email,
-      phone,
+    seeded.push({
+      id: c.id,
+      name: c.name,
+      email: c.email,
+      phone: c.phone
     });
   }
 
-  console.log(`✅ Seeded ${seededContacts.length} Contacts (leadProfiles)`);
-  return seededContacts;
+  // Seed 25 additional deterministic fictional customers for CRM volume
+  const firstNames = ["Kavita", "Aditya", "Neha", "Arjun", "Pooja", "Siddharth", "Tara", "Karan", "Simran", "Varun"];
+  const lastNames = ["Kapoor", "Nair", "Reddy", "Singhania", "Deshmukh", "Chopra", "Bose", "Menon", "Agarwal", "Bhatia"];
+
+  for (let i = 0; i < 25; i++) {
+    const fn = firstNames[i % firstNames.length];
+    const ln = lastNames[Math.floor(i / firstNames.length) % lastNames.length];
+    const name = `${fn} ${ln}`;
+    const email = `${fn.toLowerCase()}.${ln.toLowerCase()}.${i}@operatordemosalon.test`;
+    const phone = `+9198000${String(10000 + i).slice(-5)}`;
+    const id = `66666666-20${String(i).padStart(2, "0")}-1111-1111-111111111111`;
+
+    await db.insert(leadProfiles).values({
+      id,
+      organizationId: ORG_ID,
+      name,
+      email,
+      normalizedEmail: email.toLowerCase().trim(),
+      phone,
+      normalizedPhone: phone.replace(/\D/g, ""),
+      status: i % 4 === 0 ? "Booked" : i % 3 === 0 ? "Qualified" : "New",
+      leadScore: 60 + (i % 35),
+      tags: ["Demonstration Record"],
+    }).onConflictDoNothing();
+
+    seeded.push({ id, name, email, phone });
+  }
+
+  console.log(`✅ Seeded ${seeded.length} fictional contacts for Operator Demo Salon`);
+  return seeded;
 }

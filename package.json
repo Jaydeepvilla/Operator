@@ -24,7 +24,11 @@
     "doctor:motion": "tsx scripts/doctor/index.ts --rule motion",
     "doctor:icons": "tsx scripts/doctor/index.ts --rule icons",
     "doctor:responsive": "tsx scripts/doctor/index.ts --rule responsive",
-    "doctor:accessibility": "tsx scripts/doctor/index.ts --rule accessibility"
+    "doctor:accessibility": "tsx scripts/doctor/index.ts --rule accessibility",
+    "db:seed:salon": "tsx scripts/seed/index.ts",
+    "db:clean:salon": "tsx scripts/cleanup-demo-salon.ts",
+    "video:walkthrough": "tsx scripts/walkthrough-generator/index.ts",
+    "video:client-demo": "tsx scripts/client-demo-generator/generate-onboarding-demo.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -74,6 +78,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^10.5.0",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@playwright/test": "^1.61.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
@@ -89,6 +94,7 @@
     "eslint-config-next": "16.2.9",
     "fast-glob": "^3.3.3",
     "jscodeshift": "^17.4.0",
+    "msedge-tts": "^2.1.1",
     "picocolors": "^1.1.1",
     "playwright": "^1.61.0",
     "postcss": "^8.5.16",

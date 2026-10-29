@@ -143,16 +143,21 @@ export const ragService = {
       console.warn("[RAGService] DB fallback for FAQs:", e.message);
     }
 
-    const matchedFaqs = allFaqs.filter(
-      (f) =>
-        lowercaseQuery.includes(f.question.toLowerCase()) ||
-        lowercaseQuery.includes(f.answer.toLowerCase())
-    );
+    const queryWords = lowercaseQuery
+      .split(/[^a-z0-9]+/)
+      .filter((w) => w.length >= 3 && !["what", "your", "the", "and", "for", "are", "with", "from", "that", "this"].includes(w));
+
+    const matchedFaqs = allFaqs.filter((f) => {
+      const q = f.question.toLowerCase();
+      const a = f.answer.toLowerCase();
+      if (lowercaseQuery.includes(q) || lowercaseQuery.includes(a)) return true;
+      return queryWords.some((w) => q.includes(w) || a.includes(w));
+    });
 
     // Only include fallback FAQs if query is a general overview inquiry
     const faqsToInclude =
       matchedFaqs.length > 0
-        ? matchedFaqs
+        ? matchedFaqs.slice(0, 5)
         : isGeneral
         ? allFaqs.slice(0, 3)
         : [];

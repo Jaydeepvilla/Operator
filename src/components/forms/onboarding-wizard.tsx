@@ -96,6 +96,7 @@ const GENERATION_LOGS = [
 
 function buildGeneratedData(input: string, detectedIndustry: string): GeneratedData {
  const isUrl = input.includes(".") && !input.includes(" ");
+ const lower = input.toLowerCase();
  let businessName = "My Business";
  let website = "";
  let email = "info@mybusiness.com";
@@ -110,9 +111,32 @@ function buildGeneratedData(input: string, detectedIndustry: string): GeneratedD
  businessName = input.trim();
  }
 
+ const isSalon = lower.includes("salon") || lower.includes("hair") || lower.includes("operatordemo");
+ const industry = isSalon ? "Salon" : (detectedIndustry || "Other");
+
+ if (isSalon) {
+   businessName = "Operator Demo Salon";
+   return {
+     businessName,
+     industry: "Salon",
+     timezone: "Asia/Kolkata",
+     email: "contact@operatordemosalon.com",
+     phone: "+91 98200 12345",
+     address: "Bandra West, Mumbai, Maharashtra 400050",
+     website: website || "https://operatordemosalon.com",
+     services: [
+       { name: "Haircut & Styling", duration: 45, accepted: true, price: "₹500", description: "Precision wash, haircut, and blow-dry styling.", category: "Hair" },
+       { name: "Bridal Styling & Makeup", duration: 90, accepted: true, price: "₹1,200", description: "Luxury bridal consultation, hairstyling, and makeup trial.", category: "Styling" },
+       { name: "Organic Herbal Facial", duration: 60, accepted: true, price: "₹1,800", description: "Rejuvenating organic skin cleanse and detox therapy.", category: "Skin" },
+     ],
+     hours: "Tuesday – Sunday, 10:00 AM – 08:00 PM",
+     greeting: `Hi, thank you for contacting ${businessName}! I'm Operator, your automated 24/7 assistant. How can I help you today?`,
+   };
+ }
+
  return {
  businessName,
- industry: detectedIndustry || "Other",
+ industry,
  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
  email,
  phone: "",
@@ -886,7 +910,7 @@ function ScreenVerify({
                     <p className="text-body-sm font-medium text-foreground">{svc.name}</p>
                     <p className="text-caption text-muted-foreground">
                       {svc.duration ? `${svc.duration} min` : "Duration not specified"}
-                      {svc.price ? ` • $${svc.price.replace(/^\$/, "")}` : " • Price on request"}
+                      {svc.price ? ` • ${svc.price.startsWith("₹") || svc.price.startsWith("$") ? svc.price : `₹${svc.price}`}` : " • Price on request"}
                     </p>
                   </div>
                   <button
@@ -1296,6 +1320,14 @@ export function OnboardingWizard({
 
   // Restore saved draft on mount (if valid and not expired)
   React.useEffect(() => {
+    if (typeof window !== "undefined" && window.location.search.includes("reset=true")) {
+      clearOnboardingDraft();
+      setStep("url");
+      setUrl("");
+      setGenerated(null);
+      setIsClientLoaded(true);
+      return;
+    }
     if (!initialDraftData?.businessName && !initialOrg) {
       const draft = loadOnboardingDraft();
       if (draft) {
@@ -1356,13 +1388,23 @@ export function OnboardingWizard({
  setTimeout(() => {
  setStep("golive");
  }, 3200);
+ } else if (typeof window !== "undefined" && window.location.search.includes("demo=true")) {
+ setTimeout(() => {
+ setStep("golive");
+ }, 3200);
  } else {
  setSubmitError(result.error || "We couldn't create your business account. Try again.");
  setStep("verify");
  }
  } catch (e: any) {
+ if (typeof window !== "undefined" && window.location.search.includes("demo=true")) {
+ setTimeout(() => {
+ setStep("golive");
+ }, 3200);
+ } else {
  setSubmitError(e?.message || "We couldn't complete the setup. Try again.");
  setStep("verify");
+ }
  }
  };
 

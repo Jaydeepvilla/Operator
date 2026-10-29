@@ -7,11 +7,20 @@ import { ShieldCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-export default async function OnboardingPage() {
-  const { hasOrg, org, isCompleted, currentStep, draftData } = await checkUserOrganization();
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ demo?: string; reset?: string }>;
+}) {
+  const params = searchParams ? await searchParams : {};
+  const isDemo = params.demo === "true";
+  const isReset = params.reset === "true";
+  const { hasOrg, org, isCompleted, currentStep, draftData } = isReset
+    ? { hasOrg: false, org: null, isCompleted: false, currentStep: "url", draftData: {} }
+    : await checkUserOrganization();
   
-  // Only redirect if organization onboarding is already completed
-  if (isCompleted) {
+  // Only redirect if organization onboarding is already completed and not in demo mode
+  if (isCompleted && !isDemo && !isReset) {
     redirect("/dashboard");
   }
 
@@ -60,9 +69,9 @@ export default async function OnboardingPage() {
       <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-12">
         <div className="w-full max-w-[620px] rounded-2xl border border-border/70 bg-card/90 p-6 sm:p-10 shadow-2xl backdrop-blur-xl transition-all duration-300">
           <OnboardingWizard
-            initialOrg={hasOrg && org ? { id: org.id, name: org.name } : undefined}
-            initialStep={currentStep}
-            initialDraftData={draftData}
+            initialOrg={!isReset && hasOrg && org ? { id: org.id, name: org.name } : undefined}
+            initialStep={isReset ? "url" : currentStep}
+            initialDraftData={isReset ? undefined : draftData}
           />
         </div>
       </main>

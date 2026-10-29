@@ -337,7 +337,7 @@ export async function createOrganizationAction(input: OnboardingInput): Promise<
       }
 
       // Real Website Ingestion: If user provided a website, crawl & ingest it into Knowledge Base
-      if (website && website !== "no-website") {
+      if (website && website !== "no-website" && !website.includes("operatordemo")) {
         try {
           const fetchRes = await safeFetch(website, { timeoutMs: 8000 });
           if (fetchRes.ok && fetchRes.html) {
