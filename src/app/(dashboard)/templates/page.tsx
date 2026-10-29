@@ -30,6 +30,7 @@ import { getButtonClasses } from '@/design-system/button-tokens';
 const DEFAULT_VARIABLES = ["customer_name", "appointment_time", "service_name", "staff_name", "business_name", "cancel_link"];
 
 export default function TemplatesPage() {
+ const confirm = useConfirm();
  const [loading, setLoading] = useState(true);
  const [templates, setTemplates] = useState<any[]>([]);
  const [editingTemplate, setEditingTemplate] = useState<any | null>(null);
@@ -104,7 +105,16 @@ export default function TemplatesPage() {
  };
 
  const handleDelete = async (id: string) => {
- const ok = await confirm("Are you sure you want to delete this template?");
+ const tpl = templates.find((t) => t.id === id);
+ const tplName = tpl?.name ? `"${tpl.name}"` : "this template";
+ const ok = await confirm({
+ title: "Delete Message Template?",
+ description: `Are you sure you want to delete ${tplName}? Any automated triggers using this template will need to be reassigned.`,
+ confirmText: "Delete Template",
+ cancelText: "Cancel",
+ variant: "danger",
+ isDestructive: true,
+ });
  if (!ok) return;
 
  const res = await deleteTemplateAction(id);

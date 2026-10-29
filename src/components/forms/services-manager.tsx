@@ -82,6 +82,7 @@ export function ServicesManager({ initialServices, categories }: ServicesManager
  const [isSubmitting, setIsSubmitting] = React.useState(false);
  const [actionError, setActionError] = React.useState<string | null>(null);
  const toast = useToast();
+ const confirm = useConfirm();
 
  const {
  register,
@@ -166,24 +167,43 @@ export function ServicesManager({ initialServices, categories }: ServicesManager
  };
 
  const handleArchive = async (id: string) => {
- if (await confirm("Are you sure you want to archive this service?")) {
+ const svc = services.find((s) => s.id === id);
+ const name = svc?.name ? `"${svc.name}"` : "this service";
+ const ok = await confirm({
+ title: "Archive Service?",
+ description: `Are you sure you want to archive ${name}? It will be hidden from customer booking pages, but past bookings remain unaffected.`,
+ confirmText: "Archive Service",
+ cancelText: "Keep Service",
+ variant: "warning",
+ });
+ if (!ok) return;
+
  const res = await archiveServiceAction(id);
  if (!res.success) {
  toast.error("Failed to archive service", formatUserErrorMessage(res.error));
  } else {
  toast.success("Service Archived", "The service has been archived.");
  }
- }
  };
 
  const handleDelete = async (id: string) => {
- if (await confirm("Are you sure you want to permanently delete this service?")) {
+ const svc = services.find((s) => s.id === id);
+ const name = svc?.name ? `"${svc.name}"` : "this service";
+ const ok = await confirm({
+ title: "Permanently Delete Service?",
+ description: `Are you sure you want to permanently delete ${name}? This action cannot be undone and will permanently remove this service from your catalog.`,
+ confirmText: "Delete Permanently",
+ cancelText: "Cancel",
+ variant: "danger",
+ isDestructive: true,
+ });
+ if (!ok) return;
+
  const res = await deleteServiceAction(id);
  if (!res.success) {
  toast.error("Failed to delete service", formatUserErrorMessage(res.error));
  } else {
  toast.success("Service Deleted", "The service has been permanently removed.");
- }
  }
  };
 

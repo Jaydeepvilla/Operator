@@ -3,7 +3,10 @@
 import * as React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./dialog";
 import { Button } from "./button";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Trash2, Archive, HelpCircle } from "lucide-react";
+import { cn } from "./utils";
+
+export type ConfirmVariant = "danger" | "warning" | "info" | "default";
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -14,6 +17,7 @@ export interface ConfirmDialogProps {
   confirmText?: string;
   cancelText?: string;
   isDestructive?: boolean;
+  variant?: ConfirmVariant;
 }
 
 export function ConfirmDialog({
@@ -25,8 +29,12 @@ export function ConfirmDialog({
   confirmText = "Confirm",
   cancelText = "Cancel",
   isDestructive = true,
+  variant,
 }: ConfirmDialogProps) {
   const [isLoading, setIsLoading] = React.useState(false);
+
+  const effectiveVariant: ConfirmVariant =
+    variant || (isDestructive ? "danger" : "default");
 
   const handleConfirm = async () => {
     setIsLoading(true);
@@ -40,30 +48,55 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-card/95 border border-border/80 shadow-2xl backdrop-blur-xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-space-2 text-foreground font-semibold">
-            {isDestructive && <AlertTriangle className="h-5 w-5 text-rose-500 shrink-0" />}
-            {title}
-          </DialogTitle>
-          <DialogDescription className="pt-space-2 text-muted-foreground text-body-sm leading-relaxed whitespace-pre-line">
-            {description}
-          </DialogDescription>
+      <DialogContent className="sm:max-w-md bg-card/95 border border-border/80 shadow-2xl backdrop-blur-2xl rounded-2xl p-6">
+        <DialogHeader className="gap-3">
+          <div className="flex items-start gap-3.5">
+            <div
+              className={cn(
+                "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border",
+                effectiveVariant === "danger" &&
+                  "bg-rose-500/10 border-rose-500/20 text-rose-500 dark:text-rose-400",
+                effectiveVariant === "warning" &&
+                  "bg-amber-500/10 border-amber-500/20 text-amber-500 dark:text-amber-400",
+                (effectiveVariant === "info" || effectiveVariant === "default") &&
+                  "bg-primary/10 border-primary/20 text-primary"
+              )}
+            >
+              {effectiveVariant === "danger" && <Trash2 className="h-5 w-5" />}
+              {effectiveVariant === "warning" && <Archive className="h-5 w-5" />}
+              {effectiveVariant === "info" && <AlertTriangle className="h-5 w-5" />}
+              {effectiveVariant === "default" && <HelpCircle className="h-5 w-5" />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-body-md font-bold text-foreground leading-snug">
+                {title}
+              </DialogTitle>
+              <DialogDescription className="pt-2 text-muted-foreground text-body-sm leading-relaxed whitespace-pre-line">
+                {description}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
-        <DialogFooter className="mt-space-6 gap-space-2 sm:gap-space-0">
+        <DialogFooter className="mt-6 gap-2 sm:gap-2">
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
+            className="text-body-sm cursor-pointer"
           >
             {cancelText}
           </Button>
           <Button
             type="button"
-            variant={isDestructive ? "destructive" : "default"}
+            variant={effectiveVariant === "danger" ? "destructive" : "default"}
             onClick={handleConfirm}
             loading={isLoading}
+            className={cn(
+              "text-body-sm cursor-pointer",
+              effectiveVariant === "warning" &&
+                "bg-amber-600 hover:bg-amber-700 text-white border-transparent"
+            )}
           >
             {confirmText}
           </Button>
@@ -83,6 +116,7 @@ export interface ConfirmOptions {
   confirmText?: string;
   cancelText?: string;
   isDestructive?: boolean;
+  variant?: ConfirmVariant;
 }
 
 export type ConfirmFunction = (options: string | ConfirmOptions) => Promise<boolean>;
@@ -93,7 +127,10 @@ export function useConfirm(): ConfirmFunction {
   const context = React.useContext(ConfirmContext);
   if (!context) {
     return async (options: string | ConfirmOptions) => {
-      const msg = typeof options === "string" ? options : `${options.title || "Confirm"}\n\n${options.description}`;
+      const msg =
+        typeof options === "string"
+          ? options
+          : `${options.title || "Confirm"}\n\n${options.description}`;
       return typeof window !== "undefined" ? window.confirm(msg) : true;
     };
   }
@@ -108,6 +145,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
     confirmText: string;
     cancelText: string;
     isDestructive: boolean;
+    variant: ConfirmVariant;
     resolver: ((val: boolean) => void) | null;
   }>({
     isOpen: false,
@@ -115,35 +153,61 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
     description: "",
     confirmText: "Confirm",
     cancelText: "Cancel",
-    isDestructive: true,
+    isDestructive: false,
+    variant: "default",
     resolver: null,
   });
 
   const confirm: ConfirmFunction = React.useCallback((options: string | ConfirmOptions) => {
     return new Promise<boolean>((resolve) => {
       if (typeof options === "string") {
+        const lower = options.toLowerCase();
+        const isArchive = lower.includes("archive");
         const isDelete =
-          options.toLowerCase().includes("delete") ||
-          options.toLowerCase().includes("remove") ||
-          options.toLowerCase().includes("reset") ||
-          options.toLowerCase().includes("sign out");
+          lower.includes("delete") ||
+          lower.includes("remove") ||
+          lower.includes("reset") ||
+          lower.includes("sign out");
+
+        let variant: ConfirmVariant = "default";
+        let defaultTitle = "Confirmation Required";
+        let defaultConfirm = "Proceed";
+        let isDestructive = false;
+
+        if (isArchive) {
+          variant = "warning";
+          defaultTitle = "Archive Item?";
+          defaultConfirm = "Archive";
+        } else if (isDelete) {
+          variant = "danger";
+          defaultTitle = "Are you sure?";
+          defaultConfirm = "Delete";
+          isDestructive = true;
+        }
+
         setState({
           isOpen: true,
-          title: isDelete ? "Are you sure?" : "Confirmation Required",
+          title: defaultTitle,
           description: options,
-          confirmText: isDelete ? "Delete" : "Proceed",
+          confirmText: defaultConfirm,
           cancelText: "Cancel",
-          isDestructive: isDelete,
+          isDestructive,
+          variant,
           resolver: resolve,
         });
       } else {
+        const variant =
+          options.variant ||
+          (options.isDestructive ? "danger" : "default");
+
         setState({
           isOpen: true,
           title: options.title || "Confirmation Required",
           description: options.description,
-          confirmText: options.confirmText || "Confirm",
+          confirmText: options.confirmText || (variant === "danger" ? "Delete" : "Confirm"),
           cancelText: options.cancelText || "Cancel",
-          isDestructive: options.isDestructive ?? true,
+          isDestructive: options.isDestructive ?? (variant === "danger"),
+          variant,
           resolver: resolve,
         });
       }
@@ -159,15 +223,34 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
     <ConfirmContext.Provider value={confirm}>
       {children}
       <Dialog open={state.isOpen} onOpenChange={(open) => !open && handleClose(false)}>
-        <DialogContent className="sm:max-w-md bg-card/95 border border-border/80 shadow-2xl backdrop-blur-xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-foreground font-semibold">
-              {state.isDestructive && <AlertTriangle className="h-5 w-5 text-rose-500 shrink-0" />}
-              {state.title}
-            </DialogTitle>
-            <DialogDescription className="pt-2 text-muted-foreground text-body-sm leading-relaxed whitespace-pre-line">
-              {state.description}
-            </DialogDescription>
+        <DialogContent className="sm:max-w-md bg-card/95 border border-border shadow-2xl backdrop-blur-2xl rounded-2xl p-6">
+          <DialogHeader className="gap-3">
+            <div className="flex items-start gap-3.5">
+              <div
+                className={cn(
+                  "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border",
+                  state.variant === "danger" &&
+                    "bg-rose-500/10 border-rose-500/20 text-rose-500 dark:text-rose-400",
+                  state.variant === "warning" &&
+                    "bg-amber-500/10 border-amber-500/20 text-amber-500 dark:text-amber-400",
+                  (state.variant === "info" || state.variant === "default") &&
+                    "bg-primary/10 border-primary/20 text-primary"
+                )}
+              >
+                {state.variant === "danger" && <Trash2 className="h-5 w-5" />}
+                {state.variant === "warning" && <Archive className="h-5 w-5" />}
+                {state.variant === "info" && <AlertTriangle className="h-5 w-5" />}
+                {state.variant === "default" && <HelpCircle className="h-5 w-5" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <DialogTitle className="text-body-md font-bold text-foreground leading-snug">
+                  {state.title}
+                </DialogTitle>
+                <DialogDescription className="pt-2 text-muted-foreground text-body-sm leading-relaxed whitespace-pre-line">
+                  {state.description}
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
           <DialogFooter className="mt-6 gap-2 sm:gap-2">
             <Button
@@ -180,9 +263,13 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
             </Button>
             <Button
               type="button"
-              variant={state.isDestructive ? "destructive" : "default"}
+              variant={state.variant === "danger" ? "destructive" : "default"}
               onClick={() => handleClose(true)}
-              className="text-body-sm cursor-pointer"
+              className={cn(
+                "text-body-sm cursor-pointer",
+                state.variant === "warning" &&
+                  "bg-amber-600 hover:bg-amber-700 text-white border-transparent"
+              )}
             >
               {state.confirmText}
             </Button>

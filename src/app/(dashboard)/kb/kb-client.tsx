@@ -62,7 +62,8 @@ import {
  getImportHistoryAction,
  searchKnowledgeAction,
  analyzeKnowledgeContentAction
-} from"@/server/actions/knowledge";
+} from "@/server/actions/knowledge";
+import { useConfirm } from "@/components/shared/confirm-dialog";
 import { useToast } from "@/components/shared/toast";
 import { formatUserErrorMessage } from "@/lib/errors";
 import { NativeTable, NativeInput, NativeButton, NativeTextarea } from "@/components/shared/native";
@@ -93,6 +94,7 @@ export function KnowledgeCenterClient({
  const router = useRouter();
  const [activeTab, setActiveTab] = React.useState<string>("overview");
  const toast = useToast();
+ const confirm = useConfirm();
  
  // States
  const [categories, setCategories] = React.useState(initialCategories);
@@ -265,14 +267,24 @@ export function KnowledgeCenterClient({
  };
 
  const handleDeleteCategory = async (id: string) => {
- if (await confirm("Are you sure you want to delete this category?")) {
+ const cat = categories.find((c: any) => c.id === id);
+ const catName = cat?.name ? `"${cat.name}"` : "this category";
+ const ok = await confirm({
+ title: "Delete Category?",
+ description: `Are you sure you want to delete ${catName}? Documents in this category will become unassigned.`,
+ confirmText: "Delete Category",
+ cancelText: "Cancel",
+ variant: "danger",
+ isDestructive: true,
+ });
+ if (!ok) return;
+
  const res = await deleteKnowledgeCategoryAction(id);
  if (res.success) {
  toast.success("Category Deleted", "Category removed from knowledge base.");
  router.refresh();
  } else {
  toast.error("Failed to delete category", formatUserErrorMessage(res.error));
- }
  }
  };
 
@@ -416,14 +428,24 @@ export function KnowledgeCenterClient({
  };
 
  const handleDeleteDocument = async (id: string) => {
- if (await confirm("Are you sure you want to permanently delete this document and all associated chunks?")) {
+ const doc = documents.find((d: any) => d.id === id);
+ const docTitle = doc?.title ? `"${doc.title}"` : "this document";
+ const ok = await confirm({
+ title: "Permanently Delete Document?",
+ description: `Are you sure you want to permanently delete ${docTitle} and all associated vector embeddings? This action cannot be undone.`,
+ confirmText: "Delete Permanently",
+ cancelText: "Cancel",
+ variant: "danger",
+ isDestructive: true,
+ });
+ if (!ok) return;
+
  const res = await deleteKnowledgeDocumentAction(id);
  if (res.success) {
  toast.success("Document Deleted", "Document and associated vectors deleted.");
  router.refresh();
  } else {
  toast.error("Failed to delete document", formatUserErrorMessage(res.error));
- }
  }
  };
 
@@ -2273,7 +2295,15 @@ const handleExecuteIngestion = async () => {
  <Button
  variant="ghost"
  onClick={async () => {
- if (await confirm(`Remove page "${page.title}" from the Knowledge Base?`)) {
+ const ok = await confirm({
+ title: "Remove Ingested Page?",
+ description: `Are you sure you want to remove "${page.title}" from the Knowledge Base? Associated vectors will be deleted.`,
+ confirmText: "Remove Page",
+ cancelText: "Cancel",
+ variant: "danger",
+ isDestructive: true,
+ });
+ if (!ok) return;
  const res = await deleteKnowledgeDocumentAction(matchingDoc.id);
  if (res.success) {
  toast.success("Page Removed", `"${page.title}" removed from knowledge base.`);
@@ -2281,7 +2311,6 @@ const handleExecuteIngestion = async () => {
  setDocuments((prev: any[]) => prev.filter((d: any) => d.id !== matchingDoc.id));
  } else {
  toast.error("Failed to remove page", formatUserErrorMessage(res.error));
- }
  }
  }}
  className="h-7 w-7 p-space-0 radius-md border-rose-500/15 bg-rose-500/5 flex items-center justify-center text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 cursor-pointer ml-auto"

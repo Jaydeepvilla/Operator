@@ -25,6 +25,7 @@ import {
 } from "@/server/actions/demo";
 import { DEMO_SCRIPTS, type DemoIndustryScript } from "@/lib/constants/demo-scripts";
 import { cn } from "@/components/shared/utils";
+import { useConfirm } from "@/components/shared/confirm-dialog";
 
 function parseMetric(val: string | number) {
   if (typeof val === "number") {
@@ -49,6 +50,7 @@ function parseMetric(val: string | number) {
 }
 
 export default function DemoCenterPage() {
+  const confirm = useConfirm();
   const [selectedScriptId, setSelectedScriptId] = useState<string>("salon-spa");
   const [demoStatus, setDemoStatus] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -89,9 +91,16 @@ export default function DemoCenterPage() {
   }
 
   async function handleResetData() {
-    if (!await confirm("Reset demo environment? This clears demo appointments and exceptions for a clean demonstration.")) {
-      return;
-    }
+    const ok = await confirm({
+      title: "Reset Demo Environment?",
+      description: "This will clear all test appointments, reset schedule exceptions, and restore clean sample data for your next customer demonstration.",
+      confirmText: "Reset Environment",
+      cancelText: "Cancel",
+      variant: "danger",
+      isDestructive: true,
+    });
+    if (!ok) return;
+
     setActionLoading(true);
     setFeedbackMessage(null);
     try {

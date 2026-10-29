@@ -83,6 +83,7 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  const [isSubmitting, setIsSubmitting] = React.useState(false);
  const [actionError, setActionError] = React.useState<string | null>(null);
  const toast = useToast();
+ const confirm = useConfirm();
 
  const {
  register,
@@ -160,13 +161,23 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  };
 
  const handleDelete = async (id: string) => {
- if (await confirm("Are you sure you want to delete this FAQ item?")) {
+ const item = faqs.find((f) => f.id === id);
+ const itemQ = item?.question ? `"${item.question}"` : "this FAQ item";
+ const ok = await confirm({
+ title: "Delete FAQ Item?",
+ description: `Are you sure you want to delete ${itemQ}? The AI receptionist will no longer use this answer.`,
+ confirmText: "Delete FAQ",
+ cancelText: "Cancel",
+ variant: "danger",
+ isDestructive: true,
+ });
+ if (!ok) return;
+
  const res = await deleteFaqAction(id);
  if (!res.success) {
  toast.error("Failed to delete FAQ", formatUserErrorMessage(res.error));
  } else {
  toast.success("FAQ Deleted", "The item has been removed.");
- }
  }
  };
 
@@ -186,14 +197,22 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  };
 
  const handleBulkDelete = async () => {
- if (await confirm(`Are you sure you want to delete the ${selectedIds.length} selected FAQs?`)) {
+ const ok = await confirm({
+ title: "Delete Selected FAQs?",
+ description: `Are you sure you want to permanently delete the ${selectedIds.length} selected FAQs? This action cannot be undone.`,
+ confirmText: `Delete ${selectedIds.length} FAQs`,
+ cancelText: "Cancel",
+ variant: "danger",
+ isDestructive: true,
+ });
+ if (!ok) return;
+
  const res = await bulkDeleteFaqsAction(selectedIds);
  if (res.success) {
  setSelectedIds([]);
  toast.success("FAQs Deleted", `${selectedIds.length} FAQs removed.`);
  } else {
  toast.error("Failed to delete FAQs", formatUserErrorMessage(res.error));
- }
  }
  };
 

@@ -294,6 +294,7 @@ export function QualificationBuilder({ initialQuestions }: Props) {
  const [deletingId, setDeletingId] = React.useState<string | null>(null);
  const [activeId, setActiveId] = React.useState<UniqueIdentifier | null>(null);
  const toast = useToast();
+ const confirm = useConfirm();
 
  React.useEffect(() => {
  setQuestions(initialQuestions);
@@ -425,7 +426,18 @@ export function QualificationBuilder({ initialQuestions }: Props) {
  };
 
  const handleDelete = async (id: string) => {
- if (!await confirm("Are you sure you want to delete this question?")) return;
+ const q = questions.find((item) => item.id === id);
+ const qText = q?.question ? `"${q.question}"` : "this question";
+ const ok = await confirm({
+ title: "Delete Qualification Question?",
+ description: `Are you sure you want to delete ${qText}? The AI receptionist will no longer ask this during intake conversations.`,
+ confirmText: "Delete Question",
+ cancelText: "Cancel",
+ variant: "danger",
+ isDestructive: true,
+ });
+ if (!ok) return;
+
  setDeletingId(id);
  const res = await deleteFlowQuestionAction(id);
  setDeletingId(null);

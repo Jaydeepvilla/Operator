@@ -30,10 +30,12 @@ import {
  Timer,
  ShieldCheck,
  UserX,
+ Check,
 } from "lucide-react";
 import { Button } from "@/components/shared/button";
 import { PageTitle } from "@/components/shared/page-title";
 import { Input } from "@/components/shared/input";
+import { useConfirm } from "@/components/shared/confirm-dialog";
 import {
  Dialog,
  DialogContent,
@@ -98,6 +100,7 @@ function SectionLabel({ icon: Icon, children }: { icon: any; children: React.Rea
 }
 
 export default function StaffPage() {
+ const confirm = useConfirm();
  const [staffList, setStaffList] = useState<StaffItem[]>([]);
  const [servicesList, setServicesList] = useState<any[]>([]);
  const [loading, setLoading] = useState(true);
@@ -189,7 +192,16 @@ export default function StaffPage() {
 
  const handleDeleteStaff = async () => {
  if (!selectedStaffId) return;
- if (!await confirm("Are you sure you want to delete this staff profile?")) return;
+ const staffName = activeDetails?.staff?.name ? `"${activeDetails.staff.name}"` : "this staff member";
+ const ok = await confirm({
+ title: "Delete Staff Profile?",
+ description: `Are you sure you want to permanently delete the profile for ${staffName}? All working hours and service assignments will be removed.`,
+ confirmText: "Delete Profile",
+ cancelText: "Cancel",
+ variant: "danger",
+ isDestructive: true,
+ });
+ if (!ok) return;
  const res = await deleteStaffAction(selectedStaffId);
  if (res.success) { setSelectedStaffId(null); await loadStaff(); }
  else setErrorMsg(res.error || "Failed to delete staff member");
@@ -239,6 +251,15 @@ export default function StaffPage() {
  };
 
  const handleDeleteException = async (id: string) => {
+ const ok = await confirm({
+ title: "Remove Availability Exception?",
+ description: "Are you sure you want to remove this exception date?",
+ confirmText: "Remove",
+ cancelText: "Cancel",
+ variant: "danger",
+ isDestructive: true,
+ });
+ if (!ok) return;
  const res = await deleteAvailabilityExceptionAction(id);
  if (res.success) await reloadDetails();
  else setErrorMsg(res.error || "Failed to delete exception");
@@ -311,41 +332,42 @@ export default function StaffPage() {
  </Button>
  </div>
  ) : (
- <div className="p-2 space-y-1">
+ <div className="p-2 space-y-1.5">
  {staffList.map((staff) => {
  const isSelected = staff.id === selectedStaffId;
  return (
- <Button
+ <button
  key={staff.id}
+ type="button"
  onClick={() => setSelectedStaffId(staff.id)}
  className={cn(
- "w-full text-left px-3 py-3 rounded-lg cursor-pointer transition-all duration-150 border flex gap-3 items-center relative select-none group",
+ "w-full text-left p-3 rounded-xl cursor-pointer transition-all duration-150 border flex gap-3 items-center relative select-none group h-auto",
  isSelected
- ? "bg-background border-primary/20 shadow-sm"
- : "bg-transparent border-transparent hover:bg-[hsl(var(--foreground)/0.025)] hover:border-[hsl(var(--foreground)/0.05)]"
+ ? "bg-primary/10 border-primary/40 shadow-sm ring-1 ring-primary/20 text-foreground"
+ : "bg-card/40 border-border/40 hover:bg-muted/40 hover:border-border text-muted-foreground hover:text-foreground"
  )}
  >
  {isSelected && (
- <span className="absolute left-0 top-3 bottom-3 w-[3px] bg-primary rounded-r-full" />
+ <span className="absolute left-0 top-2.5 bottom-2.5 w-1 bg-primary rounded-r-full" />
  )}
- <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${getGradient(staff.name)} text-white text-caption font-medium flex items-center justify-center shrink-0 shadow-sm`}>
+ <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${getGradient(staff.name)} text-white text-body-sm font-bold flex items-center justify-center shrink-0 shadow-sm`}>
  {getInitials(staff.name)}
  </div>
  <div className="flex-1 min-w-0">
- <div className="flex items-center justify-between gap-1 mb-0.5">
- <span className="text-[13px] font-semibold text-foreground truncate leading-tight">{staff.name}</span>
+ <div className="flex items-center justify-between gap-1.5 mb-1">
+ <span className="text-body-sm font-semibold text-foreground truncate leading-snug">{staff.name}</span>
  <span className={cn(
- "text-caption uppercase font-bold tracking-wider rounded-full px-1.5 py-0.5 border shrink-0",
+ "text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5 border shrink-0",
  staff.isActive
- ? "bg-emerald-500/10 text-[hsl(var(--state-success-text))] border-emerald-500/20"
- : "bg-neutral-500/8 text-muted-foreground/60 border-neutral-500/15"
+ ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+ : "bg-neutral-500/10 text-muted-foreground border-neutral-500/20"
  )}>
  {staff.isActive ? "Active" : "Off"}
  </span>
  </div>
- <p className="text-caption text-muted-foreground/65 truncate">{staff.role}</p>
+ <p className="text-caption text-muted-foreground truncate leading-normal">{staff.role}</p>
  </div>
- </Button>
+ </button>
  );
  })}
  </div>
@@ -446,7 +468,8 @@ export default function StaffPage() {
  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
  {/* Services Assigned */}
- <div className="bg-background/60 border-[hsl(var(--foreground)/0.05)] rounded-xl p-4">
+ <div className="bg-background/60 border-[hsl(var(--foreground)/0.05)] rounded-xl p-4 flex flex-col justify-between overflow-hidden">
+ <div>
  <SectionLabel icon={Briefcase}>Services Assigned</SectionLabel>
 
  {servicesList.length === 0 ? (
@@ -457,8 +480,7 @@ export default function StaffPage() {
  </p>
  </div>
  ) : (
- <ScrollArea className="max-h-[240px] pr-1" horizontal={false} vertical={servicesList.length > 4}>
- <div className="space-y-1">
+ <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
  {servicesList.map((service) => {
  const isAssigned = activeDetails.assignments.some((a: any) => a.serviceId === service.id);
  const id = `svc-${service.id}`;
@@ -469,15 +491,15 @@ export default function StaffPage() {
  className={cn(
  "flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer select-none transition-all duration-100 border group",
  isAssigned
- ? "bg-primary/5 border-primary/15 hover:bg-primary/8"
- : "border-transparent hover:bg-[hsl(var(--foreground)/0.025)] hover:border-[hsl(var(--foreground)/0.04)]"
+ ? "bg-primary/5 border-primary/20 hover:bg-primary/10"
+ : "border-transparent hover:bg-muted/30 hover:border-border/40"
  )}
  >
  <div className={cn(
  "h-4.5 w-4.5 rounded border flex items-center justify-center shrink-0 transition-all",
- isAssigned ? "bg-primary border-primary" : "border-[hsl(var(--foreground)/0.2)] bg-transparent"
+ isAssigned ? "bg-primary border-primary" : "border-border bg-background"
  )}>
- {isAssigned && <CheckCircle2 className="h-3 w-3 text-white" />}
+ {isAssigned && <Check className="h-3 w-3 text-primary-foreground stroke-[3]" />}
  </div>
  <Input
  type="checkbox" id={id} checked={isAssigned}
@@ -492,15 +514,15 @@ export default function StaffPage() {
  );
  })}
  </div>
- </ScrollArea>
  )}
+ </div>
 
  {servicesList.length > 0 && (
- <div className="mt-3 pt-3 border-t border-[hsl(var(--foreground)/0.04)] flex items-center justify-between">
- <span className="text-caption text-muted-foreground/60">
+ <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between shrink-0">
+ <span className="text-caption text-muted-foreground font-medium">
  {activeDetails.assignments.length} of {servicesList.length} assigned
  </span>
- <div className="h-1.5 flex-1 mx-3 bg-[hsl(var(--foreground)/0.06)] rounded-full overflow-hidden">
+ <div className="h-1.5 flex-1 mx-3 bg-muted/40 rounded-full overflow-hidden">
  <div
  className="h-full bg-primary rounded-full transition-all duration-300"
  style={{ width: `${servicesList.length > 0 ? (activeDetails.assignments.length / servicesList.length) * 100 : 0}%` }}
@@ -511,13 +533,14 @@ export default function StaffPage() {
  </div>
 
  {/* Vacation / Exceptions */}
- <div className="bg-background/60 border-[hsl(var(--foreground)/0.05)] rounded-xl p-4">
+ <div className="bg-background/60 border-[hsl(var(--foreground)/0.05)] rounded-xl p-4 flex flex-col justify-between overflow-hidden">
+ <div>
  <div className="flex items-start justify-between mb-3">
  <SectionLabel icon={CalendarRange}>Vacation & Exceptions</SectionLabel>
  <Button
  size="sm"
  variant="outline"
- className="text-caption h-7 px-2.5 border-[hsl(var(--foreground)/0.08)] hover:bg-primary/5 hover:border-primary/20 font-semibold gap-1 shrink-0 -mt-0.5"
+ className="text-caption h-7 px-2.5 border-border hover:bg-primary/5 hover:border-primary/20 font-semibold gap-1 shrink-0 -mt-0.5"
  onClick={() => setExceptionOpen(true)}
  >
  <Plus className="h-3 w-3" /> Add
@@ -532,12 +555,11 @@ export default function StaffPage() {
  </p>
  </div>
  ) : (
- <ScrollArea className="max-h-[210px] pr-1" horizontal={false} vertical={activeDetails.exceptions.length > 3}>
- <div className="space-y-2">
+ <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
  {activeDetails.exceptions.map((exc: any) => (
  <div
  key={exc.id}
- className="flex items-center gap-3 bg-background border-[hsl(var(--foreground)/0.05)] rounded-lg px-3 py-2.5 group animate-fade-in"
+ className="flex items-center gap-3 bg-card border border-border/40 rounded-lg px-3 py-2.5 group animate-fade-in"
  >
  <div className={cn(
  "h-8 w-8 rounded-lg flex items-center justify-center shrink-0",
@@ -554,8 +576,8 @@ export default function StaffPage() {
  <span className={cn(
  "text-caption uppercase font-bold tracking-wider px-1.5 py-0.5 rounded border",
  exc.isAvailable
- ? "bg-blue-500/10 text-[hsl(var(--state-info-text))] border-blue-500/20"
- : "bg-rose-500/10 text-[hsl(var(--state-error-text))] border-rose-500/20"
+ ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+ : "bg-rose-500/10 text-rose-400 border-rose-500/20"
  )}>
  {exc.isAvailable ? "Custom Hours" : "Closed"}
  </span>
@@ -564,31 +586,26 @@ export default function StaffPage() {
  )}
  </div>
  </div>
- <Button
+ <button
  type="button"
  onClick={() => handleDeleteException(exc.id)}
- className={getButtonClasses(
- 'primary',
- 'filled',
- 'small',
- 'h-7 w-7 text-muted-foreground/40 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shrink-0'
- )}
+ className="h-7 w-7 rounded-md text-muted-foreground/40 hover:text-rose-400 hover:bg-rose-500/10 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shrink-0 cursor-pointer"
  >
  <X className="h-3.5 w-3.5" />
- </Button>
+ </button>
  </div>
  ))}
  </div>
- </ScrollArea>
  )}
+ </div>
  </div>
  </div>
 
  {/* ── Row 2: Weekly Hours ── */}
- <div className="bg-background/60 border-[hsl(var(--foreground)/0.05)] rounded-xl p-4">
+ <div className="bg-background/60 border-[hsl(var(--foreground)/0.05)] rounded-xl p-4 overflow-hidden">
  <SectionLabel icon={Clock}>Weekly Working Hours</SectionLabel>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2">
+ <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2.5">
  {[1, 2, 3, 4, 5, 6, 0].map((dayNum) => {
  const sched = activeDetails.schedules.find((s: any) => s.dayOfWeek === dayNum);
  const shifts = sched?.shifts || [];
@@ -601,30 +618,33 @@ export default function StaffPage() {
  <div
  key={dayNum}
  className={cn(
- "flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-all duration-150",
+ "flex items-center gap-3 px-3.5 py-2.5 rounded-xl border transition-all duration-150",
  isWorking
- ? "bg-background border-[hsl(var(--foreground)/0.06)]"
- : "bg-[hsl(var(--foreground)/0.015)] border-transparent"
+ ? "bg-card border-border/50"
+ : "bg-card/30 border-border/20 opacity-70"
  )}
  >
  {/* Day toggle */}
- <Button
+ <button
+ type="button"
  onClick={() => {
  if (isWorking) handleRemoveDay(dayNum);
  else handleSaveSchedule(dayNum, "09:00", "17:00");
  }}
  className={cn(
- "h-5 w-5 rounded border flex items-center justify-center shrink-0 transition-all",
- isWorking ? "bg-primary border-primary" : "border-[hsl(var(--foreground)/0.2)] bg-transparent"
+ "h-6 w-6 rounded-lg border flex items-center justify-center shrink-0 transition-all cursor-pointer",
+ isWorking
+ ? "bg-primary border-primary text-primary-foreground shadow-xs"
+ : "border-border/60 bg-muted/20 hover:bg-muted/40 text-transparent"
  )}
  >
- {isWorking && <CheckCircle2 className="h-3 w-3 text-white" />}
- </Button>
+ <Check className="h-3.5 w-3.5 stroke-[2.5]" />
+ </button>
 
  {/* Day name */}
  <span className={cn(
- "text-[12px] font-semibold w-12 shrink-0",
- isWorking ? "text-foreground" : "text-muted-foreground/50"
+ "text-body-sm font-semibold w-12 shrink-0",
+ isWorking ? "text-foreground" : "text-muted-foreground/60"
  )}>
  {DAY_SHORT[dayNum]}
  </span>
@@ -632,28 +652,28 @@ export default function StaffPage() {
  {/* Shift hours or Rest badge */}
  {isWorking ? (
  <div className="flex items-center gap-2 flex-1">
- <div className="flex items-center gap-1.5 bg-[hsl(var(--foreground)/0.04)] border-[hsl(var(--foreground)/0.06)] rounded-lg px-2 py-1.5 flex-1">
+ <div className="flex items-center gap-1.5 bg-muted/30 border border-border/40 rounded-lg px-2.5 py-1.5 flex-1">
  <Input
  type="time"
  value={shiftStart}
- className="bg-transparent border-0 focus:outline-none p-0 text-[12px] font-mono text-foreground flex-1 min-w-0 cursor-pointer"
+ className="bg-transparent border-0 focus:outline-none p-0 text-[12px] font-mono text-foreground flex-1 min-w-0 cursor-pointer h-auto"
  onChange={(e) => handleSaveSchedule(dayNum, e.target.value, shiftEnd)}
  />
  <span className="text-caption text-muted-foreground/40 font-semibold uppercase px-0.5">–</span>
  <Input
  type="time"
  value={shiftEnd}
- className="bg-transparent border-0 focus:outline-none p-0 text-[12px] font-mono text-foreground flex-1 min-w-0 cursor-pointer"
+ className="bg-transparent border-0 focus:outline-none p-0 text-[12px] font-mono text-foreground flex-1 min-w-0 cursor-pointer h-auto"
  onChange={(e) => handleSaveSchedule(dayNum, shiftStart, e.target.value)}
  />
  </div>
  </div>
  ) : (
  <span className={cn(
- "text-caption font-bold uppercase tracking-wider px-2 py-1 rounded-md flex-1",
+ "text-caption font-bold uppercase tracking-wider px-2 py-1 rounded-md flex-1 text-center sm:text-left",
  isWeekend
- ? "text-[hsl(var(--state-warning-text))]/70 bg-amber-500/5"
- : "text-muted-foreground/40 bg-[hsl(var(--foreground)/0.02)]"
+ ? "text-amber-400 bg-amber-500/10 border border-amber-500/20"
+ : "text-muted-foreground/60 bg-muted/20"
  )}>
  {isWeekend ? "Weekend" : "Rest Day"}
  </span>

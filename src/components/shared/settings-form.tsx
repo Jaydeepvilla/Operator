@@ -38,6 +38,7 @@ import {
 import { Badge } from "@/components/shared/badge";
 import { NativeTextarea } from "@/components/shared/native";
 import { TIMEZONES } from "@/lib/constants";
+import { useConfirm } from "@/components/shared/confirm-dialog";
 import {
  updateUserProfileAction,
  updateUserPreferencesAction,
@@ -87,6 +88,7 @@ interface SettingsFormProps {
 }
 
 export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
+  const confirm = useConfirm();
  const router = useRouter();
  const { setTheme } = useTheme();
 
@@ -326,7 +328,15 @@ export function PersonalSettingsForm({ initialData }: SettingsFormProps) {
  };
 
  const handleRevokeAllOtherSessions = async () => {
- if (!confirm("Sign out of all other devices?\n\nYou will need to sign in again on those devices.")) return;
+    const ok = await confirm({
+      title: "Sign Out Other Devices?",
+      description: "Sign out of all other active sessions? You will need to sign in again on those devices.",
+      confirmText: "Sign Out Devices",
+      cancelText: "Cancel",
+      variant: "danger",
+      isDestructive: true,
+    });
+    if (!ok) return;
  try {
  const result = await logoutOtherDevicesAction();
  if (result.success) {

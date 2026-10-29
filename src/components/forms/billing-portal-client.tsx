@@ -31,6 +31,7 @@ import { PaymentProvidersClient } from "./payment-providers-client";
 import { RazorpayCheckoutButton } from "@/components/billing/razorpay-checkout-button";
 import { getAllPlans, PlanConfig } from "@/lib/billing/plans";
 import { BarChartCard } from "@/components/charts";
+import { useConfirm } from "@/components/shared/confirm-dialog";
 
 interface BillingPortalClientProps {
   initialSubscription: any;
@@ -64,6 +65,7 @@ export function BillingPortalClient({
   const [invoices] = useState(initialInvoices || []);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
   const [isPending, startTransition] = useTransition();
+  const confirm = useConfirm();
 
   const dynamicPlans = getAllPlans();
 
@@ -93,13 +95,16 @@ export function BillingPortalClient({
     });
   };
 
-  const handleCancel = () => {
-    const confirmationText = 
-      "Cancel your subscription?\n\n" +
-      "• Your AI receptionist will continue answering calls until the end of your billing period.\n" +
-      "• After that, phone numbers will be released and live call answering will pause.\n" +
-      "• You can reactivate anytime before your period ends.";
-    if (!confirm(confirmationText)) return;
+  const handleCancel = async () => {
+    const ok = await confirm({
+      title: "Cancel Subscription?",
+      description: "• Your AI receptionist will continue answering calls until the end of your billing period.\n• After that, phone numbers will be released and live call answering will pause.\n• You can reactivate anytime before your period ends.",
+      confirmText: "Cancel Subscription",
+      cancelText: "Keep Subscription",
+      variant: "danger",
+      isDestructive: true,
+    });
+    if (!ok) return;
 
     setStatusMessage(null);
     startTransition(async () => {

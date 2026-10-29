@@ -40,10 +40,12 @@ import {
 } from "@/server/actions/admin";
 import { useToast } from "@/components/shared/toast";
 import { formatUserErrorMessage } from "@/lib/errors";
+import { useConfirm } from "@/components/shared/confirm-dialog";
 
 import { getButtonClasses } from '@/design-system/button-tokens';
 
 export function AdminUserPanel() {
+  const confirm = useConfirm();
  const [usersList, setUsersList] = React.useState<any[]>([]);
  const [search, setSearch] = React.useState("");
  const [statusFilter, setStatusFilter] = React.useState("all");
@@ -217,7 +219,15 @@ export function AdminUserPanel() {
 
  // Force Logout
  const handleForceLogout = async (userId: string) => {
- if (!confirm("Sign this user out from all devices?\n\nThey will need to sign in again to access their account.")) return;
+ const ok = await confirm({
+ title: "Terminate User Sessions?",
+ description: "Sign this user out from all devices? They will need to sign in again to access their account.",
+ confirmText: "Sign Out User",
+ cancelText: "Cancel",
+ variant: "danger",
+ isDestructive: true,
+ });
+ if (!ok) return;
  try {
  const res = await forceLogoutUserAction(userId);
  if (res.success) {

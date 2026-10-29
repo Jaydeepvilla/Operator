@@ -33,6 +33,7 @@ import {
  Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { useConfirm } from "@/components/shared/confirm-dialog";
 import {
  getFounderProgressAction,
  completeLessonAction,
@@ -370,6 +371,7 @@ const SIMULATOR_SCENARIOS = [
 ];
 
 export default function FounderAcademyPage() {
+ const confirm = useConfirm();
  const [activeTab, setActiveTab] = useState<"modules" | "simulator">("modules");
  const [selectedModule, setSelectedModule] = useState<LearningModule>(ACADEMY_MODULES[0]);
  const [expandedPitch, setExpandedPitch] = useState<boolean>(false);
@@ -441,7 +443,16 @@ export default function FounderAcademyPage() {
  }
 
  async function handleResetProgress() {
- if (!await confirm("Are you sure you want to reset your learning progress? This will reset all module completions.")) return;
+ const ok = await confirm({
+ title: "Reset Academy Progress?",
+ description: "Are you sure you want to reset your learning progress? This will reset all module completions and simulator scores.",
+ confirmText: "Reset Progress",
+ cancelText: "Cancel",
+ variant: "danger",
+ isDestructive: true,
+ });
+ if (!ok) return;
+
  setActionLoading(true);
  try {
  const res = await resetProgressAction();

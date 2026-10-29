@@ -123,6 +123,7 @@ const PLATFORM_GUIDES = [
 ];
 
 export default function WidgetSettingsPage() {
+ const confirm = useConfirm();
  const [loading, setLoading] = useState(true);
  const [isSaving, setIsSaving] = useState(false);
  const [saveSuccess, setSaveSuccess] = useState(false);
@@ -348,7 +349,16 @@ export default function WidgetSettingsPage() {
  };
 
  const handleDeleteDomain = async (id: string) => {
- const ok = await confirm("Are you sure you want to delete this domain whitelist?");
+ const dom = domains.find((d) => d.id === id);
+ const domainName = dom?.domain ? `"${dom.domain}"` : "this domain";
+ const ok = await confirm({
+ title: "Remove Allowed Domain?",
+ description: `Are you sure you want to remove ${domainName} from the allowed domains whitelist? The Operator chat widget will no longer load on this origin.`,
+ confirmText: "Remove Domain",
+ cancelText: "Cancel",
+ variant: "danger",
+ isDestructive: true,
+ });
  if (!ok) return;
  const res = await deleteDomainAction(id);
  if (res.success) {
