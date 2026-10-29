@@ -9,6 +9,14 @@ export async function seedUsers(): Promise<string[]> {
   const standardPasswordHash = await hashPassword("password123");
   const usersToSeed = [
     {
+      id: "user_jaydeep_chandegara",
+      email: "jaydeep.chandegara94@gmail.com",
+      name: "Jaydeep Chandegara",
+      passwordHash: standardPasswordHash,
+      isVerified: true,
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop",
+    },
+    {
       id: "user_admin_operator_ai",
       email: "admin@operator.ai",
       name: "Alex Vance (Admin)",
