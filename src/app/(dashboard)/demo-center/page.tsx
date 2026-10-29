@@ -231,7 +231,7 @@ export default function DemoCenterPage() {
                 onClick={() => handleSwitchIndustry(script.id)}
                 disabled={actionLoading}
                 className={cn(
-                  "w-full p-4 rounded-xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[114px] group relative overflow-hidden",
+                  "w-full p-4 rounded-xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[120px] group relative overflow-hidden",
                   isSelected
                     ? "bg-primary/10 border-primary shadow-sm shadow-primary/15 ring-1 ring-primary/40"
                     : "bg-card hover:bg-muted/40 border-border/80 hover:border-primary/40"
@@ -252,7 +252,7 @@ export default function DemoCenterPage() {
                   )}
                 </div>
                 <div className="w-full">
-                  <h4 className="text-body-md font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
+                  <h4 className="text-body-sm sm:text-body-md font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
                     {script.businessName}
                   </h4>
                   <p className="text-caption text-muted-foreground line-clamp-2 mt-1 leading-normal">
@@ -347,61 +347,61 @@ export default function DemoCenterPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5">
                   {/* Card 1: Recovered Bookings */}
-                  <div className="p-4 rounded-xl bg-card border border-border/80 hover:border-violet-500/30 transition-all flex flex-col justify-between min-h-[105px] text-center sm:text-left shadow-xs">
-                    <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">
+                  <div className="p-4 rounded-xl bg-violet-500/[0.05] border border-violet-500/30 hover:border-violet-500/50 transition-all flex flex-col justify-between min-h-[112px] text-left shadow-xs">
+                    <p className="text-[11px] text-violet-300/90 uppercase font-bold tracking-wider">
                       Recovered Bookings
                     </p>
                     <div className="my-1.5">
-                      <span className="text-2xl sm:text-3xl font-extrabold text-violet-400 dark:text-violet-300 tracking-tight">
+                      <span className="text-2xl sm:text-3xl font-extrabold text-violet-200 tracking-tight">
                         {recovered.main}
                       </span>
                     </div>
-                    <p className="text-caption text-muted-foreground truncate font-medium">
+                    <p className="text-caption font-semibold text-foreground/80 leading-snug">
                       {recovered.sub || "appointments / month"}
                     </p>
                   </div>
 
                   {/* Card 2: After-Hours Capture */}
-                  <div className="p-4 rounded-xl bg-card border border-border/80 hover:border-indigo-500/30 transition-all flex flex-col justify-between min-h-[105px] text-center sm:text-left shadow-xs">
-                    <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">
+                  <div className="p-4 rounded-xl bg-indigo-500/[0.05] border border-indigo-500/30 hover:border-indigo-500/50 transition-all flex flex-col justify-between min-h-[112px] text-left shadow-xs">
+                    <p className="text-[11px] text-indigo-300/90 uppercase font-bold tracking-wider">
                       After-Hours Capture
                     </p>
                     <div className="my-1.5">
-                      <span className="text-2xl sm:text-3xl font-extrabold text-indigo-400 dark:text-indigo-300 tracking-tight">
+                      <span className="text-2xl sm:text-3xl font-extrabold text-indigo-200 tracking-tight">
                         {afterHours.main}
                       </span>
                     </div>
-                    <p className="text-caption text-muted-foreground truncate font-medium">
+                    <p className="text-caption font-semibold text-foreground/80 leading-snug">
                       {afterHours.sub || "of all new bookings"}
                     </p>
                   </div>
 
                   {/* Card 3: Labor Saved */}
-                  <div className="p-4 rounded-xl bg-card border border-border/80 hover:border-sky-500/30 transition-all flex flex-col justify-between min-h-[105px] text-center sm:text-left shadow-xs">
-                    <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">
+                  <div className="p-4 rounded-xl bg-cyan-500/[0.05] border border-cyan-500/30 hover:border-cyan-500/50 transition-all flex flex-col justify-between min-h-[112px] text-left shadow-xs">
+                    <p className="text-[11px] text-cyan-300/90 uppercase font-bold tracking-wider">
                       Labor Saved
                     </p>
                     <div className="my-1.5">
-                      <span className="text-2xl sm:text-3xl font-extrabold text-sky-400 dark:text-sky-300 tracking-tight">
+                      <span className="text-2xl sm:text-3xl font-extrabold text-cyan-200 tracking-tight">
                         {laborSaved.main}
                       </span>
                     </div>
-                    <p className="text-caption text-muted-foreground truncate font-medium">
+                    <p className="text-caption font-semibold text-foreground/80 leading-snug">
                       {laborSaved.sub || "manual labor saved / mo"}
                     </p>
                   </div>
 
                   {/* Card 4: No-Show Reduction */}
-                  <div className="p-4 rounded-xl bg-card border border-border/80 hover:border-emerald-500/30 transition-all flex flex-col justify-between min-h-[105px] text-center sm:text-left shadow-xs">
-                    <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">
+                  <div className="p-4 rounded-xl bg-emerald-500/[0.05] border border-emerald-500/30 hover:border-emerald-500/50 transition-all flex flex-col justify-between min-h-[112px] text-left shadow-xs">
+                    <p className="text-[11px] text-emerald-300/90 uppercase font-bold tracking-wider">
                       No-Show Reduction
                     </p>
                     <div className="my-1.5">
-                      <span className="text-2xl sm:text-3xl font-extrabold text-emerald-500 dark:text-emerald-400 tracking-tight">
+                      <span className="text-2xl sm:text-3xl font-extrabold text-emerald-300 tracking-tight">
                         {noShow.main}
                       </span>
                     </div>
-                    <p className="text-caption text-muted-foreground truncate font-medium">
+                    <p className="text-caption font-semibold text-foreground/80 leading-snug">
                       {noShow.sub || "automated reminder rate"}
                     </p>
                   </div>

@@ -605,6 +605,17 @@ const handleExecuteIngestion = async () => {
  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) +""+ sizes[i];
  };
 
+ const formatDocumentName = (name: string) => {
+ if (!name) return "Document";
+ if (/^service-[0-9a-f-]{8,}/i.test(name)) {
+ return "Services & Pricing Guide (Auto-synced)";
+ }
+ if (/^faq-[0-9a-f-]{8,}/i.test(name)) {
+ return "Frequently Asked Questions (Auto-synced)";
+ }
+ return name;
+ };
+
  // Helper to color code tags
  const getFileTypeStyle = (type: string) => {
  const t = type.toLowerCase();
@@ -630,7 +641,7 @@ const handleExecuteIngestion = async () => {
 
  <div className="flex flex-col lg:flex-row gap-space-6 items-start w-full">
  {/* Sidebar Sub-Navigation */}
- <aside className="w-full lg:w-60 shrink-0 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible pb-space-2 lg:pb-space-0 border-b lg:border-b-0 lg:border-r border-[hsl(var(--foreground)/0.06)] lg:pr-space-6 gap-space-1.5 whitespace-nowrap lg:whitespace-normal [scrollbar-width:none] [&::-webkit-scrollbar]:hidden no-scrollbar">
+ <aside className="w-full lg:w-60 shrink-0 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 border-b lg:border-b-0 lg:border-r border-[hsl(var(--foreground)/0.08)] lg:pr-4 gap-1.5 whitespace-nowrap lg:whitespace-normal [scrollbar-width:none] [&::-webkit-scrollbar]:hidden no-scrollbar">
  {[
  { id:"overview", label:"Knowledge Overview", icon: BookOpen },
  { id:"documents", label:"Documents", icon: FileText },
@@ -648,15 +659,12 @@ const handleExecuteIngestion = async () => {
  type="button"
  onClick={() => setActiveTab(tab.id)}
  className={cn(
- "flex items-center justify-start gap-3 px-3.5 py-2.5 text-body-sm font-medium transition-all duration-150 cursor-pointer w-auto lg:w-full text-left rounded-xl relative select-none",
+ "flex items-center justify-start gap-3 px-3.5 py-2.5 text-body-sm font-medium transition-all duration-150 cursor-pointer w-auto lg:w-full text-left rounded-xl select-none",
  isActive
- ?"bg-primary/10 text-primary font-semibold hover:bg-primary/15 shadow-xs"
+ ?"bg-primary/15 text-primary font-semibold shadow-xs ring-1 ring-primary/25"
  :"text-muted-foreground hover:text-foreground hover:bg-muted/40"
  )}
  >
- {isActive && (
- <span className="absolute left-0 top-2 bottom-2 w-1 bg-primary rounded-r-md hidden lg:block shadow-[0_0_8px_rgba(var(--primary),0.5)]"/>
- )}
  <Icon className={cn("h-4.5 w-4.5 shrink-0", isActive ?"text-primary":"text-muted-foreground/60")} />
  <span className="leading-none">{tab.label}</span>
  </button>
@@ -689,14 +697,14 @@ const handleExecuteIngestion = async () => {
 
  <Card className="hover:translate-y-[-2px] hover:border-primary/20 transition-all duration-300 h-full overflow-hidden relative">
  <CardHeader className="flex flex-row items-center justify-between space-y-space-0 pb-space-2 p-space-5 relative z-10">
- <span className="text-caption font-bold text-muted-foreground/70 uppercase tracking-widest leading-none">Chunks</span>
+ <span className="text-caption font-bold text-muted-foreground/70 uppercase tracking-widest leading-none">Knowledge Topics</span>
  <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
  <Database className="h-3.5 w-3.5 text-primary"/>
  </div>
  </CardHeader>
  <CardContent className="p-space-5 pt-space-0 relative z-10">
  <div className="text-display-sm font-bold text-foreground leading-none tracking-tight">{stats.totalChunks}</div>
- <p className="text-caption font-medium text-muted-foreground/60 mt-space-3 line-clamp-1">Segmented for RAG retrieval.</p>
+ <p className="text-caption font-medium text-muted-foreground/60 mt-space-3 line-clamp-1">Key business facts ready for instant answers.</p>
  </CardContent>
  </Card>
 
@@ -822,9 +830,9 @@ const handleExecuteIngestion = async () => {
  <Database className="h-5 w-5 text-primary"/>
  </div>
  <div>
- <CardTitle className="text-body-sm font-semibold text-foreground">Recent Uploaded Resources</CardTitle>
+ <CardTitle className="text-body-sm font-semibold text-foreground">Recent Business Knowledge</CardTitle>
  <CardDescription className="text-caption text-muted-foreground/70">
- Recently processed document coordinates in the knowledge library.
+ Recently indexed business information and services catalogs.
  </CardDescription>
  </div>
  </CardHeader>
@@ -841,7 +849,7 @@ const handleExecuteIngestion = async () => {
  <div className="h-8 w-8 rounded-md bg-[hsl(var(--foreground)/0.04)] flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
  <FileText className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0"/>
  </div>
- <span className="text-body-sm font-semibold text-foreground truncate max-w-md">{doc.name}</span>
+ <span className="text-body-sm font-semibold text-foreground truncate max-w-md">{formatDocumentName(doc.name)}</span>
  </div>
  <span className={cn("text-caption font-normal border px-space-2.5 py-space-1 radius-full uppercase tracking-wider shrink-0", getFileTypeStyle(doc.fileType))}>
  {doc.fileType}

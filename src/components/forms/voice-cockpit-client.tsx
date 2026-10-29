@@ -725,10 +725,10 @@ export function VoiceCockpitClient({
             </div>
 
             <div className="bg-[hsl(var(--foreground)/0.015)] border-t border-[hsl(var(--foreground)/0.06)] p-space-3 text-caption text-muted-foreground/80 flex items-center justify-between shrink-0">
-              <span className="flex items-center gap-space-1">
-                <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full shrink-0" /> WebSockets Trunk
+              <span className="flex items-center gap-space-1.5 font-medium text-emerald-400">
+                <span className="h-2 w-2 bg-emerald-500 rounded-full shrink-0 animate-pulse" /> Live Voice Channel Connected
               </span>
-              <span>Latency: ~180ms</span>
+              <span className="text-foreground/70 font-medium">Response Speed: Instant (&lt;1s)</span>
             </div>
           </div>
         </div>

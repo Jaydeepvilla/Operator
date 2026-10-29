@@ -318,7 +318,7 @@ export default function StaffPage() {
  <Users className="h-3.5 w-3.5 text-muted-foreground/40" />
  </div>
 
- <ScrollArea className="flex-1" horizontal={false} vertical={staffList.length > 8}>
+ <div className="flex-1 overflow-y-auto min-h-0 [scrollbar-width:thin]">
  {loading ? (
  <div className="p-2 h-48 flex items-center justify-center gap-2 text-caption text-muted-foreground">
  <Clock className="h-4 w-4 animate-spin text-primary" /> Loading...
@@ -341,15 +341,12 @@ export default function StaffPage() {
  type="button"
  onClick={() => setSelectedStaffId(staff.id)}
  className={cn(
- "w-full text-left p-3 rounded-xl cursor-pointer transition-all duration-150 border flex gap-3 items-center relative select-none group h-auto",
+ "w-full text-left p-3 rounded-xl cursor-pointer transition-all duration-150 border flex gap-3 items-center select-none group h-auto",
  isSelected
- ? "bg-primary/10 border-primary/40 shadow-sm ring-1 ring-primary/20 text-foreground"
+ ? "bg-primary/10 border-primary/50 border-l-4 border-l-primary shadow-sm text-foreground"
  : "bg-card/40 border-border/40 hover:bg-muted/40 hover:border-border text-muted-foreground hover:text-foreground"
  )}
  >
- {isSelected && (
- <span className="absolute left-0 top-2.5 bottom-2.5 w-1 bg-primary rounded-r-full" />
- )}
  <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${getGradient(staff.name)} text-white text-body-sm font-bold flex items-center justify-center shrink-0 shadow-sm`}>
  {getInitials(staff.name)}
  </div>
@@ -372,7 +369,7 @@ export default function StaffPage() {
  })}
  </div>
  )}
- </ScrollArea>
+ </div>
  </div>
  </div>
 
@@ -461,7 +458,7 @@ export default function StaffPage() {
  </div>
 
  {/* ── Scrollable detail sections ── */}
- <ScrollArea className="flex-1" horizontal={false}>
+ <div className="flex-1 overflow-y-auto min-h-0 [scrollbar-width:thin]">
  <div className="p-6 space-y-6">
 
  {/* ── Row 1: Services + Exceptions ── */}
@@ -685,7 +682,7 @@ export default function StaffPage() {
  </div>
 
  </div>
- </ScrollArea>
+ </div>
  </>
  )}
  </div>

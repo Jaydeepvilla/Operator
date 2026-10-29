@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/shared/select";
-import { Sparkles, Save, Info, AlertCircle, Bot, MessageSquare, Building2, ShieldAlert, Play, Square } from "lucide-react";
+import { Sparkles, Save, Info, AlertCircle, Bot, MessageSquare, Building2, ShieldAlert, Play, Square, Code, CheckCircle2, ShieldCheck, Eye } from "lucide-react";
 import { cn } from "@/components/shared/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -69,6 +69,7 @@ export function PromptSettingsClient({
   const [isSaving, startSave] = useTransition();
   const [status, setStatus] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isPlayingTonePreview, setIsPlayingTonePreview] = useState(false);
+  const [showRawPrompt, setShowRawPrompt] = useState(false);
 
   const playToneSample = useCallback(
     (toneValue: string, name?: string) => {
@@ -366,60 +367,154 @@ export function PromptSettingsClient({
         <div className="border border-border-default radius-lg bg-bg-layer-1 overflow-hidden flex flex-col h-[calc(100vh-14rem)] sticky top-6">
           <div className="border-b border-border-subtle p-space-5 bg-[hsl(var(--foreground)/0.03)] flex items-center justify-between">
             <div>
-              <h2 className="text-body-md font-bold text-foreground">Live Prompt Compiler</h2>
+              <h2 className="text-body-md font-bold text-foreground">
+                {showRawPrompt ? "System Prompt Inspection" : "AI Receptionist Behavior Preview"}
+              </h2>
               <p className="text-caption text-muted-foreground mt-space-0.5">
-                Real-time preview of instructions passed to Gemini AI
+                {showRawPrompt
+                  ? "Raw runtime directives passed to the Gemini engine"
+                  : "How your AI assistant introduces itself and speaks with callers"}
               </p>
             </div>
-            <Sparkles className="h-5 w-5 text-primary-500 shrink-0" />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowRawPrompt(!showRawPrompt)}
+              className="text-caption font-semibold h-8 gap-1.5 shrink-0"
+            >
+              {showRawPrompt ? (
+                <>
+                  <Eye className="h-3.5 w-3.5 text-primary" />
+                  <span>Client View</span>
+                </>
+              ) : (
+                <>
+                  <Code className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span>Inspect Code</span>
+                </>
+              )}
+            </Button>
           </div>
 
-          <ScrollArea
-            className="p-space-5 flex-1 font-mono text-xs text-muted-foreground bg-[hsl(var(--foreground)/0.04)] text-[hsl(var(--foreground)/0.8)] whitespace-pre-wrap leading-relaxed select-all"
-            horizontal={false}
-          >
-            <span className="text-neutral-500 block mb-space-3">
-              {"// --- COMPILED SYSTEM PROMPT STARTS ---"}
-            </span>
+          {showRawPrompt ? (
+            <ScrollArea
+              className="p-space-5 flex-1 font-mono text-xs text-muted-foreground bg-[hsl(var(--foreground)/0.04)] text-[hsl(var(--foreground)/0.8)] whitespace-pre-wrap leading-relaxed select-all"
+              horizontal={false}
+            >
+              <span className="text-neutral-500 block mb-space-3">
+                {"// --- COMPILED SYSTEM PROMPT STARTS ---"}
+              </span>
 
-            <span className="text-primary font-bold block mb-space-1">
-              {`You are "${assistantName || "Ava"}", the official AI receptionist and front desk assistant for "${orgName}" (powered by Operator AI).`}
-            </span>
-            <span className="text-muted-foreground block mb-space-3">
-              {`Your identity in conversation is "${assistantName || "Ava"}" representing "${orgName}". Always represent "${orgName}".`}
-            </span>
+              <span className="text-primary font-bold block mb-space-1">
+                {`You are "${assistantName || "Ava"}", the official AI receptionist and front desk assistant for "${orgName}" (powered by Operator AI).`}
+              </span>
+              <span className="text-muted-foreground block mb-space-3">
+                {`Your identity in conversation is "${assistantName || "Ava"}" representing "${orgName}". Always represent "${orgName}".`}
+              </span>
 
-            <span className="text-neutral-400 font-bold block mb-space-1">
-              {`TONE OF VOICE & CONVERSATION STYLE:`}
-            </span>
-            <span className="text-amber-500/90 font-medium block mb-space-3">
-              {`Tone Profile: ${tone.toUpperCase()}\nStyle Guidelines: ${selectedToneObj.description}`}
-            </span>
+              <span className="text-neutral-400 font-bold block mb-space-1">
+                {`TONE OF VOICE & CONVERSATION STYLE:`}
+              </span>
+              <span className="text-amber-500/90 font-medium block mb-space-3">
+                {`Tone Profile: ${tone.toUpperCase()}\nStyle Guidelines: ${selectedToneObj.description}`}
+              </span>
 
-            <span className="text-neutral-400 font-bold block mb-space-1">
-              {`Business Description:`}
-            </span>
-            <span className="text-foreground/80 block mb-space-3">
-              {businessDescription.trim() || `${orgName} - Professional Front Desk & Automated Receptionist`}
-            </span>
+              <span className="text-neutral-400 font-bold block mb-space-1">
+                {`Business Description:`}
+              </span>
+              <span className="text-foreground/80 block mb-space-3">
+                {businessDescription.trim() || `${orgName} - Professional Front Desk & Automated Receptionist`}
+              </span>
 
-            {/* Base prompt details from server */}
-            {previewPrompt}
+              {previewPrompt}
 
-            {promptText && (
-              <>
-                {"\n\n"}
-                <span className="text-emerald-500 font-bold block mb-space-1">
-                  {"CUSTOM BEHAVIOR GUIDELINES (Active):"}
+              {promptText && (
+                <>
+                  {"\n\n"}
+                  <span className="text-emerald-500 font-bold block mb-space-1">
+                    {"CUSTOM BEHAVIOR GUIDELINES (Active):"}
+                  </span>
+                  <span className="text-emerald-400 block whitespace-pre-wrap">{promptText}</span>
+                </>
+              )}
+
+              <span className="text-neutral-500 block mt-space-6">
+                {"// --- COMPILED SYSTEM PROMPT ENDS ---"}
+              </span>
+            </ScrollArea>
+          ) : (
+            <div className="p-space-5 flex-1 overflow-y-auto space-y-4 [scrollbar-width:thin]">
+              {/* Persona Identity Card */}
+              <div className="p-4 rounded-xl bg-card border border-border/80 flex items-center gap-3.5 shadow-xs">
+                <div className="h-11 w-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-lg shrink-0">
+                  {assistantName ? assistantName[0].toUpperCase() : "A"}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-body-md font-bold text-foreground">
+                      {assistantName || "Ava"}
+                    </h3>
+                    <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                      Front Desk AI
+                    </span>
+                  </div>
+                  <p className="text-caption text-muted-foreground mt-0.5">
+                    Official voice & messaging assistant for <strong className="text-foreground font-semibold">{orgName}</strong>
+                  </p>
+                </div>
+              </div>
+
+              {/* Speaking Tone */}
+              <div className="p-4 rounded-xl bg-card border border-border/80 space-y-2 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-caption font-bold text-muted-foreground uppercase tracking-wider">
+                    Speaking Tone
+                  </span>
+                  <span className="text-caption font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                    {selectedToneObj.label}
+                  </span>
+                </div>
+                <p className="text-body-sm text-foreground/85 leading-relaxed">
+                  {selectedToneObj.description}
+                </p>
+              </div>
+
+              {/* What the AI Knows About Your Business */}
+              <div className="p-4 rounded-xl bg-card border border-border/80 space-y-2 shadow-xs">
+                <span className="text-caption font-bold text-muted-foreground uppercase tracking-wider">
+                  Company Focus & Specialty
                 </span>
-                <span className="text-emerald-400 block whitespace-pre-wrap">{promptText}</span>
-              </>
-            )}
+                <p className="text-body-sm text-foreground/85 leading-relaxed">
+                  {businessDescription.trim() || `${orgName} delivers exceptional service with automated front-desk scheduling and inquiries support.`}
+                </p>
+              </div>
 
-            <span className="text-neutral-500 block mt-space-6">
-              {"// --- COMPILED SYSTEM PROMPT ENDS ---"}
-            </span>
-          </ScrollArea>
+              {/* Active Custom Rules */}
+              <div className="p-4 rounded-xl bg-card border border-border/80 space-y-2 shadow-xs">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <span className="text-caption font-bold text-muted-foreground uppercase tracking-wider">
+                    Active Business Rules
+                  </span>
+                </div>
+                {promptText.trim() ? (
+                  <div className="space-y-1.5 pt-1">
+                    {promptText.split("\n").filter(Boolean).map((line, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-body-sm text-foreground/80">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                        <span>{line.replace(/^[-*•]\s*/, "")}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-caption text-muted-foreground/70 italic">
+                    Standard booking guidelines and business hours protection active.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

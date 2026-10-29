@@ -165,15 +165,15 @@ function LoginSuccessContent() {
         </div>
 
         {/* Informative Guidance Card */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-slate-900/60 backdrop-blur-xl p-space-6 space-y-space-4 text-center shadow-2xl shadow-black/50">
+        <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/95 backdrop-blur-xl p-space-6 space-y-space-4 text-center shadow-2xl shadow-black/80">
           {/* Subtle Top Purple Highlight */}
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
           
           {/* Ambient Glow */}
-          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-20 bg-primary/10 blur-2xl rounded-full pointer-events-none" />
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-20 bg-primary/15 blur-2xl rounded-full pointer-events-none" />
 
           {/* Status Pill Badge */}
-          <div className="relative inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-primary/15 border border-primary/30 text-primary-light text-xs font-semibold tracking-wide shadow-xs shadow-primary/20">
+          <div className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/20 border border-primary/40 text-primary-light text-xs font-semibold tracking-wide shadow-sm shadow-primary/25">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -182,7 +182,7 @@ function LoginSuccessContent() {
             <span>{isFirstTime ? "Operator AI Workspace Setup" : "Operator AI Active Workspace"}</span>
           </div>
 
-          <p className="relative text-body-sm text-foreground/85 leading-relaxed max-w-sm mx-auto">
+          <p className="relative text-body-sm text-foreground/90 leading-relaxed max-w-sm mx-auto">
             {isFirstTime ? (
               <>
                 You are now being directed to the <strong className="text-foreground font-semibold">Operator Onboarding</strong> wizard to configure your business profile, AI receptionist, and communication channels.
@@ -196,13 +196,13 @@ function LoginSuccessContent() {
 
           {/* 4-Second Animated Progress Bar */}
           <div className="relative space-y-2 pt-2">
-            <div className="w-full bg-slate-800/80 border border-white/[0.06] rounded-full h-2 overflow-hidden p-0.5">
+            <div className="w-full bg-muted/60 border border-border/60 rounded-full h-2 overflow-hidden p-0.5">
               <div
                 className="bg-gradient-to-r from-violet-600 via-primary to-indigo-400 h-full rounded-full shadow-[0_0_12px_rgba(124,58,237,0.5)] transition-all duration-75 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-caption text-foreground/60">
+            <p className="text-caption text-muted-foreground">
               Navigating automatically in <span className="font-bold text-primary-light">{secondsLeft}s</span>...
             </p>
           </div>
