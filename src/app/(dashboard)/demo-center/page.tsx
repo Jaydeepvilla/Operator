@@ -3,32 +3,19 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { PageTitle } from "@/components/shared/page-title";
-import { StatCard } from "@/components/shared/stat-card";
 import { Button } from "@/components/shared/button";
 import { Badge } from "@/components/shared/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/shared/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/shared/tabs";
 import {
   PlayCircle,
   RotateCcw,
   ExternalLink,
   Sparkles,
-  Calendar,
   CheckCircle2,
-  Clock,
-  DollarSign,
-  Users,
-  ShieldCheck,
   Building,
   ArrowRight,
-  Stethoscope,
-  Scissors,
-  Scale,
-  HeartPulse,
-  Briefcase,
   AlertTriangle,
-  Loader2,
-  Check,
+  TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -37,6 +24,29 @@ import {
   resetDemoDataAction,
 } from "@/server/actions/demo";
 import { DEMO_SCRIPTS, type DemoIndustryScript } from "@/lib/constants/demo-scripts";
+import { cn } from "@/components/shared/utils";
+
+function parseMetric(val: string | number) {
+  if (typeof val === "number") {
+    return { main: `${val} hrs`, sub: "manual labor saved/mo" };
+  }
+  const str = String(val).trim();
+  // Match "From 16% down to 2%"
+  const fromMatch = str.match(/^From\s+([0-9.]+%?)\s+down to\s+([0-9.]+%?)$/i);
+  if (fromMatch) {
+    return { main: `${fromMatch[1]} → ${fromMatch[2]}`, sub: "reduction in no-shows" };
+  }
+  // Match "Zero no-shows on paid consultations"
+  if (/^zero/i.test(str)) {
+    return { main: "0 No-Shows", sub: "on paid consultations" };
+  }
+  // Match number/percentage at start e.g. "24 appointments/month", "42% of all new bookings"
+  const match = str.match(/^([0-9]+%?|[0-9]+\.[0-9]+%?)\s+(.*)$/);
+  if (match) {
+    return { main: match[1], sub: match[2] };
+  }
+  return { main: str, sub: "" };
+}
 
 export default function DemoCenterPage() {
   const [selectedScriptId, setSelectedScriptId] = useState<string>("salon-spa");
@@ -96,35 +106,39 @@ export default function DemoCenterPage() {
   }
 
   const currentScript = DEMO_SCRIPTS.find((s) => s.id === selectedScriptId) || DEMO_SCRIPTS[0];
+  const recovered = parseMetric(currentScript.businessOutcome.recoveredAppointments);
+  const afterHours = parseMetric(currentScript.businessOutcome.afterHoursCapture);
+  const laborSaved = parseMetric(currentScript.businessOutcome.manualWorkSavedHours);
+  const noShow = parseMetric(currentScript.businessOutcome.noShowReduction);
 
   return (
-    <div className="space-y-space-6 max-w-7xl mx-auto pb-space-12">
+    <div className="space-y-space-6 w-full pb-space-12">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-4">
         <PageTitle
           title="Founder Demo Control Center"
           description="Prepare, rehearse, and present live customer demonstrations across 4 industry verticals. Seamlessly switch templates, launch public booking pages, and reset demo data."
         />
-        <div className="flex items-center gap-space-2">
+        <div className="flex flex-wrap items-center gap-space-2">
           <Button
             variant="outline"
             size="sm"
             onClick={handleResetData}
             disabled={actionLoading}
-            className="text-body-sm"
+            className="text-body-sm shadow-xs"
           >
             <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
             Reset Demo Data
           </Button>
           <Link href="/academy">
-            <Button size="sm" variant="outline" className="text-body-sm">
+            <Button size="sm" variant="outline" className="text-body-sm shadow-xs">
               <Sparkles className="h-3.5 w-3.5 mr-1.5" />
               Founder Academy
             </Button>
           </Link>
           {demoStatus?.bookingUrl && (
             <Link href={demoStatus.bookingUrl} target="_blank">
-              <Button size="sm" className="text-body-sm bg-primary text-primary-foreground">
+              <Button size="sm" className="text-body-sm bg-primary text-primary-foreground shadow-sm shadow-primary/20">
                 <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
                 Launch Live Booking Page
               </Button>
@@ -135,58 +149,59 @@ export default function DemoCenterPage() {
 
       {/* Feedback banner */}
       {feedbackMessage && (
-        <div className="p-space-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between text-body-sm text-emerald-800 dark:text-emerald-300">
+        <div className="p-space-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between text-body-sm text-emerald-800 dark:text-emerald-300">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
             <span>{feedbackMessage}</span>
           </div>
-          <Button
+          <button
+            type="button"
             onClick={() => setFeedbackMessage(null)}
-            className="text-[12px] underline hover:opacity-80"
+            className="text-[12px] underline hover:opacity-80 cursor-pointer font-medium"
           >
             Dismiss
-          </Button>
+          </button>
         </div>
       )}
 
       {/* Demo Status Banner */}
-      <div className="p-space-4 rounded-lg bg-card border border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold">
+      <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="h-11 w-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
             <Building className="h-5 w-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-body-md font-semibold text-foreground">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-body-md font-bold text-foreground">
                 {demoStatus?.name || "Active Demo Organization"}
               </h3>
-              <Badge variant="outline" className="text-caption font-mono">
+              <Badge variant="outline" className="text-caption font-mono border-primary/30 text-primary">
                 {demoStatus?.industry || "Salon & Spa"}
               </Badge>
-              <Badge variant="secondary" className="text-caption">
+              <Badge variant="secondary" className="text-caption bg-muted/60">
                 SANDBOX / DEMO MODE
               </Badge>
             </div>
             <p className="text-body-sm text-muted-foreground mt-0.5">
               Public Booking URL:{" "}
-              <code className="text-primary font-mono text-[12px]">
+              <code className="text-primary font-mono text-[12px] bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10">
                 {demoStatus?.bookingUrl || "/book/demo"}
               </code>
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-space-4 text-body-sm text-muted-foreground">
+        <div className="flex items-center gap-space-4 text-body-sm text-muted-foreground shrink-0 border-t md:border-t-0 pt-3 md:pt-0 border-border/60">
           <div>
-            <span className="font-semibold text-foreground">{demoStatus?.servicesCount ?? 3}</span> Services
+            <span className="font-bold text-foreground">{demoStatus?.servicesCount ?? 3}</span> Services
           </div>
           <div className="h-4 w-px bg-border" />
           <div>
-            <span className="font-semibold text-foreground">{demoStatus?.staffCount ?? 2}</span> Staff
+            <span className="font-bold text-foreground">{demoStatus?.staffCount ?? 2}</span> Staff
           </div>
           <div className="h-4 w-px bg-border" />
           <div>
-            <span className="font-semibold text-foreground">{demoStatus?.appointmentsCount ?? 0}</span> Bookings
+            <span className="font-bold text-foreground">{demoStatus?.appointmentsCount ?? 0}</span> Bookings
           </div>
         </div>
       </div>
@@ -196,36 +211,46 @@ export default function DemoCenterPage() {
         <div className="text-caption font-semibold text-muted-foreground uppercase tracking-wider mb-space-3">
           Select Customer Demonstration Industry
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
           {DEMO_SCRIPTS.map((script) => {
             const isSelected = selectedScriptId === script.id;
 
             return (
-              <Button
+              <button
                 key={script.id}
+                type="button"
                 onClick={() => handleSwitchIndustry(script.id)}
                 disabled={actionLoading}
-                className={`p-space-4 rounded-xl border text-left transition-all relative ${
+                className={cn(
+                  "w-full p-4 rounded-xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[114px] group relative overflow-hidden",
                   isSelected
-                    ? "bg-accent border-primary shadow-sm"
-                    : "bg-card hover:bg-muted/40 border-border"
-                }`}
+                    ? "bg-primary/10 border-primary shadow-sm shadow-primary/15 ring-1 ring-primary/40"
+                    : "bg-card hover:bg-muted/40 border-border/80 hover:border-primary/40"
+                )}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <Badge variant={isSelected ? "default" : "outline"} className="text-caption">
+                <div className="flex items-center justify-between w-full mb-2">
+                  <Badge
+                    variant={isSelected ? "default" : "outline"}
+                    className={cn(
+                      "text-caption font-semibold",
+                      isSelected ? "bg-primary text-primary-foreground shadow-xs" : "border-border text-foreground/80"
+                    )}
+                  >
                     {script.industry}
                   </Badge>
                   {isSelected && (
-                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                   )}
                 </div>
-                <h4 className="text-body-md font-semibold text-foreground truncate">
-                  {script.businessName}
-                </h4>
-                <p className="text-[12px] text-muted-foreground line-clamp-2 mt-1">
-                  {script.tagline}
-                </p>
-              </Button>
+                <div className="w-full">
+                  <h4 className="text-body-md font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
+                    {script.businessName}
+                  </h4>
+                  <p className="text-caption text-muted-foreground line-clamp-2 mt-1 leading-normal">
+                    {script.tagline}
+                  </p>
+                </div>
+              </button>
             );
           })}
         </div>
@@ -235,17 +260,17 @@ export default function DemoCenterPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-6">
         {/* Left Column: Script Narrative & Value Breakdown */}
         <div className="lg:col-span-8 space-y-space-5">
-          <Card>
+          <Card className="rounded-2xl border-border shadow-xs">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <Badge variant="outline" className="text-caption">
+                <Badge variant="outline" className="text-caption font-semibold border-primary/30 text-primary">
                   Guided Customer Demo Script
                 </Badge>
-                <span className="text-[12px] text-muted-foreground">
+                <span className="text-[12px] text-muted-foreground font-medium">
                   Estimated Demo Time: 5 Minutes
                 </span>
               </div>
-              <CardTitle className="text-heading-md mt-1">{currentScript.businessName}</CardTitle>
+              <CardTitle className="text-heading-md mt-1 font-bold">{currentScript.businessName}</CardTitle>
               <CardDescription className="text-body-sm">
                 {currentScript.tagline}
               </CardDescription>
@@ -253,8 +278,8 @@ export default function DemoCenterPage() {
 
             <CardContent className="space-y-space-5">
               {/* Problem Statement */}
-              <div className="p-space-3.5 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                <div className="text-caption font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-1.5 mb-1">
+              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/25">
+                <div className="text-caption font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5 mb-1 tracking-wide">
                   <AlertTriangle className="h-4 w-4" />
                   Customer Problem Being Solved
                 </div>
@@ -265,7 +290,7 @@ export default function DemoCenterPage() {
 
               {/* Step-by-Step Demo Journey */}
               <div>
-                <h4 className="text-body-md font-semibold text-foreground mb-3 flex items-center gap-2">
+                <h4 className="text-body-md font-bold text-foreground mb-3 flex items-center gap-2">
                   <PlayCircle className="h-4 w-4 text-primary" />
                   Live Walkthrough Sequence
                 </h4>
@@ -273,13 +298,13 @@ export default function DemoCenterPage() {
                   {currentScript.demoJourney.map((step) => (
                     <div
                       key={step.step}
-                      className="p-space-3.5 rounded-lg bg-card border border-border shadow-xs space-y-2"
+                      className="p-4 rounded-xl bg-card border border-border/80 shadow-xs space-y-2 hover:border-primary/20 transition-colors"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-caption font-semibold text-primary">
+                        <span className="text-caption font-bold text-primary">
                           Step {step.step}: {step.title}
                         </span>
-                        <Badge variant="outline" className="text-caption">
+                        <Badge variant="outline" className="text-caption bg-primary/5 border-primary/20 text-primary">
                           Automated Action
                         </Badge>
                       </div>
@@ -289,68 +314,99 @@ export default function DemoCenterPage() {
                         {step.action}
                       </div>
 
-                      <div className="text-body-sm text-foreground/90 bg-muted/30 p-2.5 rounded border border-border">
+                      <div className="text-body-sm text-foreground/90 bg-muted/40 p-3 rounded-lg border border-border/60">
                         <span className="font-semibold text-primary">Operator Action: </span>
                         {step.operatorResponse}
                       </div>
 
-                      <div className="text-[12px] text-emerald-700 dark:text-emerald-400 font-medium">
-                        ✨ Pitch To Client: {step.businessValue}
+                      <div className="text-[12px] text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                        <span>✨ Pitch To Client:</span>
+                        <span>{step.businessValue}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Business ROI Proof */}
+              {/* Business ROI Proof (Responsive & Accessible) */}
               <div>
-                <h4 className="text-body-md font-semibold text-foreground mb-3">
-                  Measurable Business Value / ROI
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-space-3">
-                  <div className="p-space-3 rounded-lg bg-muted/40 border border-border text-center">
-                    <p className="text-caption text-muted-foreground uppercase font-semibold">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-body-md font-bold text-foreground flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                    Measurable Business Value / ROI
+                  </h4>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5">
+                  {/* Card 1: Recovered Bookings */}
+                  <div className="p-4 rounded-xl bg-card border border-border/80 hover:border-violet-500/30 transition-all flex flex-col justify-between min-h-[105px] text-center sm:text-left shadow-xs">
+                    <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">
                       Recovered Bookings
                     </p>
-                    <p className="text-title-md font-bold text-primary mt-1">
-                      {currentScript.businessOutcome.recoveredAppointments}
+                    <div className="my-1.5">
+                      <span className="text-2xl sm:text-3xl font-extrabold text-violet-400 dark:text-violet-300 tracking-tight">
+                        {recovered.main}
+                      </span>
+                    </div>
+                    <p className="text-caption text-muted-foreground truncate font-medium">
+                      {recovered.sub || "appointments / month"}
                     </p>
                   </div>
-                  <div className="p-space-3 rounded-lg bg-muted/40 border border-border text-center">
-                    <p className="text-caption text-muted-foreground uppercase font-semibold">
+
+                  {/* Card 2: After-Hours Capture */}
+                  <div className="p-4 rounded-xl bg-card border border-border/80 hover:border-indigo-500/30 transition-all flex flex-col justify-between min-h-[105px] text-center sm:text-left shadow-xs">
+                    <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">
                       After-Hours Capture
                     </p>
-                    <p className="text-title-md font-bold text-primary mt-1">
-                      {currentScript.businessOutcome.afterHoursCapture}
+                    <div className="my-1.5">
+                      <span className="text-2xl sm:text-3xl font-extrabold text-indigo-400 dark:text-indigo-300 tracking-tight">
+                        {afterHours.main}
+                      </span>
+                    </div>
+                    <p className="text-caption text-muted-foreground truncate font-medium">
+                      {afterHours.sub || "of all new bookings"}
                     </p>
                   </div>
-                  <div className="p-space-3 rounded-lg bg-muted/40 border border-border text-center">
-                    <p className="text-caption text-muted-foreground uppercase font-semibold">
+
+                  {/* Card 3: Labor Saved */}
+                  <div className="p-4 rounded-xl bg-card border border-border/80 hover:border-sky-500/30 transition-all flex flex-col justify-between min-h-[105px] text-center sm:text-left shadow-xs">
+                    <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">
                       Labor Saved
                     </p>
-                    <p className="text-title-md font-bold text-primary mt-1">
-                      {currentScript.businessOutcome.manualWorkSavedHours} hrs/mo
+                    <div className="my-1.5">
+                      <span className="text-2xl sm:text-3xl font-extrabold text-sky-400 dark:text-sky-300 tracking-tight">
+                        {laborSaved.main}
+                      </span>
+                    </div>
+                    <p className="text-caption text-muted-foreground truncate font-medium">
+                      {laborSaved.sub || "manual labor saved / mo"}
                     </p>
                   </div>
-                  <div className="p-space-3 rounded-lg bg-muted/40 border border-border text-center">
-                    <p className="text-caption text-muted-foreground uppercase font-semibold">
+
+                  {/* Card 4: No-Show Reduction */}
+                  <div className="p-4 rounded-xl bg-card border border-border/80 hover:border-emerald-500/30 transition-all flex flex-col justify-between min-h-[105px] text-center sm:text-left shadow-xs">
+                    <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">
                       No-Show Reduction
                     </p>
-                    <p className="text-title-md font-bold text-emerald-600 dark:text-emerald-400 mt-1">
-                      {currentScript.businessOutcome.noShowReduction}
+                    <div className="my-1.5">
+                      <span className="text-2xl sm:text-3xl font-extrabold text-emerald-500 dark:text-emerald-400 tracking-tight">
+                        {noShow.main}
+                      </span>
+                    </div>
+                    <p className="text-caption text-muted-foreground truncate font-medium">
+                      {noShow.sub || "automated reminder rate"}
                     </p>
                   </div>
                 </div>
               </div>
             </CardContent>
 
-            <CardFooter className="flex items-center justify-between border-t border-border pt-space-3">
-              <span className="text-[12px] text-muted-foreground">
+            <CardFooter className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border pt-4">
+              <span className="text-[12px] text-muted-foreground text-center sm:text-left">
                 All numbers derive from modeled industry benchmark data.
               </span>
               {demoStatus?.bookingUrl && (
                 <Link href={demoStatus.bookingUrl} target="_blank">
-                  <Button size="sm" className="text-body-sm">
+                  <Button size="sm" className="text-body-sm shadow-xs">
                     Open Public Booking Link
                     <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
                   </Button>
@@ -363,9 +419,9 @@ export default function DemoCenterPage() {
         {/* Right Column: Demo Checklist & Quick Actions */}
         <div className="lg:col-span-4 space-y-space-5">
           {/* Demo Readiness Checklist */}
-          <Card>
+          <Card className="rounded-2xl border-border shadow-xs">
             <CardHeader>
-              <CardTitle className="text-body-md">Demo Presentation Checklist</CardTitle>
+              <CardTitle className="text-body-md font-bold">Demo Presentation Checklist</CardTitle>
               <CardDescription className="text-[12px]">
                 Verify these 5 steps before starting your prospect call.
               </CardDescription>
@@ -398,7 +454,7 @@ export default function DemoCenterPage() {
                 size="sm"
                 onClick={handleResetData}
                 disabled={actionLoading}
-                className="w-full text-body-sm"
+                className="w-full text-body-sm shadow-xs"
               >
                 <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
                 Clean Slate: Reset For Next Demo
@@ -407,34 +463,34 @@ export default function DemoCenterPage() {
           </Card>
 
           {/* Quick Deep Links */}
-          <Card>
+          <Card className="rounded-2xl border-border shadow-xs">
             <CardHeader>
-              <CardTitle className="text-body-md">Operator Live Workspaces</CardTitle>
+              <CardTitle className="text-body-md font-bold">Operator Live Workspaces</CardTitle>
               <CardDescription className="text-[12px]">
                 Jump straight to live features during your pitch.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               <Link href="/appointments" className="block">
-                <Button variant="ghost" size="sm" className="w-full justify-between text-body-sm">
+                <Button variant="ghost" size="sm" className="w-full justify-between text-body-sm hover:text-primary">
                   <span>📅 Calendar & Appointments</span>
                   <ArrowRight className="h-3 w-3 text-muted-foreground" />
                 </Button>
               </Link>
               <Link href="/inbox" className="block">
-                <Button variant="ghost" size="sm" className="w-full justify-between text-body-sm">
+                <Button variant="ghost" size="sm" className="w-full justify-between text-body-sm hover:text-primary">
                   <span>💬 Omnichannel Inbox</span>
                   <ArrowRight className="h-3 w-3 text-muted-foreground" />
                 </Button>
               </Link>
               <Link href="/escalations" className="block">
-                <Button variant="ghost" size="sm" className="w-full justify-between text-body-sm">
+                <Button variant="ghost" size="sm" className="w-full justify-between text-body-sm hover:text-primary">
                   <span>⚠️ Tasks & Exceptions Center</span>
                   <ArrowRight className="h-3 w-3 text-muted-foreground" />
                 </Button>
               </Link>
               <Link href="/kb" className="block">
-                <Button variant="ghost" size="sm" className="w-full justify-between text-body-sm">
+                <Button variant="ghost" size="sm" className="w-full justify-between text-body-sm hover:text-primary">
                   <span>📚 Business Knowledge Base</span>
                   <ArrowRight className="h-3 w-3 text-muted-foreground" />
                 </Button>
