@@ -778,13 +778,20 @@ const handleExecuteIngestion = async () => {
  </CardHeader>
  <div className="px-space-6 pb-space-6 pt-space-5 space-y-space-3 bg-[hsl(var(--foreground)/0.002)]">
  {[
- { label:"Document Resources Uploaded", state: stats.totalDocuments > 0 },
- { label:"Detailed FAQs Configured (Min 3)", state: stats.healthScore >= 50 },
- { label:"Structured Services Catalog (Min 2)", state: stats.healthScore >= 75 },
- { label:"Organized Custom Categories (Min 2)", state: stats.healthScore === 100 },
+ { label:"Document Resources Uploaded", state: stats.totalDocuments > 0, tab: "documents" },
+ { label:"Detailed FAQs Configured (Min 3)", state: stats.healthScore >= 50, href: "/faqs" },
+ { label:"Structured Services Catalog (Min 2)", state: stats.healthScore >= 75, href: "/services" },
+ { label:"Organized Custom Categories (Min 2)", state: stats.healthScore === 100, tab: "categories" },
  ].map((param, idx) => (
  <div key={idx} className="flex justify-between items-center p-space-4 px-space-5 radius-xl border-[hsl(var(--foreground)/0.06)] bg-background hover:border-primary/20 transition-all duration-300 group">
+ <div className="flex items-center gap-3">
  <span className="text-body-sm font-semibold text-foreground group-hover:text-primary transition-colors">{param.label}</span>
+ {param.href ? (
+   <a href={param.href} className="text-caption text-primary hover:underline font-medium inline-flex items-center gap-1">Manage ➜</a>
+ ) : param.tab ? (
+   <button type="button" onClick={() => setActiveTab(param.tab!)} className="text-caption text-primary hover:underline font-medium inline-flex items-center gap-1 cursor-pointer">Open ➜</button>
+ ) : null}
+ </div>
  <span className={cn(
  "inline-flex items-center gap-space-1.5 text-caption font-normal border px-space-2.5 py-space-1 radius-full uppercase tracking-wider",
  param.state

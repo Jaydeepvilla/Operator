@@ -5,8 +5,6 @@ import { BusinessSettingsForm } from "@/components/forms/business-settings-form"
 import { getBookingRulesAction } from "@/server/actions/calendar";
 import { PageTitle } from "@/components/shared/page-title";
 
-import Link from "next/link";
-
 export default async function SettingsPage() {
   const { hasOrg } = await checkUserOrganization();
   if (!hasOrg) {
@@ -21,7 +19,7 @@ export default async function SettingsPage() {
   if (!settingsRes.success || !settingsRes.settings) {
     return (
       <div className="flex h-96 flex-col items-center justify-center text-center p-space-8 border border-[hsl(var(--foreground)/0.06)] radius-lg bg-[hsl(var(--foreground)/0.02)]">
-        <h3 className="text-body-md  text-foreground">Couldn’t load settings</h3>
+        <h3 className="text-body-md text-foreground">Couldn’t load settings</h3>
         <p className="text-body-sm text-muted-foreground mt-space-2">
           This is usually temporary. Try refreshing the page.
         </p>
@@ -47,28 +45,6 @@ export default async function SettingsPage() {
         description="Configure your business operating hours, booking rules, and AI front-desk settings."
       />
 
-      {/* Settings Navigation Tabs */}
-      <div className="flex items-center gap-space-2 border-b border-border-default pb-space-3">
-        <Link
-          href="/settings"
-          className="px-space-3.5 py-space-1.5 radius-md text-body-sm font-semibold bg-primary text-primary-foreground shadow-sm"
-        >
-          Hours & Booking
-        </Link>
-        <Link
-          href="/settings/ai"
-          className="px-space-3.5 py-space-1.5 radius-md text-body-sm font-medium text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.04)] transition-colors"
-        >
-          AI Persona & Prompts
-        </Link>
-        <Link
-          href="/voice/settings"
-          className="px-space-3.5 py-space-1.5 radius-md text-body-sm font-medium text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.04)] transition-colors"
-        >
-          Voice Audio & Routing
-        </Link>
-      </div>
-
       <BusinessSettingsForm 
         settings={settingsMapped} 
         bookingRules={rulesRes.success ? rulesRes.rules : null}
@@ -76,4 +52,3 @@ export default async function SettingsPage() {
     </div>
   );
 }
-

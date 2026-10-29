@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useCallback } from "react";
 import { saveAIPersonaAction } from "@/server/actions/voice";
 import { Button } from "@/components/shared/button";
 import { Input } from "@/components/shared/input";
@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/shared/select";
-import { Sparkles, Save, Info, AlertCircle, Bot, MessageSquare, Building2, ShieldAlert } from "lucide-react";
+import { Sparkles, Save, Info, AlertCircle, Bot, MessageSquare, Building2, ShieldAlert, Play, Square } from "lucide-react";
 import { cn } from "@/components/shared/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -63,11 +63,86 @@ export function PromptSettingsClient({
   orgName,
 }: PromptSettingsClientProps) {
   const [assistantName, setAssistantName] = useState(initialAssistantName || "Ava");
-  const [tone, setTone] = useState(initialTone || "professional");
+  const [tone, setTone] = useState(initialTone || "warm");
   const [businessDescription, setBusinessDescription] = useState(initialBusinessDescription || "");
   const [promptText, setPromptText] = useState(initialPromptText || "");
   const [isSaving, startSave] = useTransition();
   const [status, setStatus] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [isPlayingTonePreview, setIsPlayingTonePreview] = useState(false);
+
+  const playToneSample = useCallback(
+    (toneValue: string, name?: string) => {
+      if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+
+      window.speechSynthesis.cancel();
+      const assistant = name || assistantName || "Ava";
+      const samplePhrases: Record<string, string> = {
+        professional: `Hello. Thank you for contacting ${orgName || "our business"}. My name is ${assistant}. How may I assist you with scheduling or service inquiries today?`,
+        warm: `Hi there! Welcome to ${orgName || "our salon"}. I'm ${assistant}, and I'd love to help you book your next appointment or answer any questions!`,
+        concise: `${orgName || "Front desk"}. I'm ${assistant}. I can check schedule availability or book your service immediately. What time works best?`,
+        luxury: `Good day and welcome to ${orgName || "our concierge"}. I am ${assistant}, and it is my absolute pleasure to curate your booking reservation today.`,
+        casual: `Hey! Thanks for reaching out to ${orgName || "us"}. I'm ${assistant}. What can I get set up for you today?`,
+      };
+
+      const textToSpeak = samplePhrases[toneValue] || samplePhrases.warm;
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+
+      const availableVoices = window.speechSynthesis.getVoices();
+      const voice =
+        availableVoices.find(
+          (v) =>
+            v.lang.startsWith("en") &&
+            (v.name.toLowerCase().includes("female") ||
+              v.name.toLowerCase().includes("zira") ||
+              v.name.toLowerCase().includes("samantha") ||
+              v.name.toLowerCase().includes("natural") ||
+              v.name.toLowerCase().includes("nicole"))
+        ) || availableVoices.find((v) => v.lang.startsWith("en"));
+
+      if (voice) utterance.voice = voice;
+
+      if (toneValue === "concise") {
+        utterance.rate = 1.15;
+        utterance.pitch = 1.0;
+      } else if (toneValue === "warm") {
+        utterance.rate = 0.95;
+        utterance.pitch = 1.08;
+      } else if (toneValue === "luxury") {
+        utterance.rate = 0.88;
+        utterance.pitch = 0.96;
+      } else if (toneValue === "casual") {
+        utterance.rate = 1.05;
+        utterance.pitch = 1.04;
+      } else {
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+      }
+
+      utterance.onstart = () => setIsPlayingTonePreview(true);
+      utterance.onend = () => setIsPlayingTonePreview(false);
+      utterance.onerror = () => setIsPlayingTonePreview(false);
+
+      window.speechSynthesis.speak(utterance);
+      setIsPlayingTonePreview(true);
+    },
+    [assistantName, orgName]
+  );
+
+  const handleToneChange = (val: string) => {
+    setTone(val);
+    playToneSample(val, assistantName);
+  };
+
+  const handleToggleToneAudio = () => {
+    if (isPlayingTonePreview) {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      setIsPlayingTonePreview(false);
+    } else {
+      playToneSample(tone, assistantName);
+    }
+  };
 
   const handleSave = () => {
     setStatus(null);
@@ -149,10 +224,31 @@ export function PromptSettingsClient({
             </div>
 
             <div className="space-y-space-2">
-              <Label htmlFor="tone-select" className="text-body-sm font-semibold text-foreground">
-                Tone of Voice
-              </Label>
-              <Select value={tone} onValueChange={(val) => setTone(val)}>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="tone-select" className="text-body-sm font-semibold text-foreground">
+                  Tone of Voice
+                </Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleToggleToneAudio}
+                  className="h-7 px-space-2 text-caption gap-space-1 font-medium border-[hsl(var(--foreground)/0.1)] hover:bg-primary/5 hover:text-primary transition-colors cursor-pointer"
+                >
+                  {isPlayingTonePreview ? (
+                    <>
+                      <Square className="h-3 w-3 fill-current text-rose-500" />
+                      <span>Stop</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-3 w-3 fill-current text-primary" />
+                      <span>Listen Tone</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+              <Select value={tone} onValueChange={handleToneChange}>
                 <SelectTrigger id="tone-select" className="h-10 bg-bg-layer-2">
                   <SelectValue placeholder="Select tone" />
                 </SelectTrigger>
@@ -192,7 +288,7 @@ export function PromptSettingsClient({
             <NativeTextarea
               id="business-description"
               rows={4}
-              placeholder="e.g. Nexxtechnologies is an IT solutions and software agency specializing in digital transformation, 24/7 enterprise support, and AI automation. We serve clients across healthcare, retail, and finance."
+              placeholder="e.g. Operator Demo Salon is a premier full-service salon and restorative spa offering expert haircutting, blowout styling, coloring, and restorative facials."
               value={businessDescription}
               onChange={(e) => setBusinessDescription(e.target.value)}
               className="w-full text-body-sm p-space-3.5 radius-lg border border-border-default bg-bg-layer-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-muted-foreground transition-all duration-200 resize-y"
@@ -225,9 +321,9 @@ export function PromptSettingsClient({
               id="custom-instructions"
               rows={6}
               placeholder={`Example:
-- Always greet returning customers by asking if they would like to reschedule their previous type of appointment.
-- Under NO circumstances suggest that we are open on Sundays.
-- If they ask for general consultations, remind them that booking fees are fully refundable up to 24 hours prior.`}
+- Always greet returning customers warmly by asking if they would like to rebook their favorite stylist.
+- Under NO circumstances suggest that appointments can be made outside our working hours.
+- If clients ask about cancellations, inform them we have a 24-hour advance notice policy.`}
               value={promptText}
               onChange={(e) => setPromptText(e.target.value)}
               className="w-full text-body-sm p-space-3.5 radius-lg border border-border-default bg-bg-layer-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-muted-foreground transition-all duration-200 resize-y"
@@ -251,7 +347,7 @@ export function PromptSettingsClient({
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className="gap-space-2 h-11 px-space-6 font-semibold shadow-sm"
+              className="gap-space-2 h-11 px-space-6 font-semibold shadow-sm cursor-pointer"
             >
               {isSaving ? (
                 <>Saving Changes...</>

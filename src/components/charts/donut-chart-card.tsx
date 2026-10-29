@@ -50,8 +50,15 @@ export function DonutChartCard({
     [valueFormatter, valuePrefix, valueSuffix]
   );
 
+  const totalValue = React.useMemo(() => {
+    if (!data || !Array.isArray(data) || data.length === 0) return 0;
+    return data.reduce((acc, item) => acc + (Number(item?.[category]) || 0), 0);
+  }, [data, category]);
+
   if (loading) return <div style={{ height }}><ChartSkeleton /></div>
-  if (!data || data.length === 0) return <div style={{ height }}><ChartEmptyState message={emptyMessage} /></div>
+  if (!data || data.length === 0 || totalValue === 0) {
+    return <div style={{ height }}><ChartEmptyState message={emptyMessage || "No activity recorded yet"} /></div>
+  }
 
   return (
     <div style={{ height }} className="w-full relative">

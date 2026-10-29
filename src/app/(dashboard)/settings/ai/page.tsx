@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { checkUserOrganization } from "@/server/actions/onboarding";
 import { getAIPersonaSettingsAction } from "@/server/actions/voice";
 import { PageTitle } from "@/components/shared/page-title";
@@ -21,7 +20,7 @@ export default async function AIPromptSettingsPage() {
   const personaRes = await getAIPersonaSettingsAction();
   const personaData = personaRes.success && personaRes.data ? personaRes.data : {
     assistantName: "Ava",
-    tone: "professional",
+    tone: "warm",
     businessDescription: "",
     customInstructions: "",
   };
@@ -39,28 +38,6 @@ export default async function AIPromptSettingsPage() {
         title="AI Persona & Prompts"
         description="Fine-tune your AI receptionist's identity, tone of voice, core business description, and custom guardrails."
       />
-
-      {/* Settings Navigation Tabs */}
-      <div className="flex items-center gap-space-2 border-b border-border-default pb-space-3">
-        <Link
-          href="/settings"
-          className="px-space-3.5 py-space-1.5 radius-md text-body-sm font-medium text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.04)] transition-colors"
-        >
-          Hours & Booking
-        </Link>
-        <Link
-          href="/settings/ai"
-          className="px-space-3.5 py-space-1.5 radius-md text-body-sm font-semibold bg-primary text-primary-foreground shadow-sm"
-        >
-          AI Persona & Prompts
-        </Link>
-        <Link
-          href="/voice/settings"
-          className="px-space-3.5 py-space-1.5 radius-md text-body-sm font-medium text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.04)] transition-colors"
-        >
-          Voice Audio & Routing
-        </Link>
-      </div>
 
       <PromptSettingsClient 
         initialAssistantName={personaData.assistantName}

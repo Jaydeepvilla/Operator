@@ -24,10 +24,7 @@ import { m } from "framer-motion";
 import { getButtonClasses } from '@/design-system/button-tokens';
 
 // ─── Sidebar Section Definitions ─────────────────────────────────────────────
-// 4 clear groups that map to how business owners think.
-
-// ─── Sidebar Section Definitions ─────────────────────────────────────────────
-// 4 clear task-oriented groups adhering to Hick's Law and Jakob's Law:
+// 5 clear task-oriented groups adhering to Hick's Law and Jakob's Law:
 
 const OVERVIEW_LINKS = [
   { href: "/dashboard", icon: "LayoutDashboard" as const, label: "Overview" },
@@ -43,6 +40,7 @@ const OPERATIONS_LINKS = [
 const AI_LINKS = [
   { href: "/settings/ai", icon: "Brain" as const, label: "AI Persona & Prompts" },
   { href: "/kb", icon: "BookOpen" as const, label: "Business Knowledge" },
+  { href: "/faqs", icon: "HelpCircle" as const, label: "Business FAQs" },
   { href: "/voice/dashboard", icon: "PhoneCall" as const, label: "Voice AI Lines" },
   { href: "/channels", icon: "Radio" as const, label: "Channels & Integrations" },
   { href: "/automations", icon: "Zap" as const, label: "Automations" },
