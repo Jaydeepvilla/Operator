@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, ArrowRight, Sparkles, Building2, AlertTriangle, UserCheck } from "lucide-react";
+import { CheckCircle2, ArrowRight, Sparkles, AlertTriangle, UserCheck } from "lucide-react";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { AuthHeader } from "@/components/shared/auth-forms";
 import { Button } from "@/components/shared/button";
@@ -43,7 +43,6 @@ function LoginSuccessContent() {
     // Smooth progress bar update
     const startTime = Date.now();
     const duration = 4000; // 4 seconds
-
     const progressInterval = setInterval(() => {
       const elapsed = Date.now() - startTime;
       const currentProgress = Math.min((elapsed / duration) * 100, 100);
@@ -67,7 +66,7 @@ function LoginSuccessContent() {
     router.refresh();
   };
 
-  // ─── Account Already Exists UX (BUG #2 FIX) ─────────────────────────────
+  // ─── Account Already Exists UX ───────────────────────────────────────────
   if (isAccountExists) {
     return (
       <div className="space-y-space-8 animate-fade-up">
@@ -79,30 +78,33 @@ function LoginSuccessContent() {
         <div className="space-y-space-6">
           {/* Info Badge */}
           <div className="flex justify-center">
-            <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/20 shadow-lg shadow-amber-500/5">
-              <UserCheck className="h-10 w-10 text-amber-500 animate-scale-in" aria-hidden="true" />
+            <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-b from-amber-500/15 to-amber-500/5 border border-amber-500/30 shadow-lg shadow-amber-500/10">
+              <UserCheck className="h-10 w-10 text-amber-400 animate-scale-in" aria-hidden="true" />
             </div>
           </div>
 
           {/* Explanation Card */}
-          <div className="glass-panel radius-xl p-space-6 space-y-space-4 text-center border border-border/60 bg-bg-layer-1/80 backdrop-blur-md">
-            <div className="flex items-center justify-center gap-2 text-amber-600 dark:text-amber-400 font-semibold text-sm">
-              <AlertTriangle className="h-4 w-4" />
+          <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-slate-900/60 backdrop-blur-xl p-space-6 space-y-space-4 text-center shadow-2xl shadow-black/40">
+            {/* Top Amber Highlight */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+            
+            <div className="inline-flex items-center justify-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-semibold text-xs tracking-wide">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
               <span>Existing Account Detected</span>
             </div>
 
-            <p className="text-body-sm text-foreground/75 leading-relaxed">
+            <p className="text-body-sm text-foreground/80 leading-relaxed max-w-sm mx-auto">
               You clicked <strong>Sign Up</strong>, but an Operator account already exists with this Google identity. 
               No duplicate account was created. You can continue directly to your existing workspace.
             </p>
 
-            <div className="pt-2 px-4">
-              <div className="flex items-center gap-3 text-left text-xs text-foreground/50">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+            <div className="pt-2 px-2 space-y-2">
+              <div className="flex items-center gap-3 text-left text-xs text-foreground/60">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
                 <span>Identity verified — no duplicate account created</span>
               </div>
-              <div className="flex items-center gap-3 text-left text-xs text-foreground/50 mt-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+              <div className="flex items-center gap-3 text-left text-xs text-foreground/60">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
                 <span>Your existing workspace and data are intact</span>
               </div>
             </div>
@@ -115,16 +117,16 @@ function LoginSuccessContent() {
               onClick={handleImmediateNavigate}
               shape="pill"
               size="lg"
-              className="w-full gap-2 shadow-md shadow-primary/10"
+              className="w-full gap-2 font-semibold shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-indigo-600 hover:from-primary-light hover:to-indigo-500 transition-all duration-200"
             >
               <span>Continue to Your Account</span>
               <ArrowRight className="h-4 w-4" />
             </Button>
-            <p className="text-center text-caption text-foreground/40">
+            <p className="text-center text-caption text-foreground/50">
               Need a different account?{" "}
               <Link
                 href="/sign-up"
-                className="font-semibold text-primary hover:underline hover:opacity-80 transition-opacity"
+                className="font-semibold text-primary-light hover:underline hover:opacity-90 transition-opacity"
               >
                 Use a different email
               </Link>
@@ -141,7 +143,7 @@ function LoginSuccessContent() {
   return (
     <div className="space-y-space-8 animate-fade-up">
       <AuthHeader
-        heading={isSignup ? "Account Created! 🎉" : isFirstTime ? "Welcome to Operator! 🎉" : "Welcome Back! 👋"}
+        heading={isSignup ? "Account Created!" : isFirstTime ? "Welcome to Operator" : "Welcome Back"}
         subheading={
           isFirstTime
             ? "Your account is created and ready for workspace setup."
@@ -152,27 +154,38 @@ function LoginSuccessContent() {
       <div className="space-y-space-6">
         {/* Animated Success Badge */}
         <div className="flex justify-center">
-          <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
-            <CheckCircle2 className="h-10 w-10 text-emerald-500 animate-scale-in" aria-hidden="true" />
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/30 shadow-[0_0_25px_-5px_rgba(16,185,129,0.3)]">
+            <CheckCircle2 className="h-8 w-8 text-emerald-400 animate-scale-in" aria-hidden="true" />
             <span
-              className="absolute inset-0 rounded-2xl border border-emerald-500/30 animate-ping opacity-40"
-              style={{ animationDuration: "2.5s" }}
+              className="absolute inset-0 rounded-2xl border border-emerald-500/25 animate-ping opacity-25"
+              style={{ animationDuration: "2.8s" }}
               aria-hidden="true"
             />
           </div>
         </div>
 
         {/* Informative Guidance Card */}
-        <div className="glass-panel radius-xl p-space-6 space-y-space-4 text-center border border-border/60 bg-bg-layer-1/80 backdrop-blur-md">
-          <div className="flex items-center justify-center gap-2 text-primary font-semibold text-sm">
-            <Sparkles className="h-4 w-4 animate-pulse" />
+        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-slate-900/60 backdrop-blur-xl p-space-6 space-y-space-4 text-center shadow-2xl shadow-black/50">
+          {/* Subtle Top Purple Highlight */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          
+          {/* Ambient Glow */}
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-20 bg-primary/10 blur-2xl rounded-full pointer-events-none" />
+
+          {/* Status Pill Badge */}
+          <div className="relative inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-primary/15 border border-primary/30 text-primary-light text-xs font-semibold tracking-wide shadow-xs shadow-primary/20">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            <Sparkles className="h-3.5 w-3.5 text-primary-light" />
             <span>{isFirstTime ? "Operator AI Workspace Setup" : "Operator AI Active Workspace"}</span>
           </div>
 
-          <p className="text-body-sm text-foreground/75 leading-relaxed">
+          <p className="relative text-body-sm text-foreground/85 leading-relaxed max-w-sm mx-auto">
             {isFirstTime ? (
               <>
-                You are now being directed to the <strong>Operator Onboarding</strong> wizard to configure your business profile, AI receptionist, and communication channels.
+                You are now being directed to the <strong className="text-foreground font-semibold">Operator Onboarding</strong> wizard to configure your business profile, AI receptionist, and communication channels.
               </>
             ) : (
               <>
@@ -182,15 +195,15 @@ function LoginSuccessContent() {
           </p>
 
           {/* 4-Second Animated Progress Bar */}
-          <div className="space-y-2 pt-2">
-            <div className="w-full bg-border-default/40 rounded-full h-2 overflow-hidden">
+          <div className="relative space-y-2 pt-2">
+            <div className="w-full bg-slate-800/80 border border-white/[0.06] rounded-full h-2 overflow-hidden p-0.5">
               <div
-                className="bg-gradient-to-r from-primary to-indigo-500 h-full rounded-full transition-all duration-75 ease-out"
+                className="bg-gradient-to-r from-violet-600 via-primary to-indigo-400 h-full rounded-full shadow-[0_0_12px_rgba(124,58,237,0.5)] transition-all duration-75 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-caption text-foreground/50">
-              Navigating automatically in <span className="font-bold text-primary">{secondsLeft}s</span>...
+            <p className="text-caption text-foreground/60">
+              Navigating automatically in <span className="font-bold text-primary-light">{secondsLeft}s</span>...
             </p>
           </div>
         </div>
@@ -201,7 +214,7 @@ function LoginSuccessContent() {
           onClick={handleImmediateNavigate}
           shape="pill"
           size="lg"
-          className="w-full gap-2 shadow-md shadow-primary/10"
+          className="w-full gap-2 font-semibold shadow-lg shadow-primary/25 bg-gradient-to-r from-primary to-indigo-600 hover:from-primary-light hover:to-indigo-500 transition-all duration-200"
         >
           <span>{isFirstTime ? "Continue to Onboarding Now" : "Continue to Dashboard Now"}</span>
           <ArrowRight className="h-4 w-4" />

@@ -635,10 +635,10 @@ code, pre, kbd, samp {
 }
 
 .glass-panel {
- background-color: hsl(var(--bg-layer-1) / 0.45);
- backdrop-filter: blur(16px);
- -webkit-backdrop-filter: blur(16px);
- border: 1px solid hsl(var(--foreground)/0.06);
+  background-color: hsl(var(--card) / 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid hsl(var(--border) / 0.7);
 }
 
 .light .glass-panel {

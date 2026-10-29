@@ -15,36 +15,7 @@ interface AuthLayoutProps {
  */
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div
-      className="flex min-h-screen w-full flex-col bg-background"
-      style={{
-        /* Force light-mode tokens regardless of ThemeProvider on <html> */
-        "--background": "250 20% 99%",
-        "--foreground": "222 47% 8%",
-        "--card": "250 15% 98%",
-        "--card-foreground": "222 47% 8%",
-        "--primary": "250 75% 52%",
-        "--primary-light": "250 75% 58%",
-        "--primary-foreground": "0 0% 100%",
-        "--border": "250 12% 91%",
-        "--input": "250 12% 91%",
-        "--border-subtle": "250 12% 94%",
-        "--border-default": "250 12% 88%",
-        "--border-strong": "250 12% 82%",
-        "--border-hover": "250 12% 76%",
-        "--border-active": "250 75% 52%",
-        "--border-muted": "250 12% 91%",
-        "--bg-layer-0": "250 20% 99%",
-        "--bg-layer-1": "0 0% 100%",
-        "--bg-layer-2": "250 12% 95%",
-        "--state-success-text": "154 75% 24%",
-        "--state-success-bg": "147 79% 96%",
-        "--state-error-text": "3 76% 40%",
-        "--state-error-bg": "6 100% 97%",
-        "--state-warning-text": "21 90% 37%",
-        "--state-warning-bg": "33 100% 96%",
-      } as React.CSSProperties}
-    >
+    <div className="flex min-h-screen w-full flex-col bg-background text-foreground relative selection:bg-primary/20 selection:text-primary">
       {/* Subtle ambient orb */}
       <div
         className="pointer-events-none fixed -top-32 -right-32 h-96 w-96 rounded-full mesh-glow opacity-20 animate-pulse-soft"
