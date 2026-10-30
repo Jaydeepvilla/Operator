@@ -474,7 +474,7 @@ export default function AppointmentsPage() {
  {filteredApts.length === 0 ? (
  <EmptyState
  title={searchTerm || selectedStatus !== "all" || selectedStaffId !== "all" ? "No matching appointments" : "No appointments scheduled"}
- description={searchTerm || selectedStatus !== "all" || selectedStaffId !== "all" ? "Try adjusting your search terms or filters." : "Upcoming customer bookings scheduled by your AI receptionist or staff will appear here."}
+ description={searchTerm || selectedStatus !== "all" || selectedStaffId !== "all" ? "Try adjusting your search terms or filters." : "Upcoming bookings scheduled by your assistant will appear here. Example: Priya Sharma — Haircut & Styling, Tomorrow at 2:00 PM."}
  icon={CalendarIcon}
  actionText={(searchTerm || selectedStatus !== "all" || selectedStaffId !== "all") ? "Clear filters" : undefined}
  onAction={() => { setSearchTerm(""); setSelectedStatus("all"); setSelectedStaffId("all"); }}

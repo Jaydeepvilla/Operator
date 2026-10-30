@@ -14,111 +14,70 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/shared/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/shared/sheet";
-import { SidebarNavGroup } from "@/components/shared/sidebar-nav";
+import { SidebarNavGroup, SidebarLinkProps } from "@/components/shared/sidebar-nav";
 import { useSidebar } from "@/components/shared/sidebar-context";
 import { cn } from "@/components/shared/utils";
 import { LogoIcon } from "@/components/shared/logo";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { m } from "framer-motion";
 import { isWhiteLabelEnabled } from "@/lib/config/feature-flags";
-
-import { getButtonClasses } from '@/design-system/button-tokens';
-
-// ─── Sidebar Section Definitions ─────────────────────────────────────────────
-// 5 clear task-oriented groups adhering to Hick's Law and Jakob's Law:
-
-const OVERVIEW_LINKS = [
-  { href: "/dashboard", icon: "LayoutDashboard" as const, label: "Overview" },
-  { href: "/inbox", icon: "Inbox" as const, label: "Omnichannel Inbox" },
-];
-
-const OPERATIONS_LINKS = [
-  { href: "/appointments", icon: "Calendar" as const, label: "Bookings & Calendar" },
-  { href: "/contacts", icon: "Users" as const, label: "Customers & Activity" },
-  { href: "/escalations", icon: "AlertTriangle" as const, label: "Tasks & Exceptions" },
-];
-
-const AI_LINKS = [
-  { href: "/settings/ai", icon: "Brain" as const, label: "AI Persona & Prompts" },
-  { href: "/kb", icon: "BookOpen" as const, label: "Business Knowledge" },
-  { href: "/faqs", icon: "HelpCircle" as const, label: "Business FAQs" },
-  { href: "/voice/dashboard", icon: "PhoneCall" as const, label: "Voice AI Lines" },
-  { href: "/channels", icon: "Radio" as const, label: "Channels & Integrations" },
-  { href: "/automations", icon: "Zap" as const, label: "Automations" },
-  { href: "/widget", icon: "MessageSquare" as const, label: "Website Widget" },
-];
-
-const LEARNING_LINKS = [
-  { href: "/academy", icon: "GraduationCap" as const, label: "Founder Academy" },
-  { href: "/demo-center", icon: "PlayCircle" as const, label: "Demo Center" },
-];
-
-const BUSINESS_LINKS = [
-  { href: "/services", icon: "Briefcase" as const, label: "Services & Pricing" },
-  { href: "/staff", icon: "UserCheck" as const, label: "Staff & Schedules" },
-  { href: "/analytics", icon: "LineChart" as const, label: "Analytics & Reports" },
-  { href: "/settings", icon: "Settings" as const, label: "Business Settings" },
-  { href: "/billing", icon: "CreditCard" as const, label: "Billing & Plans" },
-];
+import { COPY } from "@/lib/copy/labels";
 
 // ─── Breadcrumb Mapping ──────────────────────────────────────────────────────
-// Maps pathnames to human-readable breadcrumb segments.
-
 const BREADCRUMB_MAP: Record<string, { group: string; label: string }> = {
-  "/dashboard": { group: "Overview", label: "Dashboard" },
-  "/inbox": { group: "Overview", label: "Omnichannel Inbox" },
-  "/conversations": { group: "Overview", label: "Omnichannel Inbox" },
-  "/academy": { group: "Learning", label: "Founder Academy" },
-  "/demo-center": { group: "Learning", label: "Demo Control Center" },
-  "/appointments": { group: "Operations", label: "Bookings & Calendar" },
-  "/contacts": { group: "Operations", label: "Customers & Activity" },
-  "/leads": { group: "Operations", label: "Customers & Activity" },
-  "/escalations": { group: "Operations", label: "Tasks & Exceptions" },
-  "/settings/ai": { group: "Operator AI", label: "AI Persona & Prompts" },
-  "/kb": { group: "Operator AI", label: "Business Knowledge" },
-  "/faqs": { group: "Operator AI", label: "Business Knowledge" },
-  "/voice": { group: "Operator AI", label: "Phone Lines" },
-  "/voice/dashboard": { group: "Operator AI", label: "Voice AI Lines" },
-  "/voice/settings": { group: "Operator AI", label: "Voice Settings" },
-  "/voice/history": { group: "Operator AI", label: "Call Logs" },
-  "/channels": { group: "Operator AI", label: "Channels & Integrations" },
-  "/automations": { group: "Operator AI", label: "Automations" },
-  "/flows": { group: "Operator AI", label: "Automations" },
-  "/templates": { group: "Operator AI", label: "Templates" },
-  "/widget": { group: "Operator AI", label: "Website Widget" },
-  "/services": { group: "Business", label: "Services & Pricing" },
-  "/staff": { group: "Business", label: "Staff & Schedules" },
-  "/team": { group: "Business", label: "Staff & Schedules" },
-  "/analytics": { group: "Business", label: "Analytics & Reports" },
-  "/intelligence": { group: "Business", label: "Intelligence" },
-  "/settings": { group: "Business", label: "Business Settings" },
-  "/profile": { group: "Business", label: "Business Profile" },
-  "/settings/account": { group: "Business", label: "Account Settings" },
-  "/admin/users": { group: "Business", label: "User Directory" },
-  "/billing": { group: "Business", label: "Billing & Plans" },
+  "/dashboard": { group: "Operator", label: "Home" },
+  "/inbox": { group: "Communications", label: "Messages" },
+  "/conversations": { group: "Communications", label: "Messages" },
+  "/appointments": { group: "Schedule", label: "Appointments" },
+  "/contacts": { group: "Audience", label: "Customers" },
+  "/leads": { group: "Audience", label: "Customers" },
+  "/escalations": { group: "Inbox", label: "Needs Your Attention" },
+  "/settings/ai": { group: "Train Your Assistant", label: "Tone of Voice" },
+  "/kb": { group: "Train Your Assistant", label: "Documents" },
+  "/faqs": { group: "Train Your Assistant", label: "Questions & Answers" },
+  "/profile": { group: "Train Your Assistant", label: "Business Info" },
+  "/channels": { group: "Connect", label: "Channels" },
+  "/widget": { group: "Connect", label: "Website Chat" },
+  "/voice": { group: "Connect", label: "Phone" },
+  "/voice/dashboard": { group: "Connect", label: "Phone" },
+  "/voice/settings": { group: "Advanced", label: "Call Routing & Voice" },
+  "/voice/history": { group: "Reports", label: "Call History" },
+  "/automations": { group: "Advanced", label: "Automations" },
+  "/flows": { group: "Advanced", label: "Automations" },
+  "/analytics": { group: "Business", label: "Reports" },
+  "/intelligence": { group: "Business", label: "Reports" },
+  "/services": { group: "Settings", label: "Services & Prices" },
+  "/staff": { group: "Settings", label: "Staff & Hours" },
+  "/team": { group: "Settings", label: "Staff & Hours" },
+  "/settings": { group: "Settings", label: "Business Settings" },
+  "/settings/account": { group: "Settings", label: "Account" },
+  "/settings/booking": { group: "Settings", label: "Booking Rules" },
+  "/settings/rules": { group: "Advanced", label: "Automations & Rules" },
+  "/settings/audit-logs": { group: "Advanced", label: "Audit Logs" },
+  "/billing": { group: "Settings", label: "Billing & Plans" },
+  "/help": { group: "Help", label: "Guides & Support" },
+  "/academy": { group: "Help", label: "Founder Academy" },
+  "/demo-center": { group: "Help", label: "Demo Center" },
 };
 
-const AGENCY_LINKS = [
-  { href: "/agency/dashboard", icon: "Building" as const, label: "Agency Portal" },
-  { href: "/agency/clients", icon: "Briefcase" as const, label: "Clients" },
-  { href: "/agency/branding", icon: "Palette" as const, label: "Branding Studio" },
-  { href: "/agency/domains", icon: "Globe" as const, label: "Custom Domains" },
-  { href: "/agency/team", icon: "Users" as const, label: "Agency Team" },
-  { href: "/agency/billing", icon: "CreditCard" as const, label: "Reseller Billing" },
+const AGENCY_LINKS: SidebarLinkProps[] = [
+  { href: "/agency/dashboard", icon: "Building", label: "Agency Portal" },
+  { href: "/agency/clients", icon: "Briefcase", label: "Clients" },
+  { href: "/agency/branding", icon: "Palette", label: "Branding Studio" },
+  { href: "/agency/domains", icon: "Globe", label: "Custom Domains" },
+  { href: "/agency/team", icon: "Users", label: "Agency Team" },
+  { href: "/agency/billing", icon: "CreditCard", label: "Reseller Billing" },
 ];
 
 // ─── Breadcrumb Component ────────────────────────────────────────────────────
-
 function Breadcrumb() {
   const pathname = usePathname();
   const crumb = BREADCRUMB_MAP[pathname];
 
   if (!crumb) {
-    // Fallback: try to match the first two segments for nested routes
     const segments = pathname.split("/").filter(Boolean);
     const parentPath = "/" + segments.slice(0, 2).join("/");
     const parentCrumb = BREADCRUMB_MAP[parentPath] || BREADCRUMB_MAP["/" + segments[0]];
-    
+
     if (parentCrumb) {
       return (
         <div className="hidden sm:flex items-center gap-space-1.5 text-body-sm">
@@ -141,7 +100,6 @@ function Breadcrumb() {
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
-
 interface DashboardShellProps {
   children: React.ReactNode;
   orgName: string;
@@ -150,6 +108,8 @@ interface DashboardShellProps {
   isAgency: boolean;
   headerActions: React.ReactNode;
   trialBanner: React.ReactNode;
+  planId?: string;
+  attentionCount?: number;
 }
 
 export function DashboardShell({
@@ -160,19 +120,121 @@ export function DashboardShell({
   isAgency,
   headerActions,
   trialBanner,
+  planId = "starter",
+  attentionCount = 0,
 }: DashboardShellProps) {
   const { isCollapsed, toggleSidebar } = useSidebar();
   const pathname = usePathname();
-  const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
-  // Auto-close mobile drawer whenever pathname changes
+  // Auto-close mobile drawer on route change
   React.useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
-  // ─── Sidebar Content ─────────────────────────────────────────────────────────
+  // Determine if phone calling is included in current plan
+  const normalizedPlan = (planId || "starter").toLowerCase();
+  const hasPhone =
+    normalizedPlan.includes("pro") ||
+    normalizedPlan.includes("biz") ||
+    normalizedPlan.includes("business") ||
+    normalizedPlan.includes("trial");
 
+  // ─── 8-Item Core Navigation Definition (Step 2) ──────────────────────────
+  const PRIMARY_NAV_LINKS: SidebarLinkProps[] = [
+    {
+      href: "/dashboard",
+      icon: "LayoutDashboard",
+      label: COPY.nav.home,
+    },
+    {
+      href: "/inbox",
+      icon: "MessageSquare",
+      label: COPY.nav.messages,
+    },
+    {
+      href: "/appointments",
+      icon: "Calendar",
+      label: COPY.nav.appointments,
+    },
+    {
+      href: "/contacts",
+      icon: "Users",
+      label: COPY.nav.customers,
+    },
+    {
+      href: "/escalations",
+      icon: "AlertTriangle",
+      label: COPY.nav.needsAttention,
+      badge: attentionCount > 0 ? attentionCount : undefined,
+      badgeVariant: "warning",
+    },
+    {
+      href: "/settings/ai",
+      icon: "Brain",
+      label: COPY.nav.trainAssistant,
+      subLinks: [
+        { href: "/profile", label: "Business Info", icon: "Building" },
+        { href: "/faqs", label: "Questions & Answers", icon: "HelpCircle" },
+        { href: "/settings/ai", label: "Tone of Voice", icon: "Sparkles" },
+        { href: "/kb", label: "Documents", icon: "BookOpen" },
+      ],
+    },
+    {
+      href: "/channels",
+      icon: "Radio",
+      label: COPY.nav.connect,
+      subLinks: [
+        { href: "/widget", label: "Website Chat", icon: "MessageSquare" },
+        { href: "/channels", label: "WhatsApp", icon: "MessageCircle" },
+        {
+          href: hasPhone ? "/voice/dashboard" : "/billing",
+          label: "Phone",
+          icon: "Phone",
+          locked: !hasPhone,
+          lockLabel: !hasPhone ? COPY.plans.phoneLockedBadge : undefined,
+        },
+        { href: "/settings/booking", label: "Calendar", icon: "Calendar" },
+        { href: "/settings/booking/deposits", label: "Payments", icon: "CreditCard" },
+      ],
+    },
+    {
+      href: "/analytics",
+      icon: "LineChart",
+      label: COPY.nav.reports,
+    },
+    {
+      href: "/settings",
+      icon: "Settings",
+      label: COPY.nav.settings,
+      subLinks: [
+        { href: "/settings", label: "Business Profile", icon: "Building" },
+        { href: "/services", label: "Services & Prices", icon: "Briefcase" },
+        { href: "/staff", label: "Staff & Hours", icon: "UserCheck" },
+        { href: "/billing", label: "Billing & Plans", icon: "CreditCard" },
+      ],
+    },
+    {
+      href: "/help",
+      icon: "HelpCircle",
+      label: COPY.nav.help,
+      subLinks: [
+        { href: "/help", label: "Guides & Tour", icon: "BookOpen" },
+        { href: "/academy", label: "Founder Academy", icon: "GraduationCap" },
+        { href: "/demo-center", label: "Demo Center", icon: "PlayCircle" },
+      ],
+    },
+  ];
+
+  // ─── Collapsed Advanced Group (Step 2) ──────────────────────────────────
+  const ADVANCED_NAV_LINKS: SidebarLinkProps[] = [
+    { href: "/automations", icon: "Zap", label: "Automations" },
+    { href: "/channels", icon: "Radio", label: "Integrations & Webhooks" },
+    { href: "/voice/settings", icon: "PhoneCall", label: "Voice Settings & Routing" },
+    { href: "/settings/audit-logs", icon: "ClipboardList", label: "Audit Logs" },
+  ];
+
+  // ─── Sidebar Content Renderer ───────────────────────────────────────────
   const SidebarContent = ({
     isMobile = false,
     onNavigate,
@@ -206,15 +268,15 @@ export function DashboardShell({
           </Link>
           {!collapsed && (
             <div className="flex flex-col min-w-0 flex-1 animate-fade-in">
-              <span className="text-caption text-foreground truncate tracking-tight-lg">
+              <span className="text-caption text-foreground font-semibold truncate tracking-tight">
                 {orgName}
               </span>
-              <span className="text-caption text-muted-foreground truncate capitalize">
-                {orgIndustry?.toLowerCase() ?? "Operator"}
+              <span className="text-[11px] text-muted-foreground truncate capitalize">
+                {orgIndustry?.toLowerCase() ?? "Front Desk"}
               </span>
             </div>
           )}
-          {/* Collapse toggle — desktop only, shown only when expanded */}
+          {/* Collapse toggle — desktop only */}
           {!isMobile && !collapsed && (
             <button
               onClick={toggleSidebar}
@@ -226,25 +288,35 @@ export function DashboardShell({
             </button>
           )}
         </div>
-        {/* Scrollable Nav — Clean fit without visible scrollbar */}
-        <div className="flex flex-col flex-1 min-h-0 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div
-            className={cn(
-              "flex flex-col gap-0 py-1.5",
-              collapsed ? "px-1" : "px-2"
-            )}
-          >
-            <SidebarNavGroup title="Overview" links={OVERVIEW_LINKS} onNavigate={onNavigate} />
-            <SidebarNavGroup title="Operations" links={OPERATIONS_LINKS} onNavigate={onNavigate} />
-            <SidebarNavGroup title="Operator AI" links={AI_LINKS} onNavigate={onNavigate} />
-            <SidebarNavGroup title="Business" links={BUSINESS_LINKS} onNavigate={onNavigate} />
-            <SidebarNavGroup title="Learning & Demo" links={LEARNING_LINKS} onNavigate={onNavigate} />
 
+        {/* Scrollable Nav Items */}
+        <div className="flex flex-col flex-1 min-h-0 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className={cn("flex flex-col gap-1 py-2", collapsed ? "px-1" : "px-2")}>
+            {/* Primary 8-Item Nav */}
+            <SidebarNavGroup links={PRIMARY_NAV_LINKS} onNavigate={onNavigate} />
+
+            {/* Collapsed Advanced Section */}
+            <div className="pt-2 border-t border-[hsl(var(--foreground)/0.06)] mt-2">
+              <SidebarNavGroup
+                title="Advanced"
+                links={ADVANCED_NAV_LINKS}
+                onNavigate={onNavigate}
+                collapsible={true}
+                defaultOpen={false}
+              />
+            </div>
+
+            {/* Optional Agency Platform (Gated behind feature flag) */}
             {isWhiteLabelEnabled() && isAgency && (
-              <>
-                <div className="h-px bg-[hsl(var(--foreground)/0.06)] my-1.5 mx-2" />
-                <SidebarNavGroup title="Agency" links={AGENCY_LINKS} onNavigate={onNavigate} />
-              </>
+              <div className="pt-2 border-t border-[hsl(var(--foreground)/0.06)] mt-2">
+                <SidebarNavGroup
+                  title="Agency Platform"
+                  links={AGENCY_LINKS}
+                  onNavigate={onNavigate}
+                  collapsible={true}
+                  defaultOpen={false}
+                />
+              </div>
             )}
           </div>
         </div>
@@ -291,7 +363,6 @@ export function DashboardShell({
               </SheetContent>
             </Sheet>
 
-            {/* Breadcrumb */}
             <Breadcrumb />
           </div>
 
@@ -299,10 +370,10 @@ export function DashboardShell({
           {headerActions}
         </header>
 
-        {/* Page Content — instant mount without blocking exit wait */}
+        {/* Page content */}
         <main
-          key={pathname}
-          className="flex-1 min-h-0 overflow-y-auto p-space-6 md:p-space-8 sidebar-scroll flex flex-col animate-fade-in"
+          className="flex-1 overflow-y-auto px-space-4 py-space-6 sm:px-space-6 lg:px-space-8"
+          id="main-content"
         >
           {children}
         </main>

@@ -131,6 +131,30 @@ export async function saveBookingPreferencesAction(bookingPreferences: Record<st
   }
 }
 
+/**
+ * Toggles whether Operator AI is actively answering messages or paused.
+ */
+export async function toggleAssistantPauseAction(isPaused: boolean) {
+  try {
+    const authContext = await requireOrganizationAccess();
+    const currentSettings = await settingsRepository.getByOrg(authContext.organizationId);
+    const existingPrefs = (currentSettings?.bookingPreferences as Record<string, any>) || {};
+    
+    await settingsRepository.update(authContext.organizationId, {
+      bookingPreferences: {
+        ...existingPrefs,
+        assistantPaused: isPaused,
+        pausedAt: isPaused ? new Date().toISOString() : null,
+      },
+    });
+
+    revalidatePath("/dashboard");
+    return { success: true, isPaused };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Failed to update assistant status" };
+  }
+}
+
 // ── Global Localization & Regionalization Settings Actions ──
 
 export async function getLocalizationMetadataAction() {

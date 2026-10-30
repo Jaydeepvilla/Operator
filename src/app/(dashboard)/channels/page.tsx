@@ -211,8 +211,8 @@ export default function ChannelsPage() {
  {/* Header section */}
  <div className="relative z-10">
  <PageTitle
- title="Channels"
- description="Where Operator AI talks to customers. Connect WhatsApp, SMS, email, or your website."
+ title="Connect"
+ description="Where your customers reach you. Connect WhatsApp, website chat, SMS, or business email."
  className="mb-0"
  />
  </div>

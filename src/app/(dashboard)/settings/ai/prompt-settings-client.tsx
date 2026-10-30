@@ -26,6 +26,22 @@ interface PromptSettingsClientProps {
   orgName: string;
 }
 
+
+const TONE_SAMPLES: Record<string, { q: string; a: string }> = {
+  warm: {
+    q: "Do you have any appointments available tomorrow afternoon?",
+    a: "Hi! Yes, we do! I'd love to help you book that. We have openings at 2:00 PM and 4:30 PM with Priya. Would either of those work nicely for you?",
+  },
+  professional: {
+    q: "Do you have any appointments available tomorrow afternoon?",
+    a: "Good day. Yes, we have availability tomorrow afternoon. We can schedule you at 2:00 PM or 4:30 PM. Please let me know which time is most convenient.",
+  },
+  concise: {
+    q: "Do you have any appointments available tomorrow afternoon?",
+    a: "Yes. Tomorrow we have slots at 2:00 PM and 4:30 PM. Which one would you like to reserve?",
+  },
+};
+
 const TONE_OPTIONS = [
   {
     value: "professional",
@@ -264,6 +280,23 @@ export function PromptSettingsClient({
               <p className="text-caption text-muted-foreground">
                 {selectedToneObj.description}
               </p>
+
+              {/* Step 4: Before & After Sample Reply for Selected Tone */}
+              <div className="mt-3 p-3.5 rounded-xl bg-background/80 border border-border/70 space-y-2">
+                <div className="flex items-center justify-between text-caption font-semibold text-muted-foreground">
+                  <span>Customer question:</span>
+                  <span className="text-[10px] text-primary uppercase font-bold tracking-wider">Tone Preview</span>
+                </div>
+                <p className="text-caption text-foreground/80 italic bg-muted/40 p-2 rounded-lg border border-border/40">
+                  "{(TONE_SAMPLES[tone] || TONE_SAMPLES.warm).q}"
+                </p>
+                <div className="text-caption font-semibold text-muted-foreground pt-0.5">
+                  <span>{assistantName || "Ava"} answers:</span>
+                </div>
+                <p className="text-caption text-foreground leading-relaxed bg-primary/10 border border-primary/20 p-2.5 rounded-lg font-medium">
+                  "{(TONE_SAMPLES[tone] || TONE_SAMPLES.warm).a}"
+                </p>
+              </div>
             </div>
           </div>
         </div>

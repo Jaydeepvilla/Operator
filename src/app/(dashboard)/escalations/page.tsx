@@ -216,8 +216,8 @@ export default function EscalationsPage() {
  <div className="space-y-space-5 animate-fade-in w-full h-full flex flex-col pb-space-12">
  {/* Header */}
  <PageTitle
- title="Tasks & Exceptions"
- description="Unified incident management queue for autonomous recovery, payment discrepancies, and human escalations."
+ title="Needs Your Attention"
+ description="Customers, bookings, or questions that need a person on your team to step in."
  actions={
  <Button
  variant="outline"
@@ -245,27 +245,27 @@ export default function EscalationsPage() {
  {/* KPI Headline Bar */}
  <div className="grid grid-cols-1 md:grid-cols-4 gap-space-4">
  <StatCard
- label="Pending Operational Exceptions"
+ label="Items Needing Attention"
  value={pendingExceptions.length}
- subtitle="Automated system incidents"
+ subtitle="Requires team review"
  icon={AlertTriangle}
  />
  <StatCard
- label="High / Critical Severity"
+ label="Urgent Requests"
  value={criticalExceptions.length}
- subtitle="Requires immediate triage"
+ subtitle="High priority"
  icon={AlertCircle}
  />
  <StatCard
  label="Customer Handoffs"
  value={pendingEscalations.length}
- subtitle="Awaiting staff contact"
+ subtitle="Awaiting team reply"
  icon={MessageSquare}
  />
  <StatCard
  label="Resolved Today"
  value={exceptions.filter((e) => e.status === "resolved").length + escalations.filter((e) => e.status === "resolved").length}
- subtitle="Audited and cleared"
+ subtitle="Handled and cleared"
  icon={ShieldCheck}
  />
  </div>
@@ -299,8 +299,8 @@ export default function EscalationsPage() {
  <LoadingState message="Inspecting operational exception queue..." />
  ) : exceptions.length === 0 ? (
  <EmptyState
- title="All systems operational"
- description="No unresolved operational exceptions. Bookings, payments, and background jobs are running smoothly."
+ title="All clear!"
+ description="No unresolved issues. Appointments, messages, and payments are running smoothly."
  icon={ShieldCheck}
  />
  ) : (
@@ -412,8 +412,8 @@ export default function EscalationsPage() {
  <LoadingState message="Loading customer escalations..." />
  ) : escalations.length === 0 ? (
  <EmptyState
- title="No customer escalations"
- description="All inbound customer conversations have been resolved autonomously or completed successfully."
+ title="All caught up!"
+ description="All customer messages have been answered. When a caller asks to speak with a human, it will appear here."
  icon={ShieldCheck}
  />
  ) : (

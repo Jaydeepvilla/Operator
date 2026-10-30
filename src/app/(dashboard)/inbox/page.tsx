@@ -553,9 +553,9 @@ export default function UnifiedInboxPage() {
             ) : filteredThreads.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center p-space-6 text-center text-caption text-neutral-400 py-space-12">
                 <Inbox className="h-8 w-8 text-neutral-300 mb-space-2" />
-                <span className="font-semibold text-foreground">No conversations</span>
-                <p className="text-caption text-neutral-400 max-w-40 mx-auto mt-space-1">
-                  Try checking other filters or clear search.
+                <span className="font-semibold text-foreground">No messages yet</span>
+                <p className="text-caption text-neutral-400 max-w-48 mx-auto mt-space-1">
+                  When customers message your website or WhatsApp, they will appear here.
                 </p>
               </div>
             ) : (
@@ -926,10 +926,24 @@ export default function UnifiedInboxPage() {
               <div className="flex h-12 w-12 items-center justify-center radius-xl bg-primary/10 text-primary ring-1 ring-primary/20 animate-float shadow-xs">
                 <MessageSquare className="h-5 w-5" />
               </div>
-              <h3 className="text-body-sm font-semibold text-foreground mt-space-2">Select a conversation</h3>
+              <h3 className="text-body-sm font-semibold text-foreground mt-space-2">
+                {threads.length === 0 ? "No customer messages yet" : "Select a conversation"}
+              </h3>
               <p className="max-w-xs text-caption text-neutral-400 leading-normal">
-                Choose a customer thread from the left to review automated AI responses, inspect citations, or take over manually.
+                {threads.length === 0
+                  ? "When customers message your website chat or WhatsApp, your assistant will answer instantly and log the conversation here."
+                  : "Choose a customer message from the left to review the conversation or reply personally."}
               </p>
+              {threads.length === 0 && (
+                <div className="pt-2">
+                  <a
+                    href="/widget"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-all shadow-xs"
+                  >
+                    <span>Send a test message</span>
+                  </a>
+                </div>
+              )}
             </div>
           )}
         </div>

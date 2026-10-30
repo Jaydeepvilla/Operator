@@ -8,6 +8,7 @@ import { flowsRepository } from "@/server/repositories/flows";
 import { settingsRepository } from "@/server/repositories/settings";
 import { staffRepository } from "@/server/repositories/staff";
 import { documentsRepository } from "@/server/repositories/documents";
+import { subscriptionEngine } from "@/server/services/billing/subscription-engine";
 
 import { SetupState } from "@/lib/setup-engine/types";
 import { DashboardEngine } from "@/lib/dashboard-engine";
@@ -34,6 +35,7 @@ export default async function DashboardPage() {
   let settings: any = null;
   let staffList: any[] = [];
   let documentsList: any[] = [];
+  let subStatus: any = null;
 
   try {
     const results = await Promise.allSettled([
@@ -44,6 +46,7 @@ export default async function DashboardPage() {
       settingsRepository.getByOrg(org.id),
       staffRepository.list(org.id),
       documentsRepository.list(org.id),
+      subscriptionEngine.getSubscriptionStatus(org.id),
     ]);
 
     if (results[0].status === "fulfilled") profile = results[0].value;
@@ -53,6 +56,7 @@ export default async function DashboardPage() {
     if (results[4].status === "fulfilled") settings = results[4].value;
     if (results[5].status === "fulfilled") staffList = results[5].value || [];
     if (results[6].status === "fulfilled") documentsList = results[6].value || [];
+    if (results[7].status === "fulfilled") subStatus = results[7].value;
   } catch (err) {
     console.warn("Dashboard repository query fallback:", err);
   }
@@ -115,6 +119,8 @@ export default async function DashboardPage() {
 
   const businessName = org.name || "your business";
   const verificationStatus = (org.verificationStatus as VerificationStatus) || "unverified";
+  const isPaused = Boolean(settings?.bookingPreferences?.assistantPaused);
+  const planId = subStatus?.planId || "starter";
 
   return (
     <DashboardLiveClient
@@ -122,6 +128,8 @@ export default async function DashboardPage() {
       businessName={businessName}
       verificationStatus={verificationStatus}
       orgId={org.id}
+      planId={planId}
+      initialPaused={isPaused}
     />
   );
 }

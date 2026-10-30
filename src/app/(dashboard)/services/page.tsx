@@ -44,7 +44,7 @@ export default async function ServicesPage() {
       {/* Page Header */}
       <PageTitle
         title="Services"
-        description="What your business offers. Add services so customers can book them."
+        description="Here you tell your assistant what you offer and what it costs."
       />
 
       <ServicesManager initialServices={servicesMapped} categories={categoriesMapped} />

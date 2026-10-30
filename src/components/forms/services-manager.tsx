@@ -229,10 +229,10 @@ export function ServicesManager({ initialServices, categories }: ServicesManager
 
  {services.length === 0 ? (
  <EmptyState
- title="No services configured"
- description="Operator needs to know what services you offer to schedule appointments."
+ title="No services yet"
+ description="Add what customers can book, like 'Haircut, 30 minutes, ₹500' or 'Consultation, 45 minutes, $90'."
  icon={Clock}
- actionText="Configure Service"
+ actionText="Add a service"
  onAction={() => handleOpenDialog()}
  />
  ) : (
@@ -332,10 +332,10 @@ export function ServicesManager({ initialServices, categories }: ServicesManager
  </div>
  <div>
  <DialogTitle className="text-body-sm font-semibold text-foreground">
- {editingService ?"Edit Service Detail":"Add Service Detail"}
+ {editingService ? "Edit Service" : "Add a Service"}
  </DialogTitle>
  <DialogDescription className="text-caption text-muted-foreground/55 mt-space-0.5">
- Configure calendar parameters for customer booking appointments.
+ Add what customers can book, including duration and price.
  </DialogDescription>
  </div>
  </div>

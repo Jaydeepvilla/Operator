@@ -13,6 +13,7 @@ import { DashboardShell } from "@/components/shared/dashboard-shell";
 import { NotificationEngine } from "@/lib/notification-engine";
 import { subscriptionEngine } from "@/server/services/billing/subscription-engine";
 import { trialReminderEngine } from "@/server/services/billing/trial-reminder-engine";
+import { escalationsRepository } from "@/server/repositories/escalations";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,7 @@ export default async function DashboardLayout({
   let dynamicSub: any = null;
   let membership: any = null;
   let notifications: any = [];
+  let pendingEscalations: any[] = [];
 
   try {
     const results = await Promise.allSettled([
@@ -59,11 +61,13 @@ export default async function DashboardLayout({
         : Promise.resolve(null),
       NotificationEngine.getSmartNotifications(org.id),
       trialReminderEngine.evaluateOrganizationReminders(org.id),
+      escalationsRepository.list(org.id, "pending"),
     ]);
 
     if (results[0].status === "fulfilled") dynamicSub = results[0].value;
     if (results[1].status === "fulfilled") membership = results[1].value;
     if (results[2].status === "fulfilled") notifications = results[2].value || [];
+    if (results[4].status === "fulfilled") pendingEscalations = results[4].value || [];
   } catch (dbErr) {
     console.warn("Dashboard layout query fallback:", dbErr);
   }
@@ -89,6 +93,8 @@ export default async function DashboardLayout({
         orgIndustry={org.industry ?? null}
         roleLabel={roleLabel}
         isAgency={isAgency}
+        planId={dynamicSub?.planId ?? "starter"}
+        attentionCount={pendingEscalations.length}
         trialBanner={
           <TrialBanner
             status={dynamicSub?.state ?? "TRIALING"}

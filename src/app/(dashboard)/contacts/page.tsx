@@ -230,8 +230,8 @@ export default function ContactsPage() {
  <div className="space-y-space-4 animate-fade-in w-full pb-space-8">
  {/* Header */}
  <PageTitle
- title="Contacts"
- description="Everyone who's contacted your business. View conversations, booking history, and notes."
+ title="Customers"
+ description="Everyone who has contacted your business. View conversation history, appointments, and contact details."
  />
 
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-space-4 shrink-0">
@@ -338,9 +338,9 @@ export default function ContactsPage() {
  <User className="h-5 w-5 text-primary/60"/>
  </div>
  <div>
- <p className="text-caption font-semibold text-foreground">No contacts yet</p>
+ <p className="text-caption font-semibold text-foreground">No customers yet</p>
  <p className="text-caption text-muted-foreground/70 mt-space-1 leading-relaxed">
- Contacts appear automatically when someone messages Operator AI, books an appointment, or calls your business number.
+ Customers appear automatically when someone messages your assistant, books an appointment, or calls your business number.
  </p>
  </div>
  <p className="text-caption text-muted-foreground/50 italic">
