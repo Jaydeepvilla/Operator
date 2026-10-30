@@ -296,7 +296,6 @@ export class RouteDecisionEngine {
     const CANONICAL_REDIRECTS: Record<string, string> = {
       "/conversations": "/inbox",
       "/leads": "/contacts",
-      "/faqs": "/kb",
       "/team": "/staff",
     };
 

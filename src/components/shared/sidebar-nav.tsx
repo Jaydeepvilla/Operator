@@ -163,7 +163,7 @@ export function SidebarNavGroup({
               <span>{title}</span>
               <ChevronDown
                 className={cn(
-                  "h-3.5 w-3.5 transition-transform duration-200 text-muted-foreground/60",
+                  "h-3.5 w-3.5 transition-transform duration-200 text-muted-foreground/80",
                   isOpen && "rotate-180"
                 )}
               />
@@ -234,7 +234,7 @@ export function SidebarNavGroup({
                       {link.badge !== undefined && link.badge !== null && (
                         <span
                           className={cn(
-                            "px-1.5 py-0.2 rounded-full text-[11px] font-bold leading-none shrink-0",
+                            "px-1.5 py-0.2 rounded-full text-xs font-bold leading-none shrink-0",
                             link.badgeVariant === "warning" || Number(link.badge) > 0
                               ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                               : "bg-muted text-muted-foreground"
@@ -246,7 +246,7 @@ export function SidebarNavGroup({
 
                       {/* Locked Badge (e.g. Phone on Starter) */}
                       {link.locked && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary-light bg-primary/15 border border-primary/25 px-1.5 py-0.5 rounded-full shrink-0">
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary-light bg-primary/15 border border-primary/25 px-1.5 py-0.5 rounded-full shrink-0">
                           <Lock className="w-2.5 h-2.5" />
                           <span>{link.lockLabel || "Pro"}</span>
                         </span>
@@ -293,7 +293,7 @@ export function SidebarNavGroup({
                           )}
 
                           {sub.badge && (
-                            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400">
+                            <span className="px-1.5 py-0.2 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400">
                               {sub.badge}
                             </span>
                           )}
@@ -312,7 +312,7 @@ export function SidebarNavGroup({
                   <TooltipContent side="right">
                     <p className="font-semibold">{link.label}</p>
                     {link.locked && (
-                      <p className="text-[10px] text-primary-light">{link.lockLabel || "Available on Pro"}</p>
+                      <p className="text-xs text-primary-light">{link.lockLabel || "Available on Pro"}</p>
                     )}
                   </TooltipContent>
                 </Tooltip>

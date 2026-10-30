@@ -461,11 +461,37 @@ test.describe('Operator Phase 8 — Background Workflow & Scheduled Reminders Su
 
   test('Crawler C — SSRF Protection & Private IP Rejection: Ingestion rejects private destinations', async () => {
     const privateTargets = [
+      // Loopback IPv4
       'http://127.0.0.1:8080/admin',
-      'http://169.254.169.254/latest/meta-data',
-      'http://10.0.0.1/internal',
+      'http://127.0.1.1/internal',
       'http://localhost:3000/api',
+      'http://test.localhost/api',
+      // Cloud metadata & link-local IPv4
+      'http://169.254.169.254/latest/meta-data',
+      'http://169.254.1.1/secret',
+      // Private RFC 1918 ranges
+      'http://10.0.0.1/internal',
+      'http://10.255.255.255/admin',
+      'http://172.16.0.1/intranet',
+      'http://172.31.255.255/status',
+      'http://192.168.1.1/router',
+      'http://192.168.0.254/gw',
+      // Carrier-Grade NAT (RFC 6598)
+      'http://100.64.0.1/cgnat',
+      // Broadcast / Current network
+      'http://0.0.0.0:8000/',
+      // Loopback IPv6
       'http://[::1]/secret',
+      'http://[::]/root',
+      // IPv6 link-local
+      'http://[fe80::1]/link-local',
+      // IPv6 unique local (ULA)
+      'http://[fc00::1]/ula',
+      'http://[fd00::1]/ula',
+      // IPv4-mapped IPv6
+      'http://[::ffff:127.0.0.1]/mapped-loopback',
+      'http://[::ffff:10.0.0.1]/mapped-private',
+      'http://[::ffff:169.254.169.254]/mapped-meta',
     ];
 
     for (const target of privateTargets) {

@@ -2,11 +2,10 @@
 
 import * as React from "react"
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Legend } from "recharts"
-import dynamic from 'next/dynamic'
-const ChartTooltip = dynamic(() => import('./chart-tooltip').then(m => m.ChartTooltip), { ssr: false })
-const ChartSkeleton = dynamic(() => import('./chart-skeleton').then(m => m.ChartSkeleton), { ssr: false })
-const ChartEmptyState = dynamic(() => import('./chart-empty-state').then(m => m.ChartEmptyState), { ssr: false })
-const ChartLegend = dynamic(() => import('./chart-legend').then(m => m.ChartLegend), { ssr: false })
+import { ChartTooltip } from "./chart-tooltip"
+import { ChartSkeleton } from "./chart-skeleton"
+import { ChartEmptyState } from "./chart-empty-state"
+import { ChartLegend } from "./chart-legend"
 
 export interface BarChartCardProps {
   data: any[]
@@ -47,12 +46,17 @@ export function BarChartCard({
   layout = "horizontal",
   barSize
 }: BarChartCardProps) {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const formatter = React.useCallback(
     (v: number) => valueFormatter ? valueFormatter(v) : `${valuePrefix}${v}${valueSuffix}`,
     [valueFormatter, valuePrefix, valueSuffix]
   );
 
-  if (loading) return <div style={{ height }}><ChartSkeleton /></div>
+  if (!mounted || loading) return <div style={{ height }}><ChartSkeleton /></div>
   if (!data || data.length === 0) return <div style={{ height }}><ChartEmptyState message={emptyMessage} /></div>
 
   return (
@@ -61,29 +65,52 @@ export function BarChartCard({
         <BarChart 
           data={data} 
           layout={layout}
-          margin={{ top: 10, right: 10, left: layout === "vertical" ? 0 : -20, bottom: 0 }}
+          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
         >
-          <CartesianGrid strokeDasharray="3 3" vertical={layout === "vertical"} horizontal={layout === "horizontal"} stroke="hsl(var(--foreground)/0.06)" />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--foreground)/0.06)" />
           {layout === "horizontal" ? (
             <>
-              <XAxis dataKey={index} axisLine={false} tickLine={false} tick={{ fill: "hsl(var(--foreground)/0.5)", fontSize: 12 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: "hsl(var(--foreground)/0.5)", fontSize: 12 }} tickFormatter={formatter} />
+              <XAxis 
+                dataKey={index} 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: "hsl(var(--foreground)/0.5)", fontSize: 12 }} 
+                dy={10}
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: "hsl(var(--foreground)/0.5)", fontSize: 12 }} 
+                tickFormatter={formatter}
+              />
             </>
           ) : (
             <>
-              <YAxis type="category" dataKey={index} axisLine={false} tickLine={false} tick={{ fill: "hsl(var(--foreground)/0.5)", fontSize: 12 }} width={140} />
-              <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: "hsl(var(--foreground)/0.5)", fontSize: 12 }} tickFormatter={formatter} />
+              <XAxis 
+                type="number"
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: "hsl(var(--foreground)/0.5)", fontSize: 12 }} 
+                tickFormatter={formatter}
+              />
+              <YAxis 
+                type="category"
+                dataKey={index} 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: "hsl(var(--foreground)/0.5)", fontSize: 12 }} 
+              />
             </>
           )}
-          <Tooltip cursor={{ fill: "hsl(var(--foreground)/0.03)" }} content={<ChartTooltip formatter={formatter} />} />
-          {showLegend && <Legend content={<ChartLegend />} />}
+          <Tooltip content={<ChartTooltip formatter={formatter} />} cursor={{ fill: "hsl(var(--foreground)/0.03)" }} />
+          {showLegend && <Legend content={<ChartLegend />} layout="horizontal" verticalAlign="bottom" />}
           {categories.map((cat, i) => (
             <Bar
               key={cat}
               dataKey={cat}
-              stackId={stacked ? "a" : undefined}
               fill={colors[i % colors.length]}
-              radius={stacked ? [0, 0, 0, 0] : (layout === "horizontal" ? [4, 4, 0, 0] : [0, 4, 4, 0])}
+              radius={[4, 4, 0, 0]}
+              stackId={stacked ? "stack" : undefined}
               barSize={barSize}
             />
           ))}

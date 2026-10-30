@@ -84,7 +84,7 @@ export default function HelpPage() {
             <Button asChild variant="outline" shape="pill" className="gap-2 font-semibold">
               <Link href="/academy">
                 <GraduationCap className="w-4 h-4" />
-                <span>Founder Academy Lessons</span>
+                <span>Video Lessons & Guides</span>
               </Link>
             </Button>
           </div>
@@ -108,7 +108,7 @@ export default function HelpPage() {
                     <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
                       <Icon className="w-5 h-5" />
                     </div>
-                    <span className="text-[11px] font-semibold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full border border-border/40">
+                    <span className="text-xs font-semibold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full border border-border/40">
                       {guide.tag}
                     </span>
                   </div>

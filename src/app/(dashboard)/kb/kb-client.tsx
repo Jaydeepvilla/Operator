@@ -640,37 +640,68 @@ const handleExecuteIngestion = async () => {
  </div>
 
  <div className="flex flex-col lg:flex-row gap-space-6 items-start w-full">
- {/* Sidebar Sub-Navigation */}
- <aside className="w-full lg:w-60 shrink-0 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 border-b lg:border-b-0 lg:border-r border-[hsl(var(--foreground)/0.08)] lg:pr-4 gap-1.5 whitespace-nowrap lg:whitespace-normal [scrollbar-width:none] [&::-webkit-scrollbar]:hidden no-scrollbar">
- {[
- { id:"overview", label:"Knowledge Overview", icon: BookOpen },
- { id:"documents", label:"Documents", icon: FileText },
- { id:"imports", label:"Website Imports", icon: Globe },
- { id:"categories", label:"Categories Catalog", icon: FolderPlus },
- { id:"queue", label:"Processing Queue", icon: ListFilter },
- { id:"search", label:"Search Console", icon: Search },
- { id:"settings", label:"Settings", icon: Settings },
- ].map((tab) => {
- const Icon = tab.icon;
- const isActive = activeTab === tab.id;
- return (
- <button
- key={tab.id}
- type="button"
- onClick={() => setActiveTab(tab.id)}
- className={cn(
- "flex items-center justify-start gap-3 px-3.5 py-2.5 text-body-sm font-medium transition-all duration-150 cursor-pointer w-auto lg:w-full text-left rounded-xl select-none",
- isActive
- ?"bg-primary/15 text-primary font-semibold shadow-xs ring-1 ring-primary/25"
- :"text-muted-foreground hover:text-foreground hover:bg-muted/40"
- )}
- >
- <Icon className={cn("h-4.5 w-4.5 shrink-0", isActive ?"text-primary":"text-muted-foreground/60")} />
- <span className="leading-none">{tab.label}</span>
- </button>
- );
- })}
- </aside>
+  {/* Sidebar Sub-Navigation */}
+  <aside className="w-full lg:w-60 shrink-0 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 border-b lg:border-b-0 lg:border-r border-[hsl(var(--foreground)/0.08)] lg:pr-4 gap-1.5 whitespace-nowrap lg:whitespace-normal [scrollbar-width:none] [&::-webkit-scrollbar]:hidden no-scrollbar">
+    {/* Primary Everyday Sections */}
+    {[
+      { id:"overview", label:"Knowledge Overview", icon: BookOpen },
+      { id:"documents", label:"Documents", icon: FileText },
+      { id:"imports", label:"Website Imports", icon: Globe },
+    ].map((tab) => {
+      const Icon = tab.icon;
+      const isActive = activeTab === tab.id;
+      return (
+        <button
+          key={tab.id}
+          type="button"
+          onClick={() => setActiveTab(tab.id)}
+          className={cn(
+            "flex items-center justify-start gap-3 px-3.5 py-2.5 text-body-sm font-medium transition-all duration-150 cursor-pointer w-auto lg:w-full text-left rounded-xl select-none",
+            isActive
+              ? "bg-primary/15 text-primary font-semibold shadow-xs ring-1 ring-primary/25"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+          )}
+        >
+          <Icon className={cn("h-4.5 w-4.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground/60")} />
+          <span className="leading-none">{tab.label}</span>
+        </button>
+      );
+    })}
+
+    {/* Advanced Section Divider */}
+    <div className="pt-2 lg:pt-3 pb-1 border-t border-[hsl(var(--foreground)/0.06)] mt-1 px-2 flex items-center">
+      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        Advanced
+      </span>
+    </div>
+
+    {/* Advanced Sections */}
+    {[
+      { id:"queue", label:"Processing Queue", icon: ListFilter },
+      { id:"search", label:"Search Console", icon: Search },
+      { id:"categories", label:"Categories Catalog", icon: FolderPlus },
+      { id:"settings", label:"Knowledge Settings", icon: Settings },
+    ].map((tab) => {
+      const Icon = tab.icon;
+      const isActive = activeTab === tab.id;
+      return (
+        <button
+          key={tab.id}
+          type="button"
+          onClick={() => setActiveTab(tab.id)}
+          className={cn(
+            "flex items-center justify-start gap-3 px-3.5 py-2 text-xs font-medium transition-all duration-150 cursor-pointer w-auto lg:w-full text-left rounded-xl select-none",
+            isActive
+              ? "bg-primary/15 text-primary font-semibold shadow-xs ring-1 ring-primary/25"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+          )}
+        >
+          <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground/60")} />
+          <span className="leading-none">{tab.label}</span>
+        </button>
+      );
+    })}
+  </aside>
 
  {/* Main Content viewport */}
  <div className="flex-1 w-full space-y-space-6 min-w-0">

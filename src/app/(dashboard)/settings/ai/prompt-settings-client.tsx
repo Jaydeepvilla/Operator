@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
+import * as React from "react";
+import { useState, useEffect, useTransition, useCallback } from "react";
 import { saveAIPersonaAction } from "@/server/actions/voice";
 import { Button } from "@/components/shared/button";
 import { Input } from "@/components/shared/input";
@@ -87,11 +88,25 @@ export function PromptSettingsClient({
   const [isPlayingTonePreview, setIsPlayingTonePreview] = useState(false);
   const [showRawPrompt, setShowRawPrompt] = useState(false);
 
+  // Preload speech voices on mount
+  React.useEffect?.(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.getVoices();
+      const onVoices = () => {
+        window.speechSynthesis.getVoices();
+      };
+      window.speechSynthesis.onvoiceschanged = onVoices;
+      return () => {
+        window.speechSynthesis.onvoiceschanged = null;
+        window.speechSynthesis.cancel();
+      };
+    }
+  }, []);
+
   const playToneSample = useCallback(
     (toneValue: string, name?: string) => {
-      if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+      if (typeof window === "undefined") return;
 
-      window.speechSynthesis.cancel();
       const assistant = name || assistantName || "Ava";
       const samplePhrases: Record<string, string> = {
         professional: `Hello. Thank you for contacting ${orgName || "our business"}. My name is ${assistant}. How may I assist you with scheduling or service inquiries today?`,
@@ -102,52 +117,87 @@ export function PromptSettingsClient({
       };
 
       const textToSpeak = samplePhrases[toneValue] || samplePhrases.warm;
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
 
-      const availableVoices = window.speechSynthesis.getVoices();
-      const voice =
-        availableVoices.find(
-          (v) =>
-            v.lang.startsWith("en") &&
-            (v.name.toLowerCase().includes("female") ||
-              v.name.toLowerCase().includes("zira") ||
-              v.name.toLowerCase().includes("samantha") ||
-              v.name.toLowerCase().includes("natural") ||
-              v.name.toLowerCase().includes("nicole"))
-        ) || availableVoices.find((v) => v.lang.startsWith("en"));
+      if ("speechSynthesis" in window) {
+        try {
+          window.speechSynthesis.cancel();
+          if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+          }
 
-      if (voice) utterance.voice = voice;
+          const utterance = new SpeechSynthesisUtterance(textToSpeak);
+          const availableVoices = window.speechSynthesis.getVoices();
+          const voice =
+            availableVoices.find(
+              (v) =>
+                v.lang.startsWith("en") &&
+                (v.name.toLowerCase().includes("female") ||
+                  v.name.toLowerCase().includes("zira") ||
+                  v.name.toLowerCase().includes("samantha") ||
+                  v.name.toLowerCase().includes("natural") ||
+                  v.name.toLowerCase().includes("nicole"))
+            ) || availableVoices.find((v) => v.lang.startsWith("en"));
 
-      if (toneValue === "concise") {
-        utterance.rate = 1.15;
-        utterance.pitch = 1.0;
-      } else if (toneValue === "warm") {
-        utterance.rate = 0.95;
-        utterance.pitch = 1.08;
-      } else if (toneValue === "luxury") {
-        utterance.rate = 0.88;
-        utterance.pitch = 0.96;
-      } else if (toneValue === "casual") {
-        utterance.rate = 1.05;
-        utterance.pitch = 1.04;
-      } else {
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
+          if (voice) utterance.voice = voice;
+
+          if (toneValue === "concise") {
+            utterance.rate = 1.15;
+            utterance.pitch = 1.0;
+          } else if (toneValue === "warm") {
+            utterance.rate = 0.95;
+            utterance.pitch = 1.08;
+          } else if (toneValue === "luxury") {
+            utterance.rate = 0.88;
+            utterance.pitch = 0.96;
+          } else if (toneValue === "casual") {
+            utterance.rate = 1.05;
+            utterance.pitch = 1.04;
+          } else {
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+          }
+
+          utterance.onstart = () => setIsPlayingTonePreview(true);
+          utterance.onend = () => setIsPlayingTonePreview(false);
+          utterance.onerror = () => setIsPlayingTonePreview(false);
+
+          (window as any).__toneUtterance = utterance;
+
+          window.speechSynthesis.speak(utterance);
+          setIsPlayingTonePreview(true);
+          return;
+        } catch (err) {
+          console.warn("Speech synthesis notice:", err);
+        }
       }
 
-      utterance.onstart = () => setIsPlayingTonePreview(true);
-      utterance.onend = () => setIsPlayingTonePreview(false);
-      utterance.onerror = () => setIsPlayingTonePreview(false);
-
-      window.speechSynthesis.speak(utterance);
-      setIsPlayingTonePreview(true);
+      // Fallback audio feedback chime
+      try {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) {
+          const ctx = new AudioCtx();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.35);
+          setIsPlayingTonePreview(true);
+          setTimeout(() => setIsPlayingTonePreview(false), 400);
+        }
+      } catch {
+        setIsPlayingTonePreview(false);
+      }
     },
     [assistantName, orgName]
   );
 
   const handleToneChange = (val: string) => {
     setTone(val);
-    playToneSample(val, assistantName);
   };
 
   const handleToggleToneAudio = () => {
@@ -241,10 +291,15 @@ export function PromptSettingsClient({
             </div>
 
             <div className="space-y-space-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="tone-select" className="text-body-sm font-semibold text-foreground">
-                  Tone of Voice
-                </Label>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="tone-select" className="text-body-sm font-semibold text-foreground">
+                    Tone of Voice
+                  </Label>
+                  <span className="text-xs text-amber-500 font-medium bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                    Approximate preview
+                  </span>
+                </div>
                 <Button
                   type="button"
                   variant="outline"
@@ -255,12 +310,12 @@ export function PromptSettingsClient({
                   {isPlayingTonePreview ? (
                     <>
                       <Square className="h-3 w-3 fill-current text-rose-500" />
-                      <span>Stop</span>
+                      <span>Stop sample</span>
                     </>
                   ) : (
                     <>
                       <Play className="h-3 w-3 fill-current text-primary" />
-                      <span>Listen Tone</span>
+                      <span>Play sample</span>
                     </>
                   )}
                 </Button>
@@ -285,7 +340,7 @@ export function PromptSettingsClient({
               <div className="mt-3 p-3.5 rounded-xl bg-background/80 border border-border/70 space-y-2">
                 <div className="flex items-center justify-between text-caption font-semibold text-muted-foreground">
                   <span>Customer question:</span>
-                  <span className="text-[10px] text-primary uppercase font-bold tracking-wider">Tone Preview</span>
+                  <span className="text-xs text-primary uppercase font-bold tracking-wider">Tone Preview</span>
                 </div>
                 <p className="text-caption text-foreground/80 italic bg-muted/40 p-2 rounded-lg border border-border/40">
                   "{(TONE_SAMPLES[tone] || TONE_SAMPLES.warm).q}"
@@ -488,7 +543,7 @@ export function PromptSettingsClient({
                     <h3 className="text-body-md font-bold text-foreground">
                       {assistantName || "Ava"}
                     </h3>
-                    <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
                       Front Desk AI
                     </span>
                   </div>

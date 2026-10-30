@@ -72,7 +72,7 @@ export function SetupChecklistCard({ steps }: SetupChecklistCardProps) {
                   {step.isComplete ? (
                     <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                   ) : (
-                    <Circle className="w-5 h-5 text-muted-foreground/40" />
+                    <Circle className="w-5 h-5 text-muted-foreground/80" />
                   )}
                 </div>
 
@@ -86,8 +86,8 @@ export function SetupChecklistCard({ steps }: SetupChecklistCardProps) {
                     >
                       {step.title}
                     </span>
-                    <span className="text-[11px] text-muted-foreground/60 flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-muted-foreground/60" />
+                    <span className="text-xs text-muted-foreground/80 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-muted-foreground/80" />
                       <span>{step.timeNeeded}</span>
                     </span>
                   </div>
@@ -104,7 +104,7 @@ export function SetupChecklistCard({ steps }: SetupChecklistCardProps) {
                         onClick={() =>
                           setActiveExampleId(isExampleOpen ? null : step.id)
                         }
-                        className="text-[11px] font-semibold text-primary-light hover:underline cursor-pointer"
+                        className="text-xs font-semibold text-primary-light hover:underline cursor-pointer"
                       >
                         {isExampleOpen ? "Hide example" : "See an example"}
                       </button>

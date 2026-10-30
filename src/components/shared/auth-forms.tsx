@@ -215,10 +215,10 @@ export function AuthHeader({
 
       {/* Headline block */}
       <div className={cn("space-y-space-2", isCenter ? "text-center mx-auto" : "text-left")}>
-        <h1 className="text-heading-lg font-semibold tracking-tight text-foreground leading-heading">
+        <h1 className={cn("text-heading-lg font-semibold tracking-tight text-foreground leading-heading", isCenter && "text-center")}>
           {heading}
         </h1>
-        <p className={cn("text-body-sm text-foreground/45 leading-body", isCenter && "max-w-md mx-auto")}>
+        <p className={cn("text-body-sm text-foreground/45 leading-body", isCenter && "text-center max-w-md mx-auto")}>
           {subheading}
         </p>
       </div>

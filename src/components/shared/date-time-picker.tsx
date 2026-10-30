@@ -202,7 +202,7 @@ export function DateTimePicker({
           className
         )}
       >
-        <span className={displayText ? "text-foreground font-medium" : "text-muted-foreground/60"}>
+        <span className={displayText ? "text-foreground font-medium" : "text-muted-foreground/80"}>
           {displayText || placeholder}
         </span>
         <CalendarIcon className="h-4 w-4 text-muted-foreground/70 shrink-0 ml-2" />
@@ -220,7 +220,7 @@ export function DateTimePicker({
               <button
                 type="button"
                 onClick={setToday}
-                className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors ml-1 cursor-pointer"
+                className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors ml-1 cursor-pointer"
               >
                 Today
               </button>
@@ -248,7 +248,7 @@ export function DateTimePicker({
           {/* Weekday Row */}
           <div className="grid grid-cols-7 gap-1 text-center mb-1.5">
             {WEEKDAYS.map((wd) => (
-              <span key={wd} className="text-caption font-semibold text-muted-foreground/60 uppercase">
+              <span key={wd} className="text-caption font-semibold text-muted-foreground/80 uppercase">
                 {wd}
               </span>
             ))}
@@ -329,7 +329,7 @@ export function DateTimePicker({
             {/* Hour & Minute Selectors */}
             <div className="grid grid-cols-2 gap-2 mb-2.5">
               <div>
-                <label className="text-[11px] text-muted-foreground/60 block mb-1">Hour</label>
+                <label className="text-xs text-muted-foreground/80 block mb-1">Hour</label>
                 <select
                   value={selectedHour12}
                   onChange={(e) => {
@@ -348,7 +348,7 @@ export function DateTimePicker({
               </div>
 
               <div>
-                <label className="text-[11px] text-muted-foreground/60 block mb-1">Minute</label>
+                <label className="text-xs text-muted-foreground/80 block mb-1">Minute</label>
                 <select
                   value={selectedMinute}
                   onChange={(e) => {
@@ -374,7 +374,7 @@ export function DateTimePicker({
                   key={qt.label}
                   type="button"
                   onClick={() => handleTimePreset(qt.h, qt.m)}
-                  className="text-[11px] font-medium px-2 py-0.5 rounded-md border border-border/50 bg-background/60 hover:bg-accent text-foreground/80 hover:text-foreground transition-colors cursor-pointer"
+                  className="text-xs font-medium px-2 py-0.5 rounded-md border border-border/50 bg-background/60 hover:bg-accent text-foreground/80 hover:text-foreground transition-colors cursor-pointer"
                 >
                   {qt.label}
                 </button>

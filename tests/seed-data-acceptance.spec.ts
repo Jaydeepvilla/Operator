@@ -22,10 +22,24 @@ import { ragService } from "../src/server/services/rag";
 import { availabilityService } from "../src/server/services/availability";
 import { bookingService } from "../src/server/services/booking";
 import crypto from "crypto";
+import { seedUsers } from "../scripts/seed/users";
+import { seedBusiness } from "../scripts/seed/business";
+import { seedServices } from "../scripts/seed/services";
+import { seedStaff } from "../scripts/seed/staff";
+import { seedKnowledge } from "../scripts/seed/knowledge";
+import { seedAI } from "../scripts/seed/ai";
 
 const ORG_ID = "11111111-1111-1111-1111-111111111111";
 
 test.describe("Phase 3 — Repeatable Seed Data Acceptance Suite (Operator Demo Salon)", () => {
+  test.beforeAll(async () => {
+    const userIds = await seedUsers();
+    await seedBusiness(userIds);
+    await seedServices();
+    await seedStaff();
+    await seedKnowledge();
+    await seedAI();
+  });
 
   // Acceptance Test 1: Seeded business data integrity
   test("1. Seed process creates valid parent and child relational records", async () => {

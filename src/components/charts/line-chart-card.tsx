@@ -2,11 +2,10 @@
 
 import * as React from "react"
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Legend } from "recharts"
-import dynamic from 'next/dynamic'
-const ChartTooltip = dynamic(() => import('./chart-tooltip').then(m => m.ChartTooltip), { ssr: false })
-const ChartSkeleton = dynamic(() => import('./chart-skeleton').then(m => m.ChartSkeleton), { ssr: false })
-const ChartEmptyState = dynamic(() => import('./chart-empty-state').then(m => m.ChartEmptyState), { ssr: false })
-const ChartLegend = dynamic(() => import('./chart-legend').then(m => m.ChartLegend), { ssr: false })
+import { ChartTooltip } from "./chart-tooltip"
+import { ChartSkeleton } from "./chart-skeleton"
+import { ChartEmptyState } from "./chart-empty-state"
+import { ChartLegend } from "./chart-legend"
 
 export interface LineChartCardProps {
   data: any[]
@@ -39,18 +38,23 @@ export function LineChartCard({
   height = 300,
   loading,
   emptyMessage,
-  showLegend = true
+  showLegend = false
 }: LineChartCardProps) {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const formatter = React.useCallback(
     (v: number) => valueFormatter ? valueFormatter(v) : `${valuePrefix}${v}${valueSuffix}`,
     [valueFormatter, valuePrefix, valueSuffix]
   );
 
-  if (loading) return <div style={{ height }}><ChartSkeleton /></div>
+  if (!mounted || loading) return <div style={{ height }}><ChartSkeleton /></div>
   if (!data || data.length === 0) return <div style={{ height }}><ChartEmptyState message={emptyMessage} /></div>
 
   return (
-    <div style={{ height }} className="w-full">
+    <div style={{ height }} className="w-full relative">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--foreground)/0.06)" />
@@ -68,7 +72,7 @@ export function LineChartCard({
             tickFormatter={formatter}
           />
           <Tooltip content={<ChartTooltip formatter={formatter} />} cursor={{ stroke: "hsl(var(--foreground)/0.1)", strokeWidth: 1, strokeDasharray: "3 3" }} />
-          {showLegend && <Legend content={<ChartLegend />} />}
+          {showLegend && <Legend content={<ChartLegend />} layout="horizontal" verticalAlign="bottom" />}
           {categories.map((cat, i) => (
             <Line
               key={cat}
@@ -76,8 +80,8 @@ export function LineChartCard({
               dataKey={cat}
               stroke={colors[i % colors.length]}
               strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4, strokeWidth: 0, fill: colors[i % colors.length] }}
+              dot={{ r: 3, fill: colors[i % colors.length] }}
+              activeDot={{ r: 5 }}
             />
           ))}
         </LineChart>

@@ -120,80 +120,129 @@ export function VoiceSettingsClient({
   const [newRulePriority, setNewRulePriority] = useState("0");
   const [ruleDialogError, setRuleDialogError] = useState<string | null>(null);
 
-  // Play audio sample via high-fidelity browser synthesis
-  const playVoiceSample = useCallback((voiceId: string, speedStr: string, customText?: string) => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+  // Ensure browser voices are loaded
+  useEffect(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.getVoices();
+      const onVoices = () => {
+        window.speechSynthesis.getVoices();
+      };
+      window.speechSynthesis.onvoiceschanged = onVoices;
+      return () => {
+        window.speechSynthesis.onvoiceschanged = null;
+        window.speechSynthesis.cancel();
+      };
+    }
+  }, []);
 
-    window.speechSynthesis.cancel();
+  // Play audio sample via high-fidelity browser synthesis with fallback chime
+  const playVoiceSample = useCallback((voiceId: string, speedStr: string, customText?: string) => {
+    if (typeof window === "undefined") return;
 
     const sampleText =
       customText ||
       settings.greetingMessage ||
       "Hello! Thanks for calling. How can I assist you today?";
 
-    const utterance = new SpeechSynthesisUtterance(sampleText);
-    const speed = parseFloat(speedStr) || 1.0;
-    utterance.rate = Math.max(0.7, Math.min(1.4, speed));
+    if ("speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.cancel();
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
 
-    const isMale =
-      voiceId.startsWith("am_") ||
-      voiceId.startsWith("bm_") ||
-      ["Dennis", "Blake", "Edward"].includes(voiceId);
-    const isBritish =
-      voiceId.startsWith("bf_") ||
-      voiceId.startsWith("bm_") ||
-      voiceId === "Edward";
+        const utterance = new SpeechSynthesisUtterance(sampleText);
+        const speed = parseFloat(speedStr) || 1.0;
+        utterance.rate = Math.max(0.7, Math.min(1.4, speed));
 
-    const availableVoices = window.speechSynthesis.getVoices();
-    let chosenVoice: SpeechSynthesisVoice | undefined;
+        const isMale =
+          voiceId.startsWith("am_") ||
+          voiceId.startsWith("bm_") ||
+          ["Dennis", "Blake", "Edward"].includes(voiceId);
+        const isBritish =
+          voiceId.startsWith("bf_") ||
+          voiceId.startsWith("bm_") ||
+          voiceId === "Edward";
 
-    if (isBritish) {
-      chosenVoice = availableVoices.find(
-        (v) =>
-          v.lang.startsWith("en-GB") &&
-          (isMale ? v.name.toLowerCase().includes("male") || v.name.toLowerCase().includes("george") : true)
-      );
+        const availableVoices = window.speechSynthesis.getVoices();
+        let chosenVoice: SpeechSynthesisVoice | undefined;
+
+        if (isBritish) {
+          chosenVoice = availableVoices.find(
+            (v) =>
+              v.lang.startsWith("en-GB") &&
+              (isMale ? v.name.toLowerCase().includes("male") || v.name.toLowerCase().includes("george") : true)
+          );
+        }
+        if (!chosenVoice && isMale) {
+          chosenVoice = availableVoices.find(
+            (v) =>
+              v.lang.startsWith("en") &&
+              (v.name.toLowerCase().includes("male") ||
+                v.name.toLowerCase().includes("david") ||
+                v.name.toLowerCase().includes("guy") ||
+                v.name.toLowerCase().includes("adam"))
+          );
+        }
+        if (!chosenVoice) {
+          chosenVoice = availableVoices.find(
+            (v) =>
+              v.lang.startsWith("en") &&
+              (v.name.toLowerCase().includes("female") ||
+                v.name.toLowerCase().includes("zira") ||
+                v.name.toLowerCase().includes("samantha") ||
+                v.name.toLowerCase().includes("natural") ||
+                v.name.toLowerCase().includes("nicole"))
+          );
+        }
+        if (!chosenVoice) {
+          chosenVoice = availableVoices.find((v) => v.lang.startsWith("en"));
+        }
+
+        if (chosenVoice) {
+          utterance.voice = chosenVoice;
+        }
+
+        utterance.pitch = isMale ? 0.92 : 1.06;
+
+        utterance.onstart = () => setIsPlayingPreview(true);
+        utterance.onend = () => setIsPlayingPreview(false);
+        utterance.onerror = () => setIsPlayingPreview(false);
+
+        (window as any).__voiceUtterance = utterance;
+
+        window.speechSynthesis.speak(utterance);
+        setIsPlayingPreview(true);
+        return;
+      } catch (err) {
+        console.warn("Speech synthesis notice:", err);
+      }
     }
-    if (!chosenVoice && isMale) {
-      chosenVoice = availableVoices.find(
-        (v) =>
-          v.lang.startsWith("en") &&
-          (v.name.toLowerCase().includes("male") ||
-            v.name.toLowerCase().includes("david") ||
-            v.name.toLowerCase().includes("guy") ||
-            v.name.toLowerCase().includes("adam"))
-      );
-    }
-    if (!chosenVoice) {
-      chosenVoice = availableVoices.find(
-        (v) =>
-          v.lang.startsWith("en") &&
-          (v.name.toLowerCase().includes("female") ||
-            v.name.toLowerCase().includes("zira") ||
-            v.name.toLowerCase().includes("samantha") ||
-            v.name.toLowerCase().includes("natural") ||
-            v.name.toLowerCase().includes("nicole"))
-      );
-    }
-    if (!chosenVoice) {
-      chosenVoice = availableVoices.find((v) => v.lang.startsWith("en"));
-    }
 
-    if (chosenVoice) {
-      utterance.voice = chosenVoice;
+    // Audio chime fallback if TTS unavailable
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(520, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+        setIsPlayingPreview(true);
+        setTimeout(() => setIsPlayingPreview(false), 400);
+      }
+    } catch {
+      setIsPlayingPreview(false);
     }
-
-    utterance.pitch = isMale ? 0.92 : 1.06;
-
-    utterance.onstart = () => setIsPlayingPreview(true);
-    utterance.onend = () => setIsPlayingPreview(false);
-    utterance.onerror = () => setIsPlayingPreview(false);
-
-    window.speechSynthesis.speak(utterance);
-    setIsPlayingPreview(true);
   }, [settings.greetingMessage]);
 
-  const handleTogglePreview = () => {
+    const handleTogglePreview = () => {
     if (isPlayingPreview) {
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
@@ -207,12 +256,10 @@ export function VoiceSettingsClient({
 
   const handleVoiceChange = (newVoice: string) => {
     setSettings((prev) => ({ ...prev, voiceName: newVoice }));
-    playVoiceSample(newVoice, settings.speakingSpeed);
   };
 
   const handleSpeedChange = (newSpeed: string) => {
     setSettings((prev) => ({ ...prev, speakingSpeed: newSpeed }));
-    playVoiceSample(settings.voiceName, newSpeed);
   };
 
   const handleSaveSettings = () => {
@@ -317,10 +364,15 @@ export function VoiceSettingsClient({
 
           <div className="p-space-4 space-y-space-4 bg-[hsl(var(--foreground)/0.002)]">
             <div className="space-y-space-1.5">
-              <div className="flex items-center justify-between">
-                <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">
-                  Speaking Voice (Kokoro TTS)
-                </Label>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Label className="text-caption uppercase tracking-wider font-semibold text-muted-foreground/75">
+                    Speaking Voice (Kokoro TTS)
+                  </Label>
+                  <span className="text-xs text-amber-500 font-medium bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                    Approximate preview
+                  </span>
+                </div>
                 <Button
                   type="button"
                   variant="outline"
@@ -331,18 +383,18 @@ export function VoiceSettingsClient({
                   {isPlayingPreview ? (
                     <>
                       <Square className="h-3 w-3 fill-current text-rose-500" />
-                      <span>Stop</span>
+                      <span>Stop sample</span>
                     </>
                   ) : (
                     <>
                       <Play className="h-3 w-3 fill-current text-primary" />
-                      <span>Listen Sample</span>
+                      <span>Play sample</span>
                     </>
                   )}
                 </Button>
               </div>
 
-              <Select value={settings.voiceName} onValueChange={handleVoiceChange}>
+              <Select value={settings.voiceName || "af_nicole"} onValueChange={handleVoiceChange}>
                 <SelectTrigger className="h-9.5 text-caption bg-background border-[hsl(var(--foreground)/0.08)]">
                   <SelectValue placeholder="Select Speaking Voice" />
                 </SelectTrigger>

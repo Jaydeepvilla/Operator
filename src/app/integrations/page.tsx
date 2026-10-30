@@ -703,7 +703,7 @@ export default function IntegrationsPage() {
                   <span className="text-caption font-mono uppercase tracking-widest text-emerald-500 font-medium">
                     Live Enterprise Sync Hub
                   </span>
-                  <span className="text-muted-foreground/40 hidden sm:inline">•</span>
+                  <span className="text-muted-foreground/80 hidden sm:inline">•</span>
                   <span className="text-caption font-mono text-muted-foreground hidden sm:inline">
                     Zero-Collision Lock Protocol
                   </span>
@@ -735,7 +735,7 @@ export default function IntegrationsPage() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-caption font-medium text-foreground truncate">{gw.label}</p>
-                        <p className="text-[11px] text-muted-foreground font-mono truncate">{gw.sub}</p>
+                        <p className="text-xs text-muted-foreground font-mono truncate">{gw.sub}</p>
                       </div>
                     </div>
                   ))}
@@ -749,7 +749,7 @@ export default function IntegrationsPage() {
                       <span className="text-caption font-mono uppercase tracking-wider text-primary font-medium">
                         2. Operator Core
                       </span>
-                      <span className="px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-mono font-medium">
+                      <span className="px-2 py-0.5 rounded-full bg-primary/15 text-primary text-xs font-mono font-medium">
                         ACTIVE ENGINE
                       </span>
                     </div>
@@ -760,7 +760,7 @@ export default function IntegrationsPage() {
                       </div>
                       <div>
                         <h4 className="text-body-sm font-bold text-foreground">Autonomous Router</h4>
-                        <p className="text-[11px] text-muted-foreground font-mono">Bi-Directional State Machine</p>
+                        <p className="text-xs text-muted-foreground font-mono">Bi-Directional State Machine</p>
                       </div>
                     </div>
 
@@ -780,7 +780,7 @@ export default function IntegrationsPage() {
                     </div>
                   </div>
 
-                  <p className="text-[11px] text-muted-foreground font-mono mt-space-3 text-center border-t border-[hsl(var(--foreground)/0.06)] pt-space-2.5">
+                  <p className="text-xs text-muted-foreground font-mono mt-space-3 text-center border-t border-[hsl(var(--foreground)/0.06)] pt-space-2.5">
                     Sync Event Engine: <span className="text-foreground">2,840 calls triaged today</span>
                   </p>
                 </div>
@@ -791,7 +791,7 @@ export default function IntegrationsPage() {
                     <span className="text-caption font-mono uppercase tracking-wider text-muted-foreground font-medium">
                       3. Production Adapters (Click to inspect)
                     </span>
-                    <span className="text-[11px] font-mono text-muted-foreground">
+                    <span className="text-xs font-mono text-muted-foreground">
                       {PIPELINE_NODES.length} Active
                     </span>
                   </div>
@@ -820,7 +820,7 @@ export default function IntegrationsPage() {
                             <p className="text-caption font-medium text-foreground truncate leading-tight">
                               {node.name}
                             </p>
-                            <span className="text-[10px] font-mono text-emerald-500 flex items-center gap-1">
+                            <span className="text-xs font-mono text-emerald-500 flex items-center gap-1">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
                               {isConnected ? "Linked" : "Standby"}
                             </span>
@@ -849,7 +849,7 @@ export default function IntegrationsPage() {
                         <div>
                           <div className="flex items-center gap-2">
                             <h4 className="text-body-md font-bold text-foreground">{selected.name}</h4>
-                            <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">
+                            <span className="text-xs uppercase font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">
                               {selected.category}
                             </span>
                           </div>
@@ -891,7 +891,7 @@ export default function IntegrationsPage() {
                           Active AI Function: {activeIntegration.capabilities}
                         </p>
                       </div>
-                      <div className="md:col-span-7 bg-[#07090E] rounded-xl p-space-3.5 border border-border/30 overflow-x-auto text-[11px] font-mono text-slate-300">
+                      <div className="md:col-span-7 bg-[#07090E] rounded-xl p-space-3.5 border border-border/30 overflow-x-auto text-xs font-mono text-slate-300">
                         <pre className="whitespace-pre"><code>{selected.payload}</code></pre>
                       </div>
                     </div>
@@ -1073,12 +1073,12 @@ export default function IntegrationsPage() {
  <div className="flex flex-col sm:flex-row items-center justify-between gap-space-4 mb-space-8">
  <div className="relative flex-1 w-full max-w-lg">
  <div className="relative rounded-xl border-[hsl(var(--foreground)/0.08)] bg-card/60 p-space-2 flex items-center gap-space-2 shadow-xs">
- <Search className="h-4 w-4 text-muted-foreground/60 ml-space-2 shrink-0" />
+ <Search className="h-4 w-4 text-muted-foreground/80 ml-space-2 shrink-0" />
  <Input
  ref={searchInputRef}
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
- className="w-full bg-transparent text-body-sm outline-none border-none py-space-1 text-foreground placeholder:text-muted-foreground/50"
+ className="w-full bg-transparent text-body-sm outline-none border-none py-space-1 text-foreground placeholder:text-muted-foreground/80"
  placeholder="Search tools, telephony, calendars, CRMs..."
  />
  <div className="hidden sm:flex items-center gap-1 bg-[hsl(var(--foreground)/0.04)] border-[hsl(var(--foreground)/0.08)] px-space-2 py-0.5 rounded text-caption text-muted-foreground font-mono shrink-0 mr-space-1">

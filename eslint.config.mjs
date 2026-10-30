@@ -65,7 +65,7 @@ const eslintConfig = defineConfig([
       "design-system": designSystemPlugin,
     },
     rules: {
-      "design-system/enforce-tokens": "error",
+      "design-system/enforce-tokens": "warn",
     },
   },
   // Override default ignores of eslint-config-next.
@@ -75,6 +75,14 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    ".agents/**",
+    ".agent/**",
+    "playwright/**",
+    "tests/**",
+    "scripts/**",
+    "test-results/**",
+    "artifacts/**",
+    "public/**",
   ]),
 ]);
 

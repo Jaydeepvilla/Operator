@@ -2,11 +2,10 @@
 
 import * as React from "react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts"
-import dynamic from 'next/dynamic'
-const ChartTooltip = dynamic(() => import('./chart-tooltip').then(m => m.ChartTooltip), { ssr: false })
-const ChartSkeleton = dynamic(() => import('./chart-skeleton').then(m => m.ChartSkeleton), { ssr: false })
-const ChartEmptyState = dynamic(() => import('./chart-empty-state').then(m => m.ChartEmptyState), { ssr: false })
-const ChartLegend = dynamic(() => import('./chart-legend').then(m => m.ChartLegend), { ssr: false })
+import { ChartTooltip } from "./chart-tooltip"
+import { ChartSkeleton } from "./chart-skeleton"
+import { ChartEmptyState } from "./chart-empty-state"
+import { ChartLegend } from "./chart-legend"
 
 export interface DonutChartCardProps {
   data: any[]
@@ -45,6 +44,11 @@ export function DonutChartCard({
   showLegend = true,
   variant = "donut"
 }: DonutChartCardProps) {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const formatter = React.useCallback(
     (v: number) => valueFormatter ? valueFormatter(v) : `${valuePrefix}${v}${valueSuffix}`,
     [valueFormatter, valuePrefix, valueSuffix]
@@ -55,7 +59,7 @@ export function DonutChartCard({
     return data.reduce((acc, item) => acc + (Number(item?.[category]) || 0), 0);
   }, [data, category]);
 
-  if (loading) return <div style={{ height }}><ChartSkeleton /></div>
+  if (!mounted || loading) return <div style={{ height }}><ChartSkeleton /></div>
   if (!data || data.length === 0 || totalValue === 0) {
     return <div style={{ height }}><ChartEmptyState message={emptyMessage || "No activity recorded yet"} /></div>
   }

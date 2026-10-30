@@ -65,6 +65,13 @@ export default async function BookingSettingsPage() {
       <BookingSettingsClient 
         initialPreferences={preferences}
         initialRules={bookingRules}
+        country={org.country}
+        currency={(org as any).currency}
+        isStripeConfigured={Boolean(
+          process.env.STRIPE_SECRET_KEY &&
+          process.env.STRIPE_SECRET_KEY.startsWith("sk_") &&
+          process.env.STRIPE_WEBHOOK_SECRET
+        )}
       />
     </div>
   );

@@ -373,7 +373,7 @@ export default function AppointmentsPage() {
  <div className="w-full shrink-0">
  <PageTitle
  title="Appointments"
- description="All upcoming, past, and cancelled bookings. Manage your calendar from here."
+ description="Upcoming customer bookings scheduled by your assistant and staff."
  className="mb-space-3"
  />
  </div>
@@ -393,14 +393,14 @@ export default function AppointmentsPage() {
  <TabsTrigger value="day" disabled className="gap-1.5 opacity-60 cursor-not-allowed text-caption">
  <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
  Day
- <span className="ml-0.5 px-1 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 rounded-sm leading-none">
+ <span className="ml-0.5 px-1 py-0.5 text-xs font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 rounded-sm leading-none">
  Soon
  </span>
  </TabsTrigger>
  <TabsTrigger value="week" disabled className="gap-1.5 opacity-60 cursor-not-allowed text-caption">
  <CalendarRange className="h-3.5 w-3.5 shrink-0" />
  Week
- <span className="ml-0.5 px-1 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 rounded-sm leading-none">
+ <span className="ml-0.5 px-1 py-0.5 text-xs font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 rounded-sm leading-none">
  Soon
  </span>
  </TabsTrigger>
@@ -423,7 +423,7 @@ export default function AppointmentsPage() {
  {/* Filter Row */}
  <div className="flex flex-col md:flex-row gap-space-4 bg-card/60 backdrop-blur-md border border-border/50 p-space-4 radius-xl shadow-xs transition-all duration-300 ease-out shrink-0">
  <div className="relative flex-1">
- <Search className="absolute left-space-3 top-space-2.5 h-4 w-4 text-muted-foreground/50"/>
+ <Search className="absolute left-space-3 top-space-2.5 h-4 w-4 text-muted-foreground/80"/>
  <Input
  value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
@@ -436,7 +436,7 @@ export default function AppointmentsPage() {
  <Select value={selectedStaffId} onValueChange={setSelectedStaffId}>
  <SelectTrigger className="bg-background/80 hover:bg-background text-caption border-border/60 hover:border-primary/40 transition-all duration-200 h-9 radius-lg shadow-xs focus:ring-2 focus:ring-primary/10">
  <div className="flex items-center gap-space-1.5 font-medium">
- <User className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0"/>
+ <User className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0"/>
  <SelectValue placeholder="Staff Member"/>
  </div>
  </SelectTrigger>
@@ -452,7 +452,7 @@ export default function AppointmentsPage() {
  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
  <SelectTrigger className="bg-background/80 hover:bg-background text-caption border-border/60 hover:border-primary/40 transition-all duration-200 h-9 radius-lg shadow-xs focus:ring-2 focus:ring-primary/10">
  <div className="flex items-center gap-space-1.5 font-medium">
- <Filter className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0"/>
+ <Filter className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0"/>
  <SelectValue placeholder="Status Filter"/>
  </div>
  </SelectTrigger>
@@ -486,7 +486,7 @@ export default function AppointmentsPage() {
  {/* Left Column: Bookings List */}
  <div className="lg:col-span-8 flex flex-col h-[700px] bg-slate-50/20 border border-slate-200/40 radius-xl shadow-md transition-all duration-300 ease-out overflow-hidden">
  <div className="px-space-5 py-space-4 border-b border-slate-200/30 bg-slate-100/10 shrink-0">
- <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">Bookings List ({filteredApts.length})</span>
+ <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/80">Bookings List ({filteredApts.length})</span>
  </div>
  <ScrollArea className="flex-1 p-space-4 space-y-space-4 bg-transparent" horizontal={false}>
  {filteredApts.map((item) => {
@@ -537,10 +537,10 @@ export default function AppointmentsPage() {
 
  <div className="text-right pl-space-3 shrink-0 flex items-center gap-space-3">
  <div className="space-y-space-0.5">
- <span className="text-caption text-muted-foreground/50 font-semibold uppercase tracking-wider block">Price</span>
+ <span className="text-caption text-muted-foreground/80 font-semibold uppercase tracking-wider block">Price</span>
  <span className="text-caption font-semibold text-primary block">${item.service?.price || "0.00"}</span>
  </div>
- <ChevronRight className={cn("h-4 w-4 text-muted-foreground/40 transition-transform duration-200", isSelected && "rotate-90")} />
+ <ChevronRight className={cn("h-4 w-4 text-muted-foreground/80 transition-transform duration-200", isSelected && "rotate-90")} />
  </div>
  </Button>
 
@@ -548,7 +548,7 @@ export default function AppointmentsPage() {
  {isSelected && (
  <div className="p-space-5 bg-slate-50/10 border-t border-slate-200/30 space-y-space-5 animate-fade-in text-caption">
  {loadingDetails ? (
- <div className="py-space-6 flex items-center justify-center gap-space-2 text-muted-foreground/60">
+ <div className="py-space-6 flex items-center justify-center gap-space-2 text-muted-foreground/80">
  <Loader2 className="h-4.5 w-4.5 animate-spin text-primary"/>
  <span>Loading booking details...</span>
  </div>
@@ -557,7 +557,7 @@ export default function AppointmentsPage() {
  {/* Contact Info */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-4">
  <div className="space-y-space-2 bg-background/60 border border-slate-200/30 radius-lg p-space-4 shadow-[0_2px_4px_rgba(0,0,0,0.01)] hover:shadow-sm transition-all duration-300 ease-out">
- <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60 block">Customer Information</span>
+ <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/80 block">Customer Information</span>
  <div className="space-y-space-2 text-caption">
  <div className="flex items-center gap-space-2 text-caption">
  <Mail className="h-3.5 w-3.5 text-primary/70 shrink-0"/> 
@@ -572,7 +572,7 @@ export default function AppointmentsPage() {
 
  {/* Reschedule / Cancel status info */}
  <div className="space-y-space-2 bg-background/60 border border-slate-200/30 radius-lg p-space-4 shadow-[0_2px_4px_rgba(0,0,0,0.01)] hover:shadow-sm transition-all duration-300 ease-out">
- <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60 block">Scheduling Context</span>
+ <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/80 block">Scheduling Context</span>
  <div className="space-y-space-1.5 text-caption">
  <div>Booking ID: <span className="font-mono text-muted-foreground">{activeDetails.details.appointment.id}</span></div>
  <div className="flex items-center gap-space-1.5">
@@ -650,7 +650,7 @@ export default function AppointmentsPage() {
  {/* Answers checklist summary */}
  {activeDetails.leadAnswers && activeDetails.leadAnswers.length > 0 && (
  <div className="space-y-space-2 pt-space-3 border-t border-slate-200/20 ">
- <span className="text-caption text-muted-foreground/60 uppercase tracking-wider block font-medium flex items-center gap-space-1">
+ <span className="text-caption text-muted-foreground/80 uppercase tracking-wider block font-medium flex items-center gap-space-1">
  <ClipboardList className="h-3 w-3 text-muted-foreground/45 shrink-0"/> Captured Qualification
  </span>
  <div className="space-y-space-2 max-h-36 overflow-y-auto pr-space-1">
@@ -667,7 +667,7 @@ export default function AppointmentsPage() {
  {/* Summary items */}
  {activeDetails.summary && (
  <div className="space-y-space-1.5 pt-space-3 border-t border-slate-200/20 text-caption">
- <span className="text-caption text-muted-foreground/60 uppercase tracking-wider block font-medium flex items-center gap-space-1">
+ <span className="text-caption text-muted-foreground/80 uppercase tracking-wider block font-medium flex items-center gap-space-1">
  <MessageSquare className="h-3 w-3 text-muted-foreground/45 shrink-0"/> AI Summary
  </span>
  <p className="text-muted-foreground leading-relaxed italic">"{activeDetails.summary.summaryText}"</p>
@@ -683,7 +683,7 @@ export default function AppointmentsPage() {
  <div className="space-y-space-3">
  {activeDetails.notes && activeDetails.notes.map((note: any) => (
  <div key={note.id} className="bg-background/80 border border-slate-200/30 radius-lg p-space-3 shadow-xs text-caption space-y-space-2 hover:shadow-sm transition-all duration-300 ease-out">
- <div className="flex justify-between text-caption text-muted-foreground/50 font-semibold border-b border-slate-200/20 pb-space-2 mb-space-2">
+ <div className="flex justify-between text-caption text-muted-foreground/80 font-semibold border-b border-slate-200/20 pb-space-2 mb-space-2">
  <span className="uppercase tracking-wider">{note.author}</span>
  <span>{new Date(note.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
  </div>
@@ -707,7 +707,7 @@ export default function AppointmentsPage() {
  </div>
  </>
  ) : (
- <div className="py-space-6 text-center text-muted-foreground/60">
+ <div className="py-space-6 text-center text-muted-foreground/80">
  Failed to load details.
  </div>
  )}
@@ -723,7 +723,7 @@ export default function AppointmentsPage() {
  {/* Right Column: Booking Completion Funnel */}
  <div className="lg:col-span-4 flex flex-col h-[700px] bg-slate-50/20 border border-slate-200/40 radius-xl shadow-md transition-all duration-300 ease-out overflow-hidden">
  <div className="px-space-5 py-space-4 border-b border-slate-200/30 bg-slate-100/10 shrink-0">
- <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">Booking Completion Funnel</span>
+ <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/80">Booking Completion Funnel</span>
  </div>
  <ScrollArea className="flex-1 p-space-6 flex flex-col gap-space-5 bg-transparent">
  {/* Donut Chart */}
@@ -788,7 +788,7 @@ export default function AppointmentsPage() {
  {loadingSlots ? (
  <div className="text-caption text-muted-foreground flex items-center gap-space-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin text-primary"/> Fetching slots...</div>
  ) : availableSlots.length === 0 ? (
- <p className="text-caption text-muted-foreground/60 italic leading-normal">No available openings found for this date. Try another date.</p>
+ <p className="text-caption text-muted-foreground/80 italic leading-normal">No available openings found for this date. Try another date.</p>
  ) : (
  <div className="grid grid-cols-3 gap-space-2 max-h-36 overflow-y-auto pr-space-1">
  {availableSlots.map((slot, idx) => (

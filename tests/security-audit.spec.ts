@@ -5,7 +5,7 @@ import { verifyTwilioSignature } from '../src/server/utils/twilio-signature';
 import { validateSafeUrl } from '../src/server/services/crawler/ssrf';
 
 test.describe('Operator Phase 4 — Security Audit & Vulnerability Remediation Suite', () => {
-  const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3033';
+  const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || process.env.BASE_URL || 'http://localhost:3000';
 
   test('SEC-001: Cron Endpoints Enforce Strict Fail-Closed Authentication', async ({ playwright }) => {
     // Unauthenticated context

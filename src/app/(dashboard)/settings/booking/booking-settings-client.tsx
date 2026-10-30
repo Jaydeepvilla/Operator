@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { saveBookingPreferencesAction } from "@/server/actions/settings";
 import { saveBookingRulesAction } from "@/server/actions/calendar";
 import { Button } from "@/components/shared/button";
@@ -27,14 +28,24 @@ interface BookingSettingsClientProps {
  defaultBufferAfter: number;
  allowRescheduling: boolean;
  allowCancellation: boolean;
- cancellationLeadTime: number;
- };
+  cancellationLeadTime: number;
+  };
+  country?: string | null;
+  currency?: string | null;
+  isStripeConfigured?: boolean;
 }
 
 export function BookingSettingsClient({
  initialPreferences,
  initialRules,
+ country,
+ currency,
+ isStripeConfigured = false,
 }: BookingSettingsClientProps) {
+  const isIndia = (country && country.toUpperCase() === "IN") || (currency && currency.toUpperCase() === "INR");
+  const isUK = (country && (country.toUpperCase() === "GB" || country.toUpperCase() === "UK")) || (currency && currency.toUpperCase() === "GBP");
+  const paymentProvider = isIndia ? "Razorpay" : "Stripe";
+  const currencySymbol = isIndia ? "₹" : isUK ? "£" : "$";
  const [prefs, setPrefs] = useState(initialPreferences);
  const [rules, setRules] = useState(initialRules);
  const [isSaving, startSave] = useTransition();
@@ -233,20 +244,50 @@ export function BookingSettingsClient({
  <strong className="text-foreground">Deposits threshold:</strong> Enable deposits to reduce high-value slot cancellations.
  </li>
  <li>
- <strong className="text-foreground">Stripe Integration:</strong> Deposit parameters map directly to your connected checkout links.
+ <strong className="text-foreground">{paymentProvider} Integration:</strong> Deposit parameters map directly to your connected {paymentProvider} checkout and payment links.
  </li>
  </ul>
 
  <div className="p-space-4 radius-lg bg-[hsl(var(--foreground)/0.03)] border-border-subtle flex gap-space-3 items-start">
  <Info className="h-4.5 w-4.5 text-primary-500 shrink-0 mt-space-0.5" />
  <p className="text-caption leading-normal">
- Make sure your Stripe integration is active before requiring deposits on premium services.
+ Make sure your {paymentProvider} account is connected before requiring customer deposits.
  </p>
  </div>
  </div>
  </div>
 
- {/* Deposit Policy Configuration Card */}
+ {/* Deposit Policy Configuration Card or Contact Us Card */}
+ {!isIndia && !isStripeConfigured ? (
+   <div className="border-border-default radius-lg bg-bg-layer-1 p-space-6 space-y-space-4">
+     <div className="flex items-center justify-between border-b border-border-subtle pb-space-4">
+       <div>
+         <h2 className="text-title-md font-bold text-foreground">Service Deposits & Payments</h2>
+         <p className="text-body-sm text-muted-foreground mt-space-1">
+           Secure appointments by requiring a partial or full payment deposit up front.
+         </p>
+       </div>
+       <CreditCard className="h-5 w-5 text-muted-foreground shrink-0" />
+     </div>
+
+     <div className="rounded-xl border border-dashed border-border-default bg-bg-layer-2 p-space-6 text-center space-y-space-3">
+       <div className="h-10 w-10 mx-auto rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+         <CreditCard className="h-5 w-5" />
+       </div>
+       <div className="space-y-1">
+         <h3 className="text-body-md font-bold text-foreground">Contact us to enable payments</h3>
+         <p className="text-body-sm text-muted-foreground max-w-md mx-auto">
+           Online card payments via Stripe are available on request for US and UK businesses while your merchant profile is being activated. Contact our team to turn on customer deposits.
+         </p>
+       </div>
+       <div className="pt-2">
+         <Button asChild size="sm" variant="default" className="font-semibold">
+           <Link href="/help">Contact us to enable payments</Link>
+         </Button>
+       </div>
+     </div>
+   </div>
+ ) : (
  <div className="border-border-default radius-lg bg-bg-layer-1 p-space-6 space-y-space-5">
  <div className="flex items-center justify-between border-b border-border-subtle pb-space-4">
  <div>
@@ -309,7 +350,7 @@ export function BookingSettingsClient({
  <SelectValue placeholder="Select type" />
  </SelectTrigger>
  <SelectContent>
- <SelectItem value="fixed">Fixed Amount ($)</SelectItem>
+ <SelectItem value="fixed">Fixed Amount ({currencySymbol})</SelectItem>
  <SelectItem value="percentage">Percentage (%)</SelectItem>
  </SelectContent>
  </Select>
@@ -317,7 +358,7 @@ export function BookingSettingsClient({
 
  <div className="space-y-space-1.5">
  <label htmlFor="deposit-value" className="text-body-sm font-bold text-foreground block">
- {prefs.depositType === "percentage" ? "Deposit Percentage" : "Deposit Amount ($)"}
+ {prefs.depositType === "percentage" ? "Deposit Percentage (%)" : `Deposit Amount (${currencySymbol})`}
  </label>
  <div className="relative">
  {prefs.depositType !== "percentage" && (
@@ -352,6 +393,7 @@ export function BookingSettingsClient({
             </div>
           </div>
         </div>
+      )}
       </div>
     </div>
   );

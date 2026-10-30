@@ -95,6 +95,19 @@ export async function POST(req: NextRequest) {
 
     const orgId = phoneLine.organizationId;
 
+    // Server-side plan gating: check if organization plan includes voice AI
+    const { subscriptionEngine } = await import("@/server/services/billing/subscription-engine");
+    const { getPlan } = await import("@/lib/billing/plans");
+    const subStatus = await subscriptionEngine.getSubscriptionStatus(orgId);
+    const plan = getPlan(subStatus?.planId);
+    if (!plan?.features?.voiceAI) {
+      console.warn(`[Voice Webhook Inbound] Organization ${orgId} is on Starter plan without voice AI feature.`);
+      return new NextResponse(
+        `<Response><Say>Phone answering is not active on this account. Please visit your dashboard to activate the phone receptionist. Goodbye.</Say><Hangup/></Response>`,
+        { status: 403, headers: { "Content-Type": "text/xml" } }
+      );
+    }
+
     // Evaluate Routing Actions
     const routing = await voiceRouting.getCallRoutingAction(orgId);
     let xmlResponse = "";

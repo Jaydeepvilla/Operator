@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { db } from '../src/server/db';
-import { subscriptions, organizations, auditLogs, backgroundJobs, billingAccounts } from '../src/server/db/schema';
+import { subscriptions, organizations, auditLogs, backgroundJobs, billingAccounts, subscriptionPlans } from '../src/server/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 import Stripe from 'stripe';
@@ -36,6 +36,34 @@ test.describe('Operator Phase 8 — Staging Webhooks, Currency Integrity & Billi
         },
       ])
       .onConflictDoNothing();
+
+    // Ensure catalog subscription plans exist
+    await db
+      .insert(subscriptionPlans)
+      .values([
+        {
+          id: 'starter',
+          name: 'Starter',
+          description: 'Answer website and WhatsApp enquiries and book appointments automatically.',
+          price: '79',
+          interval: 'month',
+        },
+        {
+          id: 'professional',
+          name: 'Pro',
+          description: 'Everything in Starter, plus an AI phone receptionist, missed-call text-back, reminders and deposits.',
+          price: '199',
+          interval: 'month',
+        },
+        {
+          id: 'business',
+          name: 'Business',
+          description: 'Everything in Pro for up to 5 locations, with integrations, custom call routing and onboarding help.',
+          price: '399',
+          interval: 'month',
+        },
+      ])
+      .onConflictDoNothing();
   });
 
   // =========================================================================
@@ -56,21 +84,21 @@ test.describe('Operator Phase 8 — Staging Webhooks, Currency Integrity & Billi
   test('Pricing B — Authoritative Regional Rates: Enforces currency-specific prices without client tampering', async () => {
     const starterUsd = getLocalizedPlan('starter', 'USD');
     expect(starterUsd.currency).toBe('USD');
-    expect(starterUsd.price).toBe(49);
-    expect(starterUsd.yearlyPrice).toBe(39);
+    expect(starterUsd.price).toBe(79);
+    expect(starterUsd.yearlyPrice).toBe(66);
 
     const starterInr = getLocalizedPlan('starter', 'INR');
     expect(starterInr.currency).toBe('INR');
-    expect(starterInr.price).toBe(3999);
-    expect(starterInr.yearlyPrice).toBe(3199);
+    expect(starterInr.price).toBe(2499);
+    expect(starterInr.yearlyPrice).toBe(2083);
 
     const proEur = getLocalizedPlan('professional', 'EUR');
     expect(proEur.currency).toBe('EUR');
-    expect(proEur.price).toBe(139);
+    expect(proEur.price).toBe(189);
 
     const bizGbp = getLocalizedPlan('business', 'GBP');
     expect(bizGbp.currency).toBe('GBP');
-    expect(bizGbp.price).toBe(279);
+    expect(bizGbp.price).toBe(319);
   });
 
   // =========================================================================

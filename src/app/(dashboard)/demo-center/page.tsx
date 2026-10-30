@@ -348,7 +348,7 @@ export default function DemoCenterPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5">
                   {/* Card 1: Recovered Bookings */}
                   <div className="p-4 rounded-xl bg-violet-500/[0.05] border border-violet-500/30 hover:border-violet-500/50 transition-all flex flex-col justify-between min-h-[112px] text-left shadow-xs">
-                    <p className="text-[11px] text-violet-300/90 uppercase font-bold tracking-wider">
+                    <p className="text-xs text-violet-300/90 uppercase font-bold tracking-wider">
                       Recovered Bookings
                     </p>
                     <div className="my-1.5">
@@ -363,7 +363,7 @@ export default function DemoCenterPage() {
 
                   {/* Card 2: After-Hours Capture */}
                   <div className="p-4 rounded-xl bg-indigo-500/[0.05] border border-indigo-500/30 hover:border-indigo-500/50 transition-all flex flex-col justify-between min-h-[112px] text-left shadow-xs">
-                    <p className="text-[11px] text-indigo-300/90 uppercase font-bold tracking-wider">
+                    <p className="text-xs text-indigo-300/90 uppercase font-bold tracking-wider">
                       After-Hours Capture
                     </p>
                     <div className="my-1.5">
@@ -378,7 +378,7 @@ export default function DemoCenterPage() {
 
                   {/* Card 3: Labor Saved */}
                   <div className="p-4 rounded-xl bg-cyan-500/[0.05] border border-cyan-500/30 hover:border-cyan-500/50 transition-all flex flex-col justify-between min-h-[112px] text-left shadow-xs">
-                    <p className="text-[11px] text-cyan-300/90 uppercase font-bold tracking-wider">
+                    <p className="text-xs text-cyan-300/90 uppercase font-bold tracking-wider">
                       Labor Saved
                     </p>
                     <div className="my-1.5">
@@ -393,7 +393,7 @@ export default function DemoCenterPage() {
 
                   {/* Card 4: No-Show Reduction */}
                   <div className="p-4 rounded-xl bg-emerald-500/[0.05] border border-emerald-500/30 hover:border-emerald-500/50 transition-all flex flex-col justify-between min-h-[112px] text-left shadow-xs">
-                    <p className="text-[11px] text-emerald-300/90 uppercase font-bold tracking-wider">
+                    <p className="text-xs text-emerald-300/90 uppercase font-bold tracking-wider">
                       No-Show Reduction
                     </p>
                     <div className="my-1.5">

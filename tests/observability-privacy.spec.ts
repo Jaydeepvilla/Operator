@@ -184,7 +184,7 @@ test.describe('Operator Phase 5 — Observability, Error Monitoring & Privacy Su
   });
 
   test('OBS-006: Edge Proxy Propagates x-request-id Correlation Header', async ({ playwright }) => {
-    const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3033';
+    const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || process.env.BASE_URL || 'http://localhost:3000';
     const anonContext = await playwright.request.newContext({
       baseURL: baseUrl,
       storageState: { cookies: [], origins: [] },
@@ -215,7 +215,7 @@ test.describe('Operator Phase 5 — Observability, Error Monitoring & Privacy Su
   });
 
   test('OBS-007: Health Endpoint Does Not Expose Database Credentials or Stack Traces', async ({ playwright }) => {
-    const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3033';
+    const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || process.env.BASE_URL || 'http://localhost:3000';
     const anonContext = await playwright.request.newContext({
       baseURL: baseUrl,
       storageState: { cookies: [], origins: [] },

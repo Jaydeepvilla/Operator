@@ -23,7 +23,7 @@ export function OutcomeNumbersGrid({
   needsHumanCount,
   callsCount = 0,
   minutesUsed = 0,
-  minutesLimit = 250,
+  minutesLimit = 0,
   hasPhonePlan = false,
   periodLabel = "today",
 }: OutcomeNumbersGridProps) {
@@ -115,7 +115,7 @@ export function OutcomeNumbersGrid({
               {needsHumanCount}
             </div>
             <p className="text-caption text-muted-foreground mt-1">
-              {needsHumanCount === 0 ? "Zero pending escalations" : "Requires staff follow-up"}
+              {needsHumanCount === 0 ? "Zero customer issues waiting" : "Needs your reply"}
             </p>
           </div>
 
@@ -146,7 +146,7 @@ export function OutcomeNumbersGrid({
               </div>
               {/* Minutes usage progress */}
               <div className="space-y-1">
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>{COPY.plans.minutesUsed(minutesUsed, minutesLimit)}</span>
                 </div>
                 <div className="w-full bg-muted/60 rounded-full h-1.5 overflow-hidden">

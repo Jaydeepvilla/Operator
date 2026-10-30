@@ -18,7 +18,12 @@ export function SparklineCard({
   colors = defaultColors,
   height = 40
 }: SparklineCardProps) {
-  if (!data || data.length === 0) return null
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !data || data.length === 0) return null
 
   return (
     <div style={{ height }} className="w-24 shrink-0">

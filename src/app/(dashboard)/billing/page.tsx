@@ -60,7 +60,7 @@ export default async function BillingPage() {
       {/* Page Header */}
       <PageTitle
         title="Billing & Subscription"
-        description="Manage your plan, monitor live conversation and voice quotas, and view invoices."
+        description="Manage your subscription plan, payment method, and monthly voice minute usage."
       />
 
       <BillingPortalClient

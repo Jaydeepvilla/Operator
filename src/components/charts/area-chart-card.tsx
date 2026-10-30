@@ -2,11 +2,9 @@
 
 import * as React from "react"
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts"
-import dynamic from 'next/dynamic'
-
-const ChartTooltip = dynamic(() => import('./chart-tooltip').then(m => m.ChartTooltip), { ssr: false })
-const ChartSkeleton = dynamic(() => import('./chart-skeleton').then(m => m.ChartSkeleton), { ssr: false })
-const ChartEmptyState = dynamic(() => import('./chart-empty-state').then(m => m.ChartEmptyState), { ssr: false })
+import { ChartTooltip } from "./chart-tooltip"
+import { ChartSkeleton } from "./chart-skeleton"
+import { ChartEmptyState } from "./chart-empty-state"
 
 export interface AreaChartCardProps {
   data: any[]
@@ -39,12 +37,17 @@ export function AreaChartCard({
   loading,
   emptyMessage
 }: AreaChartCardProps) {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const formatter = React.useCallback(
     (v: number) => valueFormatter ? valueFormatter(v) : `${valuePrefix}${v}${valueSuffix}`,
     [valueFormatter, valuePrefix, valueSuffix]
   );
 
-  if (loading) return <div style={{ height }}><ChartSkeleton /></div>
+  if (!mounted || loading) return <div style={{ height }}><ChartSkeleton /></div>
   if (!data || data.length === 0) return <div style={{ height }}><ChartEmptyState message={emptyMessage} /></div>
 
   return (

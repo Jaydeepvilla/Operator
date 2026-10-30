@@ -163,7 +163,7 @@ export default function PricingPage() {
                     )}
                   >
                     <span>{reg.symbol} {cur}</span>
-                    <span className="text-[10px] opacity-75 font-normal">({reg.marketName})</span>
+                    <span className="text-xs opacity-75 font-normal">({reg.marketName})</span>
                   </button>
                 );
               })}
@@ -230,7 +230,7 @@ export default function PricingPage() {
                 <span>Annual</span>
                 <span
                   className={cn(
-                    "px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-tight uppercase transition-colors",
+                    "px-2 py-0.5 rounded-full text-xs font-semibold tracking-tight uppercase transition-colors",
                     yearly ? "bg-white/20 text-white" : "bg-emerald-500/15 text-emerald-400"
                   )}
                 >
@@ -282,12 +282,12 @@ export default function PricingPage() {
                       <div className="flex items-center justify-between mb-1">
                         <h2 className="text-title-lg font-bold text-foreground">{plan.name}</h2>
                         {plan.id === "starter" && (
-                          <span className="text-[11px] font-semibold text-muted-foreground bg-muted/60 px-2.5 py-0.5 rounded-full">
+                          <span className="text-xs font-semibold text-muted-foreground bg-muted/60 px-2.5 py-0.5 rounded-full">
                             Chat & WhatsApp
                           </span>
                         )}
                         {plan.id === "business" && (
-                          <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+                          <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
                             Multi-Location
                           </span>
                         )}
@@ -344,7 +344,7 @@ export default function PricingPage() {
                           </>
                         ) : (
                           <>
-                            <span className="text-muted-foreground/40 font-mono text-body-sm w-4 text-center">—</span>
+                            <span className="text-muted-foreground/80 font-mono text-body-sm w-4 text-center">—</span>
                             <span className="text-muted-foreground">
                               Voice minutes: <strong>None</strong> (Starts at Pro)
                             </span>
@@ -455,7 +455,7 @@ export default function PricingPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-4 mb-space-8">
               <div className="p-space-5 rounded-2xl bg-card border border-border/80 text-center sm:text-left shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                   Extra Voice Minutes
                 </span>
                 <div className="text-3xl font-extrabold text-foreground mb-1">
@@ -468,7 +468,7 @@ export default function PricingPage() {
               </div>
 
               <div className="p-space-5 rounded-2xl bg-card border border-border/80 text-center sm:text-left shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                   Extra 500 Conversations
                 </span>
                 <div className="text-3xl font-extrabold text-foreground mb-1">
@@ -480,7 +480,7 @@ export default function PricingPage() {
               </div>
 
               <div className="p-space-5 rounded-2xl bg-card border border-border/80 text-center sm:text-left shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                   One-Time Setup Fee
                 </span>
                 <div className="text-3xl font-extrabold text-foreground mb-1">
@@ -555,7 +555,7 @@ export default function PricingPage() {
                           row.starter ? (
                             <Check className="h-4 w-4 text-emerald-400 mx-auto" />
                           ) : (
-                            <span className="text-muted-foreground/30 font-mono">—</span>
+                            <span className="text-muted-foreground/80 font-mono">—</span>
                           )
                         ) : (
                           <span className="text-caption font-semibold text-foreground/80">{row.starter}</span>
@@ -566,7 +566,7 @@ export default function PricingPage() {
                           row.pro ? (
                             <Check className="h-4 w-4 text-primary mx-auto" />
                           ) : (
-                            <span className="text-muted-foreground/30 font-mono">—</span>
+                            <span className="text-muted-foreground/80 font-mono">—</span>
                           )
                         ) : (
                           <span className="text-caption font-semibold text-primary">{row.pro}</span>
@@ -577,7 +577,7 @@ export default function PricingPage() {
                           row.business ? (
                             <Check className="h-4 w-4 text-emerald-400 mx-auto" />
                           ) : (
-                            <span className="text-muted-foreground/30 font-mono">—</span>
+                            <span className="text-muted-foreground/80 font-mono">—</span>
                           )
                         ) : (
                           <span className="text-caption font-semibold text-foreground/80">{row.business}</span>

@@ -81,8 +81,8 @@ function Breadcrumb() {
     if (parentCrumb) {
       return (
         <div className="hidden sm:flex items-center gap-space-1.5 text-body-sm">
-          <span className="text-muted-foreground/50">{parentCrumb.group}</span>
-          <ChevronRight className="h-3 w-3 text-muted-foreground/30" />
+          <span className="text-muted-foreground/80">{parentCrumb.group}</span>
+          <ChevronRight className="h-3 w-3 text-muted-foreground/80" />
           <span className="text-foreground/80 font-medium">{parentCrumb.label}</span>
         </div>
       );
@@ -92,8 +92,8 @@ function Breadcrumb() {
 
   return (
     <div className="hidden sm:flex items-center gap-space-1.5 text-body-sm">
-      <span className="text-muted-foreground/50">{crumb.group}</span>
-      <ChevronRight className="h-3 w-3 text-muted-foreground/30" />
+      <span className="text-muted-foreground/80">{crumb.group}</span>
+      <ChevronRight className="h-3 w-3 text-muted-foreground/80" />
       <span className="text-foreground/80 font-medium">{crumb.label}</span>
     </div>
   );
@@ -271,7 +271,7 @@ export function DashboardShell({
               <span className="text-caption text-foreground font-semibold truncate tracking-tight">
                 {orgName}
               </span>
-              <span className="text-[11px] text-muted-foreground truncate capitalize">
+              <span className="text-xs text-muted-foreground truncate capitalize">
                 {orgIndustry?.toLowerCase() ?? "Front Desk"}
               </span>
             </div>
@@ -280,7 +280,7 @@ export function DashboardShell({
           {!isMobile && !collapsed && (
             <button
               onClick={toggleSidebar}
-              className="shrink-0 h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-[hsl(var(--foreground)/0.05)] transition-all duration-150 cursor-pointer"
+              className="shrink-0 h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground/80 hover:text-foreground hover:bg-[hsl(var(--foreground)/0.05)] transition-all duration-150 cursor-pointer"
               aria-label="Collapse sidebar"
               title="Collapse sidebar"
             >

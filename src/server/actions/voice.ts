@@ -8,6 +8,16 @@ import { db } from "../db";
 import { voicePrompts, phoneNumbers, callSessions, voicemailMessages, callRoutingRules } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { validateTransferDestination, validateAudioUpload } from "../services/voice/security";
+import { subscriptionEngine } from "@/server/services/billing/subscription-engine";
+import { getPlan } from "@/lib/billing/plans";
+
+async function requireVoicePlanAccess(organizationId: string) {
+  const subStatus = await subscriptionEngine.getSubscriptionStatus(organizationId);
+  const plan = getPlan(subStatus?.planId);
+  if (!plan?.features?.voiceAI) {
+    throw new Error("Phone answering and voice calling are available on the Pro and Business plans. Please upgrade to Pro to access voice features.");
+  }
+}
 
 const VALID_KOKORO_AND_INWORLD_VOICE_IDS = [
   "af_heart", "af_bella", "af_nicole", "af_sarah", "af_sky", "af_jessica",
@@ -41,6 +51,7 @@ export async function getPhoneNumbersAction() {
 export async function purchasePhoneNumberAction(data: { name: string; phoneNumber: string }) {
   try {
     const { organizationId } = await requireAdminAccess();
+    await requireVoicePlanAccess(organizationId);
     const number = await voiceRepository.registerPhoneNumber(organizationId, {
       phoneNumber: data.phoneNumber,
       name: data.name,
@@ -142,6 +153,7 @@ export async function saveVoiceSettingsAction(data: {
 }) {
   try {
     const { organizationId } = await requireAdminAccess();
+    await requireVoicePlanAccess(organizationId);
     await voiceRepository.upsertVoiceSettings(organizationId, data);
     revalidatePath("/voice/settings");
     revalidatePath("/voice/dashboard");
@@ -216,6 +228,7 @@ export async function createRoutingRuleAction(data: {
 }) {
   try {
     const { organizationId } = await requireAdminAccess();
+    await requireVoicePlanAccess(organizationId);
     const rule = await voiceRepository.createRoutingRule(organizationId, data);
     revalidatePath("/voice/settings");
     return { success: true, rule };
@@ -412,6 +425,7 @@ export async function initiateOutboundCallAction(params: {
 }) {
   try {
     const { organizationId } = await requireOrganizationAccess();
+    await requireVoicePlanAccess(organizationId);
     const destValidation = validateTransferDestination(params.toPhoneNumber, []);
     if (!destValidation.isValid) {
       return { success: false, error: destValidation.error || "Disallowed destination phone number." };
@@ -443,28 +457,13 @@ export async function initiateOutboundCallAction(params: {
     const twilioConfigured = Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN);
     const vonageConfigured = Boolean(process.env.VONAGE_API_KEY && process.env.VONAGE_API_SECRET);
 
-    // If live carrier credentials are not set, run a realistic outbound AI simulation for testing
+    // If live carrier credentials are not set, return demo mode without creating fake database records or billing charges
     if (!twilioConfigured && !vonageConfigured) {
-      const [simulatedSession] = await db
-        .insert(callSessions)
-        .values({
-          organizationId,
-          phoneNumberId: lineId,
-          direction: "outbound",
-          externalSessionId: `sim_${Date.now()}`,
-          callerNumber: "+1 (555) 309-8123",
-          recipientNumber: cleanNumber,
-          status: "in-progress",
-          durationSeconds: 42,
-        })
-        .returning();
-
-      revalidatePath("/voice/dashboard");
       return {
         success: true,
         isDemoSimulation: true,
-        session: simulatedSession,
-        message: `Outbound AI Call connected! Live conversational stream initiated to ${cleanNumber}.`,
+        session: null,
+        message: "Demo call. No real call is placed.",
       };
     }
 

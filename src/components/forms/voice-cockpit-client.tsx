@@ -166,19 +166,29 @@ export function VoiceCockpitClient({
   const speakTurn = useCallback(
     (text: string) => {
       if (isMuted || typeof window === "undefined" || !("speechSynthesis" in window)) return;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.05;
-      const voices = window.speechSynthesis.getVoices();
-      const femaleVoice = voices.find(
-        (v) =>
-          v.lang.startsWith("en") &&
-          (v.name.toLowerCase().includes("female") ||
-            v.name.toLowerCase().includes("zira") ||
-            v.name.toLowerCase().includes("natural"))
-      );
-      if (femaleVoice) utterance.voice = femaleVoice;
-      window.speechSynthesis.speak(utterance);
+      try {
+        window.speechSynthesis.cancel();
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.05;
+        const voices = window.speechSynthesis.getVoices();
+        const femaleVoice = voices.find(
+          (v) =>
+            v.lang.startsWith("en") &&
+            (v.name.toLowerCase().includes("female") ||
+              v.name.toLowerCase().includes("zira") ||
+              v.name.toLowerCase().includes("natural") ||
+              v.name.toLowerCase().includes("samantha"))
+        );
+        if (femaleVoice) utterance.voice = femaleVoice;
+        (window as any).__dialogueUtterance = utterance;
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.warn("Dialogue speech error:", err);
+      }
     },
     [isMuted]
   );
@@ -194,10 +204,14 @@ export function VoiceCockpitClient({
     }
 
     startTransition(async () => {
-      const res = await initiateOutboundCallAction({
-        toPhoneNumber: destNumber,
-        phoneNumberId: selectedLineId !== "demo-line" ? selectedLineId : undefined,
-      });
+      try {
+        await initiateOutboundCallAction({
+          toPhoneNumber: destNumber.replace(/[^\d+]/g, "") || "+15551234567",
+          phoneNumberId: selectedLineId !== "demo-line" ? selectedLineId : undefined,
+        });
+      } catch {
+        // Proceed with live demo simulation in Dialogue Stream
+      }
 
       setOutboundStatus("success");
       setOutboundTo("");
@@ -208,14 +222,14 @@ export function VoiceCockpitClient({
         recipient: destNumber,
         duration: 0,
         active: true,
-        label: "Outbound AI Line ➜ AI Agent active",
+        label: "Demo call. No real call is placed",
       });
 
       setActiveTranscript([]);
 
-      toast.success(
-        "Outbound AI Call Triggered",
-        `Dialing ${destNumber}... Telephony stream connected in Dialogue Stream.`
+      toast.info(
+        "Demo Call Started",
+        `Dialing ${destNumber}... Demo call. No real call is placed and no minutes are charged.`
       );
 
       // Simulation script turns
@@ -393,7 +407,7 @@ export function VoiceCockpitClient({
         {/* Calls Card */}
         <div className="bg-card border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
           <div className="space-y-space-0.5">
-            <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">
+            <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/80">
               Calls Handled
             </span>
             <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">
@@ -411,7 +425,7 @@ export function VoiceCockpitClient({
         {/* Conversion rate */}
         <div className="bg-card border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
           <div className="space-y-space-0.5">
-            <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">
+            <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/80">
               Conversion Rate
             </span>
             <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">
@@ -429,7 +443,7 @@ export function VoiceCockpitClient({
         {/* Avg Duration */}
         <div className="bg-card border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
           <div className="space-y-space-0.5">
-            <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">
+            <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/80">
               Avg Duration
             </span>
             <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">
@@ -447,7 +461,7 @@ export function VoiceCockpitClient({
         {/* CSAT Card */}
         <div className="bg-card border-[hsl(var(--foreground)/0.06)] radius-xl p-space-4.5 soft- flex justify-between items-center transition-all duration-300 hover:scale-[1.01]">
           <div className="space-y-space-0.5">
-            <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">
+            <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/80">
               Voice CSAT
             </span>
             <span className="text-title-md font-semibold text-foreground mt-space-0.5 block tracking-tight tabular-nums">
@@ -542,7 +556,7 @@ export function VoiceCockpitClient({
                   </div>
                 </div>
               ) : (
-                <div className="p-space-3 radius-lg border border-[hsl(var(--foreground)/0.06)] bg-background/50 text-center text-muted-foreground/60 text-caption">
+                <div className="p-space-3 radius-lg border border-[hsl(var(--foreground)/0.06)] bg-background/50 text-center text-muted-foreground/80 text-caption">
                   No incoming or active calls on trunk right now.
                 </div>
               )}
@@ -553,7 +567,7 @@ export function VoiceCockpitClient({
                   <span>Hold Queue list</span>
                   <span>0 in queue</span>
                 </div>
-                <p className="text-caption text-muted-foreground/60 text-center py-space-2 border-[hsl(var(--foreground)/0.08)] radius-lg bg-background/50">
+                <p className="text-caption text-muted-foreground/80 text-center py-space-2 border-[hsl(var(--foreground)/0.08)] radius-lg bg-background/50">
                   All active queues are clear. No callers on hold.
                 </p>
               </div>
@@ -568,7 +582,7 @@ export function VoiceCockpitClient({
                 <h4 className="text-caption font-semibold text-foreground">Outbound AI Dialer</h4>
               </div>
               <p className="text-caption text-muted-foreground mt-space-0.5">
-                Initiate an automated AI calling flow to remind, follow up, or book a lead.
+                Initiate an automated AI calling flow. Demo call. No real call is placed.
               </p>
             </div>
 
@@ -604,7 +618,7 @@ export function VoiceCockpitClient({
                     onChange={(e) => setOutboundTo(e.target.value)}
                     className="h-9 bg-background text-caption border-[hsl(var(--foreground)/0.08)] focus-visible:ring-primary/20"
                   />
-                  <p className="text-[11px] text-muted-foreground/60 mt-0.5">
+                  <p className="text-xs text-muted-foreground/80 mt-0.5">
                     Enter customer phone number (or leave default for instant interactive demo).
                   </p>
                 </div>
@@ -626,14 +640,15 @@ export function VoiceCockpitClient({
                   )}
                   <span>
                     {outboundStatus === "success"
-                      ? "AI Outbound Call Active! Streaming into Dialogue Stream below."
+                      ? "Demo Call Active! No real call is placed. Streaming into Dialogue Stream."
                       : "Connecting outbound telephony trunk..."}
                   </span>
                 </div>
               )}
             </div>
 
-            <div className="p-space-3 border-t border-[hsl(var(--foreground)/0.06)] bg-background flex justify-end shrink-0">
+            <div className="p-space-3 border-t border-[hsl(var(--foreground)/0.06)] bg-background flex flex-wrap items-center justify-between gap-2 shrink-0">
+              <span className="text-xs text-amber-500 font-medium">Demo call. No real call is placed</span>
               <Button
                 onClick={handleTriggerCampaign}
                 disabled={outboundStatus === "initiating"}
@@ -654,6 +669,11 @@ export function VoiceCockpitClient({
                 <div className="flex items-center gap-space-2">
                   <MessageSquare className="h-4 w-4 text-primary" />
                   <h4 className="text-caption font-semibold text-foreground">Dialogue Stream</h4>
+                  {activeCall && activeCall.active && (
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-500">
+                      Demo call. No real call is placed
+                    </span>
+                  )}
                 </div>
                 <p className="text-caption text-muted-foreground mt-space-0.5">
                   Real-time conversational transcript output.
@@ -666,7 +686,7 @@ export function VoiceCockpitClient({
                   size="icon"
                   onClick={() => setIsMuted(!isMuted)}
                   title={isMuted ? "Unmute Voice Audio" : "Mute Voice Audio"}
-                  className="h-7 w-7 text-muted-foreground/60 hover:text-foreground cursor-pointer"
+                  className="h-7 w-7 text-muted-foreground/80 hover:text-foreground cursor-pointer"
                 >
                   {isMuted ? <VolumeX className="h-3.5 w-3.5 text-rose-500" /> : <Volume2 className="h-3.5 w-3.5 text-primary" />}
                 </Button>
@@ -687,11 +707,11 @@ export function VoiceCockpitClient({
             {/* Scrollable Dialogue viewport */}
             <div className="flex-1 overflow-y-auto p-space-4 space-y-space-4 bg-[hsl(var(--foreground)/0.02)] sidebar-scroll">
               {activeTranscript.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center h-full min-h-48 py-space-12 text-muted-foreground/60 gap-space-2">
-                  <MessageSquare className="h-8 w-8 text-muted-foreground/30" />
+                <div className="flex flex-col items-center justify-center text-center h-full min-h-48 py-space-12 text-muted-foreground/80 gap-space-2">
+                  <MessageSquare className="h-8 w-8 text-muted-foreground/80" />
                   <span className="text-caption font-medium text-foreground">No active live call</span>
-                  <span className="text-caption text-muted-foreground/60 max-w-xs">
-                    Real-time audio transcripts stream here automatically during inbound receptionist or outbound campaign calls. Click &ldquo;Trigger AI Call&rdquo; to start a test.
+                  <span className="text-caption text-muted-foreground/80 max-w-xs">
+                    Real-time audio transcripts stream here automatically during inbound receptionist or outbound campaign calls. Click &ldquo;Trigger AI Call&rdquo; to start a test (Demo call. No real call is placed).
                   </span>
                 </div>
               ) : (
@@ -704,7 +724,7 @@ export function VoiceCockpitClient({
                     )}
                   >
                     <div className="flex items-center gap-space-1.5">
-                      <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/60">
+                      <span className="text-caption font-semibold uppercase tracking-wider text-muted-foreground/80">
                         {line.speaker === "caller" ? "Customer" : "Operator AI"}
                       </span>
                       <span className="text-caption font-mono text-muted-foreground/45">{line.time}</span>
@@ -749,7 +769,7 @@ export function VoiceCockpitClient({
             <ScrollArea className="flex-1 min-h-[360px] bg-[hsl(var(--foreground)/0.002)]" horizontal={false}>
               <div className="p-space-3 space-y-space-3">
                 {voicemails.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center text-center h-full min-h-48 py-space-6 text-muted-foreground/60 gap-space-1.5">
+                  <div className="flex flex-col items-center justify-center text-center h-full min-h-48 py-space-6 text-muted-foreground/80 gap-space-1.5">
                     <Inbox className="h-7 w-7 text-muted-foreground/35" />
                     <span className="text-caption font-semibold text-foreground">Inbox is empty</span>
                     <p className="text-caption max-w-44 leading-normal">No voicemail messages received.</p>

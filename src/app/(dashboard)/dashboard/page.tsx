@@ -9,6 +9,7 @@ import { settingsRepository } from "@/server/repositories/settings";
 import { staffRepository } from "@/server/repositories/staff";
 import { documentsRepository } from "@/server/repositories/documents";
 import { subscriptionEngine } from "@/server/services/billing/subscription-engine";
+import { getLocalizedPlan } from "@/lib/billing/plans";
 
 import { SetupState } from "@/lib/setup-engine/types";
 import { DashboardEngine } from "@/lib/dashboard-engine";
@@ -121,6 +122,13 @@ export default async function DashboardPage() {
   const verificationStatus = (org.verificationStatus as VerificationStatus) || "unverified";
   const isPaused = Boolean(settings?.bookingPreferences?.assistantPaused);
   const planId = subStatus?.planId || "starter";
+  const localizedPlan = getLocalizedPlan(
+    planId,
+    (subStatus as any)?.currency || (org as any).currency,
+    (org as any).country
+  );
+  const voiceMinutesLimit = localizedPlan?.limits?.voiceMinutes ?? 0;
+  const voiceMinutesUsed = Number(subStatus?.usage?.voiceMinutes ?? 0);
 
   return (
     <DashboardLiveClient
@@ -130,6 +138,8 @@ export default async function DashboardPage() {
       orgId={org.id}
       planId={planId}
       initialPaused={isPaused}
+      voiceMinutesLimit={voiceMinutesLimit}
+      voiceMinutesUsed={voiceMinutesUsed}
     />
   );
 }

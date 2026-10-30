@@ -307,7 +307,7 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
  <div className="flex-1 min-h-0 flex flex-col justify-center items-center border border-[hsl(var(--foreground)/0.06)] radius-xl bg-card">
  <EmptyState
  title="No FAQ items configured"
- description="Operator needs FAQ items to answer customer questions accurately."
+ description={'Add common questions your customers ask so your AI can reply instantly. E.g. "Where can I park?" or "Do you accept walk-ins?"'}
  icon={HelpCircle}
  actionText="Add FAQ"
  onAction={() => handleOpenDialog()}

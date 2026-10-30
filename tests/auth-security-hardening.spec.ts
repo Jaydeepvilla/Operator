@@ -2769,7 +2769,7 @@ test.describe('20 Payments, Billing and Subscriptions Security Hardening Guarant
     // Valid plan by admin succeeds
     const approvedPlan = billingSecurityService.assertPlanChangeAuthorized('admin', 'professional');
     expect(approvedPlan.id).toBe('professional');
-    expect(approvedPlan.price).toBe(149);
+    expect(approvedPlan.price).toBe(199);
   });
 
   // 3. Prevent access to another business's invoices
@@ -3167,7 +3167,7 @@ test.describe('20 Payments, Billing and Subscriptions Security Hardening Guarant
 
   // 18. Prevent currency, amount or plan-price tampering
   test('PAY-18: Client-supplied amount or price overrides are detected and overridden by authoritative catalog', () => {
-    // Attacker sends $1.00 for a $149 Professional plan
+    // Attacker sends $1.00 for a $199 Professional plan
     const tamperAttempt = billingSecurityService.validatePlanPriceAndCurrency({
       planId: 'professional',
       clientSuppliedPrice: 1.00,
@@ -3175,17 +3175,17 @@ test.describe('20 Payments, Billing and Subscriptions Security Hardening Guarant
     });
 
     expect(tamperAttempt.tampered).toBe(true);
-    expect(tamperAttempt.authoritativePrice).toBe(149);
+    expect(tamperAttempt.authoritativePrice).toBe(199);
     expect(tamperAttempt.authoritativeCurrency).toBe('USD');
 
     // Legitimate matching request
     const legitimate = billingSecurityService.validatePlanPriceAndCurrency({
       planId: 'starter',
-      clientSuppliedPrice: 49,
+      clientSuppliedPrice: 79,
       clientSuppliedCurrency: 'USD',
     });
     expect(legitimate.tampered).toBe(false);
-    expect(legitimate.authoritativePrice).toBe(49);
+    expect(legitimate.authoritativePrice).toBe(79);
   });
 
   // 19. Prevent unauthorized modification of billing identifiers

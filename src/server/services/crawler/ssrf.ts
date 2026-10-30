@@ -4,7 +4,7 @@ import net from "net";
 /**
  * Checks if an IPv4 address is in a private, loopback, link-local, or reserved range.
  */
-function isPrivateIPv4(ip: string): boolean {
+export function isPrivateIPv4(ip: string): boolean {
   const parts = ip.split(".").map(Number);
   if (parts.length !== 4 || parts.some(isNaN)) return true;
 
@@ -12,37 +12,83 @@ function isPrivateIPv4(ip: string): boolean {
 
   // 0.0.0.0/8 (Current network)
   if (b0 === 0) return true;
-  // 10.0.0.0/8 (Private)
+  // 10.0.0.0/8 (Private RFC 1918)
   if (b0 === 10) return true;
+  // 100.64.0.0/10 (Shared Address Space / Carrier-Grade NAT RFC 6598)
+  if (b0 === 100 && b1 >= 64 && b1 <= 127) return true;
   // 127.0.0.0/8 (Loopback)
   if (b0 === 127) return true;
   // 169.254.0.0/16 (Link-local / Cloud metadata e.g. AWS 169.254.169.254)
   if (b0 === 169 && b1 === 254) return true;
-  // 172.16.0.0/12 (Private)
+  // 172.16.0.0/12 (Private RFC 1918)
   if (b0 === 172 && b1 >= 16 && b1 <= 31) return true;
-  // 192.168.0.0/16 (Private)
+  // 192.0.0.0/24 (IETF Protocol Assignments)
+  if (b0 === 192 && b1 === 0 && parts[2] === 0) return true;
+  // 192.0.2.0/24 (TEST-NET-1)
+  if (b0 === 192 && b1 === 0 && parts[2] === 2) return true;
+  // 192.168.0.0/16 (Private RFC 1918)
   if (b0 === 192 && b1 === 168) return true;
-  // 224.0.0.0/4 (Multicast)
+  // 198.18.0.0/15 (Benchmarking)
+  if (b0 === 198 && (b1 === 18 || b1 === 19)) return true;
+  // 198.51.100.0/24 (TEST-NET-2)
+  if (b0 === 198 && b1 === 51 && parts[2] === 100) return true;
+  // 203.0.113.0/24 (TEST-NET-3)
+  if (b0 === 203 && b1 === 0 && parts[2] === 113) return true;
+  // 224.0.0.0/4 (Multicast) & 240.0.0.0/4 (Reserved)
   if (b0 >= 224) return true;
 
   return false;
 }
 
 /**
- * Checks if an IPv6 address is private, loopback, or link-local.
+ * Checks if an IPv6 address is private, loopback, link-local, or documentation.
  */
-function isPrivateIPv6(ip: string): boolean {
+export function isPrivateIPv6(ip: string): boolean {
   const normalized = ip.toLowerCase();
-  if (normalized === "::1" || normalized === "::") return true;
-  if (normalized.startsWith("fe80:") || normalized.startsWith("fc00:") || normalized.startsWith("fd00:")) return true;
-  if (normalized.startsWith("::ffff:127.") || normalized.startsWith("::ffff:10.") || normalized.startsWith("::ffff:192.168.")) return true;
+  // Loopback (::1) and Unspecified (::)
+  if (normalized === "::1" || normalized === "::" || normalized === "0000:0000:0000:0000:0000:0000:0000:0001") return true;
+  // Link-local (fe80::/10)
+  if (normalized.startsWith("fe8") || normalized.startsWith("fe9") || normalized.startsWith("fea") || normalized.startsWith("feb")) return true;
+  // Unique local addresses (fc00::/7 - fc00 to fdff)
+  if (normalized.startsWith("fc") || normalized.startsWith("fd")) return true;
+  // Documentation prefix (2001:db8::/32)
+  if (normalized.startsWith("2001:db8:") || normalized.startsWith("2001:0db8:")) return true;
+  // IPv4-mapped IPv6 addresses (::ffff:0:0/96 or ::ffff:a.b.c.d or hex representation like ::ffff:7f00:1)
+  if (normalized.startsWith("::ffff:") || normalized.startsWith("0:0:0:0:0:ffff:")) {
+    const afterFfff = normalized.replace(/^(::ffff:|0:0:0:0:0:ffff:)/, "");
+    if (net.isIPv4(afterFfff)) {
+      return isPrivateIPv4(afterFfff);
+    }
+    // Handle hex representation like 7f00:1 or 7f00:0001
+    const hexParts = afterFfff.split(":");
+    if (hexParts.length === 2) {
+      const h0 = parseInt(hexParts[0], 16);
+      const h1 = parseInt(hexParts[1], 16);
+      if (!isNaN(h0) && !isNaN(h1)) {
+        const b0 = (h0 >> 8) & 0xff;
+        const b1 = h0 & 0xff;
+        const b2 = (h1 >> 8) & 0xff;
+        const b3 = h1 & 0xff;
+        return isPrivateIPv4(`${b0}.${b1}.${b2}.${b3}`);
+      }
+    }
+    return true; // Any other ::ffff: address is unsafe/reserved
+  }
+  // IPv4-compatible IPv6 (deprecated ::a.b.c.d)
+  if (normalized.startsWith("::") && normalized.includes(".")) {
+    const ipv4Part = normalized.slice(2);
+    if (net.isIPv4(ipv4Part)) {
+      return isPrivateIPv4(ipv4Part);
+    }
+  }
   return false;
 }
 
 /**
  * Validates a target URL against SSRF threats:
  * 1. Requires http: or https:
- * 2. Resolves DNS to check that destination IP is not private/loopback/cloud metadata
+ * 2. Blocks loopback, private ranges, link-local (169.254.0.0/16), and IPv6 equivalents
+ * 3. Resolves DNS to check destination IPs
  */
 export async function validateSafeUrl(rawUrl: string): Promise<{ valid: boolean; error?: string; parsedUrl?: URL }> {
   try {
@@ -66,11 +112,13 @@ export async function validateSafeUrl(rawUrl: string): Promise<{ valid: boolean;
       return { valid: false, error: `Unsupported protocol '${url.protocol}'. Only HTTP and HTTPS are allowed.` };
     }
 
-    const hostname = url.hostname.toLowerCase();
+    let hostname = url.hostname.toLowerCase();
+    // Normalize IPv6 enclosed in brackets
+    if (hostname.startsWith("[") && hostname.endsWith("]")) {
+      hostname = hostname.slice(1, -1);
+    }
 
-    const isTestEnv = process.env.NODE_ENV === "test" || process.env.ALLOW_LOCAL_TEST_FIXTURES === "true";
-
-    // Strictly forbidden cloud metadata and current network destinations
+    // Strictly forbidden cloud metadata and link-local destinations
     if (
       hostname === "169.254.169.254" ||
       hostname.startsWith("169.254.") ||
@@ -81,28 +129,23 @@ export async function validateSafeUrl(rawUrl: string): Promise<{ valid: boolean;
 
     // Check dangerous hostnames
     if (
-      (!isTestEnv && hostname === "localhost") ||
+      hostname === "localhost" ||
       hostname.endsWith(".localhost") ||
       hostname.endsWith(".local") ||
-      hostname.endsWith(".internal")
+      hostname.endsWith(".internal") ||
+      hostname.endsWith(".corp") ||
+      hostname.endsWith(".home.arpa")
     ) {
       return { valid: false, error: `Access to local/internal hostname '${hostname}' is forbidden.` };
     }
 
     // If hostname is directly an IP literal
     if (net.isIP(hostname)) {
-      if (net.isIPv4(hostname)) {
-        if (!isTestEnv && isPrivateIPv4(hostname)) {
-          return { valid: false, error: `Access to private IP '${hostname}' is forbidden.` };
-        }
-        if (isTestEnv && isPrivateIPv4(hostname) && !hostname.startsWith("127.")) {
-          return { valid: false, error: `Access to private IP '${hostname}' is forbidden.` };
-        }
+      if (net.isIPv4(hostname) && isPrivateIPv4(hostname)) {
+        return { valid: false, error: `Access to private IP '${hostname}' is forbidden.` };
       }
       if (net.isIPv6(hostname) && isPrivateIPv6(hostname)) {
-        if (!isTestEnv || (!hostname.includes("::1") && !hostname.includes("127."))) {
-          return { valid: false, error: `Access to private IPv6 '${hostname}' is forbidden.` };
-        }
+        return { valid: false, error: `Access to private IPv6 '${hostname}' is forbidden.` };
       }
     } else {
       // Resolve DNS to verify all resolved IPs
@@ -114,19 +157,15 @@ export async function validateSafeUrl(rawUrl: string): Promise<{ valid: boolean;
         const lookupResults = await Promise.race([lookupPromise, timeoutPromise]);
         for (const record of lookupResults) {
           if (record.family === 4 && isPrivateIPv4(record.address)) {
-            if (!isTestEnv || !record.address.startsWith("127.")) {
-              return { valid: false, error: `Hostname '${hostname}' resolves to private IP (${record.address}). Access is forbidden.` };
-            }
+            return { valid: false, error: `Hostname '${hostname}' resolves to private IP (${record.address}). Access is forbidden.` };
           }
           if (record.family === 6 && isPrivateIPv6(record.address)) {
-            if (!isTestEnv || (!record.address.includes("::1") && !record.address.includes("127."))) {
-              return { valid: false, error: `Hostname '${hostname}' resolves to private IPv6 (${record.address}). Access is forbidden.` };
-            }
+            return { valid: false, error: `Hostname '${hostname}' resolves to private IPv6 (${record.address}). Access is forbidden.` };
           }
         }
       } catch (dnsErr: any) {
         if (dnsErr.message?.includes("timed out")) {
-          console.warn(`[SSRF] DNS lookup timed out for '${hostname}', proceeding with fetch`);
+          return { valid: false, error: `DNS lookup timed out for '${hostname}'` };
         } else {
           return { valid: false, error: `Could not resolve hostname '${hostname}': ${dnsErr.message || "DNS lookup failed"}` };
         }

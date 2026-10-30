@@ -227,13 +227,13 @@ test.describe('Operator Phase 3 — Billing & Webhook Reliability Suite', () => 
 
   test('Billing G — Authoritative Plan Pricing: Catalog prices enforce server-side pricing integrity', async () => {
     // Ensure all catalog tiers have fixed authoritative prices
-    expect(getPlan('starter').price).toBe(49);
-    expect(getPlan('pro').price).toBe(149);
-    expect(getPlan('business').price).toBe(349);
+    expect(getPlan('starter').price).toBe(79);
+    expect(getPlan('pro').price).toBe(199);
+    expect(getPlan('business').price).toBe(399);
 
     // Fallback on unknown plan returns starter
     expect(getPlan('nonexistent-tier').id).toBe('starter');
-    expect(getPlan('nonexistent-tier').price).toBe(49);
+    expect(getPlan('nonexistent-tier').price).toBe(79);
   });
 
   test('Billing H — Razorpay Event Distinction: Different lifecycle events for same entity do not collide', async () => {

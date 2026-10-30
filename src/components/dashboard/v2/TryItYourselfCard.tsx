@@ -54,7 +54,7 @@ export function TryItYourselfCard({ hasPhonePlan = false }: TryItYourselfCardPro
                 <Phone className="w-4 h-4" />
               </div>
               {!hasPhonePlan && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary-light bg-primary/15 border border-primary/25 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary-light bg-primary/15 border border-primary/25 px-2 py-0.5 rounded-full">
                   <Lock className="w-2.5 h-2.5" />
                   <span>{COPY.plans.phoneLockedBadge}</span>
                 </span>

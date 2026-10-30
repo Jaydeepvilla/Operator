@@ -20,6 +20,8 @@ interface DashboardLiveClientProps {
   orgId: string;
   planId?: string;
   initialPaused?: boolean;
+  voiceMinutesLimit?: number;
+  voiceMinutesUsed?: number;
 }
 
 export function DashboardLiveClient({
@@ -29,6 +31,8 @@ export function DashboardLiveClient({
   orgId,
   planId = "starter",
   initialPaused = false,
+  voiceMinutesLimit = 0,
+  voiceMinutesUsed = 0,
 }: DashboardLiveClientProps) {
   const [snapshot, setSnapshot] = React.useState<OutcomeDashboardSnapshot>(initialSnapshot);
   const [range, setRange] = React.useState<TimeRange>("today");
@@ -239,8 +243,8 @@ export function DashboardLiveClient({
           appointmentsCount={snapshot.dailyBrief.appointmentsBooked}
           needsHumanCount={snapshot.dailyBrief.escalations}
           callsCount={0}
-          minutesUsed={0}
-          minutesLimit={250}
+          minutesUsed={voiceMinutesUsed}
+          minutesLimit={voiceMinutesLimit}
           hasPhonePlan={hasPhonePlan}
           periodLabel={range === "7d" ? "past 7 days" : range === "30d" ? "past 30 days" : "today"}
         />

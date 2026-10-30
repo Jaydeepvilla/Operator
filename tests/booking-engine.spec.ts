@@ -1,18 +1,39 @@
 import { test, expect } from '@playwright/test';
 import crypto from 'crypto';
 import { db } from '../src/server/db';
-import { appointments, services, staffMembers, businessSettings, serviceAssignments } from '../src/server/db/schema';
+import { appointments, services, staffMembers, businessSettings, serviceAssignments, organizations } from '../src/server/db/schema';
 import { eq, and, notInArray, lt, gt } from 'drizzle-orm';
 import { bookingService } from '../src/server/services/booking';
 import { availabilityService } from '../src/server/services/availability';
 
 test.describe('Operator Phase 3 — Booking Engine & Concurrency Safety Suite', () => {
 
-  const testOrgId = '11111111-1111-1111-1111-111111111111';
+  const testOrgId = '33333333-3333-3333-3333-333333333333';
   let serviceId: string;
   let staffId: string;
 
   test.beforeAll(async () => {
+    // Dedicated isolated test organization for booking-engine suite
+    await db
+      .insert(organizations)
+      .values({
+        id: testOrgId,
+        name: 'Booking Engine Dedicated Test Org',
+        slug: 'booking-engine-test-org',
+        industry: 'Healthcare',
+        timezone: 'Asia/Kolkata',
+        verificationStatus: 'verified',
+        onboardingStatus: 'completed',
+        onboardingStep: 'completed',
+      })
+      .onConflictDoUpdate({
+        target: organizations.id,
+        set: {
+          name: 'Booking Engine Dedicated Test Org',
+          timezone: 'Asia/Kolkata',
+        },
+      });
+
     // Enable public booking on businessSettings
     const [existingSettings] = await db
       .select()
@@ -20,10 +41,21 @@ test.describe('Operator Phase 3 — Booking Engine & Concurrency Safety Suite', 
       .where(eq(businessSettings.organizationId, testOrgId))
       .limit(1);
 
+    const fullWeekHours = {
+      monday: { open: '08:00', close: '22:00' },
+      tuesday: { open: '08:00', close: '22:00' },
+      wednesday: { open: '08:00', close: '22:00' },
+      thursday: { open: '08:00', close: '22:00' },
+      friday: { open: '08:00', close: '22:00' },
+      saturday: { open: '08:00', close: '22:00' },
+      sunday: { open: '08:00', close: '22:00' },
+    };
+
     if (existingSettings) {
       await db
         .update(businessSettings)
         .set({
+          businessHours: fullWeekHours,
           bookingPreferences: {
             ...(existingSettings.bookingPreferences as Record<string, any> || {}),
             publicBookingEnabled: true,
@@ -34,7 +66,7 @@ test.describe('Operator Phase 3 — Booking Engine & Concurrency Safety Suite', 
     } else {
       await db.insert(businessSettings).values({
         organizationId: testOrgId,
-        businessHours: {},
+        businessHours: fullWeekHours,
         bookingPreferences: { publicBookingEnabled: true },
       });
     }

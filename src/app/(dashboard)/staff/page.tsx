@@ -302,20 +302,20 @@ export default function StaffPage() {
  <div className="bg-card border-[hsl(var(--foreground)/0.06)] rounded-xl p-3 flex flex-col gap-1">
  <span className="text-caption font-bold uppercase tracking-widest text-muted-foreground/55">Total</span>
  <span className="text-2xl font-bold text-foreground tabular-nums">{staffList.length}</span>
- <span className="text-caption text-muted-foreground/60">members</span>
+ <span className="text-caption text-muted-foreground/80">members</span>
  </div>
  <div className="bg-card border-[hsl(var(--foreground)/0.06)] rounded-xl p-3 flex flex-col gap-1">
  <span className="text-caption font-bold uppercase tracking-widest text-muted-foreground/55">Active</span>
  <span className="text-2xl font-bold text-emerald-500 tabular-nums">{activeCount}</span>
- <span className="text-caption text-muted-foreground/60">on roster</span>
+ <span className="text-caption text-muted-foreground/80">on roster</span>
  </div>
  </div>
 
  {/* Roster list */}
  <div className="flex-1 bg-card border-[hsl(var(--foreground)/0.06)] rounded-xl overflow-hidden flex flex-col min-h-0">
  <div className="px-4 py-3 border-b border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.005)] shrink-0 flex items-center justify-between">
- <span className="text-caption font-bold uppercase tracking-widest text-muted-foreground/60">Team Roster</span>
- <Users className="h-3.5 w-3.5 text-muted-foreground/40" />
+ <span className="text-caption font-bold uppercase tracking-widest text-muted-foreground/80">Team Roster</span>
+ <Users className="h-3.5 w-3.5 text-muted-foreground/80" />
  </div>
 
  <div className="flex-1 overflow-y-auto min-h-0 [scrollbar-width:thin]">
@@ -325,8 +325,8 @@ export default function StaffPage() {
  </div>
  ) : staffList.length === 0 ? (
  <div className="p-2 h-48 flex flex-col items-center justify-center gap-2 text-center">
- <Users className="h-8 w-8 text-muted-foreground/30" />
- <p className="text-caption text-muted-foreground/70">No staff members yet.</p>
+ <Users className="h-8 w-8 text-muted-foreground/80" />
+ <p className="text-caption text-muted-foreground/70">No staff members yet. Add your team members (e.g. Dr. Sarah Miller, Senior Stylist) so Operator can match bookings to their availability.</p>
  <Button size="sm" variant="outline" className="mt-1 text-caption h-7" onClick={() => setCreateOpen(true)}>
  <Plus className="h-3 w-3 mr-1" /> Add first member
  </Button>
@@ -354,7 +354,7 @@ export default function StaffPage() {
  <div className="flex items-center justify-between gap-1.5 mb-1">
  <span className="text-body-sm font-semibold text-foreground truncate leading-snug">{staff.name}</span>
  <span className={cn(
- "text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5 border shrink-0",
+ "text-xs font-bold uppercase tracking-wider rounded-full px-2 py-0.5 border shrink-0",
  staff.isActive
  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
  : "bg-neutral-500/10 text-muted-foreground border-neutral-500/20"
@@ -382,11 +382,11 @@ export default function StaffPage() {
  ) : !activeDetails ? (
  <div className="flex-1 flex flex-col items-center justify-center gap-4 p-10 text-center">
  <div className="h-16 w-16 rounded-2xl bg-[hsl(var(--foreground)/0.04)] border-[hsl(var(--foreground)/0.06)] flex items-center justify-center">
- <Clock3 className="h-7 w-7 text-muted-foreground/30" />
+ <Clock3 className="h-7 w-7 text-muted-foreground/80" />
  </div>
  <div className="space-y-1 max-w-xs">
  <p className="text-body-sm font-semibold text-foreground">Select a team member</p>
- <p className="text-caption text-muted-foreground/60 leading-relaxed">
+ <p className="text-caption text-muted-foreground/80 leading-relaxed">
  Choose a staff profile from the roster to manage their schedule, services, and availability overrides.
  </p>
  </div>
@@ -407,7 +407,7 @@ export default function StaffPage() {
  "text-caption uppercase font-bold tracking-wider rounded-full px-2 py-0.5 border",
  activeDetails.staff.isActive
  ? "bg-emerald-500/10 text-[hsl(var(--state-success-text))] border-emerald-500/20"
- : "bg-neutral-500/8 text-muted-foreground/60 border-neutral-500/15"
+ : "bg-neutral-500/8 text-muted-foreground/80 border-neutral-500/15"
  )}>
  {activeDetails.staff.isActive ? "Active" : "Inactive"}
  </span>
@@ -415,12 +415,12 @@ export default function StaffPage() {
  <div className="flex items-center gap-3 mt-1 flex-wrap">
  <span className="text-[12px] text-muted-foreground/70 font-medium">{activeDetails.staff.role}</span>
  {activeDetails.staff.email && (
- <span className="flex items-center gap-1 text-caption text-muted-foreground/50">
+ <span className="flex items-center gap-1 text-caption text-muted-foreground/80">
  <Mail className="h-3 w-3" />{activeDetails.staff.email}
  </span>
  )}
  {activeDetails.staff.bufferTime > 0 && (
- <span className="flex items-center gap-1 text-caption text-muted-foreground/50">
+ <span className="flex items-center gap-1 text-caption text-muted-foreground/80">
  <Timer className="h-3 w-3" />{activeDetails.staff.bufferTime}m buffer
  </span>
  )}
@@ -471,8 +471,8 @@ export default function StaffPage() {
 
  {servicesList.length === 0 ? (
  <div className="flex flex-col items-center justify-center py-6 gap-2 text-center">
- <Briefcase className="h-6 w-6 text-muted-foreground/30" />
- <p className="text-caption text-muted-foreground/60 leading-relaxed max-w-48">
+ <Briefcase className="h-6 w-6 text-muted-foreground/80" />
+ <p className="text-caption text-muted-foreground/80 leading-relaxed max-w-48">
  No services configured. Add them in Services Manager first.
  </p>
  </div>
@@ -546,8 +546,8 @@ export default function StaffPage() {
 
  {activeDetails.exceptions.length === 0 ? (
  <div className="flex flex-col items-center justify-center py-6 gap-2 text-center">
- <CalendarRange className="h-6 w-6 text-muted-foreground/30" />
- <p className="text-caption text-muted-foreground/60 max-w-44 leading-relaxed">
+ <CalendarRange className="h-6 w-6 text-muted-foreground/80" />
+ <p className="text-caption text-muted-foreground/80 max-w-44 leading-relaxed">
  No exceptions added. Block holidays or set custom hours here.
  </p>
  </div>
@@ -579,14 +579,14 @@ export default function StaffPage() {
  {exc.isAvailable ? "Custom Hours" : "Closed"}
  </span>
  {exc.reason && (
- <span className="text-caption text-muted-foreground/60 italic truncate">{exc.reason}</span>
+ <span className="text-caption text-muted-foreground/80 italic truncate">{exc.reason}</span>
  )}
  </div>
  </div>
  <button
  type="button"
  onClick={() => handleDeleteException(exc.id)}
- className="h-7 w-7 rounded-md text-muted-foreground/40 hover:text-rose-400 hover:bg-rose-500/10 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shrink-0 cursor-pointer"
+ className="h-7 w-7 rounded-md text-muted-foreground/80 hover:text-rose-400 hover:bg-rose-500/10 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shrink-0 cursor-pointer"
  >
  <X className="h-3.5 w-3.5" />
  </button>
@@ -641,7 +641,7 @@ export default function StaffPage() {
  {/* Day name */}
  <span className={cn(
  "text-body-sm font-semibold w-12 shrink-0",
- isWorking ? "text-foreground" : "text-muted-foreground/60"
+ isWorking ? "text-foreground" : "text-muted-foreground/80"
  )}>
  {DAY_SHORT[dayNum]}
  </span>
@@ -656,7 +656,7 @@ export default function StaffPage() {
  className="bg-transparent border-0 focus:outline-none p-0 text-[12px] font-mono text-foreground flex-1 min-w-0 cursor-pointer h-auto"
  onChange={(e) => handleSaveSchedule(dayNum, e.target.value, shiftEnd)}
  />
- <span className="text-caption text-muted-foreground/40 font-semibold uppercase px-0.5">–</span>
+ <span className="text-caption text-muted-foreground/80 font-semibold uppercase px-0.5">–</span>
  <Input
  type="time"
  value={shiftEnd}
@@ -670,7 +670,7 @@ export default function StaffPage() {
  "text-caption font-bold uppercase tracking-wider px-2 py-1 rounded-md flex-1 text-center sm:text-left",
  isWeekend
  ? "text-amber-400 bg-amber-500/10 border border-amber-500/20"
- : "text-muted-foreground/60 bg-muted/20"
+ : "text-muted-foreground/80 bg-muted/20"
  )}>
  {isWeekend ? "Weekend" : "Rest Day"}
  </span>
@@ -701,23 +701,23 @@ export default function StaffPage() {
  <div className="space-y-4 py-4">
  <div className="grid grid-cols-2 gap-4">
  <div className="col-span-2 space-y-1.5">
- <label htmlFor="staff-name" className="text-caption uppercase font-bold text-muted-foreground/60 tracking-wider">Full Name *</label>
+ <label htmlFor="staff-name" className="text-caption uppercase font-bold text-muted-foreground/80 tracking-wider">Full Name *</label>
  <Input id="staff-name" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Dr. Sarah Jenkins" className="bg-background" required />
  </div>
  <div className="space-y-1.5">
- <label htmlFor="staff-role" className="text-caption uppercase font-bold text-muted-foreground/60 tracking-wider">Role Title *</label>
+ <label htmlFor="staff-role" className="text-caption uppercase font-bold text-muted-foreground/80 tracking-wider">Role Title *</label>
  <Input id="staff-role" value={newRole} onChange={(e) => setNewRole(e.target.value)} placeholder="e.g. Lead Dentist" className="bg-background" required />
  </div>
  <div className="space-y-1.5">
- <label htmlFor="staff-buffer" className="text-caption uppercase font-bold text-muted-foreground/60 tracking-wider">Buffer Time (min)</label>
+ <label htmlFor="staff-buffer" className="text-caption uppercase font-bold text-muted-foreground/80 tracking-wider">Buffer Time (min)</label>
  <Input id="staff-buffer" type="number" value={newBuffer} onChange={(e) => setNewBuffer(e.target.value)} placeholder="15" className="bg-background" />
  </div>
  <div className="space-y-1.5">
- <label htmlFor="staff-email" className="text-caption uppercase font-bold text-muted-foreground/60 tracking-wider">Email</label>
+ <label htmlFor="staff-email" className="text-caption uppercase font-bold text-muted-foreground/80 tracking-wider">Email</label>
  <Input id="staff-email" type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="sarah@clinic.com" className="bg-background" />
  </div>
  <div className="space-y-1.5">
- <label htmlFor="staff-phone" className="text-caption uppercase font-bold text-muted-foreground/60 tracking-wider">Phone</label>
+ <label htmlFor="staff-phone" className="text-caption uppercase font-bold text-muted-foreground/80 tracking-wider">Phone</label>
  <Input id="staff-phone" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="+1 555-0199" className="bg-background" />
  </div>
  </div>
@@ -743,7 +743,7 @@ export default function StaffPage() {
  <form onSubmit={handleAddException}>
  <div className="space-y-4 py-4">
  <div className="space-y-1.5">
- <label htmlFor="exc-date" className="text-caption uppercase font-bold text-muted-foreground/60 tracking-wider">Target Date *</label>
+ <label htmlFor="exc-date" className="text-caption uppercase font-bold text-muted-foreground/80 tracking-wider">Target Date *</label>
  <Input id="exc-date" type="date" value={excDate} onChange={(e) => setExcDate(e.target.value)} className="bg-background" required />
  </div>
  <label className="flex items-start gap-3 p-3 rounded-lg border-[hsl(var(--foreground)/0.06)] hover:bg-[hsl(var(--foreground)/0.02)] cursor-pointer transition-colors select-none">
@@ -755,11 +755,11 @@ export default function StaffPage() {
  />
  <div>
  <span className="text-[12px] font-semibold text-foreground block">Custom working hours</span>
- <span className="text-caption text-muted-foreground/60 leading-relaxed">Check to set custom shift hours; leave unchecked to mark as closed/holiday.</span>
+ <span className="text-caption text-muted-foreground/80 leading-relaxed">Check to set custom shift hours; leave unchecked to mark as closed/holiday.</span>
  </div>
  </label>
  <div className="space-y-1.5">
- <label htmlFor="exc-reason" className="text-caption uppercase font-bold text-muted-foreground/60 tracking-wider">Reason (optional)</label>
+ <label htmlFor="exc-reason" className="text-caption uppercase font-bold text-muted-foreground/80 tracking-wider">Reason (optional)</label>
  <Input id="exc-reason" value={excReason} onChange={(e) => setExcReason(e.target.value)} placeholder="e.g. Family vacation, Conference" className="bg-background" />
  </div>
  </div>
