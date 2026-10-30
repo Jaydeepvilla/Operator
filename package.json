@@ -14,7 +14,7 @@
     "operator:doctor": "tsx scripts/doctor/index.ts",
     "db:clean": "cross-env FORCE_SEED=true tsx scripts/clear-system.ts",
     "db:seed": "cross-env FORCE_SEED=true tsx scripts/seed/index.ts",
-    "db:seed:salon": "cross-env FORCE_SEED=true tsx scripts/seed/index.ts",
+    "db:seed:salon": "tsx scripts/seed/index.ts",
     "db:seed:onboarding-user": "cross-env FORCE_SEED=true tsx scripts/seed-onboarding-user.ts",
     "db:reset": "cross-env FORCE_SEED=true tsx scripts/clear-system.ts && cross-env FORCE_SEED=true tsx scripts/seed/index.ts",
     "db:demo": "cross-env FORCE_SEED=true tsx scripts/clear-system.ts && cross-env FORCE_SEED=true tsx scripts/seed/index.ts",
@@ -27,10 +27,11 @@
     "doctor:icons": "tsx scripts/doctor/index.ts --rule icons",
     "doctor:responsive": "tsx scripts/doctor/index.ts --rule responsive",
     "doctor:accessibility": "tsx scripts/doctor/index.ts --rule accessibility",
-    "db:seed:salon": "tsx scripts/seed/index.ts",
     "db:clean:salon": "tsx scripts/cleanup-demo-salon.ts",
     "video:walkthrough": "tsx scripts/walkthrough-generator/index.ts",
-    "video:client-demo": "tsx scripts/client-demo-generator/generate-onboarding-demo.ts"
+    "video:client-demo": "tsx scripts/client-demo-generator/generate-onboarding-demo.ts",
+    "security:scan-secrets": "tsx scripts/scan-secrets.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -95,6 +96,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "fast-glob": "^3.3.3",
+    "husky": "^9.1.7",
     "jscodeshift": "^17.4.0",
     "msedge-tts": "^2.1.1",
     "picocolors": "^1.1.1",

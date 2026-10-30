@@ -32,8 +32,23 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
+!.env.example
+
+# auth, tokens & local testing data
+playwright/.auth/
+.migration*/
+artifacts/
+brain/
+*-audit*.json
+temp_*.json
+doctor.json
+ai-warnings.json
+*.mp4
+*.mp3
+raw-link-buttons.json
+tabs-compliance-report.json
 
 # vercel
 .vercel
@@ -53,8 +68,6 @@ reports/
 scratch/
 .doctor/
 
-
-
 # Sentry Config File
 .env.sentry-build-plugin
 
@@ -64,4 +77,3 @@ cal.com/
 .operator-doctor-baseline.json
 
 /temp/
-/test-narration.mp3
