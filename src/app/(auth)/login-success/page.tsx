@@ -71,6 +71,7 @@ function LoginSuccessContent() {
     return (
       <div className="space-y-space-8 animate-fade-up">
         <AuthHeader
+          align="center"
           heading="Account Already Exists"
           subheading="This Google account is already associated with an Operator workspace."
         />
@@ -143,6 +144,7 @@ function LoginSuccessContent() {
   return (
     <div className="space-y-space-8 animate-fade-up">
       <AuthHeader
+        align="center"
         heading={isSignup ? "Account Created!" : isFirstTime ? "Welcome to Operator" : "Welcome Back"}
         subheading={
           isFirstTime

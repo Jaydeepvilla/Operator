@@ -184,30 +184,41 @@ const isEmailFormat = (v: string) =>
 export function AuthHeader({
   heading,
   subheading,
+  align = "left",
+  className,
 }: {
   heading: string;
   subheading: string;
+  align?: "left" | "center";
+  className?: string;
 }) {
+  const isCenter = align === "center";
   return (
     <div
-      className="space-y-space-8 animate-fade-up"
+      className={cn(
+        "space-y-space-8 animate-fade-up",
+        isCenter && "text-center",
+        className
+      )}
       style={{ animationDelay: "0ms", animationFillMode: "both" }}
     >
-      {/* Logo — left aligned, linked home */}
-      <Link
-        href="/"
-        aria-label="Go to Operator home"
-        className="inline-block transition-opacity duration-fast hover:opacity-70 lg:hidden"
-      >
-        <Logo />
-      </Link>
+      {/* Logo — left aligned by default, centered when align is center */}
+      <div className={cn("lg:hidden", isCenter ? "flex justify-center" : "inline-block")}>
+        <Link
+          href="/"
+          aria-label="Go to Operator home"
+          className="transition-opacity duration-fast hover:opacity-70"
+        >
+          <Logo />
+        </Link>
+      </div>
 
       {/* Headline block */}
-      <div className="space-y-space-2">
+      <div className={cn("space-y-space-2", isCenter ? "text-center mx-auto" : "text-left")}>
         <h1 className="text-heading-lg font-semibold tracking-tight text-foreground leading-heading">
           {heading}
         </h1>
-        <p className="text-body-sm text-foreground/45 leading-body">
+        <p className={cn("text-body-sm text-foreground/45 leading-body", isCenter && "max-w-md mx-auto")}>
           {subheading}
         </p>
       </div>
