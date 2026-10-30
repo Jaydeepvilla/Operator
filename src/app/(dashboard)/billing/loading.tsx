@@ -1,6 +1,6 @@
 export default function BillingLoading() {
   return (
-    <div className="space-y-space-6 animate-pulse max-w-5xl">
+    <div className="space-y-space-6 animate-pulse w-full">
       <div className="space-y-space-2">
         <div className="h-7 w-48 radius-md bg-muted" />
         <div className="h-4 w-72 radius-md bg-muted" />

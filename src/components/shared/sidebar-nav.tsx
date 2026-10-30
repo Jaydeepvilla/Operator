@@ -130,6 +130,54 @@ export function SidebarNavGroup({
   const { isCollapsed } = useSidebar();
   const [isOpen, setIsOpen] = React.useState(defaultOpen);
 
+  // Track accordion state for each item with subLinks
+  const [openSubMenus, setOpenSubMenus] = React.useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    links.forEach((link) => {
+      if (link.subLinks && link.subLinks.length > 0) {
+        const matches =
+          pathname === link.href ||
+          pathname.startsWith(link.href + "/") ||
+          link.subLinks.some(
+            (sub) => pathname === sub.href || pathname.startsWith(sub.href + "/")
+          );
+        if (matches) {
+          initial[link.href] = true;
+        }
+      }
+    });
+    return initial;
+  });
+
+  const toggleSubMenu = (href: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setOpenSubMenus((prev) => ({
+      ...prev,
+      [href]: !prev[href],
+    }));
+  };
+
+  // Auto-expand accordion when navigating to a child page
+  React.useEffect(() => {
+    links.forEach((link) => {
+      if (link.subLinks && link.subLinks.length > 0) {
+        const isChildActive =
+          pathname === link.href ||
+          pathname.startsWith(link.href + "/") ||
+          link.subLinks.some(
+            (sub) => pathname === sub.href || pathname.startsWith(sub.href + "/")
+          );
+        if (isChildActive) {
+          setOpenSubMenus((prev) => ({
+            ...prev,
+            [link.href]: true,
+          }));
+        }
+      }
+    });
+  }, [pathname, links]);
+
   // Auto-expand if current route matches one of the group's links or sub-links
   React.useEffect(() => {
     if (collapsible) {
@@ -194,76 +242,98 @@ export function SidebarNavGroup({
             );
             const isActive = isExact || isChild || hasActiveSub;
 
+            const hasSubLinks = Boolean(link.subLinks && link.subLinks.length > 0);
+            const isSubMenuOpen = Boolean(openSubMenus[link.href]);
+
             const content = (
               <div key={link.href} className="space-y-0.5">
-                <Link
-                  href={link.href}
-                  onClick={onNavigate}
-                  aria-current={isActive ? "page" : undefined}
-                  className={cn(
-                    "flex items-center radius-md transition-all duration-150 group relative select-none w-full my-0.5 cursor-pointer text-left",
-                    isCollapsed
-                      ? "justify-center mx-1 px-0 py-1.5"
-                      : "gap-2.5 px-2.5 py-1.5",
-                    isActive
-                      ? "bg-[hsl(var(--sidebar-item-active-bg))] text-[hsl(var(--sidebar-item-active-fg))] font-medium shadow-xs"
-                      : "text-[hsl(var(--sidebar-item-fg))] hover:bg-[hsl(var(--sidebar-item-hover-bg))] hover:text-foreground active:bg-[hsl(var(--sidebar-item-active-bg))]",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring)/0.3)] focus-visible:ring-inset"
-                  )}
-                >
-                  <Icon
+                <div className="flex items-center w-full">
+                  <Link
+                    href={link.href}
+                    onClick={onNavigate}
+                    aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "shrink-0 transition-colors duration-150 size-4",
+                      "flex items-center radius-md transition-all duration-150 group relative select-none flex-1 my-0.5 cursor-pointer text-left",
+                      isCollapsed
+                        ? "justify-center mx-1 px-0 py-1.5"
+                        : "gap-2.5 px-2.5 py-1.5",
                       isActive
-                        ? "text-[hsl(var(--sidebar-item-active-fg))]"
-                        : "text-[hsl(var(--sidebar-item-fg))] group-hover:text-foreground"
+                        ? "bg-[hsl(var(--sidebar-item-active-bg))] text-[hsl(var(--sidebar-item-active-fg))] font-medium shadow-xs"
+                        : "text-[hsl(var(--sidebar-item-fg))] hover:bg-[hsl(var(--sidebar-item-hover-bg))] hover:text-foreground active:bg-[hsl(var(--sidebar-item-active-bg))]",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring)/0.3)] focus-visible:ring-inset"
                     )}
-                  />
-                  {!isCollapsed && (
-                    <div className="flex-1 flex items-center justify-between min-w-0 gap-1.5">
-                      <span
-                        className={cn(
-                          "truncate text-body-sm transition-opacity duration-150",
-                          isActive ? "font-semibold" : "font-normal"
-                        )}
-                      >
-                        {link.label}
-                      </span>
-
-                      {/* Live Badge (e.g. for Needs Attention count) */}
-                      {link.badge !== undefined && link.badge !== null && (
+                  >
+                    <Icon
+                      className={cn(
+                        "shrink-0 transition-colors duration-150 size-4",
+                        isActive
+                          ? "text-[hsl(var(--sidebar-item-active-fg))]"
+                          : "text-[hsl(var(--sidebar-item-fg))] group-hover:text-foreground"
+                      )}
+                    />
+                    {!isCollapsed && (
+                      <div className="flex-1 flex items-center justify-between min-w-0 gap-1.5">
                         <span
                           className={cn(
-                            "px-1.5 py-0.2 rounded-full text-xs font-bold leading-none shrink-0",
-                            link.badgeVariant === "warning" || Number(link.badge) > 0
-                              ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                              : "bg-muted text-muted-foreground"
+                            "truncate text-body-sm transition-opacity duration-150",
+                            isActive ? "font-semibold" : "font-normal"
                           )}
                         >
-                          {link.badge}
+                          {link.label}
                         </span>
-                      )}
 
-                      {/* Locked Badge (e.g. Phone on Starter) */}
-                      {link.locked && (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary-light bg-primary/15 border border-primary/25 px-1.5 py-0.5 rounded-full shrink-0">
-                          <Lock className="w-2.5 h-2.5" />
-                          <span>{link.lockLabel || "Pro"}</span>
-                        </span>
-                      )}
-                    </div>
+                        {/* Live Badge (e.g. for Needs Attention count) */}
+                        {link.badge !== undefined && link.badge !== null && (
+                          <span
+                            className={cn(
+                              "px-1.5 py-0.2 rounded-full text-xs font-bold leading-none shrink-0",
+                              link.badgeVariant === "warning" || Number(link.badge) > 0
+                                ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                : "bg-muted text-muted-foreground"
+                            )}
+                          >
+                            {link.badge}
+                          </span>
+                        )}
+
+                        {/* Locked Badge (e.g. Phone on Starter) */}
+                        {link.locked && (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary-light bg-primary/15 border border-primary/25 px-1.5 py-0.5 rounded-full shrink-0">
+                            <Lock className="w-2.5 h-2.5" />
+                            <span>{link.lockLabel || "Pro"}</span>
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Active indicator dot for collapsed mode */}
+                    {isActive && isCollapsed && (
+                      <span className="absolute -right-space-0.5 top-space-1/2 -translate-y-space-1/2 h-1.5 w-1.5 radius-md bg-foreground" />
+                    )}
+                  </Link>
+
+                  {/* Accordion toggle chevron button for items with child links */}
+                  {!isCollapsed && hasSubLinks && (
+                    <button
+                      type="button"
+                      onClick={(e) => toggleSubMenu(link.href, e)}
+                      aria-label={`${isSubMenuOpen ? "Collapse" : "Expand"} ${link.label} sub-navigation`}
+                      className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--sidebar-item-hover-bg))] transition-colors shrink-0 ml-0.5 cursor-pointer"
+                    >
+                      <ChevronDown
+                        className={cn(
+                          "h-3.5 w-3.5 transition-transform duration-200",
+                          isSubMenuOpen && "rotate-180"
+                        )}
+                      />
+                    </button>
                   )}
+                </div>
 
-                  {/* Active indicator dot for collapsed mode */}
-                  {isActive && isCollapsed && (
-                    <span className="absolute -right-space-0.5 top-space-1/2 -translate-y-space-1/2 h-1.5 w-1.5 radius-md bg-foreground" />
-                  )}
-                </Link>
-
-                {/* Sub-links when expanded (indented 2-level clean list) */}
-                {!isCollapsed && link.subLinks && link.subLinks.length > 0 && (
-                  <div className="ml-5 pl-2.5 border-l border-border/40 space-y-0.5 py-0.5">
-                    {link.subLinks.map((sub) => {
+                {/* Sub-links when expanded (accordion open state) */}
+                {!isCollapsed && hasSubLinks && isSubMenuOpen && (
+                  <div className="ml-5 pl-2.5 border-l border-border/40 space-y-0.5 py-0.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                    {link.subLinks!.map((sub) => {
                       const isSubActive =
                         pathname === sub.href || pathname.startsWith(sub.href + "/");
                       const SubIcon = sub.icon ? IconMap[sub.icon] : null;

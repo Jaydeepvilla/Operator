@@ -251,7 +251,7 @@ export function DashboardShell({
           className={cn(
             "flex items-center border-b border-[hsl(var(--foreground)/0.06)] shrink-0 sidebar-transition",
             collapsed
-              ? "justify-center px-space-2 py-space-4"
+              ? "flex-col justify-center gap-space-2 px-space-2 py-space-3"
               : "gap-space-3 px-space-4 py-space-4"
           )}
         >
@@ -276,17 +276,29 @@ export function DashboardShell({
               </span>
             </div>
           )}
-          {/* Collapse toggle — desktop only */}
-          {!isMobile && !collapsed && (
-            <button
-              onClick={toggleSidebar}
-              className="shrink-0 h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground/80 hover:text-foreground hover:bg-[hsl(var(--foreground)/0.05)] transition-all duration-150 cursor-pointer"
-              aria-label="Collapse sidebar"
-              title="Collapse sidebar"
-            >
-              <PanelLeftClose className="h-3.5 w-3.5" />
-            </button>
-          )}
+            {/* Collapse toggle — desktop only */}
+            {!isMobile && !collapsed && (
+              <button
+                onClick={toggleSidebar}
+                className="shrink-0 h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground/80 hover:text-foreground hover:bg-[hsl(var(--foreground)/0.05)] transition-all duration-150 cursor-pointer"
+                aria-label="Collapse sidebar"
+                title="Collapse sidebar"
+              >
+                <PanelLeftClose className="h-3.5 w-3.5" />
+              </button>
+            )}
+
+            {/* Expand toggle when collapsed on desktop */}
+            {!isMobile && collapsed && (
+              <button
+                onClick={toggleSidebar}
+                className="mt-space-2 h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground/80 hover:text-foreground hover:bg-[hsl(var(--foreground)/0.08)] transition-all duration-150 cursor-pointer"
+                aria-label="Expand sidebar"
+                title="Expand sidebar"
+              >
+                <PanelLeft className="h-4 w-4" />
+              </button>
+            )}
         </div>
 
         {/* Scrollable Nav Items */}
@@ -362,6 +374,18 @@ export function DashboardShell({
                 <SidebarContent isMobile onNavigate={() => setMobileOpen(false)} />
               </SheetContent>
             </Sheet>
+
+            {/* Desktop toggle button in header when sidebar is collapsed */}
+            {isCollapsed && (
+              <button
+                onClick={toggleSidebar}
+                className="hidden md:flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.08)] transition-all cursor-pointer"
+                aria-label="Expand sidebar"
+                title="Expand sidebar"
+              >
+                <PanelLeft className="h-4 w-4" />
+              </button>
+            )}
 
             <Breadcrumb />
           </div>

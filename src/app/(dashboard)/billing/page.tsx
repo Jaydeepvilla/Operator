@@ -56,7 +56,7 @@ export default async function BillingPage() {
   const chartData = metrics?.mrrHistory || [];
 
   return (
-    <div className="space-y-space-6 animate-fade-in max-w-5xl">
+    <div className="space-y-space-6 animate-fade-in w-full">
       {/* Page Header */}
       <PageTitle
         title="Billing & Subscription"

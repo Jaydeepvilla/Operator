@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { 
   CreditCard, 
   Sparkles, 
@@ -9,7 +10,6 @@ import {
   AlertCircle, 
   History, 
   Activity, 
-  Sliders, 
   CheckCircle2, 
   AlertTriangle,
   Download,
@@ -59,7 +59,7 @@ export function BillingPortalClient({
   paymentProvidersData,
   chartData
 }: BillingPortalClientProps) {
-  const [activeTab, setActiveTab] = useState<"plans" | "usage" | "invoices" | "providers" | "revenue">("plans");
+  const [activeTab, setActiveTab] = useState<"usage" | "invoices" | "providers" | "revenue">("usage");
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
   const [subscription, setSubscription] = useState(initialSubscription);
   const [invoices] = useState(initialInvoices || []);
@@ -179,7 +179,7 @@ export function BillingPortalClient({
     : activePlanConfig?.price ?? 49;
 
   return (
-    <div className="space-y-space-6 max-w-5xl">
+    <div className="space-y-space-6 w-full">
       {/* Executive Overview Hero: Active Plan & Quotas */}
       <div className="radius-2xl border border-border/50 bg-gradient-to-b from-card/80 to-card/40 backdrop-blur-md p-space-6 soft-shadow transition-all">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-6 items-center">
@@ -256,10 +256,12 @@ export function BillingPortalClient({
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => setActiveTab("plans")}
+                    asChild
                     className="text-caption cursor-pointer"
                   >
-                    Compare & Change Plan
+                    <Link href="/pricing">
+                      Compare & Change Plan
+                    </Link>
                   </Button>
                   {!isSuspended && !isTrial && (
                     <Button 
@@ -282,8 +284,10 @@ export function BillingPortalClient({
                 Current Period Quota Usage
               </span>
               <Button 
+                variant="outline"
+                size="sm"
                 onClick={() => setActiveTab("usage")}
-                className="text-caption text-primary hover:text-primary/90 flex items-center gap-space-1 cursor-pointer font-medium"
+                className="text-caption font-semibold flex items-center gap-space-1 cursor-pointer h-7 px-space-2.5 text-foreground hover:text-primary hover:border-primary/50"
               >
                 <span>Details</span>
                 <ArrowUpRight className="h-3.5 w-3.5" />
@@ -366,15 +370,6 @@ export function BillingPortalClient({
       <div className="flex items-center justify-between flex-wrap gap-space-3 border-b border-border/20 pb-space-3">
         <div className="inline-flex items-center gap-space-1 p-space-1 bg-card/60 border border-border/40 radius-xl backdrop-blur-md">
           <Button 
-            variant={activeTab === "plans" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setActiveTab("plans")}
-            className="text-caption font-medium cursor-pointer h-8 px-space-3"
-          >
-            <Sliders className="h-3.5 w-3.5 mr-space-1.5 text-primary" />
-            Plans & Pricing
-          </Button>
-          <Button 
             variant={activeTab === "usage" ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setActiveTab("usage")}
@@ -413,35 +408,6 @@ export function BillingPortalClient({
             </Button>
           )}
         </div>
-
-        {/* Annual / Monthly Toggle for Plans */}
-        {activeTab === "plans" && (
-          <div className="inline-flex items-center gap-space-1 p-space-0.5 bg-card/60 border border-border/40 radius-lg text-caption">
-            <Button
-              onClick={() => setBillingInterval("monthly")}
-              className={`px-space-3 py-space-1 radius-md transition-all font-medium cursor-pointer ${
-                billingInterval === "monthly" 
-                  ? "bg-muted text-foreground shadow-xs" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Monthly
-            </Button>
-            <Button
-              onClick={() => setBillingInterval("yearly")}
-              className={`px-space-3 py-space-1 radius-md transition-all font-medium flex items-center gap-space-1.5 cursor-pointer ${
-                billingInterval === "yearly" 
-                  ? "bg-muted text-foreground shadow-xs" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <span>Yearly</span>
-              <span className="text-caption bg-emerald-500/20 text-emerald-400 px-space-1.5 py-0.5 radius-full font-semibold">
-                Save 20%
-              </span>
-            </Button>
-          </div>
-        )}
       </div>
 
       {statusMessage && (
@@ -458,139 +424,6 @@ export function BillingPortalClient({
             <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
           )}
           <span>{statusMessage.text}</span>
-        </div>
-      )}
-
-      {/* TAB: Plans & Pricing */}
-      {activeTab === "plans" && (
-        <div className="space-y-space-6">
-          <div className="grid gap-space-6 md:grid-cols-3">
-            {dynamicPlans.map((tier: PlanConfig) => {
-              const isActive = currentPlanId === tier.id;
-              const displayPrice = billingInterval === "yearly" && tier.yearlyPrice 
-                ? tier.yearlyPrice 
-                : tier.price;
-
-              const featuresList = [
-                `${tier.limits.conversations.toLocaleString()} Conversations / mo`,
-                `${tier.limits.voiceMinutes.toLocaleString()} Voice AI Minutes`,
-                tier.limits.calendars === null ? "Unlimited Calendar Sync" : `${tier.limits.calendars} Calendar Integration`,
-                tier.features.whatsapp ? "WhatsApp & Social Messaging" : "SMS & Web Widget Included",
-                tier.features.customAiTraining ? "Custom AI Model Training" : "Standard AI Templates",
-              ];
-
-              return (
-                <div 
-                  key={tier.id} 
-                  className={`flex flex-col justify-between radius-2xl border transition-all duration-200 bg-card/40 backdrop-blur-md p-space-6 relative ${
-                    isActive 
-                      ? "border-primary/50 bg-gradient-to-b from-primary/[0.06] to-card/50 ring-1 ring-primary/40 soft-shadow" 
-                      : "border-border/40 hover:border-border/80"
-                  }`}
-                >
-                  {/* Top Badge */}
-                  {isActive ? (
-                    <div className="w-fit mx-auto mb-space-3 inline-flex items-center gap-space-1.5 px-space-3 py-0.5 radius-full text-caption font-semibold tracking-wider uppercase bg-primary/20 text-primary border border-primary/30">
-                      <CheckCircle2 className="h-3 w-3" />
-                      Current Plan
-                    </div>
-                  ) : tier.badge ? (
-                    <div className="w-fit mx-auto mb-space-3 inline-flex items-center gap-space-1.5 px-space-3 py-0.5 radius-full text-caption font-semibold tracking-wider uppercase bg-gradient-to-r from-violet-500/15 to-indigo-500/15 text-violet-300 border border-violet-500/25">
-                      <Sparkles className="h-3 w-3 text-violet-400" />
-                      {tier.badge}
-                    </div>
-                  ) : (
-                    <div className="h-6 mb-space-3" />
-                  )}
-
-                  <div>
-                    <h3 className="text-body-lg font-bold text-foreground tracking-tight">
-                      {tier.name}
-                    </h3>
-                    <p className="text-caption text-muted-foreground mt-space-1 leading-relaxed min-h-9">
-                      {tier.description}
-                    </p>
-
-                    <div className="flex items-baseline gap-space-1.5 mt-space-5">
-                      <span className="text-heading-lg font-semibold text-foreground font-mono">
-                        ${displayPrice}
-                      </span>
-                      <span className="text-caption text-muted-foreground">/ month</span>
-                    </div>
-
-                    {billingInterval === "yearly" && (
-                      <p className="text-caption text-emerald-400 font-medium mt-space-0.5">
-                        Billed annually (${displayPrice * 12}/yr)
-                      </p>
-                    )}
-
-                    <div className="h-px bg-border/20 my-space-5" />
-
-                    <ul className="space-y-space-2.5 text-caption text-foreground/80">
-                      {featuresList.map((feat, idx) => (
-                        <li key={idx} className="flex items-center gap-space-2.5">
-                          <div className="h-4 w-4 radius-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                            <Check className="h-2.5 w-2.5 text-primary" />
-                          </div>
-                          <span>{feat}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="pt-space-6 border-t border-border/10 mt-space-6 flex flex-col gap-space-2">
-                    {isActive ? (
-                      <Button 
-                        variant="outline" 
-                        disabled 
-                        className="w-full text-caption h-10 radius-xl bg-muted/20 border-border/40 text-muted-foreground cursor-default"
-                      >
-                        Current Active Plan
-                      </Button>
-                    ) : (
-                      <>
-                        <RazorpayCheckoutButton
-                          amountInPaise={displayPrice * 100}
-                          planName={tier.name}
-                          description={`Instant subscription for ${tier.name} Plan`}
-                          prefill={{
-                            email: initialAccount?.email || "",
-                            name: initialAccount?.name || "Business Admin",
-                          }}
-                          onSuccess={async (payment) => {
-                            setStatusMessage({
-                              type: "success",
-                              text: `Payment verified (${payment.payment_id}). Upgrading plan to ${tier.name}...`,
-                            });
-                            await handlePlanChange(tier.id);
-                          }}
-                          onError={(err) => {
-                            setStatusMessage({
-                              type: "error",
-                              text: err?.message || "Payment checkout cancelled.",
-                            });
-                          }}
-                          className="w-full text-caption h-10 radius-xl font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs transition-all cursor-pointer"
-                        >
-                          <CreditCard className="h-3.5 w-3.5 mr-space-2" />
-                          Upgrade to {tier.name}
-                        </RazorpayCheckoutButton>
-
-                        <Button
-                          type="button"
-                          disabled={isPending}
-                          onClick={() => handlePlanChange(tier.id)}
-                          className="w-full text-center text-caption text-muted-foreground hover:text-foreground transition-colors cursor-pointer pt-space-1"
-                        >
-                          {isPending ? "Updating..." : `Switch to ${tier.name} directly`}
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
       )}
 
