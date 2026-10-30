@@ -1,88 +1,136 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
-import { Check, ArrowRight, Shield, Building2, Sparkles, Zap, Lock, Headphones } from "lucide-react";
+import {
+  Check,
+  ArrowRight,
+  Shield,
+  Building2,
+  Sparkles,
+  Zap,
+  Lock,
+  Headphones,
+  Phone,
+  MessageSquare,
+  Calendar,
+  Globe,
+  Tag,
+  HelpCircle,
+} from "lucide-react";
 import { Button } from "@/components/shared/button";
 import { SessionAwareCta } from "@/components/marketing/session-aware-cta";
 import { cn } from "@/components/shared/utils";
 import { RazorpayCheckoutButton } from "@/components/billing/razorpay-checkout-button";
-import { getAllPlans } from "@/lib/billing/plans";
-import { GsapScrollSection, GsapReveal, AnimatedCounter } from "@/components/marketing/gsap-scroll-section";
-import { PricingComparisonTable, FeatureCategory } from "@/components/marketing/pricing-comparison-table";
+import {
+  REGIONAL_CONFIGS,
+  type SupportedCurrency,
+  getLocalizedPlans,
+} from "@/lib/billing/plans";
+import { GsapScrollSection, GsapReveal } from "@/components/marketing/gsap-scroll-section";
 import { AnimatedAccordion } from "@/components/marketing/animated-accordion";
 
-const PLANS = getAllPlans().map((p) => ({
-  id: p.id,
-  name: p.name,
-  price: p.price,
-  monthlyPrice: p.price,
-  yearlyPrice: p.yearlyPrice,
-  desc: p.description,
-  highlight: Boolean(p.highlight) || p.id === "professional",
-  badge: p.badge || (p.id === "professional" ? "Most Popular" : undefined),
-  limits: p.limits,
-  features: {
-    "Conversations": `${p.limits.conversations.toLocaleString()} / mo`,
-    "Voice AI Minutes": `${p.limits.voiceMinutes.toLocaleString()} min / mo`,
-    "Website Widget": p.features.websiteWidget,
-    "SMS Messaging": p.features.sms,
-    "Email Responses": p.features.email,
-    "WhatsApp": p.features.whatsapp,
-    "Instagram / Facebook": p.features.instagramFacebook,
-    "Calendar Integrations": p.limits.calendars === null ? "Unlimited" : `${p.limits.calendars} calendar${p.limits.calendars > 1 ? "s" : ""}`,
-    "Lead Qualification": p.features.advancedLeadQualification ? "Advanced" : "Basic",
-    "Knowledge Base Articles": `${p.limits.knowledgeArticles} articles`,
-    "Team Members": `${p.limits.teamMembers}`,
-    "Locations": `${p.limits.locations}`,
-    "Analytics Dashboard": p.features.analyticsExport ? "Full + Export" : p.id === "professional" ? "Advanced" : "Basic",
-    "Custom AI Training": p.features.customAiTraining,
-    "Dedicated Onboarding": p.features.dedicatedOnboarding,
-    "SLA Guarantee": p.features.slaGuarantee ? "99.9%" : false,
-    "Support": p.id === "business" ? "Dedicated CSM" : p.id === "professional" ? "Priority Email + Chat" : "Email",
-  },
-}));
+interface ComparisonRow {
+  name: string;
+  starter: string | boolean;
+  pro: string | boolean;
+  business: string | boolean;
+}
 
-const FEATURE_CATEGORIES: FeatureCategory[] = [
-  { label: "Core Messaging", features: ["Conversations", "Website Widget", "SMS Messaging", "Email Responses", "WhatsApp", "Instagram / Facebook"] },
-  { label: "Voice AI", features: ["Voice AI Minutes"] },
-  { label: "Scheduling", features: ["Calendar Integrations"] },
-  { label: "AI & Automation", features: ["Lead Qualification", "Knowledge Base Articles", "Custom AI Training"] },
-  { label: "Platform", features: ["Team Members", "Locations", "Analytics Dashboard"] },
-  { label: "Support & SLA", features: ["Dedicated Onboarding", "SLA Guarantee", "Support"] },
+const COMPARISON_ROWS: ComparisonRow[] = [
+  { name: "Website chat widget", starter: true, pro: true, business: true },
+  { name: "WhatsApp conversations", starter: true, pro: true, business: true },
+  {
+    name: "AI answers from documents & FAQs",
+    starter: "Up to 20 docs",
+    pro: "Up to 100 docs",
+    business: "Higher limit",
+  },
+  {
+    name: "Appointment booking & calendar sync",
+    starter: "1 calendar",
+    pro: "Up to 3 staff calendars",
+    business: "Up to 10 staff calendars",
+  },
+  { name: "Locations", starter: "1", pro: "1", business: "Up to 5" },
+  { name: "Lead capture & shared inbox", starter: true, pro: true, business: true },
+  { name: "Email alerts & handoff to a human", starter: true, pro: true, business: true },
+  { name: "Email reminders", starter: true, pro: true, business: true },
+  {
+    name: "AI phone receptionist & business phone number",
+    starter: false,
+    pro: true,
+    business: true,
+  },
+  { name: "Missed-call text-back", starter: false, pro: true, business: true },
+  { name: "Call recordings & transcripts", starter: false, pro: true, business: true },
+  { name: "Transfer calls to a human phone number", starter: false, pro: true, business: true },
+  {
+    name: "SMS & WhatsApp reminders, no-show recovery, waitlist",
+    starter: false,
+    pro: true,
+    business: true,
+  },
+  { name: "Deposits & payment links", starter: false, pro: true, business: true },
+  {
+    name: "ROI dashboard (calls, bookings, revenue recovered)",
+    starter: "Basic analytics",
+    pro: true,
+    business: "Yes, with CSV export",
+  },
+  { name: "CRM and webhook integrations", starter: false, pro: false, business: true },
+  {
+    name: "Custom call routing & business-hours rules",
+    starter: false,
+    pro: false,
+    business: true,
+  },
+  { name: "Team roles & audit log", starter: false, pro: false, business: true },
+  { name: "Onboarding call", starter: false, pro: false, business: true },
+  { name: "Support", starter: "Email", pro: "Priority email", business: "Priority, with onboarding" },
 ];
 
-const FAQ_ITEMS = [
+const PRICING_FAQS = [
   {
-    q: "Is there a free trial on all plans?",
-    a: "Yes. Every plan includes a 14-day free trial with full feature access, real phone numbers, and active integrations. No credit card required to start."
+    q: "Why doesn't Starter include phone calls?",
+    a: "Phone answering has real per-minute carrier costs, so it starts at Pro. Starter keeps chat and WhatsApp booking affordable for solo practices and single-location businesses.",
   },
   {
-    q: "What happens after my 14-day trial ends?",
-    a: "You will receive an automated summary notice 3 days before your trial ends. You can select a subscription tier or do nothing — we never charge you automatically without your confirmation."
+    q: "What counts as a conversation?",
+    a: "One conversation is one customer thread on chat or WhatsApp, from the first message until it goes quiet. We never bill per individual message back and forth.",
   },
   {
-    q: "Can I switch or cancel plans at any time?",
-    a: "Yes. Upgrade, downgrade, or cancel whenever you choose. Upgrades take effect immediately with prorated credits. Downgrades or cancellations apply at your next billing cycle with zero penalties."
+    q: "What happens if I use all my voice minutes?",
+    a: "Calls keep being answered without interruption. Extra minutes are billed at the standard overage rate for your market.",
   },
   {
-    q: "How are conversations counted across channels?",
-    a: "A conversation is counted as one complete inbound or outbound customer interaction (e.g., an entire phone call session, an SMS thread, or a web chat exchange). We do not charge per individual message."
+    q: "Can I forward only missed or after-hours calls?",
+    a: "Yes. Many customers forward only unanswered and after-hours calls, which uses far fewer minutes while ensuring zero customer inquiries slip through the cracks.",
   },
   {
-    q: "Do unused voice AI minutes roll over to next month?",
-    a: "Voice AI minutes reset at the start of each monthly billing cycle to maintain high-throughput carrier bandwidth allocations. Overage minutes can be billed at standard micro-rates if enabled."
+    q: "Do I need a contract?",
+    a: "No. Plans are monthly with no long-term commitment. You can cancel anytime before your next billing date.",
   },
   {
-    q: "Are there setup, onboarding, or onboarding migration fees?",
-    a: "There are zero setup fees on any plan. Our Business tier includes a dedicated onboarding engineer who will configure your EHR/CRM calendar mappings and custom prompts with white-glove assistance."
-  }
+    q: "What if the AI can't answer something?",
+    a: "It tells the customer it will pass the question on, alerts your team immediately, and on Pro and Business can transfer the call directly to a person.",
+  },
+  {
+    q: "Can I change plans later?",
+    a: "Yes. Upgrade or downgrade at any time, and the change applies from your next billing date with prorated adjustments.",
+  },
 ];
 
 export default function PricingPage() {
+  const [selectedCurrency, setSelectedCurrency] = useState<SupportedCurrency>("USD");
   const [yearly, setYearly] = useState(false);
+
+  const regionConfig = REGIONAL_CONFIGS[selectedCurrency] || REGIONAL_CONFIGS.USD;
+  const plans = useMemo(() => {
+    return getLocalizedPlans(selectedCurrency);
+  }, [selectedCurrency]);
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background text-foreground selection:bg-primary/20">
@@ -97,32 +145,73 @@ export default function PricingPage() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-[500px] bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.09),transparent_70%)] pointer-events-none" />
 
           <GsapScrollSection animation="fade-up" className="relative mx-auto max-w-4xl px-space-6 text-center">
-            <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span className="text-caption uppercase tracking-widest font-medium text-primary">Transparent Pricing</span>
+            {/* Regional Currency Selector Tabs */}
+            <div className="inline-flex items-center gap-1 p-1 rounded-full border border-border/80 bg-card/60 backdrop-blur-md mb-space-6 shadow-xs">
+              {(["USD", "GBP", "INR"] as SupportedCurrency[]).map((cur) => {
+                const reg = REGIONAL_CONFIGS[cur];
+                const isActive = selectedCurrency === cur;
+                return (
+                  <button
+                    key={cur}
+                    type="button"
+                    onClick={() => setSelectedCurrency(cur)}
+                    className={cn(
+                      "px-3.5 py-1 text-caption font-semibold rounded-full transition-all duration-150 cursor-pointer flex items-center gap-1.5",
+                      isActive
+                        ? "bg-primary text-white shadow-xs"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                    )}
+                  >
+                    <span>{reg.symbol} {cur}</span>
+                    <span className="text-[10px] opacity-75 font-normal">({reg.marketName})</span>
+                  </button>
+                );
+              })}
             </div>
 
-            <h1 className="text-display-lg md:text-display-xl font-bold tracking-tight leading-display text-foreground mb-space-5">
-              Predictable pricing for
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-[hsl(260_80%_65%)] to-[hsl(280_75%_55%)]">
-                every size of business.
-              </span>
+            {/* Headline */}
+            <h1 className="text-display-lg md:text-display-xl font-bold tracking-tight leading-display text-foreground mb-space-4">
+              Never miss another customer.
             </h1>
 
-            <p className="mx-auto max-w-xl text-body-md md:text-body-lg text-muted-foreground leading-relaxed mb-space-10">
-              Start free for 14 days. Full access to voice AI, calendars, and messaging integrations. Cancel anytime.
+            {/* Market-Specific Sub-headline Variant */}
+            <div className="inline-block px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-caption font-medium text-primary mb-space-5">
+              {regionConfig.headlineHero}
+            </div>
+
+            <p className="mx-auto max-w-2xl text-body-md md:text-body-lg text-muted-foreground leading-relaxed mb-space-8">
+              Operator answers chats and messages around the clock, books appointments into your calendar, and on Pro and Business answers your phone too. Simple monthly plans. No long-term contract.
             </p>
 
-            {/* Monthly / Annual Toggle Switch */}
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--foreground)/0.08)] bg-card/60 backdrop-blur-xs p-1.5 shadow-xs mb-space-8">
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-space-3 mb-space-4">
+              <SessionAwareCta
+                signedInText="Go to Dashboard"
+                signedOutText="Start Free Trial"
+                signedOutHref="/sign-up"
+                size="lg"
+              />
+              <Button asChild variant="outline" size="lg" className="font-semibold">
+                <Link href="/demo">
+                  Book a Demo
+                </Link>
+              </Button>
+            </div>
+
+            {/* Reassuring Line Under Buttons */}
+            <p className="text-caption text-muted-foreground/80 font-medium max-w-lg mx-auto">
+              14-day free trial on Starter. 7-day pilot on Pro and Business with a money-back guarantee.
+            </p>
+
+            {/* Monthly / Annual Billing Toggle */}
+            <div className="mt-space-8 inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-card/60 backdrop-blur-xs p-1.5 shadow-xs">
               <button
                 type="button"
                 onClick={() => setYearly(false)}
                 className={cn(
                   "h-8 px-space-4 text-caption rounded-full font-semibold transition-all duration-200 cursor-pointer select-none",
                   !yearly
-                    ? "bg-primary text-white shadow-sm shadow-primary/25"
+                    ? "bg-primary text-white shadow-xs"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 )}
               >
@@ -134,18 +223,18 @@ export default function PricingPage() {
                 className={cn(
                   "h-8 pl-space-4 pr-space-3 text-caption rounded-full font-semibold transition-all duration-200 cursor-pointer select-none flex items-center gap-2",
                   yearly
-                    ? "bg-primary text-white shadow-sm shadow-primary/25"
+                    ? "bg-primary text-white shadow-xs"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 )}
               >
                 <span>Annual</span>
                 <span
                   className={cn(
-                    "px-2 py-0.5 rounded-full text-caption font-mono font-medium tracking-tight uppercase transition-colors",
-                    yearly ? "bg-white/20 text-white" : "bg-primary/15 text-primary"
+                    "px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-tight uppercase transition-colors",
+                    yearly ? "bg-white/20 text-white" : "bg-emerald-500/15 text-emerald-400"
                   )}
                 >
-                  Save 20%
+                  Pay 10 mos, get 12
                 </span>
               </button>
             </div>
@@ -162,10 +251,10 @@ export default function PricingPage() {
             stagger={0.1}
             className="grid grid-cols-1 md:grid-cols-3 gap-space-6 items-stretch"
           >
-            {PLANS.map((plan) => {
-              const isPopular = plan.highlight;
+            {plans.map((plan) => {
+              const isPopular = plan.id === "professional";
               const displayPrice = yearly ? plan.yearlyPrice : plan.monthlyPrice;
-              const savings = (plan.monthlyPrice - plan.yearlyPrice) * 12;
+              const formattedPrice = displayPrice.toLocaleString();
 
               return (
                 <div
@@ -173,14 +262,14 @@ export default function PricingPage() {
                   className={cn(
                     "pricing-card-item relative rounded-2xl flex flex-col justify-between transition-all duration-300",
                     isPopular
-                      ? "pricing-card-popular pt-space-10 px-space-7 pb-space-7 shadow-[0_12px_45px_rgb(0,0,0,0.1)] md:-translate-y-2"
-                      : "border border-[hsl(var(--foreground)/0.08)] bg-card/45 backdrop-blur-xs p-space-6 md:p-space-7 hover:border-primary/30 hover:shadow-md"
+                      ? "border-2 border-primary bg-card/90 pt-space-10 px-space-7 pb-space-7 shadow-[0_12px_45px_rgb(0,0,0,0.1)] md:-translate-y-2 ring-1 ring-primary/40"
+                      : "border border-border/80 bg-card/45 backdrop-blur-xs p-space-6 md:p-space-7 hover:border-primary/40 hover:shadow-md"
                   )}
                 >
-                  {/* Floating Popular Pill Badge */}
+                  {/* Floating Most Popular Badge */}
                   {isPopular && (
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
-                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-caption font-mono uppercase font-medium tracking-wider bg-gradient-to-r from-primary to-violet-600 text-white shadow-md shadow-primary/30">
+                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-caption font-semibold uppercase tracking-wider bg-gradient-to-r from-primary to-violet-600 text-white shadow-md shadow-primary/30">
                         <Sparkles className="h-3 w-3" />
                         Most Popular
                       </span>
@@ -188,59 +277,103 @@ export default function PricingPage() {
                   )}
 
                   <div>
-                    {/* Header info */}
-                    <div className="border-b border-[hsl(var(--foreground)/0.05)] pb-space-5 mb-space-5">
-                      <h2 className="text-title-lg font-bold text-foreground mb-space-1">{plan.name}</h2>
-                      <p className="text-caption text-muted-foreground leading-relaxed min-h-[36px]">
-                        {plan.desc}
-                      </p>
-
-                      <div className="flex items-baseline gap-space-2 mt-space-5 mb-space-1">
-                        <span className="text-5xl md:text-6xl font-bold font-mono tracking-tight text-foreground">
-                          ${displayPrice}
-                        </span>
-                        <span className="text-body-sm md:text-body-md text-muted-foreground font-mono font-semibold">/month</span>
+                    {/* Header */}
+                    <div className="border-b border-border/60 pb-space-5 mb-space-5">
+                      <div className="flex items-center justify-between mb-1">
+                        <h2 className="text-title-lg font-bold text-foreground">{plan.name}</h2>
+                        {plan.id === "starter" && (
+                          <span className="text-[11px] font-semibold text-muted-foreground bg-muted/60 px-2.5 py-0.5 rounded-full">
+                            Chat & WhatsApp
+                          </span>
+                        )}
+                        {plan.id === "business" && (
+                          <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+                            Multi-Location
+                          </span>
+                        )}
                       </div>
 
-                      {yearly && (
-                        <div className="text-caption font-mono text-emerald-500 font-semibold mt-space-1">
-                          Save ${savings}/year with annual billing
+                      <p className="text-caption text-muted-foreground leading-relaxed min-h-[38px]">
+                        {plan.bestFor}
+                      </p>
+
+                      {/* Pricing block */}
+                      <div className="flex items-baseline gap-space-2 mt-space-5 mb-space-1">
+                        <span className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
+                          {plan.currencySymbol}{formattedPrice}
+                        </span>
+                        <span className="text-body-sm text-muted-foreground font-semibold">/month</span>
+                      </div>
+
+                      {yearly ? (
+                        <div className="text-caption text-emerald-400 font-semibold mt-1">
+                          Setup fee waived · 2 months free annually
+                        </div>
+                      ) : (
+                        <div className="text-caption text-muted-foreground mt-1">
+                          Billed monthly · Cancel anytime
                         </div>
                       )}
                     </div>
 
-                    {/* Quick highlights list */}
-                    <div className="space-y-space-2.5 mb-space-8">
-                      <span className="text-caption font-mono uppercase tracking-widest text-muted-foreground/70 font-medium block mb-space-2">
-                        Included capabilities:
+                    {/* Card Copy Summary */}
+                    <div className="p-3.5 rounded-xl bg-muted/30 border border-border/60 mb-space-6 text-body-sm text-foreground/90 leading-snug">
+                      {plan.cardCopy}
+                    </div>
+
+                    {/* Monthly Included Capacity */}
+                    <div className="space-y-space-2.5 mb-space-6">
+                      <span className="text-caption font-mono uppercase tracking-widest text-muted-foreground/80 font-bold block mb-space-2">
+                        Included Each Month:
                       </span>
-                      {Object.entries(plan.features).slice(0, 7).map(([featName, featVal]) => {
-                        const isExcluded = featVal === false;
-                        return (
-                          <div
-                            key={featName}
-                            className={cn(
-                              "flex items-start gap-space-2.5 text-caption leading-snug",
-                              isExcluded ? "text-muted-foreground/40 line-through" : "text-foreground/85"
-                            )}
-                          >
-                            {isExcluded ? (
-                              <span className="text-muted-foreground/30 font-mono text-caption mt-0.5">—</span>
-                            ) : (
-                              <Check className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                            )}
+
+                      <div className="flex items-center gap-2.5 text-body-sm text-foreground">
+                        <Check className="h-4 w-4 text-primary shrink-0" />
+                        <span>
+                          <strong>{plan.limits.conversations.toLocaleString()}</strong> conversations / mo
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2.5 text-body-sm text-foreground">
+                        {plan.limits.voiceMinutes > 0 ? (
+                          <>
+                            <Check className="h-4 w-4 text-emerald-400 shrink-0" />
                             <span>
-                              <strong className="font-semibold text-foreground">{featName}:</strong>{" "}
-                              {featVal === true ? "Included" : featVal === false ? "Not included" : String(featVal)}
+                              <strong>{plan.limits.voiceMinutes}</strong> voice minutes included
                             </span>
-                          </div>
-                        );
-                      })}
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-muted-foreground/40 font-mono text-body-sm w-4 text-center">—</span>
+                            <span className="text-muted-foreground">
+                              Voice minutes: <strong>None</strong> (Starts at Pro)
+                            </span>
+                          </>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2.5 text-body-sm text-foreground">
+                        <Check className="h-4 w-4 text-primary shrink-0" />
+                        <span>
+                          {plan.limits.calendars === 1
+                            ? "1 calendar integration"
+                            : `Up to ${plan.limits.calendars} staff calendars`}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2.5 text-body-sm text-foreground">
+                        <Check className="h-4 w-4 text-primary shrink-0" />
+                        <span>
+                          {plan.limits.locations === 1
+                            ? "1 business location"
+                            : `Up to ${plan.limits.locations} business locations`}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Actions Area */}
-                  <div className="space-y-space-3 pt-space-4 border-t border-[hsl(var(--foreground)/0.05)]">
+                  <div className="space-y-space-3 pt-space-4 border-t border-border/60">
                     <Button
                       asChild
                       variant={isPopular ? "default" : "outline"}
@@ -248,189 +381,257 @@ export default function PricingPage() {
                       className={cn(
                         "w-full font-semibold shadow-xs justify-center",
                         isPopular
-                          ? "bg-primary text-white hover:bg-primary-hover"
-                          : "border border-primary/40 text-primary hover:bg-primary hover:text-white"
+                          ? "bg-primary text-white hover:bg-primary-hover shadow-md shadow-primary/25"
+                          : "border border-border/80 text-foreground hover:bg-muted/40"
                       )}
                     >
                       <Link href="/sign-up">
-                        {isPopular ? "Start 14-Day Free Trial" : "Start Free Trial"}
+                        {plan.id === "starter" ? "Start 14-Day Free Trial" : "Start 7-Day Pilot"}
                       </Link>
                     </Button>
 
-                    {/* Integrated Payment Gate for instant checkout */}
-                    <RazorpayCheckoutButton
-                      amountInPaise={displayPrice * 100}
-                      planName={`${plan.name} Plan (${yearly ? "Annual" : "Monthly"})`}
-                      description={`Subscription for Operator AI ${plan.name} Plan`}
-                      variant="ghost"
-                      size="sm"
-                      className="w-full text-caption text-muted-foreground hover:text-foreground border border-border/40 hover:border-primary/40 hover:bg-primary/5 transition-all"
-                      onSuccess={(payment) => {
-                        window.location.href = `/onboarding?plan=${plan.id}&payment_id=${payment.payment_id}`;
-                      }}
-                    >
-                      <span className="flex items-center justify-center gap-1.5 font-medium">
-                        Instant Checkout with Razorpay (${displayPrice})
-                      </span>
-                    </RazorpayCheckoutButton>
+                    {/* Instant Razorpay Checkout (Available on all currencies, especially INR) */}
+                    {selectedCurrency === "INR" && (
+                      <RazorpayCheckoutButton
+                        amountInPaise={displayPrice * 100}
+                        planName={`${plan.name} Plan (${yearly ? "Annual" : "Monthly"})`}
+                        description={`Subscription for Operator AI ${plan.name} Plan`}
+                        variant="ghost"
+                        size="sm"
+                        className="w-full text-caption text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all"
+                        onSuccess={(payment) => {
+                          window.location.href = `/onboarding?plan=${plan.id}&payment_id=${payment.payment_id}`;
+                        }}
+                      >
+                        <span className="flex items-center justify-center gap-1.5 font-medium">
+                          Pay with UPI / Cards (₹{formattedPrice})
+                        </span>
+                      </RazorpayCheckoutButton>
+                    )}
 
-                    <p className="text-center text-caption font-mono text-muted-foreground/60">
-                      No credit card required for trial · Cancel anytime
+                    <p className="text-center text-[12px] text-muted-foreground/75 font-medium">
+                      {plan.trialNote}
                     </p>
                   </div>
                 </div>
               );
             })}
           </GsapScrollSection>
+
+          {/* Launch Special Offer Ribbon */}
+          <div className="mt-space-6 p-space-4 rounded-2xl bg-primary/[0.07] border border-primary/25 flex flex-col sm:flex-row items-center justify-between gap-space-4 text-center sm:text-left">
+            <div className="flex items-center gap-space-3">
+              <div className="h-9 w-9 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
+                <Tag className="h-4 w-4" />
+              </div>
+              <div>
+                <span className="text-body-sm font-bold text-foreground block">
+                  Early Adopter Launch Offer: 30% Off for 3 Months
+                </span>
+                <span className="text-caption text-muted-foreground">
+                  Available for the first 5 customers in exchange for a testimonial and case study permission.
+                </span>
+              </div>
+            </div>
+            <Button asChild size="sm" variant="outline" className="font-semibold shrink-0">
+              <Link href="/contact?offer=launch30">Claim Launch Offer</Link>
+            </Button>
+          </div>
         </section>
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        SECTION 3: ENTERPRISE CUSTOM BANNER (Breather Moment)
+        SECTION 3: USAGE, BILLING & OVERAGE RULES
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <section className="mx-auto max-w-5xl px-space-6 pb-space-20 z-10 relative">
+          <GsapScrollSection animation="fade-up">
+            <div className="text-center mb-space-8">
+              <h2 className="text-title-xl font-bold text-foreground">
+                Usage, Billing & Overage Rules ({regionConfig.marketName})
+              </h2>
+              <p className="text-body-sm text-muted-foreground mt-1 max-w-xl mx-auto">
+                Extra usage is billed per unit with no hidden penalties. The setup fee is completely waived on annual plans.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-4 mb-space-8">
+              <div className="p-space-5 rounded-2xl bg-card border border-border/80 text-center sm:text-left shadow-xs">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                  Extra Voice Minutes
+                </span>
+                <div className="text-3xl font-extrabold text-foreground mb-1">
+                  {regionConfig.extraVoiceMinute}
+                  <span className="text-body-sm font-normal text-muted-foreground"> / min</span>
+                </div>
+                <p className="text-caption text-muted-foreground">
+                  Billed only when included voice minutes are exceeded. Calls never drop.
+                </p>
+              </div>
+
+              <div className="p-space-5 rounded-2xl bg-card border border-border/80 text-center sm:text-left shadow-xs">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                  Extra 500 Conversations
+                </span>
+                <div className="text-3xl font-extrabold text-foreground mb-1">
+                  {regionConfig.extraConversations}
+                </div>
+                <p className="text-caption text-muted-foreground">
+                  Added automatically in 500-conversation bundles if monthly volume spikes.
+                </p>
+              </div>
+
+              <div className="p-space-5 rounded-2xl bg-card border border-border/80 text-center sm:text-left shadow-xs">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                  One-Time Setup Fee
+                </span>
+                <div className="text-3xl font-extrabold text-foreground mb-1">
+                  {regionConfig.setupFee}
+                </div>
+                <p className="text-caption text-emerald-400 font-medium">
+                  Waived 100% on annual billing plans. Covers guided calendar and channel setup.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-space-5 rounded-xl bg-card/40 border border-border/60 text-caption text-muted-foreground/90 space-y-2">
+              <div className="flex items-center gap-2">
+                <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span><strong>Annual billing:</strong> Pay for 10 months and get 12. Setup fee is completely waived.</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span><strong>Trial policy:</strong> 14 days free on Starter. 7-day money-back pilot on Pro and Business.</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span><strong>Taxes:</strong> Applicable taxes (such as GST in India or VAT in the UK) are calculated at checkout where required.</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span><strong>Cancel anytime:</strong> Monthly subscriptions can be canceled before the next renewal date with zero cancellation fee.</span>
+              </div>
+            </div>
+          </GsapScrollSection>
+        </section>
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        SECTION 4: FULL FEATURE COMPARISON TABLE
         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <section className="mx-auto max-w-5xl px-space-6 pb-space-24 z-10 relative">
-          <GsapScrollSection animation="scale-up">
-            <div className="relative rounded-2xl border border-[hsl(var(--foreground)/0.08)] bg-card/30 backdrop-blur-xs p-space-8 md:p-space-10 flex flex-col md:flex-row items-center justify-between gap-space-6 overflow-hidden">
-              <div className="absolute inset-0 dot-grid opacity-10 pointer-events-none" />
-              <div className="flex items-center gap-space-5 relative z-10">
-                <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
-                  <Building2 className="h-6 w-6" />
-                </div>
-                <div>
-                  <div className="inline-flex items-center gap-1.5 text-caption font-mono uppercase tracking-wider text-primary font-bold mb-1">
-                    <Shield className="h-3 w-3" /> Custom Volume & HIPAA SLA
-                  </div>
-                  <h3 className="text-title-lg font-bold text-foreground mb-1">Enterprise & Multi-Clinic Networks</h3>
-                  <p className="text-caption md:text-body-sm text-muted-foreground max-w-xl leading-relaxed">
-                    Custom voice minute pools, dedicated telephony gateways, BAA agreements, custom CRM adapters, and a dedicated Customer Success Manager.
-                  </p>
-                </div>
-              </div>
-
-              <Button asChild variant="outline" size="lg" className="shrink-0 relative z-10 font-semibold">
-                <Link href="/contact" className="flex items-center gap-2">
-                  Contact Sales <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          </GsapScrollSection>
-        </section>
-
-        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        SECTION 4: FULL FEATURE COMPARISON (Considered Design Object)
-        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-        <section className="mx-auto max-w-5xl px-space-6 pb-space-28 z-10 relative">
           <GsapScrollSection animation="fade-up">
-            <div className="text-center mb-space-12">
-              <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
+            <div className="text-center mb-space-10">
+              <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-4">
                 <Zap className="h-3.5 w-3.5 text-primary" />
-                <span className="text-caption uppercase tracking-widest font-medium text-primary">Granular Audit</span>
+                <span className="text-caption uppercase tracking-widest font-semibold text-primary">
+                  What is Included
+                </span>
               </div>
               <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
-                Detailed Breakdown.
-                <br />
-                <span className="text-primary">Full Feature Matrix.</span>
+                Compare Plan Features Side-by-Side
               </h2>
-              <p className="text-body-sm text-muted-foreground mt-space-3 max-w-lg mx-auto">
-                Review every capability, telephony limit, and platform integration side-by-side to make the right operational choice.
+              <p className="text-body-sm text-muted-foreground mt-2 max-w-lg mx-auto">
+                Starter covers chat and WhatsApp only. AI phone answering, call recordings, and live call transfers begin at Pro.
               </p>
             </div>
 
-            <PricingComparisonTable
-              plans={PLANS}
-              categories={FEATURE_CATEGORIES}
-              yearly={yearly}
-            />
-          </GsapScrollSection>
-        </section>
-
-        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        SECTION 5: TRUST STATS & METRICS (Animated Counters)
-        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-        <section className="border-y border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.015)] py-space-16 z-10 relative">
-          <GsapScrollSection animation="fade-up" className="mx-auto max-w-5xl px-space-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-8 text-center sm:text-left">
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-space-4">
-                <div className="p-space-3 rounded-xl bg-primary/10 text-primary shrink-0 border border-primary/20">
-                  <Shield className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="text-title-lg font-bold text-foreground mb-1">Enterprise Security</div>
-                  <p className="text-caption text-muted-foreground leading-relaxed">
-                    SOC2-ready framework, HIPAA-ready infrastructure, AES-256 data encryption at rest and in transit.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-space-4">
-                <div className="p-space-3 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0 border border-emerald-500/20">
-                  <Headphones className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="text-title-lg font-bold text-foreground mb-1">Human Onboarding</div>
-                  <p className="text-caption text-muted-foreground leading-relaxed">
-                    Real audio engineers assist with calendar synchronization and custom intake workflow setup on all tiers.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-space-4">
-                <div className="p-space-3 rounded-xl bg-indigo-500/10 text-indigo-500 shrink-0 border border-indigo-500/20">
-                  <Lock className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="text-title-lg font-bold text-foreground mb-1">Zero Vendor Lock-in</div>
-                  <p className="text-caption text-muted-foreground leading-relaxed">
-                    Export your call transcripts, lead records, and caller audio archives at any time with a single click.
-                  </p>
-                </div>
-              </div>
+            {/* Responsive Comparison Table */}
+            <div className="overflow-x-auto rounded-2xl border border-border/80 bg-card shadow-sm">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border/80 bg-muted/40">
+                    <th className="p-4 text-body-sm font-bold text-foreground">Feature</th>
+                    <th className="p-4 text-body-sm font-bold text-foreground text-center w-36">Starter</th>
+                    <th className="p-4 text-body-sm font-bold text-primary text-center w-44 bg-primary/5">
+                      Pro (Popular)
+                    </th>
+                    <th className="p-4 text-body-sm font-bold text-foreground text-center w-44">Business</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60 text-body-sm">
+                  {COMPARISON_ROWS.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-muted/20 transition-colors">
+                      <td className="p-4 font-medium text-foreground">{row.name}</td>
+                      <td className="p-4 text-center">
+                        {typeof row.starter === "boolean" ? (
+                          row.starter ? (
+                            <Check className="h-4 w-4 text-emerald-400 mx-auto" />
+                          ) : (
+                            <span className="text-muted-foreground/30 font-mono">—</span>
+                          )
+                        ) : (
+                          <span className="text-caption font-semibold text-foreground/80">{row.starter}</span>
+                        )}
+                      </td>
+                      <td className="p-4 text-center bg-primary/[0.02]">
+                        {typeof row.pro === "boolean" ? (
+                          row.pro ? (
+                            <Check className="h-4 w-4 text-primary mx-auto" />
+                          ) : (
+                            <span className="text-muted-foreground/30 font-mono">—</span>
+                          )
+                        ) : (
+                          <span className="text-caption font-semibold text-primary">{row.pro}</span>
+                        )}
+                      </td>
+                      <td className="p-4 text-center">
+                        {typeof row.business === "boolean" ? (
+                          row.business ? (
+                            <Check className="h-4 w-4 text-emerald-400 mx-auto" />
+                          ) : (
+                            <span className="text-muted-foreground/30 font-mono">—</span>
+                          )
+                        ) : (
+                          <span className="text-caption font-semibold text-foreground/80">{row.business}</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </GsapScrollSection>
         </section>
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        SECTION 6: FREQUENTLY ASKED QUESTIONS (Smooth Height Accordion)
+        SECTION 5: FREQUENTLY ASKED QUESTIONS
         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-        <section className="py-space-28 md:py-space-32 z-10 relative">
+        <section className="py-space-16 z-10 relative border-t border-border/60">
           <GsapScrollSection animation="fade-up" className="mx-auto max-w-3xl px-space-6">
-            <div className="text-center mb-space-16">
-              <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-6">
-                <span className="text-caption uppercase tracking-widest font-medium text-primary">Answers & Clarity</span>
+            <div className="text-center mb-space-12">
+              <div className="inline-flex items-center gap-space-2 px-space-3.5 py-space-1.5 rounded-full border border-primary/20 bg-primary/5 mb-space-4">
+                <HelpCircle className="h-3.5 w-3.5 text-primary" />
+                <span className="text-caption uppercase tracking-widest font-semibold text-primary">
+                  Got Questions?
+                </span>
               </div>
               <h2 className="text-heading-xl tracking-tight-md font-bold text-foreground">
-                Pricing FAQ.
-                <br />
-                <span className="text-primary">Frequently asked questions.</span>
+                Frequently Asked Questions
               </h2>
             </div>
 
-            <AnimatedAccordion items={FAQ_ITEMS} allowMultiple={false} />
+            <AnimatedAccordion items={PRICING_FAQS} allowMultiple={false} />
           </GsapScrollSection>
         </section>
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        SECTION 7: FINAL CTA
+        SECTION 6: FINAL CTA
         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-        <section className="relative py-space-28 md:py-space-36 overflow-hidden border-t border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.01)]">
-          <div className="absolute inset-0 dot-grid grid-fade-y pointer-events-none opacity-20" />
+        <section className="relative py-space-24 overflow-hidden border-t border-border/60 bg-muted/10">
           <div className="relative mx-auto max-w-2xl px-space-6 text-center">
             <GsapScrollSection animation="scale-up">
-              <h2 className="text-heading-xl tracking-tight-sm leading-snug font-bold text-foreground mb-space-5">
-                Start Free.
-                <br />
-                Ready to <span className="text-primary">deploy your front desk?</span>
+              <h2 className="text-heading-xl font-bold text-foreground mb-space-4">
+                Ready to answer every customer inquiry?
               </h2>
-              <p className="text-muted-foreground text-body-md md:text-body-lg mb-space-8 max-w-lg mx-auto leading-relaxed">
-                Start your 14-day free trial today. Immediate SIP gateway testing. No credit card required.
+              <p className="text-muted-foreground text-body-md mb-space-8 max-w-lg mx-auto leading-relaxed">
+                Start with a 14-day free trial on Starter or a 7-day pilot on Pro and Business. No long-term contracts.
               </p>
-              <div className="flex flex-col sm:flex-row gap-space-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-space-3 justify-center">
                 <SessionAwareCta
                   signedInText="Go to Dashboard"
                   signedOutText="Start Free Trial"
-                  signedOutHref="/sign-in"
+                  signedOutHref="/sign-up"
                   size="lg"
                 />
-                <Button asChild variant="outline" size="lg">
+                <Button asChild variant="outline" size="lg" className="font-semibold">
                   <Link href="/demo">
                     Schedule Live Demo
                   </Link>
