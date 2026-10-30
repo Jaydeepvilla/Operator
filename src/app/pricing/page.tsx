@@ -39,7 +39,6 @@ const PLANS = getAllPlans().map((p) => ({
     "Locations": `${p.limits.locations}`,
     "Analytics Dashboard": p.features.analyticsExport ? "Full + Export" : p.id === "professional" ? "Advanced" : "Basic",
     "Custom AI Training": p.features.customAiTraining,
-    "Agency / White Label": false,
     "Dedicated Onboarding": p.features.dedicatedOnboarding,
     "SLA Guarantee": p.features.slaGuarantee ? "99.9%" : false,
     "Support": p.id === "business" ? "Dedicated CSM" : p.id === "professional" ? "Priority Email + Chat" : "Email",
@@ -51,7 +50,7 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
   { label: "Voice AI", features: ["Voice AI Minutes"] },
   { label: "Scheduling", features: ["Calendar Integrations"] },
   { label: "AI & Automation", features: ["Lead Qualification", "Knowledge Base Articles", "Custom AI Training"] },
-  { label: "Platform", features: ["Team Members", "Locations", "Analytics Dashboard", "Agency / White Label"] },
+  { label: "Platform", features: ["Team Members", "Locations", "Analytics Dashboard"] },
   { label: "Support & SLA", features: ["Dedicated Onboarding", "SLA Guarantee", "Support"] },
 ];
 

@@ -801,7 +801,7 @@ export function LandingPageClient() {
                 href="/pricing"
                 className="inline-flex items-center gap-space-2 text-body-sm text-muted-foreground hover:text-foreground transition-colors group"
               >
-                View full plans, custom call packages & agency options
+                View full plans & custom call packages
                 <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>

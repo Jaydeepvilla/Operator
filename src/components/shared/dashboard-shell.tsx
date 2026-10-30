@@ -20,6 +20,7 @@ import { cn } from "@/components/shared/utils";
 import { LogoIcon } from "@/components/shared/logo";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { m } from "framer-motion";
+import { isWhiteLabelEnabled } from "@/lib/config/feature-flags";
 
 import { getButtonClasses } from '@/design-system/button-tokens';
 
@@ -239,7 +240,7 @@ export function DashboardShell({
             <SidebarNavGroup title="Business" links={BUSINESS_LINKS} onNavigate={onNavigate} />
             <SidebarNavGroup title="Learning & Demo" links={LEARNING_LINKS} onNavigate={onNavigate} />
 
-            {isAgency && (
+            {isWhiteLabelEnabled() && isAgency && (
               <>
                 <div className="h-px bg-[hsl(var(--foreground)/0.06)] my-1.5 mx-2" />
                 <SidebarNavGroup title="Agency" links={AGENCY_LINKS} onNavigate={onNavigate} />
