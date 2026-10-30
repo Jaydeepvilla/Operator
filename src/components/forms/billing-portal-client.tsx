@@ -368,12 +368,12 @@ export function BillingPortalClient({
 
       {/* Modern Segmented Navigation Bar */}
       <div className="flex items-center justify-between flex-wrap gap-space-3 border-b border-border/20 pb-space-3">
-        <div className="inline-flex items-center gap-space-1 p-space-1 bg-card/60 border border-border/40 radius-xl backdrop-blur-md">
+        <div className="inline-flex items-center gap-space-1 p-space-1 bg-card/60 border border-border/40 radius-full backdrop-blur-md">
           <Button 
             variant={activeTab === "usage" ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setActiveTab("usage")}
-            className="text-caption font-medium cursor-pointer h-8 px-space-3"
+            className="text-caption font-medium cursor-pointer h-8 px-space-3.5 radius-full"
           >
             <Activity className="h-3.5 w-3.5 mr-space-1.5 text-emerald-400" />
             Usage Quotas
@@ -382,7 +382,7 @@ export function BillingPortalClient({
             variant={activeTab === "invoices" ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setActiveTab("invoices")}
-            className="text-caption font-medium cursor-pointer h-8 px-space-3"
+            className="text-caption font-medium cursor-pointer h-8 px-space-3.5 radius-full"
           >
             <History className="h-3.5 w-3.5 mr-space-1.5 text-amber-400" />
             Invoices & Receipts
@@ -391,7 +391,7 @@ export function BillingPortalClient({
             variant={activeTab === "providers" ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setActiveTab("providers")}
-            className="text-caption font-medium cursor-pointer h-8 px-space-3"
+            className="text-caption font-medium cursor-pointer h-8 px-space-3.5 radius-full"
           >
             <CreditCard className="h-3.5 w-3.5 mr-space-1.5 text-primary" />
             Payment Gateways
@@ -401,7 +401,7 @@ export function BillingPortalClient({
               variant={activeTab === "revenue" ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("revenue")}
-              className="text-caption font-medium cursor-pointer h-8 px-space-3"
+              className="text-caption font-medium cursor-pointer h-8 px-space-3.5 radius-full"
             >
               <TrendingUp className="h-3.5 w-3.5 mr-space-1.5 text-emerald-400" />
               Revenue

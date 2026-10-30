@@ -112,24 +112,24 @@ export function PaymentProvidersClient({
   return (
     <div className="space-y-6">
       {/* Smart Auto-Detection Panel */}
-      <div className="p-5 rounded-2xl border"
-        style={{ background: "rgba(139,92,246,0.04)", borderColor: "rgba(139,92,246,0.15)", backdropFilter: "blur(20px)" }}>
+      <div className="p-5 rounded-2xl border border-primary/20 bg-primary/5 dark:bg-primary/[0.04] backdrop-blur-md">
         <div className="flex items-center gap-3 mb-2">
-          <Globe className="h-5 w-5" style={{ color: "hsl(258,100%,75%)" }} />
-          <h4 className="text-sm font-bold text-white">Dynamic Location & Tax Detection</h4>
+          <Globe className="h-5 w-5 text-primary" />
+          <h4 className="text-sm font-bold text-foreground">Dynamic Location & Tax Detection</h4>
         </div>
-        <p className="text-xs text-white/50 leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           Based on your business address and hours timezone, we detected your region as{" "}
-          <span className="text-white font-bold">{country}</span>, processing in{" "}
-          <span className="text-white font-bold">{currency}</span>, with primary locale set to{" "}
-          <span className="text-white font-bold">{language.toUpperCase()}</span>.
+          <span className="text-foreground font-bold">{country}</span>, processing in{" "}
+          <span className="text-foreground font-bold">{currency}</span>, with primary locale set to{" "}
+          <span className="text-foreground font-bold">{language.toUpperCase()}</span>.
           We have automatically filtered out incompatible billing networks.
         </p>
       </div>
+        
       {/* Recommended Providers */}
       {recommended.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-white/40">Intelligent Recommendation</h4>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Intelligent Recommendation</h4>
           <div className="grid grid-cols-1 gap-4">
             {recommended.map((provider) => {
               const conn = getConnection(provider.providerId);
@@ -153,12 +153,12 @@ export function PaymentProvidersClient({
                       {provider.name.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-white">{provider.name}</h3>
-                      <p className="text-xs text-white/45 mt-1 leading-relaxed">{provider.description}</p>
+                      <h3 className="text-base font-bold text-foreground">{provider.name}</h3>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{provider.description}</p>
                       
                       {/* Reason text */}
                       {provider.recommendationReason && (
-                        <div className="flex items-center gap-2 mt-3 text-caption text-violet-300 font-semibold">
+                        <div className="flex items-center gap-2 mt-3 text-caption text-primary dark:text-violet-300 font-semibold">
                           <CheckCircle2 className="h-3.5 w-3.5" />
                           <span>{provider.recommendationReason}</span>
                         </div>
@@ -167,25 +167,21 @@ export function PaymentProvidersClient({
                   </div>
                   {/* Capabilities List */}
                   <div className="flex flex-wrap gap-1.5 mt-5">
-                    {provider.capabilities.subscriptions && <span className="text-caption font-bold px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/60">Subscriptions</span>}
+                    {provider.capabilities.subscriptions && <span className="text-caption font-bold px-2 py-0.5 rounded bg-foreground/5 border border-border text-foreground/80">Subscriptions</span>}
                     {provider.capabilities.upi && <span className="text-caption font-bold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">UPI</span>}
                     {provider.capabilities.netbanking && <span className="text-caption font-bold px-2 py-0.5 rounded bg-sky-500/10 border border-sky-500/20 text-sky-400">Net Banking</span>}
-                    {provider.capabilities.applePay && <span className="text-caption font-bold px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/60">Apple Pay</span>}
-                    {provider.capabilities.googlePay && <span className="text-caption font-bold px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/60">Google Pay</span>}
+                    {provider.capabilities.applePay && <span className="text-caption font-bold px-2 py-0.5 rounded bg-foreground/5 border border-border text-foreground/80">Apple Pay</span>}
+                    {provider.capabilities.googlePay && <span className="text-caption font-bold px-2 py-0.5 rounded bg-foreground/5 border border-border text-foreground/80">Google Pay</span>}
                     {provider.capabilities.bnpl && <span className="text-caption font-bold px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400">BNPL</span>}
                   </div>
                   {/* Connect Buttons */}
-                  <div className="flex items-center gap-4 mt-6 pt-4 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                    <Button type="button" onClick={() => handleOpenConfig(provider)}
-                      className={getButtonClasses(
-                        'primary',
-                        'filled',
-                        'medium',
-                        'text-xs font-bold transition-all duration-200'
-                      )}
-                      style={{ background: isConnected ? "rgba(52,211,153,0.15)" : "rgba(255,255,255,0.06)", border: isConnected ? "1px solid rgba(52,211,153,0.3)" : "1px solid rgba(255,255,255,0.1)" }}>
-                      {isConnected ? "✓ Connected (Configure)" : "Configure API Keys"}
-                    </Button>
+                  <div className="flex items-center gap-4 mt-6 pt-4 border-t border-border/40">
+                    <Button 
+                      type="button" 
+                      onClick={() => handleOpenConfig(provider)}
+                      className={cn("text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 cursor-pointer border", isConnected ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400" : "bg-card hover:bg-accent border-border text-foreground")}
+                    >
+                      {isConnected ? "✓ Connected (Configure)" : "Configure API Keys"}</Button>
                     {isConnected && (
                       <span className="text-caption font-semibold text-emerald-400 flex items-center gap-1">
                         <Check className="h-3.5 w-3.5" strokeWidth={3} /> Sandbox Active
@@ -201,7 +197,7 @@ export function PaymentProvidersClient({
       {/* Supported / Alternative Providers */}
       {supported.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-white/40">Alternative Networks</h4>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Alternative Networks</h4>
           <div className="grid grid-cols-2 gap-4">
             {supported.map((provider) => {
               const conn = getConnection(provider.providerId);
@@ -219,14 +215,14 @@ export function PaymentProvidersClient({
                       {provider.name.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-white">{provider.name}</h4>
-                      <span className="text-caption text-white/30">{provider.supportedCurrencies.join(", ")}</span>
+                      <h4 className="text-sm font-bold text-foreground">{provider.name}</h4>
+                      <span className="text-caption text-muted-foreground">{provider.supportedCurrencies.join(", ")}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-white/40 mt-3 leading-relaxed">{provider.description}</p>
+                  <p className="text-xs text-muted-foreground/80 mt-3 leading-relaxed">{provider.description}</p>
                   <div className="flex flex-wrap gap-1 mt-4">
-                    {provider.capabilities.subscriptions && <span className="text-caption font-bold px-1.5 py-0.5 rounded bg-white/5 text-white/50">Recurring</span>}
-                    {provider.capabilities.applePay && <span className="text-caption font-bold px-1.5 py-0.5 rounded bg-white/5 text-white/50">Apple Pay</span>}
+                    {provider.capabilities.subscriptions && <span className="text-caption font-bold px-1.5 py-0.5 rounded bg-foreground/5 border border-border text-foreground/80">Recurring</span>}
+                    {provider.capabilities.applePay && <span className="text-caption font-bold px-1.5 py-0.5 rounded bg-foreground/5 border border-border text-foreground/80">Apple Pay</span>}
                   </div>
                   <Button type="button" onClick={() => handleOpenConfig(provider)}
                     className={getButtonClasses(
@@ -255,7 +251,7 @@ export function PaymentProvidersClient({
             }}>
             
             <h3 className="text-lg font-bold text-white mb-1">Configure {selectedProvider.name}</h3>
-            <p className="text-xs text-white/40 mb-6">Enter API configuration values below to save connection profiles.</p>
+            <p className="text-xs text-muted-foreground/80 mb-6">Enter API configuration values below to save connection profiles.</p>
 
             <form onSubmit={handleConnect} className="space-y-4">
               {/* Sandbox toggle */}
@@ -276,7 +272,7 @@ export function PaymentProvidersClient({
 
               {/* Secrets Input */}
               <div className="space-y-2">
-                <label className="text-caption font-bold uppercase tracking-wider text-white/40">API Private Key</label>
+                <label className="text-caption font-bold uppercase tracking-wider text-muted-foreground/80">API Private Key</label>
                 <div className="relative">
                   <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/25 pointer-events-none" />
                   <Input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)}
@@ -286,7 +282,7 @@ export function PaymentProvidersClient({
               </div>
 
               <div className="space-y-2">
-                <label className="text-caption font-bold uppercase tracking-wider text-white/40">Webhook Secret</label>
+                <label className="text-caption font-bold uppercase tracking-wider text-muted-foreground/80">Webhook Secret</label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/25 pointer-events-none" />
                   <Input type="password" value={webhookSecret} onChange={(e) => setWebhookSecret(e.target.value)}
