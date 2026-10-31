@@ -88,9 +88,32 @@ function parseSlotSelection(message: string, suggestedSlots: any[]) {
 
 /**
  * Parses the intended appointment date using the canonical natural-language parser.
+ * Supports direct phrases as well as conversational sentence extraction.
  */
 function parseDateFromMessage(message: string, timezone = "UTC", now = new Date()): DateParseResult {
-  return parseNaturalDateTime(message, { timezone, now });
+  // 1. Direct parse attempt
+  const direct = parseNaturalDateTime(message, { timezone, now });
+  if (direct.success) return direct;
+
+  // 2. Extract potential date/time phrases from conversational sentence
+  const patterns = [
+    /\b(day after tomorrow|tomorrow|today|yesterday)(?:\s+(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)?)?\b/i,
+    /\b(?:next\s+|this\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)(?:\s+(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)?)?\b/i,
+    /\b(?:january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)\s+\d{1,2}(?:st|nd|rd|th)?(?:\s+(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)?)?\b/i,
+    /\b\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)(?:\s+(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)?)?\b/i,
+    /\b\d{4}-\d{2}-\d{2}(?:\s+(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)?)?\b/i,
+    /\b\d{1,2}\/\d{1,2}\/\d{2,4}(?:\s+(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)?)?\b/i
+  ];
+
+  for (const pat of patterns) {
+    const match = message.match(pat);
+    if (match) {
+      const extracted = parseNaturalDateTime(match[0], { timezone, now });
+      if (extracted.success) return extracted;
+    }
+  }
+
+  return direct;
 }
 
 export const orchestratorService = {
