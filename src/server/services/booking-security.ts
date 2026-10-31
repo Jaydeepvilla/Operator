@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { isDisposableEmail } from "@/lib/auth/security-checks";
+import { persistentGuard } from "./security/persistent-guard";
 
 /**
  * Appointment and Booking Security Guardrails
@@ -73,6 +74,70 @@ export function checkBookingIdempotency(key: string): {
 export function recordBookingIdempotency(key: string, appointmentId: string) {
   if (!key) return;
   bookingIdempotencyCache.set(key, { timestamp: Date.now(), appointmentId });
+}
+
+/**
+ * Multi-instance serverless-safe public booking rate limiter.
+ * Backed by PostgreSQL transactions and rate_limit_keys table.
+ */
+export async function checkPublicBookingSpamLimitAsync(identifier: string, email?: string): Promise<{
+  isLimited: boolean;
+  reason?: string;
+}> {
+  // L1 in-memory check
+  const l1 = checkPublicBookingSpamLimit(identifier, email);
+  if (l1.isLimited) {
+    return l1;
+  }
+
+  // L2 persistent DB check
+  const key = identifier.trim().toLowerCase();
+  const res = await persistentGuard.checkRateLimit("booking:public_spam", key, MAX_PUBLIC_BOOKINGS_PER_WINDOW, SPAM_WINDOW_MS);
+  if (res.isRateLimited) {
+    return { isLimited: true, reason: "Too many booking requests. Please wait before attempting another booking." };
+  }
+
+  if (email && email.trim()) {
+    const emailKey = email.trim().toLowerCase();
+    const emailRes = await persistentGuard.checkRateLimit("booking:public_spam", emailKey, MAX_PUBLIC_BOOKINGS_PER_WINDOW, SPAM_WINDOW_MS);
+    if (emailRes.isRateLimited) {
+      return { isLimited: true, reason: "Too many booking requests for this email. Please wait before attempting another booking." };
+    }
+  }
+
+  return { isLimited: false };
+}
+
+/**
+ * Multi-instance serverless-safe booking idempotency check.
+ * Guarantees that concurrent booking requests from duplicate client submissions reject duplicates.
+ */
+export async function checkBookingIdempotencyAsync(key: string): Promise<{
+  isDuplicate: boolean;
+  appointmentId?: string;
+}> {
+  if (!key || typeof key !== "string") {
+    return { isDuplicate: false };
+  }
+
+  // L1 in-memory check
+  const l1 = checkBookingIdempotency(key);
+  if (l1.isDuplicate) {
+    return l1;
+  }
+
+  // L2 persistent DB check
+  const res = await persistentGuard.checkDeduplication("booking:idempotency", key, IDEMPOTENCY_TTL_MS);
+  return {
+    isDuplicate: res.isDuplicate,
+    appointmentId: res.cachedResponse?.appointmentId,
+  };
+}
+
+export async function recordBookingIdempotencyAsync(key: string, appointmentId: string): Promise<void> {
+  if (!key) return;
+  recordBookingIdempotency(key, appointmentId);
+  await persistentGuard.recordResponse("booking:idempotency", key, { appointmentId });
 }
 
 /**

@@ -6,11 +6,11 @@ import { voiceRouting } from "@/server/services/voice/routing";
 import { voiceOrchestrator } from "@/server/services/voice/orchestrator";
 import { verifyTwilioSignature } from "@/server/utils/twilio-signature";
 import {
-  checkCallRateLimit,
+  checkCallRateLimitAsync,
   generateRecordingConsentNotice,
   validateTransferDestination,
-  checkTelephonyWebhookIdempotency,
-  recordTelephonyWebhookResponse,
+  checkTelephonyWebhookIdempotencyAsync,
+  recordTelephonyWebhookResponseAsync,
 } from "@/server/services/voice/security";
 
 export async function POST(req: NextRequest) {
@@ -49,9 +49,9 @@ export async function POST(req: NextRequest) {
     const recipientNumber = body.To || "";
     const callSid = body.CallSid || "unknown-sid";
 
-    // Deduplication check for replayed telephony webhooks
+    // Multi-instance persistent deduplication check for replayed telephony webhooks
     if (callSid !== "unknown-sid") {
-      const { isDuplicate, cachedResponse } = checkTelephonyWebhookIdempotency({
+      const { isDuplicate, cachedResponse } = await checkTelephonyWebhookIdempotencyAsync({
         callSid,
         eventType: "inbound",
       });
@@ -63,8 +63,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Call Rate Limiting to prevent unlimited calls / excessive provider toll charges
-    const { isRateLimited } = checkCallRateLimit(callerNumber);
+    // Call Rate Limiting to prevent unlimited calls / excessive provider toll charges across serverless instances
+    const { isRateLimited } = await checkCallRateLimitAsync(callerNumber);
     if (isRateLimited) {
       console.warn(`[Voice Webhook Inbound] Rate limit exceeded for caller: ${callerNumber}`);
       return new NextResponse(
@@ -216,7 +216,7 @@ export async function POST(req: NextRequest) {
 
     const trimmedResponse = xmlResponse.trim();
     if (callSid !== "unknown-sid") {
-      recordTelephonyWebhookResponse({
+      await recordTelephonyWebhookResponseAsync({
         callSid,
         eventType: "inbound",
         responseXml: trimmedResponse,

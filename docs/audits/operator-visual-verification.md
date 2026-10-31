@@ -26,10 +26,10 @@ The only application code changes retained in the repository are genuine CSS syn
 
 | File | Change | Rationale |
 | :--- | :--- | :--- |
-| [`src/app/(dashboard)/kb/kb-client.tsx`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/app/(dashboard)/kb/kb-client.tsx) | Fixed `inset_0_1px_0_rgba...]` and `0_0_8px_rgba...]` to `shadow-[...]` | Restores valid Tailwind CSS compilation for tab highlight borders. |
-| [`src/components/forms/qualification-builder.tsx`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/components/forms/qualification-builder.tsx) | Fixed truncated `shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]` | Fixes broken badge border syntax. |
-| [`src/components/marketing/visualizations/dashboard-preview.tsx`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/components/marketing/visualizations/dashboard-preview.tsx) | Restored `shadow-[...]` prefixes on truncated glow styles | Corrects malformed Tailwind utility syntax in marketing mockups. |
-| [`playwright.config.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/playwright.config.ts) | Retained default port `3000` with `PLAYWRIGHT_TEST_BASE_URL` fallback | Ensures test runner compatibility in both local and CI environments. |
+| [`src/app/(dashboard)/kb/kb-client.tsx`](/src/app/(dashboard)/kb/kb-client.tsx) | Fixed `inset_0_1px_0_rgba...]` and `0_0_8px_rgba...]` to `shadow-[...]` | Restores valid Tailwind CSS compilation for tab highlight borders. |
+| [`src/components/forms/qualification-builder.tsx`](/src/components/forms/qualification-builder.tsx) | Fixed truncated `shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]` | Fixes broken badge border syntax. |
+| [`src/components/marketing/visualizations/dashboard-preview.tsx`](/src/components/marketing/visualizations/dashboard-preview.tsx) | Restored `shadow-[...]` prefixes on truncated glow styles | Corrects malformed Tailwind utility syntax in marketing mockups. |
+| [`playwright.config.ts`](/playwright.config.ts) | Retained default port `3000` with `PLAYWRIGHT_TEST_BASE_URL` fallback | Ensures test runner compatibility in both local and CI environments. |
 
 ---
 
@@ -39,7 +39,7 @@ The only application code changes retained in the repository are genuine CSS syn
    - The user's preferred original monochrome contrast (Linear/Vercel-inspired white pill buttons on dark slate backgrounds) is completely intact.
    - No unwanted skill-based color themes or purple tints are applied to controls.
 2. **Payment & Billing Safety:**
-   - [`RazorpayCheckoutButton`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/components/billing/razorpay-checkout-button.tsx) retains authentic server action calls (`/api/create-order` and `/api/verify-payment`) with HMAC signature verification.
+   - [`RazorpayCheckoutButton`](/src/components/billing/razorpay-checkout-button.tsx) retains authentic server action calls (`/api/create-order` and `/api/verify-payment`) with HMAC signature verification.
 3. **Appointment Triage Safety:**
    - Verified that status actions call real server mutations (`updateAppointmentStatusAction`, `handleReschedule`, `handleCancel`).
 

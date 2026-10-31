@@ -3,7 +3,7 @@
 **Date:** October 9, 2026  
 **Status:** Verification Complete — Zero-Defect Codebase Pass  
 **Release Decision:** **READY FOR STAGING**  
-**Master Evidence Artifact:** [`reports/test-evidence/master-summary-2026-10-09T13-45-11-311Z.json`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/reports/test-evidence/master-summary-2026-10-09T13-45-11-311Z.json)  
+**Master Evidence Artifact:** [`reports/test-evidence/master-summary-2026-10-09T13-45-11-311Z.json`](/reports/test-evidence/master-summary-2026-10-09T13-45-11-311Z.json)  
 
 ---
 
@@ -24,7 +24,7 @@ An exhaustive adversarial verification audit and architectural inspection was co
 ### Defect 1: Caller-Controlled `isPublic` Flag & Service-Level Public Booking Bypass (Fixed)
 - **Vulnerability:** The legacy service-level check in `bookingService.createAppointment` used `if (input.isPublic)`. An unauthenticated caller could bypass public booking settings by omitting `isPublic`, passing `isPublic: false`, or invoking lower-level services directly. Furthermore, the AI orchestrator (`orchestratorService.processMessage`) and voice receptionist called `bookingService.createAppointment` without setting `isPublic: true`, enabling external visitors to book appointments even when `publicBookingEnabled` was false.
 - **Architectural Remediation:**
-  1. **Server-Side Trust Boundary in Domain Service:** In [`src/server/services/booking.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/booking.ts) ([`bookingService.createAppointment`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/booking.ts#L30-L75)), eliminated reliance on caller flags. The service authoritatively inspects the server authentication context via `auth()` and queries `memberships` table in PostgreSQL to verify whether the caller holds active membership in the target organization:
+  1. **Server-Side Trust Boundary in Domain Service:** In [`src/server/services/booking.ts`](/src/server/services/booking.ts) ([`bookingService.createAppointment`](/src/server/services/booking.ts#L30-L75)), eliminated reliance on caller flags. The service authoritatively inspects the server authentication context via `auth()` and queries `memberships` table in PostgreSQL to verify whether the caller holds active membership in the target organization:
      ```typescript
      let isAuthorizedInternalStaff = false;
      try {
@@ -46,9 +46,9 @@ An exhaustive adversarial verification audit and architectural inspection was co
        // Fail closed check on businessSettings and publicBookingEnabled === true
      }
      ```
-  2. **AI Orchestrator Intercept & Graceful Refusal:** In [`src/server/services/orchestrator.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/orchestrator.ts#L602-L635), added an upfront capability check: if `!business.capabilities.hasBooking`, the AI receptionist informs the visitor that online booking is disabled and never enters the booking state machine. At the final confirmation stage ([line 1064](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/orchestrator.ts#L1064)), `isPublic: true` is passed and wrapped in defensive error handling.
-  3. **Server Action Boundary:** In [`src/server/actions/appointments.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/actions/appointments.ts) ([`createAppointmentAction`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/actions/appointments.ts#L115-L175)), identical fail-closed validation is enforced at the RPC action boundary.
-- **Regression Scenarios Verified:** All 24 scenarios in [`scripts/test-appointment-booking-security.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/scripts/test-appointment-booking-security.ts) passed:
+  2. **AI Orchestrator Intercept & Graceful Refusal:** In [`src/server/services/orchestrator.ts`](/src/server/services/orchestrator.ts#L602-L635), added an upfront capability check: if `!business.capabilities.hasBooking`, the AI receptionist informs the visitor that online booking is disabled and never enters the booking state machine. At the final confirmation stage ([line 1064](/src/server/services/orchestrator.ts#L1064)), `isPublic: true` is passed and wrapped in defensive error handling.
+  3. **Server Action Boundary:** In [`src/server/actions/appointments.ts`](/src/server/actions/appointments.ts) ([`createAppointmentAction`](/src/server/actions/appointments.ts#L115-L175)), identical fail-closed validation is enforced at the RPC action boundary.
+- **Regression Scenarios Verified:** All 24 scenarios in [`scripts/test-appointment-booking-security.ts`](/scripts/test-appointment-booking-security.ts) passed:
   - `[SCEN-05a]`: Target organization has NO `businessSettings` row -> Rejected.
   - `[SCEN-05b]`: `bookingPreferences` is empty `{}` (missing field) -> Rejected.
   - `[SCEN-05c]`: `publicBookingEnabled: null` -> Rejected.
@@ -71,7 +71,7 @@ An exhaustive adversarial verification audit and architectural inspection was co
 - **Result:** Authenticated privilege checks execute production code paths.
 
 ### Defect 3: Static Placeholder Metrics in Billing Repository (Fixed)
-- **Defect:** [`src/server/repositories/billing.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/repositories/billing.ts) had hardcoded static strings (`"$1,840.00"`, `"2.8%"`, `"$68.00"`).
+- **Defect:** [`src/server/repositories/billing.ts`](/src/server/repositories/billing.ts) had hardcoded static strings (`"$1,840.00"`, `"2.8%"`, `"$68.00"`).
 - **Remediation:** Connected `getRevenueAnalytics()` directly to `financialMetricsService.calculateRealtimeMetrics(organizationId)`.
 
 ### Defect 4: LTV Transparency & Horizon Labeling (Fixed)
@@ -82,30 +82,30 @@ An exhaustive adversarial verification audit and architectural inspection was co
 
 ## B. Independent Master Verification Suite Evidence
 
-Evidence Source: [`reports/test-evidence/master-summary-2026-10-09T13-45-11-311Z.json`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/reports/test-evidence/master-summary-2026-10-09T13-45-11-311Z.json)  
+Evidence Source: [`reports/test-evidence/master-summary-2026-10-09T13-45-11-311Z.json`](/reports/test-evidence/master-summary-2026-10-09T13-45-11-311Z.json)  
 Total Duration: **488.0 seconds (~8.1 minutes)**  
 Overall Result: **11 / 11 Suites Passed (Exit Code 0, 0 Failures)**
 
 | Suite ID | Suite Name | Type | Command Executed | Duration | Exit Code | Verified Assertions | Raw Evidence Log |
 | :--- | :--- | :--- | :--- | :---: | :---: | :---: | :--- |
-| `TYPECHECK` | TypeScript Full Compilation | TS Compilation | `npx tsc --noEmit` | 28.3s | 0 | 652 files (0 errors) | [`typecheck-2026-10-09T13-45-11-311Z.log`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/reports/test-evidence/typecheck-2026-10-09T13-45-11-311Z.log) |
-| `NO_FAKE_DATA` | Zero Fake Data AST Rule Scan | AST Static | `npx tsx scripts/test-no-fake-data-rule.ts` | 1.5s | 0 | 13 passed, 0 failed | [`no_fake_data-2026-10-09T13-45-11-311Z.log`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/reports/test-evidence/no_fake_data-2026-10-09T13-45-11-311Z.log) |
-| `ROUTE_INTEGRITY` | App Router Route Integrity | AST Static | `npx tsx scripts/test-route-integrity.ts` | 1.6s | 0 | 1,780 passed, 0 failed | [`route_integrity-2026-10-09T13-45-11-311Z.log`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/reports/test-evidence/route_integrity-2026-10-09T13-45-11-311Z.log) |
-| `AI_ENGINE_EVAL` | AI Intent Contract Evaluation | Mock Contract | `npx tsx scripts/evaluate-ai-engine.ts` | 1.6s | 0 | 106 queries passed | [`ai_engine_eval-2026-10-09T13-45-11-311Z.log`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/reports/test-evidence/ai_engine_eval-2026-10-09T13-45-11-311Z.log) |
-| `AUTH_SECURITY_MATRIX` | Auth, Session & Role Matrix | DB-Backed | `npx tsx scripts/test-audit-full-matrix.ts` | 62.9s | 0 | 28 passed, 0 failed | [`auth_security_matrix-2026-10-09T13-45-11-311Z.log`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/reports/test-evidence/auth_security_matrix-2026-10-09T13-45-11-311Z.log) |
-| `TENANT_ISOLATION` | Adversarial Multi-Tenant IDOR | DB-Backed | `npx tsx scripts/test-adversarial-tenant-isolation.ts` | 59.4s | 0 | 14 passed, 0 failed | [`tenant_isolation-2026-10-09T13-45-11-311Z.log`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/reports/test-evidence/tenant_isolation-2026-10-09T13-45-11-311Z.log) |
-| `BOOKING_SECURITY` | Public Booking & Concurrency | DB-Backed | `npx tsx scripts/test-appointment-booking-security.ts` | 190.0s | 0 | 24 passed, 0 failed | [`booking_security-2026-10-09T13-45-11-311Z.log`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/reports/test-evidence/booking_security-2026-10-09T13-45-11-311Z.log) |
-| `FINANCIAL_RECONCILIATION` | Financial Metrics Reconciliation | DB-Backed | `npx tsx scripts/test-financial-metrics-reconciliation.ts` | 19.8s | 0 | 11 passed, 0 failed | [`financial_reconciliation-2026-10-09T13-45-11-311Z.log`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/reports/test-evidence/financial_reconciliation-2026-10-09T13-45-11-311Z.log) |
-| `FINANCIAL_ADVANCED` | Multi-Currency & Refund Matrix | DB-Backed | `npx tsx scripts/test-financial-integrity-advanced.ts` | 52.8s | 0 | 38 passed, 0 failed | [`financial_advanced-2026-10-09T13-45-11-311Z.log`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/reports/test-evidence/financial_advanced-2026-10-09T13-45-11-311Z.log) |
-| `SUBSCRIPTION_ENGINE` | Subscription Lifecycle Engine | DB-Backed | `npx tsx scripts/test-dynamic-subscription-engine.ts` | 50.6s | 0 | 28 passed, 0 failed | [`subscription_engine-2026-10-09T13-45-11-311Z.log`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/reports/test-evidence/subscription_engine-2026-10-09T13-45-11-311Z.log) |
-| `RELEASE_GATE` | Final Multi-Resource Release Gate | DB-Backed | `npx tsx scripts/test-final-release-gate.ts` | 19.4s | 0 | 20 passed, 0 failed | [`release_gate-2026-10-09T13-45-11-311Z.log`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/reports/test-evidence/release_gate-2026-10-09T13-45-11-311Z.log) |
+| `TYPECHECK` | TypeScript Full Compilation | TS Compilation | `npx tsc --noEmit` | 28.3s | 0 | 652 files (0 errors) | [`typecheck-2026-10-09T13-45-11-311Z.log`](/reports/test-evidence/typecheck-2026-10-09T13-45-11-311Z.log) |
+| `NO_FAKE_DATA` | Zero Fake Data AST Rule Scan | AST Static | `npx tsx scripts/test-no-fake-data-rule.ts` | 1.5s | 0 | 13 passed, 0 failed | [`no_fake_data-2026-10-09T13-45-11-311Z.log`](/reports/test-evidence/no_fake_data-2026-10-09T13-45-11-311Z.log) |
+| `ROUTE_INTEGRITY` | App Router Route Integrity | AST Static | `npx tsx scripts/test-route-integrity.ts` | 1.6s | 0 | 1,780 passed, 0 failed | [`route_integrity-2026-10-09T13-45-11-311Z.log`](/reports/test-evidence/route_integrity-2026-10-09T13-45-11-311Z.log) |
+| `AI_ENGINE_EVAL` | AI Intent Contract Evaluation | Mock Contract | `npx tsx scripts/evaluate-ai-engine.ts` | 1.6s | 0 | 106 queries passed | [`ai_engine_eval-2026-10-09T13-45-11-311Z.log`](/reports/test-evidence/ai_engine_eval-2026-10-09T13-45-11-311Z.log) |
+| `AUTH_SECURITY_MATRIX` | Auth, Session & Role Matrix | DB-Backed | `npx tsx scripts/test-audit-full-matrix.ts` | 62.9s | 0 | 28 passed, 0 failed | [`auth_security_matrix-2026-10-09T13-45-11-311Z.log`](/reports/test-evidence/auth_security_matrix-2026-10-09T13-45-11-311Z.log) |
+| `TENANT_ISOLATION` | Adversarial Multi-Tenant IDOR | DB-Backed | `npx tsx scripts/test-adversarial-tenant-isolation.ts` | 59.4s | 0 | 14 passed, 0 failed | [`tenant_isolation-2026-10-09T13-45-11-311Z.log`](/reports/test-evidence/tenant_isolation-2026-10-09T13-45-11-311Z.log) |
+| `BOOKING_SECURITY` | Public Booking & Concurrency | DB-Backed | `npx tsx scripts/test-appointment-booking-security.ts` | 190.0s | 0 | 24 passed, 0 failed | [`booking_security-2026-10-09T13-45-11-311Z.log`](/reports/test-evidence/booking_security-2026-10-09T13-45-11-311Z.log) |
+| `FINANCIAL_RECONCILIATION` | Financial Metrics Reconciliation | DB-Backed | `npx tsx scripts/test-financial-metrics-reconciliation.ts` | 19.8s | 0 | 11 passed, 0 failed | [`financial_reconciliation-2026-10-09T13-45-11-311Z.log`](/reports/test-evidence/financial_reconciliation-2026-10-09T13-45-11-311Z.log) |
+| `FINANCIAL_ADVANCED` | Multi-Currency & Refund Matrix | DB-Backed | `npx tsx scripts/test-financial-integrity-advanced.ts` | 52.8s | 0 | 38 passed, 0 failed | [`financial_advanced-2026-10-09T13-45-11-311Z.log`](/reports/test-evidence/financial_advanced-2026-10-09T13-45-11-311Z.log) |
+| `SUBSCRIPTION_ENGINE` | Subscription Lifecycle Engine | DB-Backed | `npx tsx scripts/test-dynamic-subscription-engine.ts` | 50.6s | 0 | 28 passed, 0 failed | [`subscription_engine-2026-10-09T13-45-11-311Z.log`](/reports/test-evidence/subscription_engine-2026-10-09T13-45-11-311Z.log) |
+| `RELEASE_GATE` | Final Multi-Resource Release Gate | DB-Backed | `npx tsx scripts/test-final-release-gate.ts` | 19.4s | 0 | 20 passed, 0 failed | [`release_gate-2026-10-09T13-45-11-311Z.log`](/reports/test-evidence/release_gate-2026-10-09T13-45-11-311Z.log) |
 
 ---
 
 ## C. Authentication & Tenant Isolation Security Audit
 
 1. **`serverAuthStorage` Isolation:**
-   - Declared as `export const serverAuthStorage = new AsyncLocalStorage<ServerAuthContext>();` in [`src/lib/auth/server.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/lib/auth/server.ts).
+   - Declared as `export const serverAuthStorage = new AsyncLocalStorage<ServerAuthContext>();` in [`src/lib/auth/server.ts`](/src/lib/auth/server.ts).
    - In production HTTP request handling, `serverAuthStorage.getStore()` returns `undefined`. Next.js HTTP requests resolve sessions via secure HTTP-only cookies (`session_token`, `active_org_id`).
    - Clients cannot inject tokens, user IDs, or membership roles into `serverAuthStorage` because it is an internal Node execution store with zero exposure to request payloads or HTTP headers.
 2. **Session Verification & Status Checks:**

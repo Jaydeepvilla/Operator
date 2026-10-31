@@ -37,11 +37,11 @@ Following the initial October 9, 2026 local release gate audit, an adversarial s
 ## 2. Critical Booking Security Verification (24 Scenarios)
 
 The public appointment creation pipeline was inspected across every possible entry point:
-- **Website Widget & Chat:** [`src/app/widget-frame/page.tsx`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/app/widget-frame/page.tsx) -> [`createAppointmentAction`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/actions/appointments.ts#L106)
-- **AI Receptionist Orchestrator:** [`src/server/services/orchestrator.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/orchestrator.ts#L602) -> [`bookingService.createAppointment`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/booking.ts#L29)
-- **Public Booking Server Actions:** [`src/server/actions/appointments.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/actions/appointments.ts)
+- **Website Widget & Chat:** [`src/app/widget-frame/page.tsx`](/src/app/widget-frame/page.tsx) -> [`createAppointmentAction`](/src/server/actions/appointments.ts#L106)
+- **AI Receptionist Orchestrator:** [`src/server/services/orchestrator.ts`](/src/server/services/orchestrator.ts#L602) -> [`bookingService.createAppointment`](/src/server/services/booking.ts#L29)
+- **Public Booking Server Actions:** [`src/server/actions/appointments.ts`](/src/server/actions/appointments.ts)
 - **Internal Staff Booking:** Authenticated membership verification via PostgreSQL `memberships` table.
-- **Direct Domain Service Calls:** [`src/server/services/booking.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/booking.ts)
+- **Direct Domain Service Calls:** [`src/server/services/booking.ts`](/src/server/services/booking.ts)
 
 ### Server-Authoritative Trust Boundary:
 The trust boundary is established inside `bookingService.createAppointment`:

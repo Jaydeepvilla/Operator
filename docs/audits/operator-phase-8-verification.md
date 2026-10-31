@@ -37,30 +37,30 @@
 
 ## 3. Skills Actually Read and Applied
 
-1. **`systematic-debugging`** (`C:\Users\Jaydeep Chandegara\.gemini\config\skills\systematic-debugging\SKILL.md`): Used to diagnose un-awaited serverless execution, PostgreSQL array binding limitations, unique constraints on `subscriptions.organization_id`, and test isolation.
-2. **`vercel-deployment`** (`C:\Users\Jaydeep Chandegara\.gemini\config\skills\vercel-deployment\SKILL.md`): Configured `vercel.json` cron schedules, applied `maxDuration = 60` on all scheduled routes, and enforced fail-closed `CRON_SECRET` validation.
-3. **`payment-integration`** (`C:\Users\Jaydeep Chandegara\.gemini\config\skills\payment-integration\SKILL.md`): Applied raw body preservation for HMAC signatures, quick 200 HTTP responses, deduplication in `billing_events`, and test/sandbox isolation.
-4. **`stripe-integration`** (`C:\Users\Jaydeep Chandegara\.gemini\config\skills\stripe-integration\SKILL.md`): Guided Stripe SDK constructEvent usage, subscription lifecycle handling, and cancellation synchronization.
-5. **`backend-security-coder`** (`C:\Users\Jaydeep Chandegara\.gemini\config\skills\backend-security-coder\SKILL.md`): Enforced multi-tenant isolation, SSRF IP filtering (`127.0.0.1`, `10.0.0.0/8`, `169.254.169.254`, `::1`), and sensitive credential scrubbing.
+1. **`systematic-debugging`** (`skills/systematic-debugging\SKILL.md`): Used to diagnose un-awaited serverless execution, PostgreSQL array binding limitations, unique constraints on `subscriptions.organization_id`, and test isolation.
+2. **`vercel-deployment`** (`skills/vercel-deployment\SKILL.md`): Configured `vercel.json` cron schedules, applied `maxDuration = 60` on all scheduled routes, and enforced fail-closed `CRON_SECRET` validation.
+3. **`payment-integration`** (`skills/payment-integration\SKILL.md`): Applied raw body preservation for HMAC signatures, quick 200 HTTP responses, deduplication in `billing_events`, and test/sandbox isolation.
+4. **`stripe-integration`** (`skills/stripe-integration\SKILL.md`): Guided Stripe SDK constructEvent usage, subscription lifecycle handling, and cancellation synchronization.
+5. **`backend-security-coder`** (`skills/backend-security-coder\SKILL.md`): Enforced multi-tenant isolation, SSRF IP filtering (`127.0.0.1`, `10.0.0.0/8`, `169.254.169.254`, `::1`), and sensitive credential scrubbing.
 
 ---
 
 ## 4. Key Files Changed Across Phase 8
 
-- [`src/lib/billing/plans.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/lib/billing/plans.ts): Added `REGIONAL_PRICING`, `getCurrencyForCountry()`, `getLocalizedPlan()`, and `getLocalizedPlans()`.
-- [`src/server/actions/billing.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/actions/billing.ts): Enforced localized plan prices and checkout currency synchronization.
-- [`src/server/actions/knowledge.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/actions/knowledge.ts): Enqueued durable background jobs instead of un-awaited promises.
-- [`src/server/services/crawler/ingestion.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/crawler/ingestion.ts): Added terminal statuses and error sanitization.
-- [`src/server/services/jobs/worker.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/jobs/worker.ts): Added `timeoutMs` support and registered handlers for `"website_ingestion"`, `"appointment_reminders"`, and `"billing_reconciliation"`.
-- [`src/server/repositories/reminders.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/repositories/reminders.ts): Added `claimPendingReminders()` with `FOR UPDATE SKIP LOCKED`.
-- [`src/server/services/notification.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/notification.ts): Added `processReminderJob()` with appointment status checks.
-- [`src/server/services/reminders/dispatcher.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/reminders/dispatcher.ts): Created `ReminderDispatcherService`.
-- [`src/server/services/billing/reconciliation.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/billing/reconciliation.ts): Created `BillingReconciliationService`.
-- [`src/app/api/cron/send-reminders/route.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/app/api/cron/send-reminders/route.ts): Created scheduled reminder cron endpoint.
-- [`src/app/api/cron/billing-reconciliation/route.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/app/api/cron/billing-reconciliation/route.ts): Created daily billing reconciliation cron endpoint.
-- [`vercel.json`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/vercel.json): Configured cron schedules for jobs, queues, reminders, and daily reconciliation.
-- [`tests/scheduled-reminders-and-crawler.spec.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/tests/scheduled-reminders-and-crawler.spec.ts): 12 automated tests for Tasks A & B.
-- [`tests/billing-reconciliation-and-webhooks.spec.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/tests/billing-reconciliation-and-webhooks.spec.ts): 11 automated tests for Tasks C, D, & E.
+- [`src/lib/billing/plans.ts`](/src/lib/billing/plans.ts): Added `REGIONAL_PRICING`, `getCurrencyForCountry()`, `getLocalizedPlan()`, and `getLocalizedPlans()`.
+- [`src/server/actions/billing.ts`](/src/server/actions/billing.ts): Enforced localized plan prices and checkout currency synchronization.
+- [`src/server/actions/knowledge.ts`](/src/server/actions/knowledge.ts): Enqueued durable background jobs instead of un-awaited promises.
+- [`src/server/services/crawler/ingestion.ts`](/src/server/services/crawler/ingestion.ts): Added terminal statuses and error sanitization.
+- [`src/server/services/jobs/worker.ts`](/src/server/services/jobs/worker.ts): Added `timeoutMs` support and registered handlers for `"website_ingestion"`, `"appointment_reminders"`, and `"billing_reconciliation"`.
+- [`src/server/repositories/reminders.ts`](/src/server/repositories/reminders.ts): Added `claimPendingReminders()` with `FOR UPDATE SKIP LOCKED`.
+- [`src/server/services/notification.ts`](/src/server/services/notification.ts): Added `processReminderJob()` with appointment status checks.
+- [`src/server/services/reminders/dispatcher.ts`](/src/server/services/reminders/dispatcher.ts): Created `ReminderDispatcherService`.
+- [`src/server/services/billing/reconciliation.ts`](/src/server/services/billing/reconciliation.ts): Created `BillingReconciliationService`.
+- [`src/app/api/cron/send-reminders/route.ts`](/src/app/api/cron/send-reminders/route.ts): Created scheduled reminder cron endpoint.
+- [`src/app/api/cron/billing-reconciliation/route.ts`](/src/app/api/cron/billing-reconciliation/route.ts): Created daily billing reconciliation cron endpoint.
+- [`vercel.json`](/vercel.json): Configured cron schedules for jobs, queues, reminders, and daily reconciliation.
+- [`tests/scheduled-reminders-and-crawler.spec.ts`](/tests/scheduled-reminders-and-crawler.spec.ts): 12 automated tests for Tasks A & B.
+- [`tests/billing-reconciliation-and-webhooks.spec.ts`](/tests/billing-reconciliation-and-webhooks.spec.ts): 11 automated tests for Tasks C, D, & E.
 
 ---
 

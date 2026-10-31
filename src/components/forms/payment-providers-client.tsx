@@ -138,7 +138,7 @@ export function PaymentProvidersClient({
               return (
                 <div key={provider.providerId} className="p-6 rounded-2xl border relative overflow-hidden transition-all duration-300"
                   style={{ 
-                    background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)", 
+                    background: "linear-gradient(135deg, hsl(var(--muted)) 0%, rgba(255,255,255,0.01) 100%)", 
                     borderColor: isConnected ? "rgba(52,211,153,0.3)" : "rgba(139,92,246,0.3)",
                     boxShadow: isConnected ? "0 0 20px rgba(52,211,153,0.05)" : "0 0 30px rgba(139,92,246,0.08)"
                   }}>
@@ -206,12 +206,12 @@ export function PaymentProvidersClient({
               return (
                 <div key={provider.providerId} className="p-5 rounded-2xl border transition-all duration-300"
                   style={{ 
-                    background: "rgba(255,255,255,0.02)", 
-                    borderColor: isConnected ? "rgba(52,211,153,0.2)" : "rgba(255,255,255,0.07)"
+                    background: "hsl(var(--card))", 
+                    borderColor: isConnected ? "rgba(52,211,153,0.2)" : "hsl(var(--border))"
                   }}>
                   <div className="flex items-center gap-3">
                     <div className="h-9 w-9 rounded-lg flex items-center justify-center text-white text-xs font-bold"
-                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                      style={{ background: "hsl(var(--primary))", border: "1px solid hsl(var(--primary))" }}>
                       {provider.name.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
@@ -231,7 +231,7 @@ export function PaymentProvidersClient({
                       'medium',
                       'w-full text-xs font-bold/80 mt-5 transition-all duration-200'
                     )}
-                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                    style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
                     {isConnected ? "✓ Connected" : "Connect Provider"}
                   </Button>
                 </div>
@@ -244,21 +244,21 @@ export function PaymentProvidersClient({
       {selectedProvider && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
           <Button type="button" aria-label="Close dialog" className="absolute inset-0 bg-black/60 backdrop-blur-md cursor-default border-none p-0" onClick={() => setSelectedProvider(null)} />
-          <div className="relative w-full max-w-md p-6 rounded-3xl border text-left overflow-hidden shadow-2xl animate-fade-in"
+          <div className="relative w-full max-w-md p-6 rounded-3xl border border-border bg-card text-left overflow-hidden shadow-2xl animate-fade-in backdrop-blur-xl"
             style={{ 
-              background: "linear-gradient(180deg, hsl(240,22%,10%) 0%, hsl(240,22%,5%) 100%)",
-              borderColor: "rgba(255,255,255,0.10)"
+              background: "hsl(var(--card))",
+              borderColor: "hsl(var(--border))"
             }}>
             
-            <h3 className="text-lg font-bold text-white mb-1">Configure {selectedProvider.name}</h3>
+            <h3 className="text-lg font-bold text-foreground mb-1">Configure {selectedProvider.name}</h3>
             <p className="text-xs text-muted-foreground/80 mb-6">Enter API configuration values below to save connection profiles.</p>
 
             <form onSubmit={handleConnect} className="space-y-4">
               {/* Sandbox toggle */}
-              <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <div className="flex items-center justify-between p-4 rounded-xl bg-muted/40 border border-border/60">
                 <div>
-                  <div className="text-xs font-bold text-white">Sandbox Mode</div>
-                  <div className="text-caption text-white/35 mt-0.5">Use test/sandbox environment keys</div>
+                  <div className="text-xs font-bold text-foreground">Sandbox Mode</div>
+                  <div className="text-caption text-muted-foreground mt-0.5">Use test/sandbox environment keys</div>
                 </div>
                 <Button type="button" onClick={() => setIsSandbox(!isSandbox)} className={getButtonClasses(
                   'primary',
@@ -266,7 +266,7 @@ export function PaymentProvidersClient({
                   'medium',
                   'hover:scale-105 transition-transform duration-200'
                 )}>
-                  {isSandbox ? <ToggleRight className="h-8 w-8 text-violet-400" /> : <ToggleLeft className="h-8 w-8 text-white/20" />}
+                  {isSandbox ? <ToggleRight className="h-8 w-8 text-primary" /> : <ToggleLeft className="h-8 w-8 text-muted-foreground" />}
                 </Button>
               </div>
 
@@ -274,20 +274,20 @@ export function PaymentProvidersClient({
               <div className="space-y-2">
                 <label className="text-caption font-bold uppercase tracking-wider text-muted-foreground/80">API Private Key</label>
                 <div className="relative">
-                  <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/25 pointer-events-none" />
+                  <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60 pointer-events-none" />
                   <Input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)}
                     placeholder={`${selectedProvider.name} Private Secret Key`}
-                    className="w-full h-11 pl-10 pr-4 rounded-xl text-sm text-white font-medium bg-white/5 border border-white/10 placeholder:text-white/20 focus:border-violet-500/50 focus:outline-none" />
+                    className="w-full h-11 pl-10 pr-4 rounded-xl text-sm font-medium bg-background border border-input text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none" />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <label className="text-caption font-bold uppercase tracking-wider text-muted-foreground/80">Webhook Secret</label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/25 pointer-events-none" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60 pointer-events-none" />
                   <Input type="password" value={webhookSecret} onChange={(e) => setWebhookSecret(e.target.value)}
                     placeholder="whsec_..."
-                    className="w-full h-11 pl-10 pr-4 rounded-xl text-sm text-white font-medium bg-white/5 border border-white/10 placeholder:text-white/20 focus:border-violet-500/50 focus:outline-none" />
+                    className="w-full h-11 pl-10 pr-4 rounded-xl text-sm font-medium bg-background border border-input text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none" />
                 </div>
               </div>
 

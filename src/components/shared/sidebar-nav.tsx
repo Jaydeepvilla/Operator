@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/components/shared/utils";
 import { useSidebar } from "@/components/shared/sidebar-context";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/shared/tooltip";
+import { UpgradeProModal } from "@/components/shared/upgrade-pro-modal";
 import {
   LayoutDashboard,
   Inbox,
@@ -129,6 +130,21 @@ export function SidebarNavGroup({
   const pathname = usePathname();
   const { isCollapsed } = useSidebar();
   const [isOpen, setIsOpen] = React.useState(defaultOpen);
+  const [lockedModalOpen, setLockedModalOpen] = React.useState(false);
+  const [lockedModalInfo, setLockedModalInfo] = React.useState<{ title: string; desc: string }>({
+    title: "Upgrade to Pro",
+    desc: "Upgrade to Pro to access this feature.",
+  });
+
+  const handleLockedClick = (e: React.MouseEvent, label: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLockedModalInfo({
+      title: `Unlock ${label} with Pro`,
+      desc: `Upgrade to Pro to enable ${label} and give Operator 24/7 autonomous phone answering and scheduling.`,
+    });
+    setLockedModalOpen(true);
+  };
 
   // Track accordion state for each item with subLinks
   const [openSubMenus, setOpenSubMenus] = React.useState<Record<string, boolean>>(() => {
@@ -195,6 +211,50 @@ export function SidebarNavGroup({
     }
   }, [pathname, links, collapsible]);
 
+  // Collect all distinct item hrefs in this group
+  const allHrefs = React.useMemo(() => {
+    const list: string[] = [];
+    links.forEach((link) => {
+      if (!link.subLinks || link.subLinks.length === 0) {
+        list.push(link.href);
+      }
+      link.subLinks?.forEach((sub) => list.push(sub.href));
+    });
+    return list;
+  }, [links]);
+
+  const isHrefActive = (href: string) => {
+    // 1. Exact match
+    if (pathname === href) return true;
+
+    // 2. If pathname exactly matches another registered item, do not falsely highlight this one
+    if (allHrefs.includes(pathname)) return false;
+
+    // 3. Root/top-level parent index routes should never match child paths via prefix
+    if (
+      href === "/dashboard" ||
+      href === "/settings" ||
+      href === "/channels" ||
+      href === "/help" ||
+      href === "/voice"
+    ) {
+      return false;
+    }
+
+    // 4. Prefix match only if no longer registered item matches
+    if (pathname.startsWith(href + "/")) {
+      const hasLongerMatch = allHrefs.some(
+        (other) =>
+          other !== href &&
+          other.length > href.length &&
+          (pathname === other || pathname.startsWith(other + "/"))
+      );
+      return !hasLongerMatch;
+    }
+
+    return false;
+  };
+
   return (
     <TooltipProvider>
       <nav className="space-y-space-0.5" aria-label={title || "Navigation"}>
@@ -230,27 +290,25 @@ export function SidebarNavGroup({
         {(!collapsible || isOpen || isCollapsed) &&
           links.map((link) => {
             const Icon = IconMap[link.icon] || LayoutDashboard;
-            const isExact = pathname === link.href;
-            const isChild =
-              link.href !== "/dashboard" &&
-              link.href !== "/voice" &&
-              link.href !== "/settings" &&
-              link.href !== "/help" &&
-              pathname.startsWith(link.href + "/");
-            const hasActiveSub = link.subLinks?.some(
-              (sub) => pathname === sub.href || pathname.startsWith(sub.href + "/")
-            );
-            const isActive = isExact || isChild || hasActiveSub;
-
             const hasSubLinks = Boolean(link.subLinks && link.subLinks.length > 0);
             const isSubMenuOpen = Boolean(openSubMenus[link.href]);
+
+            // When a sub-link exists, parent only highlights if no child is active and exact match
+            const hasActiveSub = link.subLinks?.some((sub) => isHrefActive(sub.href));
+            const isActive = !hasSubLinks ? isHrefActive(link.href) : (pathname === link.href && !hasActiveSub);
 
             const content = (
               <div key={link.href} className="space-y-0.5">
                 <div className="flex items-center w-full">
                   <Link
                     href={link.href}
-                    onClick={onNavigate}
+                    onClick={(e) => {
+                      if (link.locked) {
+                        handleLockedClick(e, link.label);
+                        return;
+                      }
+                      onNavigate?.();
+                    }}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
                       "flex items-center radius-md transition-all duration-150 group relative select-none flex-1 my-0.5 cursor-pointer text-left",
@@ -334,15 +392,20 @@ export function SidebarNavGroup({
                 {!isCollapsed && hasSubLinks && isSubMenuOpen && (
                   <div className="ml-5 pl-2.5 border-l border-border/40 space-y-0.5 py-0.5 animate-in fade-in slide-in-from-top-1 duration-150">
                     {link.subLinks!.map((sub) => {
-                      const isSubActive =
-                        pathname === sub.href || pathname.startsWith(sub.href + "/");
+                      const isSubActive = isHrefActive(sub.href);
                       const SubIcon = sub.icon ? IconMap[sub.icon] : null;
 
                       return (
                         <Link
                           key={sub.href}
                           href={sub.href}
-                          onClick={onNavigate}
+                          onClick={(e) => {
+                            if (sub.locked) {
+                              handleLockedClick(e, sub.label);
+                              return;
+                            }
+                            onNavigate?.();
+                          }}
                           className={cn(
                             "flex items-center justify-between px-2 py-1 rounded-md text-xs transition-colors cursor-pointer select-none",
                             isSubActive
@@ -391,6 +454,14 @@ export function SidebarNavGroup({
 
             return content;
           })}
+        {/* Locked Modal Dialog */}
+        <UpgradeProModal
+          open={lockedModalOpen}
+          onOpenChange={setLockedModalOpen}
+          title={lockedModalInfo.title}
+          description={lockedModalInfo.desc}
+          feature="voice"
+        />
       </nav>
     </TooltipProvider>
   );

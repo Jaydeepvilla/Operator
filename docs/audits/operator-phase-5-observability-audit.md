@@ -54,12 +54,12 @@ All identified vulnerabilities and observability gaps have been remediated, veri
 
 | Skill Name | Location / Instruction File | How Applied |
 |---|---|---|
-| `sentry-automation` | `C:\Users\Jaydeep Chandegara\.gemini\config\skills\sentry-automation\SKILL.md` | Inspected Sentry issue/event schemas, tag conventions, breadcrumb categorization, and `beforeSend` data scrubbing architecture. |
-| `observability-engineer` | `C:\Users\Jaydeep Chandegara\.gemini\config\skills\observability-engineer\SKILL.md` | Designed structured logging standards, correlation ID propagation, SLI/SLO signal metrics, and alert trigger definitions. |
-| `nextjs-best-practices` | `C:\Users\Jaydeep Chandegara\.gemini\config\skills\nextjs-best-practices\SKILL.md` | Validated App Router error boundary patterns (`error.tsx`, `global-error.tsx`), edge proxy header propagation, and runtime compatibility. |
-| `security-auditor` | `C:\Users\Jaydeep Chandegara\.gemini\config\skills\security-auditor\SKILL.md` | Data privacy review: credentials, session tokens, authorization headers, credit cards, and customer PII redaction. |
-| `playwright-skill` | `C:\Users\Jaydeep Chandegara\.gemini\config\skills\playwright-skill\SKILL.md` | Authored automated test suite (`tests/observability-privacy.spec.ts`) validating redaction, correlation headers, and Sentry bridge resilience. |
-| `systematic-debugging` | `C:\Users\Jaydeep Chandegara\.gemini\config\skills\systematic-debugging\SKILL.md` | Root-cause analysis of silent `logger.info()`, unredacted error payloads, and edge proxy correlation gaps. |
+| `sentry-automation` | `skills/sentry-automation\SKILL.md` | Inspected Sentry issue/event schemas, tag conventions, breadcrumb categorization, and `beforeSend` data scrubbing architecture. |
+| `observability-engineer` | `skills/observability-engineer\SKILL.md` | Designed structured logging standards, correlation ID propagation, SLI/SLO signal metrics, and alert trigger definitions. |
+| `nextjs-best-practices` | `skills/nextjs-best-practices\SKILL.md` | Validated App Router error boundary patterns (`error.tsx`, `global-error.tsx`), edge proxy header propagation, and runtime compatibility. |
+| `security-auditor` | `skills/security-auditor\SKILL.md` | Data privacy review: credentials, session tokens, authorization headers, credit cards, and customer PII redaction. |
+| `playwright-skill` | `skills/playwright-skill\SKILL.md` | Authored automated test suite (`tests/observability-privacy.spec.ts`) validating redaction, correlation headers, and Sentry bridge resilience. |
+| `systematic-debugging` | `skills/systematic-debugging\SKILL.md` | Root-cause analysis of silent `logger.info()`, unredacted error payloads, and edge proxy correlation gaps. |
 
 ---
 

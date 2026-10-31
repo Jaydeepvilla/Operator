@@ -1,3 +1,5 @@
+import { persistentGuard } from "../security/persistent-guard";
+
 /**
  * Voice and Telephony Security Guardrails
  * Enforces authentication, tenant isolation, fraud prevention, consent disclosure,
@@ -163,6 +165,46 @@ export function recordTelephonyWebhookResponse(options: {
 }
 
 /**
+ * Multi-instance serverless-safe webhook deduplication backed by PostgreSQL unique constraint.
+ * Guarantees that if two serverless instances receive the same webhook concurrently, exactly one proceeds.
+ */
+export async function checkTelephonyWebhookIdempotencyAsync(options: {
+  callSid: string;
+  sequenceNumber?: string | number;
+  eventType?: string;
+}): Promise<{ isDuplicate: boolean; cachedResponse?: string }> {
+  const key = `${options.callSid}:${options.sequenceNumber ?? options.eventType ?? "event"}`;
+  
+  // Fast L1 in-memory check
+  const l1 = checkTelephonyWebhookIdempotency(options);
+  if (l1.isDuplicate) {
+    return l1;
+  }
+
+  // Persistent L2 multi-instance database check
+  const persistent = await persistentGuard.checkDeduplication("voice:telephony", key, WEBHOOK_DEDUP_TTL_MS);
+  if (persistent.isDuplicate) {
+    return {
+      isDuplicate: true,
+      cachedResponse: typeof persistent.cachedResponse === "string" ? persistent.cachedResponse : undefined,
+    };
+  }
+
+  return { isDuplicate: false };
+}
+
+export async function recordTelephonyWebhookResponseAsync(options: {
+  callSid: string;
+  sequenceNumber?: string | number;
+  eventType?: string;
+  responseXml: string;
+}): Promise<void> {
+  const key = `${options.callSid}:${options.sequenceNumber ?? options.eventType ?? "event"}`;
+  recordTelephonyWebhookResponse(options);
+  await persistentGuard.recordResponse("voice:telephony", key, options.responseXml);
+}
+
+/**
  * REQ 12: Prevent dropped calls from being reported as completed tasks.
  */
 export function resolveCallOutcomeOnHangup(endedReason: string): {
@@ -317,6 +359,31 @@ export function checkCallRateLimit(callerNumber: string): {
 
   entry.count++;
   return { isRateLimited: false, remainingCalls: MAX_CALLS_PER_WINDOW - entry.count };
+}
+
+/**
+ * Multi-instance serverless-safe call rate limiter backed by PostgreSQL.
+ * Persistently limits callers to MAX_CALLS_PER_WINDOW across serverless instances.
+ */
+export async function checkCallRateLimitAsync(callerNumber: string): Promise<{
+  isRateLimited: boolean;
+  remainingCalls: number;
+}> {
+  const cleanNumber = (callerNumber || "unknown").trim();
+  if (cleanNumber === "unknown") return { isRateLimited: false, remainingCalls: MAX_CALLS_PER_WINDOW };
+
+  // Fast L1 check
+  const l1 = checkCallRateLimit(cleanNumber);
+  if (l1.isRateLimited) {
+    return l1;
+  }
+
+  // Persistent L2 check across serverless instances
+  const l2 = await persistentGuard.checkRateLimit("voice:calls", cleanNumber, MAX_CALLS_PER_WINDOW, RATE_LIMIT_WINDOW_MS);
+  return {
+    isRateLimited: l2.isRateLimited,
+    remainingCalls: l2.remaining,
+  };
 }
 
 /**

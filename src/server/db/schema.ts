@@ -2617,6 +2617,30 @@ export const billingEvents = pgTable("billing_events", {
   uniqueIndex("billing_events_provider_event_unique").on(table.provider, table.providerEventId),
 ]);
 
+export const idempotencyKeys = pgTable("idempotency_keys", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  key: text("key").notNull(),
+  scope: text("scope").default("default").notNull(),
+  response: jsonb("response"),
+  status: text("status").default("pending").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("idempotency_keys_scope_key_unique").on(table.scope, table.key),
+]);
+
+export const rateLimitKeys = pgTable("rate_limit_keys", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  key: text("key").notNull(),
+  scope: text("scope").default("default").notNull(),
+  count: integer("count").default(1).notNull(),
+  windowStart: timestamp("window_start").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("rate_limit_keys_scope_key_unique").on(table.scope, table.key),
+]);
+
 export const revenueMetrics = pgTable("revenue_metrics", {
   id: uuid("id").defaultRandom().primaryKey(),
   timestamp: timestamp("timestamp").defaultNow().notNull(),

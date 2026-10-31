@@ -18,7 +18,7 @@ const CHANNELS = {
  Phone: {
  icon: Phone,
  outcome: "Bookings",
- desc: "A customer calls your business line. Operator picks up in 1 second, checks calendar availability, and books the appointment autonomously.",
+ desc: "A customer calls your business line. Operator greets the caller, processes speech turns, checks calendar availability, and logs the appointment autonomously.",
  accent: {
   text: "text-purple-500",
   border: "border-purple-500/60",

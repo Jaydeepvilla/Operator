@@ -41,11 +41,11 @@ Reconciliation for Stripe and Razorpay runs in separate, isolated execution bloc
 
 | File | Change | Purpose |
 | :--- | :--- | :--- |
-| [`src/server/services/billing/reconciliation.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/billing/reconciliation.ts) | Created | `BillingReconciliationService` implementing Stripe and Razorpay discrepancy detection, safe corrections, and metrics. |
-| [`src/server/services/jobs/worker.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/jobs/worker.ts) | Modified | Registered `"billing_reconciliation"` background queue handler with 120s execution timeout. |
-| [`src/app/api/cron/billing-reconciliation/route.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/app/api/cron/billing-reconciliation/route.ts) | Created | Scheduled endpoint with `maxDuration = 60`, fail-closed `CRON_SECRET` auth, and durable enqueueing. |
-| [`vercel.json`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/vercel.json) | Modified | Added daily cron schedule: `{"path": "/api/cron/billing-reconciliation", "schedule": "0 3 * * *"}`. |
-| [`tests/billing-reconciliation-and-webhooks.spec.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/tests/billing-reconciliation-and-webhooks.spec.ts) | Created | 11 automated tests verifying reconciliation, provider isolation, rate-limit protection, and currency integrity. |
+| [`src/server/services/billing/reconciliation.ts`](/src/server/services/billing/reconciliation.ts) | Created | `BillingReconciliationService` implementing Stripe and Razorpay discrepancy detection, safe corrections, and metrics. |
+| [`src/server/services/jobs/worker.ts`](/src/server/services/jobs/worker.ts) | Modified | Registered `"billing_reconciliation"` background queue handler with 120s execution timeout. |
+| [`src/app/api/cron/billing-reconciliation/route.ts`](/src/app/api/cron/billing-reconciliation/route.ts) | Created | Scheduled endpoint with `maxDuration = 60`, fail-closed `CRON_SECRET` auth, and durable enqueueing. |
+| [`vercel.json`](/vercel.json) | Modified | Added daily cron schedule: `{"path": "/api/cron/billing-reconciliation", "schedule": "0 3 * * *"}`. |
+| [`tests/billing-reconciliation-and-webhooks.spec.ts`](/tests/billing-reconciliation-and-webhooks.spec.ts) | Created | 11 automated tests verifying reconciliation, provider isolation, rate-limit protection, and currency integrity. |
 
 ---
 

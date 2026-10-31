@@ -111,7 +111,7 @@ Previous audit reports claimed passing states based on synthetic mocks or isolat
 
 ## 4. Defect Summary & Remediation
 
-During Phase 3 execution, 15 defects across routing, session handling, database constraints, test fixtures, and concurrency were systematically caught, diagnosed, fixed, and verified. Complete details are documented in [Remediation Report](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/docs/audits/operator-phase-3-remediation.md).
+During Phase 3 execution, 15 defects across routing, session handling, database constraints, test fixtures, and concurrency were systematically caught, diagnosed, fixed, and verified. Complete details are documented in [Remediation Report](/docs/audits/operator-phase-3-remediation.md).
 
 Key fixes include:
 1. **Public Route Forwarding in Proxy (`src/proxy.ts`):** Fixed missing `x-pathname` header for unauthenticated passes, ensuring `/login-success` transitions reliably.

@@ -20,10 +20,10 @@ Both gaps have been remediated in code and validated with 12 comprehensive autom
 ## 2. Skills Actually Read and Applied
 
 In accordance with system requirements, the following installed skill instruction files were explicitly inspected and applied:
-1. **`systematic-debugging`** (`C:\Users\Jaydeep Chandegara\.gemini\config\skills\systematic-debugging\SKILL.md`): Used to trace the exact root causes of un-awaited promises, Postgres array binding quirks (`ANY($1)` vs `IN ($1, $2)`), and test data collision before changing code.
-2. **`vercel-deployment`** (`C:\Users\Jaydeep Chandegara\.gemini\config\skills\vercel-deployment\SKILL.md`): Applied to configure Vercel Cron routes in `vercel.json`, enforce `export const maxDuration = 60`, handle serverless lifecycle constraints, and mandate `CRON_SECRET` fail-closed verification.
-3. **`backend-security-coder`** (`C:\Users\Jaydeep Chandegara\.gemini\config\skills\backend-security-coder\SKILL.md`): Applied for SSRF validation, sensitive URL/credential scrubbing in error logs, and multi-tenant boundary checks.
-4. **`payment-integration`** (`C:\Users\Jaydeep Chandegara\.gemini\config\skills\payment-integration\SKILL.md`): Maintained for verifying zero regressions in webhook idempotency and state transitions.
+1. **`systematic-debugging`** (`skills/systematic-debugging\SKILL.md`): Used to trace the exact root causes of un-awaited promises, Postgres array binding quirks (`ANY($1)` vs `IN ($1, $2)`), and test data collision before changing code.
+2. **`vercel-deployment`** (`skills/vercel-deployment\SKILL.md`): Applied to configure Vercel Cron routes in `vercel.json`, enforce `export const maxDuration = 60`, handle serverless lifecycle constraints, and mandate `CRON_SECRET` fail-closed verification.
+3. **`backend-security-coder`** (`skills/backend-security-coder\SKILL.md`): Applied for SSRF validation, sensitive URL/credential scrubbing in error logs, and multi-tenant boundary checks.
+4. **`payment-integration`** (`skills/payment-integration\SKILL.md`): Maintained for verifying zero regressions in webhook idempotency and state transitions.
 
 *Skills unavailable or not required for this phase:* `Trigger.dev` was evaluated but preserved as rejected per Phase 6 decision (the native PostgreSQL worker meets all SLA requirements without adding external vendor lock-in).
 
@@ -32,7 +32,7 @@ In accordance with system requirements, the following installed skill instructio
 ## 3. Detailed Root Causes & Architecture Analysis
 
 ### Gap 1: Website Crawling Pagination via Un-Awaited Serverless Action
-- **File:** [src/server/actions/knowledge.ts](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/actions/knowledge.ts#L560-L580)
+- **File:** [src/server/actions/knowledge.ts](/src/server/actions/knowledge.ts#L560-L580)
 - **Root Cause:** In `executeWebsiteIngestionAction`, after initial validation and scraping, the pipeline executed:
   ```ts
   // Flawed pattern:
@@ -49,7 +49,7 @@ In accordance with system requirements, the following installed skill instructio
   - All error messages are sanitized using `sanitizeErrorMessage` to strip private IP addresses, credentials, and API keys before persisting to the database.
 
 ### Gap 2: Missing Scheduled Dispatcher for Appointment Reminders
-- **Files:** [src/server/repositories/reminders.ts](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/repositories/reminders.ts), [src/server/services/notification.ts](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/notification.ts)
+- **Files:** [src/server/repositories/reminders.ts](/src/server/repositories/reminders.ts), [src/server/services/notification.ts](/src/server/services/notification.ts)
 - **Root Cause:** The database contained an `appointment_reminders` table and `sendReminder()` in `notification.ts`. However:
   1. No cron endpoint or scheduled trigger called `sendReminder()`.
   2. No atomic claiming mechanism existed, meaning concurrent triggers would send duplicate notifications.
@@ -58,7 +58,7 @@ In accordance with system requirements, the following installed skill instructio
 - **Remediation Architecture:**
   - **Atomic Queue Claiming:** Implemented `remindersRepository.claimPendingReminders(limit, now)` using PostgreSQL `SELECT ... WHERE (status = 'pending' AND send_at <= NOW()) OR (status = 'processing' AND updated_at < NOW() - INTERVAL '5 minutes') ORDER BY send_at ASC LIMIT $1 FOR UPDATE SKIP LOCKED`.
   - **Batch Enqueueing:** `ReminderDispatcherService.dispatchDueReminders()` atomically claims up to 50 due reminders and enqueues background worker jobs to queue `"appointment_reminders"` with idempotency key `reminder_${reminderId}` and `maxAttempts: 3`.
-  - **Scheduled Route:** Created [src/app/api/cron/send-reminders/route.ts](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/app/api/cron/send-reminders/route.ts) with fail-closed `CRON_SECRET` authentication and `maxDuration = 60`.
+  - **Scheduled Route:** Created [src/app/api/cron/send-reminders/route.ts](/src/app/api/cron/send-reminders/route.ts) with fail-closed `CRON_SECRET` authentication and `maxDuration = 60`.
   - **Cron Configuration:** Configured `vercel.json` with cron schedule `* * * * *` (every minute) invoking `/api/cron/send-reminders`.
   - **Worker Execution & Appointment State Verification:** In `notificationService.processReminderJob()`:
     1. Re-validates reminder existence and ensures status is `'processing'`.
@@ -73,15 +73,15 @@ In accordance with system requirements, the following installed skill instructio
 
 | File | Change Type | Purpose |
 | :--- | :--- | :--- |
-| [`src/server/actions/knowledge.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/actions/knowledge.ts) | Modified | Replaced un-awaited floating promise with durable `worker.enqueue("website_ingestion", ...)` |
-| [`src/server/services/crawler/ingestion.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/crawler/ingestion.ts) | Modified | Added sanitized error logging and terminal status resolution (`completed`, `partial`, `failed`, `queued`) |
-| [`src/server/services/jobs/worker.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/jobs/worker.ts) | Modified | Added `timeoutMs` to `JobDefinition`; registered default handlers for `"website_ingestion"` and `"appointment_reminders"` |
-| [`src/server/repositories/reminders.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/repositories/reminders.ts) | Modified | Implemented `claimPendingReminders` with `FOR UPDATE SKIP LOCKED` and 5-min stale lease recovery |
-| [`src/server/services/notification.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/notification.ts) | Modified | Implemented `processReminderJob()` with tenant boundary validation and lifecycle state checks |
-| [`src/server/services/reminders/dispatcher.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/server/services/reminders/dispatcher.ts) | Created | Implemented `ReminderDispatcherService` for atomic claiming and durable job dispatch |
-| [`src/app/api/cron/send-reminders/route.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/src/app/api/cron/send-reminders/route.ts) | Created | Scheduled cron route with fail-closed `CRON_SECRET` auth and `maxDuration = 60` |
-| [`vercel.json`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/vercel.json) | Created | Deployment configuration scheduling background jobs, queue processing, and reminder dispatch |
-| [`tests/scheduled-reminders-and-crawler.spec.ts`](file:///d:/AI%20%20PRojects/Nexx%20Services/receptionist/dynamicos/tests/scheduled-reminders-and-crawler.spec.ts) | Created | 12-test automated verification suite covering all failure modes, concurrency, and limits |
+| [`src/server/actions/knowledge.ts`](/src/server/actions/knowledge.ts) | Modified | Replaced un-awaited floating promise with durable `worker.enqueue("website_ingestion", ...)` |
+| [`src/server/services/crawler/ingestion.ts`](/src/server/services/crawler/ingestion.ts) | Modified | Added sanitized error logging and terminal status resolution (`completed`, `partial`, `failed`, `queued`) |
+| [`src/server/services/jobs/worker.ts`](/src/server/services/jobs/worker.ts) | Modified | Added `timeoutMs` to `JobDefinition`; registered default handlers for `"website_ingestion"` and `"appointment_reminders"` |
+| [`src/server/repositories/reminders.ts`](/src/server/repositories/reminders.ts) | Modified | Implemented `claimPendingReminders` with `FOR UPDATE SKIP LOCKED` and 5-min stale lease recovery |
+| [`src/server/services/notification.ts`](/src/server/services/notification.ts) | Modified | Implemented `processReminderJob()` with tenant boundary validation and lifecycle state checks |
+| [`src/server/services/reminders/dispatcher.ts`](/src/server/services/reminders/dispatcher.ts) | Created | Implemented `ReminderDispatcherService` for atomic claiming and durable job dispatch |
+| [`src/app/api/cron/send-reminders/route.ts`](/src/app/api/cron/send-reminders/route.ts) | Created | Scheduled cron route with fail-closed `CRON_SECRET` auth and `maxDuration = 60` |
+| [`vercel.json`](/vercel.json) | Created | Deployment configuration scheduling background jobs, queue processing, and reminder dispatch |
+| [`tests/scheduled-reminders-and-crawler.spec.ts`](/tests/scheduled-reminders-and-crawler.spec.ts) | Created | 12-test automated verification suite covering all failure modes, concurrency, and limits |
 
 ---
 

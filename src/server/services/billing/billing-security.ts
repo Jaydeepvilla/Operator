@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { PLAN_CATALOG, getPlan, getLocalizedPlan } from "@/lib/billing/plans";
+import { persistentGuard } from "../security/persistent-guard";
 
 export class BillingSecurityError extends Error {
   readonly code: string;
@@ -265,6 +266,24 @@ export const billingSecurityService = {
     }
     cache.add(scopedKey);
     return { isDuplicate: false };
+  },
+
+  /**
+   * Multi-instance persistent webhook deduplication backed by PostgreSQL unique constraint.
+   * Ensures that across serverless instances or distributed lambdas, a repeated webhook is rejected.
+   */
+  async checkWebhookDeduplicationAsync(
+    provider: string,
+    providerEventId: string
+  ): Promise<{ isDuplicate: boolean }> {
+    const scopedKey = `${provider}:${providerEventId}`;
+    if (processedWebhookEventIds.has(scopedKey)) {
+      return { isDuplicate: true };
+    }
+    processedWebhookEventIds.add(scopedKey);
+
+    const persistent = await persistentGuard.checkDeduplication(`billing:${provider}`, providerEventId);
+    return { isDuplicate: persistent.isDuplicate };
   },
 
   /**

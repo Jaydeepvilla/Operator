@@ -483,7 +483,7 @@ export default function UnifiedInboxPage() {
   const isAiAutopilotActive = selectedThread?.aiAutonomy !== "paused";
 
   return (
-    <div className="flex flex-col h-[calc(100vh-theme(spacing.16)-1px)] w-full overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-7.5rem)] max-h-[calc(100vh-7.5rem)] w-full overflow-hidden">
       {/* Top Banner / Error */}
       {errorMsg && (
         <div className="bg-destructive/10 border-b border-destructive/20 text-destructive text-caption px-space-4 py-space-2 flex items-center justify-between">
@@ -498,7 +498,7 @@ export default function UnifiedInboxPage() {
       )}
 
       {/* Main 3-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-4 p-space-4 flex-1 overflow-hidden min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 p-1 flex-1 overflow-hidden min-h-0">
         
         {/* ─── COLUMN 1: Thread List (3 Cols) ─── */}
         <div className="lg:col-span-3 flex flex-col h-full bg-card border border-border-subtle radius-xl overflow-hidden shadow-xs">
@@ -544,22 +544,22 @@ export default function UnifiedInboxPage() {
           </div>
 
           {/* Threads Scroll List */}
-          <ScrollArea className="flex-1 p-space-2 space-y-space-1 bg-bg-layer-1/5" horizontal={false}>
-            {loading ? (
-              <div className="h-full flex flex-col items-center justify-center text-caption text-neutral-400 gap-space-2 py-space-12">
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                <span>Loading threads...</span>
-              </div>
-            ) : filteredThreads.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center p-space-6 text-center text-caption text-neutral-400 py-space-12">
-                <Inbox className="h-8 w-8 text-neutral-300 mb-space-2" />
-                <span className="font-semibold text-foreground">No messages yet</span>
-                <p className="text-caption text-neutral-400 max-w-48 mx-auto mt-space-1">
-                  When customers message your website or WhatsApp, they will appear here.
-                </p>
-              </div>
-            ) : (
-              filteredThreads.map((t) => {
+          {loading ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-caption text-neutral-400 gap-space-2 py-space-12">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <span>Loading threads...</span>
+            </div>
+          ) : filteredThreads.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-space-6 text-center text-caption text-neutral-400 py-space-12 overflow-hidden">
+              <Inbox className="h-8 w-8 text-neutral-300 mb-space-2" />
+              <span className="font-semibold text-foreground">No messages yet</span>
+              <p className="text-caption text-neutral-400 max-w-48 mx-auto mt-space-1">
+                When customers message your website or WhatsApp, they will appear here.
+              </p>
+            </div>
+          ) : (
+            <ScrollArea className="flex-1 p-space-2 space-y-space-1 bg-bg-layer-1/5" horizontal={false}>
+              {filteredThreads.map((t) => {
                 const isSelected = selectedThread?.id === t.id;
                 const profile = t.conversation?.leadProfile;
                 const clientName = profile?.name || "Anonymous Client";
@@ -623,9 +623,9 @@ export default function UnifiedInboxPage() {
                     )}
                   </Button>
                 );
-              })
-            )}
-          </ScrollArea>
+              })}
+            </ScrollArea>
+          )}
         </div>
 
         {/* ─── COLUMN 2: Chat Pane & Copilot Trigger (6 Cols) ─── */}
@@ -952,33 +952,52 @@ export default function UnifiedInboxPage() {
         <div className="lg:col-span-3 flex flex-col h-full bg-card border border-border-subtle radius-xl overflow-hidden shadow-xs">
           
           {/* Drawer Header Tabs */}
-          <div className="p-space-2.5 border-b border-border-subtle bg-bg-layer-1/30 shrink-0">
-            <Tabs
-              value={activeDrawerTab}
-              onValueChange={(val: any) => setActiveDrawerTab(val)}
-              variant="segmented"
-              size="sm"
-              className="w-full"
-            >
-              <TabsList className="grid grid-cols-3 w-full bg-bg-layer-2 border border-border-subtle p-0.5 radius-md h-8 overflow-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                <TabsTrigger value="copilot" className="text-caption font-bold py-1 flex items-center gap-1">
-                  <Brain className="h-3 w-3 text-primary" />
-                  <span>Copilot</span>
-                </TabsTrigger>
-                <TabsTrigger value="profile" className="text-caption font-bold py-1 flex items-center gap-1">
-                  <User className="h-3 w-3" />
-                  <span>Profile</span>
-                </TabsTrigger>
-                <TabsTrigger value="notes" className="text-caption font-bold py-1 flex items-center gap-1">
-                  <FileText className="h-3 w-3" />
-                  <span>Notes</span>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+          <div className="p-3 border-b border-border-subtle bg-muted/20 shrink-0">
+            <div className="grid grid-cols-3 w-full bg-muted/50 p-1 rounded-xl border border-border/40 gap-1">
+              <button
+                type="button"
+                onClick={() => setActiveDrawerTab("copilot")}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer select-none",
+                  activeDrawerTab === "copilot"
+                    ? "bg-background text-foreground shadow-xs border border-border/60"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+                )}
+              >
+                <Brain className={cn("h-3.5 w-3.5", activeDrawerTab === "copilot" ? "text-primary" : "text-muted-foreground")} />
+                <span>Copilot</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveDrawerTab("profile")}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer select-none",
+                  activeDrawerTab === "profile"
+                    ? "bg-background text-foreground shadow-xs border border-border/60"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+                )}
+              >
+                <User className="h-3.5 w-3.5" />
+                <span>Profile</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveDrawerTab("notes")}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer select-none",
+                  activeDrawerTab === "notes"
+                    ? "bg-background text-foreground shadow-xs border border-border/60"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+                )}
+              >
+                <FileText className="h-3.5 w-3.5" />
+                <span>Notes</span>
+              </button>
+            </div>
           </div>
 
-          <ScrollArea className="flex-1 p-space-3 space-y-space-3 bg-bg-layer-1/5" horizontal={false}>
-            {selectedThread ? (
+          {selectedThread ? (
+            <ScrollArea className="flex-1 p-space-3 space-y-space-3 bg-bg-layer-1/5" horizontal={false}>
               <div className="space-y-space-3 text-caption animate-fade-in">
                 
                 {/* ── TAB 1: AI COPILOT & CITATIONS ── */}
@@ -1194,13 +1213,18 @@ export default function UnifiedInboxPage() {
                 )}
 
               </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center p-space-6 text-center text-caption text-neutral-400 gap-space-2 py-space-12">
-                <Brain className="h-8 w-8 text-neutral-300 mb-1" />
-                <span>Select a conversation to inspect AI citations and lead profile.</span>
+            </ScrollArea>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-caption text-muted-foreground gap-2 overflow-hidden select-none">
+              <div className="h-12 w-12 rounded-2xl bg-muted/40 border border-border/60 flex items-center justify-center text-muted-foreground mb-1 shadow-xs">
+                <Brain className="h-6 w-6 text-primary/70" />
               </div>
-            )}
-          </ScrollArea>
+              <span className="font-semibold text-foreground/90">No Conversation Selected</span>
+              <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
+                Select a message thread from the left to inspect citations, customer details, and add handover notes.
+              </p>
+            </div>
+          )}
         </div>
 
       </div>

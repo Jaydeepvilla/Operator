@@ -28,7 +28,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-                  "flex min-h-80 flex-col items-center justify-center radius-xl border border-border/80 bg-card/40 p-space-12 text-center animate-fade-in relative overflow-hidden",
+                  "w-full flex min-h-80 flex-col items-center justify-center radius-xl border border-border/80 bg-card/40 p-space-12 text-center animate-fade-in relative overflow-hidden",
                   className
                 )}
       {...props}

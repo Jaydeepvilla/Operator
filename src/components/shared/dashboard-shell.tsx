@@ -188,14 +188,12 @@ export function DashboardShell({
         { href: "/widget", label: "Website Chat", icon: "MessageSquare" },
         { href: "/channels", label: "WhatsApp", icon: "MessageCircle" },
         {
-          href: hasPhone ? "/voice/dashboard" : "/billing",
+          href: "/voice/dashboard",
           label: "Phone",
           icon: "Phone",
           locked: !hasPhone,
           lockLabel: !hasPhone ? COPY.plans.phoneLockedBadge : undefined,
         },
-        { href: "/settings/booking", label: "Calendar", icon: "Calendar" },
-        { href: "/settings/booking/deposits", label: "Payments", icon: "CreditCard" },
       ],
     },
     {
@@ -211,6 +209,7 @@ export function DashboardShell({
         { href: "/settings", label: "Business Profile", icon: "Building" },
         { href: "/services", label: "Services & Prices", icon: "Briefcase" },
         { href: "/staff", label: "Staff & Hours", icon: "UserCheck" },
+        { href: "/settings/booking", label: "Booking Rules", icon: "Calendar" },
         { href: "/billing", label: "Billing & Plans", icon: "CreditCard" },
       ],
     },

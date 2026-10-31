@@ -132,7 +132,7 @@ const TOUR_STEPS: TourStep[] = [
  {
  title: "Operator Answers",
  label: "AI Greeting",
- desc: "Operator AI picks up within 1 second, answering questions with natural voice.",
+ desc: "Operator AI answers the call, playing your custom business greeting and listening attentively.",
  icon: <Mic className="h-4 w-4" />
  },
  {
@@ -539,8 +539,8 @@ export default function FeaturesPage() {
  className="md:col-span-8"
  badge="Flagship Engine"
  icon={<Mic className="h-6 w-6 text-primary" />}
- title="Ultra-Low Latency Voice AI"
- description="Answer inbound phone calls with zero robotic hesitation. Operator processes natural speech, evaluates conversational intent, and answers questions with conversational fluidity."
+ title="Conversational Voice AI"
+ description="Handle inbound calls with natural speech turns. Operator evaluates caller intent, answers questions using your approved business knowledge, and logs full summaries."
  footer={
  <div className="space-y-space-2">
  <div className="flex items-center justify-between text-caption font-mono">

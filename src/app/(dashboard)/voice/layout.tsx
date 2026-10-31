@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { checkUserOrganization } from "@/server/actions/onboarding";
 import { subscriptionEngine } from "@/server/services/billing/subscription-engine";
 import { getPlan } from "@/lib/billing/plans";
+import { VoiceLockedView } from "@/components/shared/voice-locked-view";
 
 export default async function VoiceLayout({
   children,
@@ -19,7 +20,7 @@ export default async function VoiceLayout({
   const hasVoice = Boolean(plan?.features?.voiceAI);
 
   if (!hasVoice) {
-    redirect("/billing?upgrade=pro&feature=voice");
+    return <VoiceLockedView>{children}</VoiceLockedView>;
   }
 
   return <>{children}</>;

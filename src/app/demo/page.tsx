@@ -235,7 +235,7 @@ export default function DemoPage() {
               <>
                   <h3 className=" text-title-lg text-foreground">Operator Voice AI</h3>
                   <p className="text-muted-foreground text-body-sm leading-relaxed">Operator AI answers real phone calls using natural language. It understands context, handles interruptions, and books appointments directly to your calendar.</p>
-                  {["Answers in under 1 second", "Understands context across turns", "Books directly to your calendar", "Records and transcribes every call", "Escalates to humans when needed", "Works on your existing phone number"].map((f) =>
+                  {["Conversational speech turns", "Understands context across turns", "Books directly to your calendar", "Records and transcribes every call", "Escalates to humans when needed", "Works on your existing phone number"].map((f) =>
                 <div key={f} className="flex items-center gap-space-2 text-body-sm"><Check className="h-4 w-4 text-primary shrink-0" /><span className="text-foreground/80">{f}</span></div>
                 )}
                 </>

@@ -42,17 +42,17 @@ An explicit goal of Phase 4 was resolving the discrepancy where Phase 1 reported
 
 The following installed skills and guidance repositories were consulted and adhered to during this security audit:
 - **`trailofbits/skills` (Security Auditor & SAST):**
-  - Read: `C:\Users\Jaydeep Chandegara\.gemini\config\skills\security-auditor\SKILL.md`
-  - Read: `C:\Users\Jaydeep Chandegara\.gemini\config\skills\security-scanning-security-sast\SKILL.md`
+  - Read: `skills/security-auditor\SKILL.md`
+  - Read: `skills/security-scanning-security-sast\SKILL.md`
   - Application: Threat modeling, finding prioritization by real exploitability, constant-time cryptographic verification, fail-closed access control design.
 - **`vercel-labs/agent-skills` (Next.js Best Practices):**
-  - Read: `C:\Users\Jaydeep Chandegara\.gemini\config\skills\nextjs-best-practices\SKILL.md`
+  - Read: `skills/nextjs-best-practices\SKILL.md`
   - Application: App Router edge proxy conventions (`src/proxy.ts`), server-only session boundaries, cookie flags, and HTTP status semantics.
 - **`obra/superpowers` (Systematic Debugging & Test-Driven Remediation):**
-  - Read: `C:\Users\Jaydeep Chandegara\.gemini\config\skills\systematic-debugging\SKILL.md`
+  - Read: `skills/systematic-debugging\SKILL.md`
   - Application: Reproduce findings before code changes, apply minimal safe diffs, and write automated Playwright regression tests.
 - **`microsoft/playwright` (Playwright E2E & API Security Testing):**
-  - Read: `C:\Users\Jaydeep Chandegara\.gemini\config\skills\playwright-skill\SKILL.md`
+  - Read: `skills/playwright-skill\SKILL.md`
   - Application: Implemented `tests/security-audit.spec.ts` asserting fail-closed cron auth, API 401 JSON responses, GCM cipher tamper rejection, and SSRF rejection.
 
 ---

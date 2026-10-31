@@ -59,7 +59,7 @@ const COMPARISON_ROWS: ComparisonRow[] = [
   { name: "Email alerts & handoff to a human", starter: true, pro: true, business: true },
   { name: "Email reminders", starter: true, pro: true, business: true },
   {
-    name: "AI phone receptionist & business phone number",
+    name: "Voice AI call triage & automated call summaries",
     starter: false,
     pro: true,
     business: true,
@@ -180,7 +180,7 @@ export default function PricingPage() {
             </div>
 
             <p className="mx-auto max-w-2xl text-body-md md:text-body-lg text-muted-foreground leading-relaxed mb-space-8">
-              Operator answers chats and messages around the clock, books appointments into your calendar, and on Pro and Business answers your phone too. Simple monthly plans. No long-term contract.
+              Operator answers chats and messages around the clock, books appointments into your calendar, and provides conversational voice AI call triage on Pro and Business plans. Simple monthly plans. No long-term contract.
             </p>
 
             {/* Action Buttons */}

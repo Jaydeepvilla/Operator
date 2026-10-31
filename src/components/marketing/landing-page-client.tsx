@@ -73,7 +73,7 @@ const HOW_IT_WORKS = [
   {
     step: "02",
     title: "Operator Answers",
-    description: "AI picks up in under 2 seconds. Greets, qualifies, and captures every detail.",
+    description: "Greets callers with custom branding, qualifies needs through conversational turns, and logs full transcripts.",
     icon: Bot,
   },
   {

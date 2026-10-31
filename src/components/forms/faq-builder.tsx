@@ -304,8 +304,9 @@ export function FaqBuilder({ initialFaqs }: FaqBuilderProps) {
 
  {/* FAQs list table */}
  {filteredFaqs.length === 0 ? (
- <div className="flex-1 min-h-0 flex flex-col justify-center items-center border border-[hsl(var(--foreground)/0.06)] radius-xl bg-card">
+ <div className="flex-1 min-h-0 flex flex-col justify-center w-full">
  <EmptyState
+ className="w-full flex-1"
  title="No FAQ items configured"
  description={'Add common questions your customers ask so your AI can reply instantly. E.g. "Where can I park?" or "Do you accept walk-ins?"'}
  icon={HelpCircle}

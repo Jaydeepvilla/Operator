@@ -92,7 +92,7 @@ function SectionLabel({ icon: Icon, children }: { icon: any; children: React.Rea
  <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
  <Icon className="h-3.5 w-3.5 text-primary" />
  </div>
- <span className="text-caption font-bold uppercase tracking-widest text-muted-foreground/70">
+ <span className="text-caption font-bold uppercase tracking-widest text-foreground/90">
  {children}
  </span>
  </div>
@@ -115,6 +115,7 @@ export default function StaffPage() {
  const [newEmail, setNewEmail] = useState("");
  const [newPhone, setNewPhone] = useState("");
  const [newBuffer, setNewBuffer] = useState("0");
+ const [formError, setFormError] = useState("");
  const [creating, setCreating] = useState(false);
 
  const [exceptionOpen, setExceptionOpen] = useState(false);
@@ -162,20 +163,39 @@ export default function StaffPage() {
 
  const handleCreateStaff = async (e: React.FormEvent) => {
  e.preventDefault();
- if (!newName.trim()) return;
+ setFormError("");
+ if (!newName.trim()) {
+   setFormError("Full name is required.");
+   return;
+ }
+ if (newEmail.trim()) {
+   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+   if (!emailRegex.test(newEmail.trim())) {
+     setFormError("Please enter a valid email address (e.g. name@domain.com).");
+     return;
+   }
+ }
+ if (newPhone.trim()) {
+   const cleanPhone = newPhone.replace(/\D/g, "");
+   if (cleanPhone.length < 7 || cleanPhone.length > 15) {
+     setFormError("Phone number must contain between 7 and 15 digits.");
+     return;
+   }
+ }
+
  setCreating(true);
  const res = await createStaffAction({
- name: newName, role: newRole,
+ name: newName.trim(), role: newRole.trim() || "Staff Member",
  email: newEmail.trim() || null,
  phone: newPhone.trim() || null,
  bufferTime: parseInt(newBuffer, 10) || 0,
  });
  if (res.success) {
- setNewName(""); setNewEmail(""); setNewPhone(""); setNewBuffer("0");
+ setNewName(""); setNewEmail(""); setNewPhone(""); setNewBuffer("0"); setFormError("");
  setCreateOpen(false);
  await loadStaff();
  if (res.staff) setSelectedStaffId(res.staff.id);
- } else setErrorMsg(res.error || "Failed to create staff profile");
+ } else setFormError(res.error || "Failed to create staff profile");
  setCreating(false);
  };
 
@@ -413,10 +433,15 @@ export default function StaffPage() {
  </span>
  </div>
  <div className="flex items-center gap-3 mt-1 flex-wrap">
- <span className="text-[12px] text-muted-foreground/70 font-medium">{activeDetails.staff.role}</span>
+ <span className="text-[12px] text-foreground/80 font-medium">{activeDetails.staff.role}</span>
  {activeDetails.staff.email && (
- <span className="flex items-center gap-1 text-caption text-muted-foreground/80">
- <Mail className="h-3 w-3" />{activeDetails.staff.email}
+ <span className="flex items-center gap-1.5 text-caption font-medium text-foreground/80">
+ <Mail className="h-3.5 w-3.5 text-primary" />{activeDetails.staff.email}
+ </span>
+ )}
+ {activeDetails.staff.phone && (
+ <span className="flex items-center gap-1.5 text-caption font-medium text-foreground/80">
+ <Phone className="h-3.5 w-3.5 text-primary" />{activeDetails.staff.phone}
  </span>
  )}
  {activeDetails.staff.bufferTime > 0 && (
@@ -465,7 +490,7 @@ export default function StaffPage() {
  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
  {/* Services Assigned */}
- <div className="bg-background/60 border-[hsl(var(--foreground)/0.05)] rounded-xl p-4 flex flex-col justify-between overflow-hidden">
+ <div className="bg-card border border-border/80 rounded-xl p-4 flex flex-col justify-between overflow-hidden shadow-xs">
  <div>
  <SectionLabel icon={Briefcase}>Services Assigned</SectionLabel>
 
@@ -530,7 +555,7 @@ export default function StaffPage() {
  </div>
 
  {/* Vacation / Exceptions */}
- <div className="bg-background/60 border-[hsl(var(--foreground)/0.05)] rounded-xl p-4 flex flex-col justify-between overflow-hidden">
+ <div className="bg-card border border-border/80 rounded-xl p-4 flex flex-col justify-between overflow-hidden shadow-xs">
  <div>
  <div className="flex items-start justify-between mb-3">
  <SectionLabel icon={CalendarRange}>Vacation & Exceptions</SectionLabel>
@@ -599,7 +624,7 @@ export default function StaffPage() {
  </div>
 
  {/* ── Row 2: Weekly Hours ── */}
- <div className="bg-background/60 border-[hsl(var(--foreground)/0.05)] rounded-xl p-4 overflow-hidden">
+ <div className="bg-card border border-border/80 rounded-xl p-4 overflow-hidden shadow-xs">
  <SectionLabel icon={Clock}>Weekly Working Hours</SectionLabel>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2.5">
@@ -689,8 +714,8 @@ export default function StaffPage() {
 
  </div>
  {/* ── Add Staff Dialog ── */}
- <Dialog open={createOpen} onOpenChange={setCreateOpen}>
- <DialogContent className="sm:max-w-lg bg-card border-[hsl(var(--foreground)/0.08)] radius-xl">
+ <Dialog open={createOpen} onOpenChange={(open) => { setCreateOpen(open); if (!open) setFormError(""); }}>
+ <DialogContent className="sm:max-w-lg bg-card border border-border radius-xl shadow-xl">
  <DialogHeader>
  <DialogTitle className="text-base font-bold text-foreground">Add Staff Member</DialogTitle>
  <DialogDescription className="text-caption text-muted-foreground">
@@ -699,26 +724,55 @@ export default function StaffPage() {
  </DialogHeader>
  <form onSubmit={handleCreateStaff}>
  <div className="space-y-4 py-4">
+ {formError && (
+ <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 text-rose-600 dark:text-rose-400 text-xs font-medium flex items-center gap-2">
+ <AlertCircle className="h-4 w-4 shrink-0" />
+ <span>{formError}</span>
+ </div>
+ )}
  <div className="grid grid-cols-2 gap-4">
  <div className="col-span-2 space-y-1.5">
- <label htmlFor="staff-name" className="text-caption uppercase font-bold text-muted-foreground/80 tracking-wider">Full Name *</label>
- <Input id="staff-name" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Dr. Sarah Jenkins" className="bg-background" required />
+ <label htmlFor="staff-name" className="text-caption uppercase font-bold text-foreground tracking-wider">Full Name *</label>
+ <Input id="staff-name" value={newName} onChange={(e) => { setNewName(e.target.value); setFormError(""); }} placeholder="e.g. Dr. Sarah Jenkins" className="bg-background text-foreground" required />
  </div>
  <div className="space-y-1.5">
- <label htmlFor="staff-role" className="text-caption uppercase font-bold text-muted-foreground/80 tracking-wider">Role Title *</label>
- <Input id="staff-role" value={newRole} onChange={(e) => setNewRole(e.target.value)} placeholder="e.g. Lead Dentist" className="bg-background" required />
+ <label htmlFor="staff-role" className="text-caption uppercase font-bold text-foreground tracking-wider">Role Title *</label>
+ <Input id="staff-role" value={newRole} onChange={(e) => { setNewRole(e.target.value); setFormError(""); }} placeholder="e.g. Lead Dentist" className="bg-background text-foreground" required />
  </div>
  <div className="space-y-1.5">
- <label htmlFor="staff-buffer" className="text-caption uppercase font-bold text-muted-foreground/80 tracking-wider">Buffer Time (min)</label>
- <Input id="staff-buffer" type="number" value={newBuffer} onChange={(e) => setNewBuffer(e.target.value)} placeholder="15" className="bg-background" />
+ <label htmlFor="staff-buffer" className="text-caption uppercase font-bold text-foreground tracking-wider">Buffer Time (min)</label>
+ <Input id="staff-buffer" type="number" min="0" max="120" value={newBuffer} onChange={(e) => setNewBuffer(e.target.value)} placeholder="15" className="bg-background text-foreground" />
  </div>
  <div className="space-y-1.5">
- <label htmlFor="staff-email" className="text-caption uppercase font-bold text-muted-foreground/80 tracking-wider">Email</label>
- <Input id="staff-email" type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="sarah@clinic.com" className="bg-background" />
+ <label htmlFor="staff-email" className="text-caption uppercase font-bold text-foreground tracking-wider">Email</label>
+ <Input
+ id="staff-email"
+ type="email"
+ value={newEmail}
+ onChange={(e) => { setNewEmail(e.target.value); setFormError(""); }}
+ placeholder="sarah@clinic.com"
+ className="bg-background text-foreground"
+ />
  </div>
  <div className="space-y-1.5">
- <label htmlFor="staff-phone" className="text-caption uppercase font-bold text-muted-foreground/80 tracking-wider">Phone</label>
- <Input id="staff-phone" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="+1 555-0199" className="bg-background" />
+ <label htmlFor="staff-phone" className="text-caption uppercase font-bold text-foreground tracking-wider">Phone (Numbers only, max 15 digits)</label>
+ <Input
+ id="staff-phone"
+ type="tel"
+ inputMode="numeric"
+ value={newPhone}
+ maxLength={16}
+ onChange={(e) => {
+ const raw = e.target.value;
+ const filtered = raw.startsWith("+")
+ ? "+" + raw.slice(1).replace(/\D/g, "").slice(0, 15)
+ : raw.replace(/\D/g, "").slice(0, 15);
+ setNewPhone(filtered);
+ setFormError("");
+ }}
+ placeholder="+15550199"
+ className="bg-background text-foreground font-mono"
+ />
  </div>
  </div>
  </div>
