@@ -48,13 +48,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const keyId = config.publishableKey;
-    const keySecret = config.secretKey;
+    const keyId = (config.publishableKey || "").trim().replace(/^["']|["']$/g, "");
+    const keySecret = (config.secretKey || "").trim().replace(/^["']|["']$/g, "");
     const authHeader = `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString("base64")}`;
 
-    // 14-day trial period start timestamp (Unix timestamp in seconds)
+    // Trial period start timestamp (Unix timestamp in seconds: 14 days for Starter, 7 days for Pro/Business)
     const nowSec = Math.floor(Date.now() / 1000);
-    const startAt = nowSec + 14 * 24 * 60 * 60;
+    const trialDays = planId === "starter" ? 14 : 7;
+    const startAt = nowSec + trialDays * 24 * 60 * 60;
     const roundedAmountPaise = Math.round(amountPaise);
 
     // 1. Resolve or create Razorpay Plan
@@ -89,6 +90,11 @@ export async function POST(req: NextRequest) {
           errorDetail = errText;
         }
 
+        const isAuthError =
+          planRes.status === 401 ||
+          errorDetail.toLowerCase().includes("auth") ||
+          errorDetail.toLowerCase().includes("unauthorized");
+
         const isSubscriptionFeatureDisabled =
           errorDetail.toLowerCase().includes("subscription") ||
           errorDetail.toLowerCase().includes("not enabled") ||
@@ -96,13 +102,15 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(
           {
-            error: isSubscriptionFeatureDisabled
+            error: isAuthError
+              ? "Payment gateway authentication failed: The configured Razorpay Key ID or Key Secret in your environment variables was rejected by Razorpay (HTTP 401). Please verify your keys in Razorpay Dashboard (Settings → API Keys) and update RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in your Vercel project settings."
+              : isSubscriptionFeatureDisabled
               ? "Razorpay Subscriptions (e-Mandate) is not yet active on your Razorpay dashboard. Please activate Subscriptions in your Razorpay account settings to accept automated trial mandates."
               : errorDetail
               ? `Payment gateway error: ${errorDetail}`
               : "Failed to initialize plan on payment gateway",
             details: errText,
-            code: "GATEWAY_ERROR",
+            code: isAuthError ? "AUTH_FAILED" : "GATEWAY_ERROR",
           },
           { status: 502 }
         );
@@ -147,6 +155,11 @@ export async function POST(req: NextRequest) {
         errorDetail = errText;
       }
 
+      const isAuthError =
+        subRes.status === 401 ||
+        errorDetail.toLowerCase().includes("auth") ||
+        errorDetail.toLowerCase().includes("unauthorized");
+
       const isSubscriptionFeatureDisabled =
         errorDetail.toLowerCase().includes("subscription") ||
         errorDetail.toLowerCase().includes("not enabled") ||
@@ -154,13 +167,15 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json(
         {
-          error: isSubscriptionFeatureDisabled
+          error: isAuthError
+            ? "Payment gateway authentication failed: The configured Razorpay Key ID or Key Secret in your environment variables was rejected by Razorpay (HTTP 401). Please verify your keys in Razorpay Dashboard (Settings → API Keys) and update RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in your Vercel project settings."
+            : isSubscriptionFeatureDisabled
             ? "Razorpay Subscriptions is not yet active on your Razorpay dashboard. Please activate Subscriptions in your Razorpay account settings."
             : errorDetail
             ? `Payment gateway error: ${errorDetail}`
             : "Failed to create subscription mandate",
           details: errText,
-          code: "SUBSCRIPTION_MANDATE_ERROR",
+          code: isAuthError ? "AUTH_FAILED" : "SUBSCRIPTION_MANDATE_ERROR",
         },
         { status: 502 }
       );

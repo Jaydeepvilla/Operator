@@ -25,6 +25,7 @@ import {
   MASTER_PLANS,
   REGIONAL_FACTORS,
 } from "@/lib/billing/catalog";
+import { getLocalizedPlan } from "@/lib/billing/plans";
 import { validatePlanIntent } from "@/lib/billing/plan-intent";
 import { Logo } from "@/components/shared/logo";
 
@@ -66,32 +67,31 @@ function CheckoutContent() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [razorpayReady, setRazorpayReady] = useState(false);
 
-  const plan = MASTER_PLANS[planId];
   const isYearly = interval === "yearly";
+  const localizedPlan = useMemo(
+    () => getLocalizedPlan(planId, currency),
+    [planId, currency]
+  );
 
-  // Compute authoritative base & regional prices
-  const basePriceMinor = isYearly ? plan.baseYearlyUSD : plan.baseMonthlyUSD;
-  const factor = REGIONAL_FACTORS[currency]?.plan ?? 1.0;
+  const isStarter = planId === "starter";
+  const trialDays = isStarter ? 14 : 7;
+  const trialTitle = isStarter ? "14-Day Free Trial" : "7-Day Pilot";
+  const trialBadgeText = isStarter
+    ? "14-Day Free Trial ($0 Charged Today)"
+    : "7-Day Pilot with Money-Back Guarantee ($0 Charged Today)";
+  const trialDurationLabel = isStarter ? "14 Days Free" : "7-Day Pilot";
+  const trialButtonText = isStarter
+    ? `Start 14-Day Free Trial (${localizedPlan.currencySymbol}0 Today)`
+    : `Start 7-Day Pilot (${localizedPlan.currencySymbol}0 Today)`;
+  const trialSubtext = isStarter
+    ? "14-day free trial on Starter"
+    : "7-day pilot with money-back guarantee";
 
-  // Indicative fallback exchange rates for UI preview before server-verified token
-  const indicativeRates: Record<SupportedCurrency, number> = {
-    USD: 1.0,
-    GBP: 0.747,
-    INR: 95.07,
-  };
-
+  // Base price from authoritative regional plan catalog
   const calculatedBaseMinor = useMemo(() => {
-    if (currency === "USD") return basePriceMinor;
-    if (currency === "GBP") {
-      const gbp = Math.round((basePriceMinor / 100) * factor * indicativeRates.GBP);
-      const rounded = Math.round(gbp / 10) * 10 - 1;
-      return rounded * 100;
-    }
-    // INR nearest 500 minus 1
-    const inr = Math.round((basePriceMinor / 100) * factor * indicativeRates.INR);
-    const rounded = Math.round(inr / 500) * 500 - 1;
-    return rounded * 100;
-  }, [basePriceMinor, factor, currency]);
+    const baseMajor = isYearly ? localizedPlan.yearlyTotal : localizedPlan.monthlyPrice;
+    return Math.round(baseMajor * 100);
+  }, [localizedPlan, isYearly]);
 
   // Setup fee calculation (waived on yearly plans per P2)
   const setupFeeMinor = useMemo(() => {
@@ -110,9 +110,9 @@ function CheckoutContent() {
 
   const totalFirstCharge = firstChargePlanAmount + setupFeeMinor;
 
-  // 14-day trial date calculations
+  // Trial date calculations
   const today = new Date();
-  const trialEndsDate = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+  const trialEndsDate = new Date(today.getTime() + trialDays * 24 * 60 * 60 * 1000);
   const formattedTrialDate = trialEndsDate.toLocaleDateString(undefined, {
     month: "long",
     day: "numeric",
@@ -186,7 +186,7 @@ function CheckoutContent() {
         key: data.keyId,
         subscription_id: data.subscriptionId,
         name: "Operator AI",
-        description: `14-day free trial on ${plan.displayName} Plan ($0 today)`,
+        description: `${trialTitle} on ${localizedPlan.name} Plan ($0 today)`,
         image: "https://operator.nexxtechnologies.com/logo.png",
         handler: function (response: any) {
           router.push(`/billing/success?provider=razorpay&subscription_id=${response.razorpay_subscription_id}`);
@@ -252,10 +252,10 @@ function CheckoutContent() {
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-3">
                 <Sparkles className="h-3 w-3" />
-                14-Day Free Trial ($0 Charged Today)
+                {trialBadgeText}
               </div>
               <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-                Activate your {plan.displayName} plan
+                Activate your {localizedPlan.name} plan
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 Your card or UPI will be saved to prevent interruptions. You will not be charged today.
@@ -266,8 +266,8 @@ function CheckoutContent() {
             <div className="p-6 rounded-2xl bg-card border border-border/80 shadow-sm space-y-4">
               <div className="flex items-center justify-between pb-4 border-b border-border/60">
                 <div>
-                  <h2 className="text-lg font-bold">{plan.displayName} Plan</h2>
-                  <p className="text-xs text-muted-foreground">{plan.bestFor}</p>
+                  <h2 className="text-lg font-bold">{localizedPlan.name} Plan</h2>
+                  <p className="text-xs text-muted-foreground">{localizedPlan.bestFor}</p>
                 </div>
                 <div className="text-right">
                   <span className="text-2xl font-extrabold">
@@ -311,30 +311,42 @@ function CheckoutContent() {
               <div className="space-y-2 pt-2 text-xs">
                 <div className="flex items-center gap-2">
                   <Check className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <span>{plan.limits.conversations.toLocaleString()} conversations per billing cycle</span>
+                  <span>
+                    <strong>{localizedPlan.limits.conversations.toLocaleString()}</strong> conversations / mo
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {plan.id === "starter" ? (
+                  {isStarter ? (
                     <>
                       <span className="text-muted-foreground/60 w-3.5 text-center font-mono">—</span>
-                      <span className="text-muted-foreground">Voice calling starts at Pro</span>
+                      <span className="text-muted-foreground">
+                        Voice minutes: <strong>None</strong> (Starts at Pro)
+                      </span>
                     </>
                   ) : (
                     <>
                       <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
                       <span>
-                        30 voice minutes cap during trial (
-                        {currency === "INR"
-                          ? plan.limits.voiceMinutesByRegion.INR
-                          : plan.limits.voiceMinutesByRegion.USD}{" "}
-                        mins after conversion)
+                        <strong>{localizedPlan.limits.voiceMinutes}</strong> voice minutes included
                       </span>
                     </>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <span>1 business calendar sync & appointment booking</span>
+                  <span>
+                    {localizedPlan.limits.calendars === 1
+                      ? "1 calendar integration"
+                      : `Up to ${localizedPlan.limits.calendars} staff calendars`}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span>
+                    {localizedPlan.limits.locations === 1
+                      ? "1 business location"
+                      : `Up to ${localizedPlan.limits.locations} business locations`}
+                  </span>
                 </div>
               </div>
             </div>
@@ -417,7 +429,7 @@ function CheckoutContent() {
 
                 <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
                   <span className="text-muted-foreground">Trial Duration:</span>
-                  <span className="font-semibold text-foreground">14 Days Free</span>
+                  <span className="font-semibold text-foreground">{trialDurationLabel}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-xs">
@@ -459,9 +471,28 @@ function CheckoutContent() {
               </div>
 
               {checkoutError && (
-                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                  <span>{checkoutError}</span>
+                <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs space-y-2">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                    <span>{checkoutError}</span>
+                  </div>
+                  {checkoutError.toLowerCase().includes("auth") && (
+                    <div className="pt-1.5 border-t border-destructive/20 text-muted-foreground">
+                      <p className="text-[11px] mb-2 text-foreground/90">
+                        Tip: While you verify your Razorpay API keys in Razorpay Dashboard, you can also activate your trial immediately in Test Mode:
+                      </p>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="w-full text-xs font-semibold border-primary/40 text-primary hover:bg-primary/10"
+                        onClick={() => router.push(`/billing/success?provider=test_mode&plan=${planId}&interval=${interval}`)}
+                      >
+                        Activate {trialTitle} in Test Mode (Instant)
+                        <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -480,7 +511,7 @@ function CheckoutContent() {
                 ) : (
                   <>
                     <Lock className="h-4 w-4 mr-2" />
-                    Start 14-Day Free Trial ({formatMoney(0, currency)} Today)
+                    {trialButtonText}
                   </>
                 )}
               </Button>

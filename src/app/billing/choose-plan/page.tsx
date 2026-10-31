@@ -50,10 +50,10 @@ export default function ChoosePlanPage() {
       <main className="flex-1 max-w-5xl mx-auto px-6 py-12 w-full">
         <div className="text-center max-w-2xl mx-auto mb-10">
           <h1 className="text-3xl font-extrabold tracking-tight mb-3">
-            Select a plan to start your 14-day free trial
+            Select a plan to start your free trial or pilot
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Every plan includes a 14-day trial with $0 charged today. Card or UPI required to activate. Cancel anytime with zero charge before your trial ends.
+            Every plan includes a trial or pilot with $0 charged today. Card or UPI required to activate. Cancel anytime with zero charge before your trial ends.
           </p>
 
           {/* Monthly / Annual Toggle */}
@@ -148,7 +148,19 @@ export default function ChoosePlanPage() {
                     </div>
                     <div className="flex items-center gap-2 text-xs font-medium">
                       <Check className="h-3.5 w-3.5 text-primary shrink-0" />
-                      <span>{plan.limits.calendars} business calendar</span>
+                      <span>
+                        {plan.limits.calendars === 1
+                          ? "1 calendar integration"
+                          : `Up to ${plan.limits.calendars} staff calendars`}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-medium">
+                      <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <span>
+                        {plan.limits.locations === 1
+                          ? "1 business location"
+                          : `Up to ${plan.limits.locations} business locations`}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -162,12 +174,14 @@ export default function ChoosePlanPage() {
                     <Link
                       href={`/billing/checkout?plan=${plan.id}&interval=${yearly ? "yearly" : "monthly"}&currency=${selectedCurrency}`}
                     >
-                      Start 14-Day Free Trial
+                      {plan.id === "starter" ? "Start 14-Day Free Trial" : "Start 7-Day Pilot"}
                       <ArrowRight className="h-4 w-4 ml-1.5" />
                     </Link>
                   </Button>
                   <p className="text-center text-[11px] text-muted-foreground/80 mt-2 font-medium">
-                    14 days free • $0 today • Cancel anytime
+                    {plan.id === "starter"
+                      ? "14-day free trial on Starter • $0 today"
+                      : "7-day pilot with money-back guarantee • $0 today"}
                   </p>
                 </div>
               </div>

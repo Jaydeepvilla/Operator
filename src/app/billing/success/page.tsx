@@ -17,6 +17,21 @@ function BillingSuccessContent() {
   const [attempts, setAttempts] = useState(0);
 
   useEffect(() => {
+    // Immediate mock confirmation for test mode evaluation
+    if (searchParams.get("provider") === "test_mode") {
+      const planParam = searchParams.get("plan") || "professional";
+      const isStarter = planParam === "starter";
+      const trialDays = isStarter ? 14 : 7;
+      setSubDetails({
+        planName: isStarter ? "Starter" : planParam === "business" ? "Business" : "Pro",
+        trialDays,
+        trialEndsAt: new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000).toISOString(),
+        state: "TRIALING",
+      });
+      setPollingStatus("confirmed");
+      return;
+    }
+
     let intervalId: NodeJS.Timeout;
 
     const checkStatus = async () => {
@@ -82,7 +97,9 @@ function BillingSuccessContent() {
             </div>
 
             <div>
-              <h1 className="text-2xl font-extrabold tracking-tight">Your 14-Day Trial is Active!</h1>
+              <h1 className="text-2xl font-extrabold tracking-tight">
+                {subDetails?.trialDays === 7 ? "Your 7-Day Pilot is Active!" : "Your 14-Day Trial is Active!"}
+              </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 Zero charges today. Your payment method has been verified and saved securely.
               </p>
@@ -95,7 +112,9 @@ function BillingSuccessContent() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Trial Duration:</span>
-                <span className="font-semibold text-emerald-400">14 Days Free</span>
+                <span className="font-semibold text-emerald-400">
+                  {subDetails?.trialDays === 7 ? "7-Day Pilot (Money-Back Guarantee)" : "14 Days Free"}
+                </span>
               </div>
               {subDetails?.trialEndsAt && (
                 <div className="flex justify-between">
