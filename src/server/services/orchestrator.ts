@@ -53,36 +53,60 @@ export interface OrchestratorResult {
   isEscalated: boolean;
 }
 
+function formatWhatsAppTime(t: string): string {
+  if (!t) return "";
+  const parts = t.split(":");
+  const h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1] || "0", 10);
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  const ampm = h >= 12 ? "PM" : "AM";
+  return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
+}
+
 // Dialog slot selection parsing helper
 function parseSlotSelection(message: string, suggestedSlots: any[]) {
-  const lower = message.toLowerCase();
-  for (const slot of suggestedSlots) {
-    const timeVal = slot.startTime; // e.g. "10:00"
-    const hour = parseInt(timeVal.split(":")[0], 10);
-    const hour12 = hour > 12 ? hour - 12 : hour;
-    const isPm = hour >= 12;
-    const amPmStr = isPm ? "pm" : "am";
+  if (!suggestedSlots || suggestedSlots.length === 0) return null;
+  const raw = message.trim().toLowerCase();
 
-    if (
-      lower.includes(timeVal) ||
-      lower.includes(`${hour12} ${amPmStr}`) ||
-      lower.includes(`${hour12}${amPmStr}`) ||
-      lower.includes(`${hour} ${amPmStr}`) ||
-      lower.includes(`${hour}${amPmStr}`)
-    ) {
-      return slot;
-    }
-  }
-  
-  // Direct fallback match if they just type the hour number
+  // Handle ordinal or numeric index selections: "1", "1st", "first", "2", "2nd", etc.
+  if (/^(1|1st|first|option 1|slot 1)$/i.test(raw) && suggestedSlots[0]) return suggestedSlots[0];
+  if (/^(2|2nd|second|option 2|slot 2)$/i.test(raw) && suggestedSlots[1]) return suggestedSlots[1];
+  if (/^(3|3rd|third|option 3|slot 3)$/i.test(raw) && suggestedSlots[2]) return suggestedSlots[2];
+
   for (const slot of suggestedSlots) {
-    const timeVal = slot.startTime;
-    const hourVal = timeVal.split(":")[0];
-    if (lower === hourVal || lower.trim() === parseInt(hourVal, 10).toString()) {
-      return slot;
+    const timeVal = slot.startTime; // e.g. "09:00"
+    const [hStr, mStr] = timeVal.split(":");
+    const h = parseInt(hStr, 10);
+    const m = parseInt(mStr || "0", 10);
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    const ampm = h >= 12 ? "pm" : "am";
+    const noLeadingZeroTime = `${h}:${m.toString().padStart(2, "0")}`; // e.g. "9:00"
+
+    const variants = [
+      timeVal, // "09:00"
+      noLeadingZeroTime, // "9:00"
+      `${timeVal} ${ampm}`, // "09:00 am"
+      `${timeVal}${ampm}`, // "09:00am"
+      `${noLeadingZeroTime} ${ampm}`, // "9:00 am"
+      `${noLeadingZeroTime}${ampm}`, // "9:00am"
+      `${h12} ${ampm}`, // "9 am"
+      `${h12}${ampm}`, // "9am"
+      `${h} ${ampm}`,
+      `${h}${ampm}`
+    ];
+
+    if (m === 0) {
+      variants.push(h.toString()); // "9"
+      variants.push(h12.toString()); // "9"
+    }
+
+    for (const v of variants) {
+      if (raw === v || raw.includes(v)) {
+        return slot;
+      }
     }
   }
-  
+
   return null;
 }
 
@@ -780,58 +804,117 @@ export const orchestratorService = {
         // Stage: Collecting Time Slots
         if (sessionState.bookingFlow.stage === "collecting_time") {
           const serviceId = sessionState.bookingFlow.serviceId;
-          const parseResult = parseDateFromMessage(userMessage, timezone);
 
-          if (!parseResult.success) {
-            let responseText = `Could you please specify which day and time you'd like to book for ${sessionState.bookingFlow.serviceName} (e.g. 'tomorrow', 'next Friday at 2 PM', or 'August 20')?`;
-            if (parseResult.code === "INVALID_DATE" || parseResult.code === "INVALID_TIME") {
-              responseText = "That date doesn't exist on the calendar. Could you please specify a valid date (like 'tomorrow' or 'next Friday')?";
-            } else if (parseResult.suggestedClarification) {
-              responseText = parseResult.suggestedClarification;
-            }
-
-            const dynamicActions = actionEngine.determineNextBestActions(business, {
-              intent: "booking",
-              activeEntity: { type: "service", id: serviceId, name: sessionState.bookingFlow.serviceName },
-              lastUserMessage: userMessage,
-            });
-
-            await messagesRepository.create({
-              organizationId,
-              conversationId: activeConversationId,
-              sender: "assistant",
-              content: responseText,
-              intentDetected: "booking",
-              confidenceScore: "0.95",
-            });
-            sessionState.conversationContext.lastIntent = "booking";
-            sessionState.conversationContext.lastAssistantMessage = responseText;
-            await sessionsRepository.upsert({ organizationId, conversationId: activeConversationId, state: sessionState });
-            return {
-              conversationId: activeConversationId,
-              assistantMessage: responseText,
-              citations: [],
-              intent: "booking",
-              confidence: 0.95,
-              entities: { service: sessionState.bookingFlow.serviceName },
-              actions: dynamicActions,
-              isEscalated: false,
-            };
+          // 1. If we ALREADY suggested slots on a chosen date in the previous turn,
+          // check if user is selecting one of those slots FIRST!
+          let parsedSelection = null;
+          if (sessionState.bookingFlow.suggestedSlots && sessionState.bookingFlow.suggestedSlots.length > 0) {
+            parsedSelection = parseSlotSelection(userMessage, sessionState.bookingFlow.suggestedSlots);
           }
 
-          const targetDate = parseResult.date;
-          const dateStr = parseResult.isoDate;
-          const dateLabel = parseResult.interpretation;
-          sessionState.bookingFlow.targetDate = dateStr;
-          sessionState.bookingFlow.dateLabel = dateLabel;
+          let dateLabel = sessionState.bookingFlow.dateLabel;
+          let dateStr = sessionState.bookingFlow.targetDate;
 
-          const openSlots = await availabilityService.getAvailableSlots(
-            organizationId,
-            serviceId,
-            dateStr
-          );
+          // If no existing slot was matched, parse the message as a date/time
+          if (!parsedSelection) {
+            const parseResult = parseDateFromMessage(userMessage, timezone);
 
-          const parsedSelection = parseSlotSelection(userMessage, openSlots);
+            if (!parseResult.success) {
+              let responseText = `Could you please specify which day or time you'd like to book for *${sessionState.bookingFlow.serviceName}* (e.g. *tomorrow*, *next Friday at 2 PM*, or *November 6*)?`;
+              if (parseResult.code === "INVALID_DATE" || parseResult.code === "INVALID_TIME") {
+                responseText = "That date doesn't exist on the calendar. Could you please specify a valid date (like *tomorrow* or *next Friday*)?";
+              } else if (parseResult.suggestedClarification) {
+                responseText = parseResult.suggestedClarification;
+              }
+
+              const dynamicActions = actionEngine.determineNextBestActions(business, {
+                intent: "booking",
+                activeEntity: { type: "service", id: serviceId, name: sessionState.bookingFlow.serviceName },
+                lastUserMessage: userMessage,
+              });
+
+              await messagesRepository.create({
+                organizationId,
+                conversationId: activeConversationId,
+                sender: "assistant",
+                content: responseText,
+                intentDetected: "booking",
+                confidenceScore: "0.95",
+              });
+              sessionState.conversationContext.lastIntent = "booking";
+              sessionState.conversationContext.lastAssistantMessage = responseText;
+              await sessionsRepository.upsert({ organizationId, conversationId: activeConversationId, state: sessionState });
+              return {
+                conversationId: activeConversationId,
+                assistantMessage: responseText,
+                citations: [],
+                intent: "booking",
+                confidence: 0.95,
+                entities: { service: sessionState.bookingFlow.serviceName },
+                actions: dynamicActions,
+                isEscalated: false,
+              };
+            }
+
+            dateStr = parseResult.isoDate;
+            dateLabel = parseResult.interpretation;
+            sessionState.bookingFlow.targetDate = dateStr;
+            sessionState.bookingFlow.dateLabel = dateLabel;
+
+            const openSlots = await availabilityService.getAvailableSlots(
+              organizationId,
+              serviceId,
+              dateStr
+            );
+
+            parsedSelection = parseSlotSelection(userMessage, openSlots);
+
+            if (!parsedSelection) {
+              sessionState.bookingFlow.suggestedSlots = openSlots;
+              
+              let responseText = "";
+              if (openSlots.length > 0) {
+                const slotOptions = openSlots.slice(0, 3).map((s: any, idx: number) => {
+                  const emojis = ["1️⃣", "2️⃣", "3️⃣"];
+                  return `${emojis[idx] || "•"} *${formatWhatsAppTime(s.startTime)}*`;
+                }).join("\n");
+
+                responseText = `🗓️ *Available Openings for ${dateLabel}*\nService: *${sessionState.bookingFlow.serviceName}*\n\nPlease reply with your preferred time:\n${slotOptions}\n\n_Or reply with any other time that works for you._`;
+              } else {
+                responseText = `We currently have no open slots for *${dateLabel}*. Would you like to check availability for another day?`;
+                sessionState.bookingFlow = null;
+                await escalationService.triggerEscalation(organizationId, activeConversationId, "unknown_info", "No slots available");
+              }
+
+              const dynamicActions = actionEngine.determineNextBestActions(business, {
+                intent: "booking",
+                activeEntity: { type: "service", id: serviceId, name: sessionState.bookingFlow?.serviceName },
+                lastUserMessage: userMessage,
+              });
+
+              await messagesRepository.create({
+                organizationId,
+                conversationId: activeConversationId,
+                sender: "assistant",
+                content: responseText,
+                intentDetected: "booking",
+                confidenceScore: "0.92",
+              });
+              sessionState.conversationContext.lastIntent = "booking";
+              sessionState.conversationContext.lastAssistantMessage = responseText;
+              await sessionsRepository.upsert({ organizationId, conversationId: activeConversationId, state: sessionState });
+              return {
+                conversationId: activeConversationId,
+                assistantMessage: responseText,
+                citations: [],
+                intent: "booking",
+                confidence: 0.92,
+                entities: { service: sessionState.bookingFlow?.serviceName },
+                actions: dynamicActions,
+                isEscalated: false,
+              };
+            }
+          }
 
           if (parsedSelection) {
             sessionState.bookingFlow.slot = parsedSelection;
@@ -839,7 +922,7 @@ export const orchestratorService = {
 
             if (!profile?.name) {
               sessionState.bookingFlow.stage = "collecting_name";
-              const responseText = "Perfect slot choice! May I please have your full name to reserve it?";
+              const responseText = `✅ *Slot Selected:* ${dateLabel || "Upcoming"} at *${formatWhatsAppTime(parsedSelection.startTime)}*\n\nMay I please have your *Full Name* to reserve this appointment?`;
               await messagesRepository.create({
                 organizationId,
                 conversationId: activeConversationId,
@@ -862,7 +945,7 @@ export const orchestratorService = {
               };
             } else if (!profile.email) {
               sessionState.bookingFlow.stage = "collecting_email";
-              const responseText = `Thank you, ${profile.name}! What is your email address for the confirmation details?`;
+              const responseText = `✅ *Slot Selected:* ${dateLabel || "Upcoming"} at *${formatWhatsAppTime(parsedSelection.startTime)}*\n\nThank you, *${profile.name}*! What is your *Email Address* so we can send your calendar invitation and confirmation?`;
               await messagesRepository.create({
                 organizationId,
                 conversationId: activeConversationId,
@@ -885,7 +968,7 @@ export const orchestratorService = {
               };
             } else if (!profile.phone) {
               sessionState.bookingFlow.stage = "collecting_phone";
-              const responseText = `Great! What is the best phone number to reach you at?`;
+              const responseText = `Great! What is the best *Phone Number* to reach you at?`;
               await messagesRepository.create({
                 organizationId,
                 conversationId: activeConversationId,
@@ -909,46 +992,6 @@ export const orchestratorService = {
             } else {
               sessionState.bookingFlow.stage = "confirming";
             }
-          } else {
-            sessionState.bookingFlow.suggestedSlots = openSlots;
-            
-            let responseText = `Let's schedule your ${sessionState.bookingFlow.serviceName}. `;
-            if (openSlots.length > 0) {
-              const listStr = openSlots.slice(0, 3).map((s) => s.startTime).join(", ");
-              responseText += `We have openings for ${dateLabel} at: ${listStr}. Do any of these work for you?`;
-            } else {
-              responseText += `We have no open slots for ${dateLabel}. I will flag this for our team so they can find an alternative time for you.`;
-              sessionState.bookingFlow = null;
-              await escalationService.triggerEscalation(organizationId, activeConversationId, "unknown_info", "No slots available");
-            }
-
-            const dynamicActions = actionEngine.determineNextBestActions(business, {
-              intent: "booking",
-              activeEntity: { type: "service", id: serviceId, name: sessionState.bookingFlow?.serviceName },
-              lastUserMessage: userMessage,
-            });
-
-            await messagesRepository.create({
-              organizationId,
-              conversationId: activeConversationId,
-              sender: "assistant",
-              content: responseText,
-              intentDetected: "booking",
-              confidenceScore: "0.92",
-            });
-            sessionState.conversationContext.lastIntent = "booking";
-            sessionState.conversationContext.lastAssistantMessage = responseText;
-            await sessionsRepository.upsert({ organizationId, conversationId: activeConversationId, state: sessionState });
-            return {
-              conversationId: activeConversationId,
-              assistantMessage: responseText,
-              citations: [],
-              intent: "booking",
-              confidence: 0.92,
-              entities: { service: sessionState.bookingFlow?.serviceName },
-              actions: dynamicActions,
-              isEscalated: false,
-            };
           }
         }
 
@@ -1128,10 +1171,11 @@ export const orchestratorService = {
           const bookedServiceName = sessionState.bookingFlow?.serviceName || "Service";
           sessionState.bookingFlow = null;
 
-          const isPaymentRequired = appointment?.status === "pending_payment" && appointment?.payment?.paymentLink;
+          const isPaymentRequired = Boolean(appointment?.status === "pending_payment" && appointment?.payment?.paymentLink);
+          const timeFormatted = formatWhatsAppTime(slot.startTime);
           const responseText = isPaymentRequired
-            ? `I have reserved your appointment for ${dateLabel} at ${slot.startTime} with ${slot.staffName}. To complete and confirm your booking, please finalize your deposit securely here: ${appointment.payment.paymentLink}. We look forward to seeing you at ${business.name}!`
-            : `Wonderful! I have booked your appointment for ${dateLabel} at ${slot.startTime} with ${slot.staffName}. A confirmation has been recorded. We look forward to seeing you at ${business.name}!`;
+            ? `🎉 *Appointment Reserved!*\n\n📋 *Booking Summary:*\n• *Service:* ${bookedServiceName}\n• *Date & Time:* ${dateLabel} at *${timeFormatted}*\n• *Specialist:* ${slot.staffName || "Team Nexx"}\n\n💳 *Next Step — Secure Deposit:*\nPlease finalize your reservation securely via this link:\n🔗 ${appointment.payment.paymentLink}\n\n_We look forward to welcoming you at ${business.name}!_`
+            : `🎉 *Appointment Confirmed!*\n\n📋 *Booking Summary:*\n• *Service:* ${bookedServiceName}\n• *Date & Time:* ${dateLabel} at *${timeFormatted}*\n• *Specialist:* ${slot.staffName || "Team Nexx"}\n• *Status:* Confirmed\n\n📲 _A confirmation reminder has been recorded. Feel free to reply to this chat if you ever need to reschedule!_`;
           
           const dynamicActions = actionEngine.determineNextBestActions(business, {
             intent: isPaymentRequired ? "booking" : "cancel",
