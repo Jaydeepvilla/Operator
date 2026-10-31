@@ -29,6 +29,7 @@ import crypto from "crypto";
 import { notificationService } from "../services/notification";
 import { auditService } from "../services/audit";
 import { loginSchema, registrationSchema, forgotPasswordSchema, resetPasswordSchema } from "@/lib/validators";
+import { validatePlanIntent, getPlanIntentFromCookies, setPlanIntentCookie, persistPendingCheckout } from "@/lib/billing/plan-intent";
 
 async function getSafeRequestMetadata() {
   try {
@@ -274,6 +275,7 @@ export async function registerAction(input: any) {
     // 6. If SMTP is not configured, auto-verify and create session directly
     const isDirectAuth = !process.env.SMTP_USER;
     if (isDirectAuth) {
+      let createdOrgId: string | undefined;
       // Auto-verify + create placeholder workspace atomically
       await db.transaction(async (tx) => {
         await tx.update(users).set({ isVerified: true }).where(eq(users.id, userId));
@@ -294,6 +296,8 @@ export async function registerAction(input: any) {
           })
           .returning();
 
+        createdOrgId = org.id;
+
         await tx
           .insert(memberships)
           .values({
@@ -303,10 +307,27 @@ export async function registerAction(input: any) {
           });
       });
 
+      // Check plan intent from input or cookies
+      const cookieIntent = await getPlanIntentFromCookies();
+      const rawIntent = parsed.data.planIntent;
+      const resolvedPlan = validatePlanIntent(rawIntent?.plan, rawIntent?.interval, rawIntent?.currency) || cookieIntent;
+
+      if (resolvedPlan) {
+        await setPlanIntentCookie(resolvedPlan);
+        await persistPendingCheckout({
+          userId,
+          organizationId: createdOrgId,
+          planId: resolvedPlan.planId,
+          interval: resolvedPlan.interval,
+          currency: resolvedPlan.currency,
+        });
+      }
+
       await createSession(userId, userAgent, ipAddress, true);
 
       // Use authoritative routing instead of hardcoded redirect
       const resolution = await resolveUserDestination(userId);
+      const destination = resolvedPlan ? "/billing/checkout" : resolution.destination;
 
       await auditService.log({
         userId,
@@ -320,9 +341,23 @@ export async function registerAction(input: any) {
       return {
         success: true,
         requiresVerification: false,
-        destination: resolution.destination,
+        destination,
         isCompleted: resolution.hasVerifiedOrg,
       };
+    }
+
+    // Check plan intent from input or cookies for verified path
+    const cookieIntent = await getPlanIntentFromCookies();
+    const rawIntent = parsed.data.planIntent;
+    const resolvedPlan = validatePlanIntent(rawIntent?.plan, rawIntent?.interval, rawIntent?.currency) || cookieIntent;
+    if (resolvedPlan) {
+      await setPlanIntentCookie(resolvedPlan);
+      await persistPendingCheckout({
+        userId,
+        planId: resolvedPlan.planId,
+        interval: resolvedPlan.interval,
+        currency: resolvedPlan.currency,
+      });
     }
 
     // 7. Generate verification token

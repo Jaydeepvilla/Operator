@@ -23,7 +23,6 @@ import {
 import { Button } from "@/components/shared/button";
 import { SessionAwareCta } from "@/components/marketing/session-aware-cta";
 import { cn } from "@/components/shared/utils";
-import { RazorpayCheckoutButton } from "@/components/billing/razorpay-checkout-button";
 import {
   REGIONAL_CONFIGS,
   type SupportedCurrency,
@@ -50,9 +49,9 @@ const COMPARISON_ROWS: ComparisonRow[] = [
   },
   {
     name: "Appointment booking & calendar sync",
-    starter: "1 calendar",
-    pro: "Up to 3 staff calendars",
-    business: "Up to 10 staff calendars",
+    starter: "1 business calendar",
+    pro: "1 business calendar",
+    business: "1 business calendar",
   },
   { name: "Locations", starter: "1", pro: "1", business: "Up to 5" },
   { name: "Lead capture & shared inbox", starter: true, pro: true, business: true },
@@ -64,14 +63,14 @@ const COMPARISON_ROWS: ComparisonRow[] = [
     pro: true,
     business: true,
   },
-  { name: "Missed-call text-back", starter: false, pro: true, business: true },
+  { name: "Missed-call text-back", starter: false, pro: "Coming soon", business: "Coming soon" },
   { name: "Call recordings & transcripts", starter: false, pro: true, business: true },
   { name: "Transfer calls to a human phone number", starter: false, pro: true, business: true },
   {
     name: "SMS & WhatsApp reminders, no-show recovery, waitlist",
     starter: false,
-    pro: true,
-    business: true,
+    pro: "Reminders (Recovery coming soon)",
+    business: "Reminders (Recovery coming soon)",
   },
   { name: "Deposits & payment links", starter: false, pro: true, business: true },
   {
@@ -80,7 +79,7 @@ const COMPARISON_ROWS: ComparisonRow[] = [
     pro: true,
     business: "Yes, with CSV export",
   },
-  { name: "CRM and webhook integrations", starter: false, pro: false, business: true },
+  { name: "CRM and webhook integrations", starter: false, pro: false, business: "Coming soon" },
   {
     name: "Custom call routing & business-hours rules",
     starter: false,
@@ -200,7 +199,7 @@ export default function PricingPage() {
 
             {/* Reassuring Line Under Buttons */}
             <p className="text-caption text-muted-foreground/80 font-medium max-w-lg mx-auto">
-              14-day free trial on Starter. 7-day pilot on Pro and Business with a money-back guarantee.
+              14-day free trial ($0 today) on all plans. Payment method saved to start. Cancel anytime before trial ends.
             </p>
 
             {/* Monthly / Annual Billing Toggle */}
@@ -314,6 +313,9 @@ export default function PricingPage() {
                           Billed monthly · Cancel anytime
                         </div>
                       )}
+                      <div className="text-[11px] text-muted-foreground/75 mt-0.5">
+                        + applicable taxes (excl. GST/VAT)
+                      </div>
                     </div>
 
                     {/* Card Copy Summary */}
@@ -356,8 +358,8 @@ export default function PricingPage() {
                         <Check className="h-4 w-4 text-primary shrink-0" />
                         <span>
                           {plan.limits.calendars === 1
-                            ? "1 calendar integration"
-                            : `Up to ${plan.limits.calendars} staff calendars`}
+                            ? "1 business calendar"
+                            : `Up to ${plan.limits.calendars} business calendars`}
                         </span>
                       </div>
 
@@ -385,32 +387,15 @@ export default function PricingPage() {
                           : "border border-border/80 text-foreground hover:bg-muted/40"
                       )}
                     >
-                      <Link href="/sign-up">
-                        {plan.id === "starter" ? "Start 14-Day Free Trial" : "Start 7-Day Pilot"}
+                      <Link
+                        href={`/sign-up?plan=${plan.id}&interval=${yearly ? "yearly" : "monthly"}&currency=${selectedCurrency}`}
+                      >
+                        Start 14-Day Free Trial
                       </Link>
                     </Button>
 
-                    {/* Instant Razorpay Checkout (Available on all currencies, especially INR) */}
-                    {selectedCurrency === "INR" && (
-                      <RazorpayCheckoutButton
-                        amountInPaise={displayPrice * 100}
-                        planName={`${plan.name} Plan (${yearly ? "Annual" : "Monthly"})`}
-                        description={`Subscription for Operator AI ${plan.name} Plan`}
-                        variant="ghost"
-                        size="sm"
-                        className="w-full text-caption text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all"
-                        onSuccess={(payment) => {
-                          window.location.href = `/onboarding?plan=${plan.id}&payment_id=${payment.payment_id}`;
-                        }}
-                      >
-                        <span className="flex items-center justify-center gap-1.5 font-medium">
-                          Pay with UPI / Cards (₹{formattedPrice})
-                        </span>
-                      </RazorpayCheckoutButton>
-                    )}
-
                     <p className="text-center text-[12px] text-muted-foreground/75 font-medium">
-                      {plan.trialNote}
+                      14 days free • $0 today • Cancel anytime
                     </p>
                   </div>
                 </div>
@@ -434,7 +419,11 @@ export default function PricingPage() {
               </div>
             </div>
             <Button asChild size="sm" variant="outline" className="font-semibold shrink-0">
-              <Link href="/contact?offer=launch30">Claim Launch Offer</Link>
+              <Link
+                href={`/sign-up?plan=professional&interval=${yearly ? "yearly" : "monthly"}&currency=${selectedCurrency}&offer=launch30`}
+              >
+                Claim Launch Offer
+              </Link>
             </Button>
           </div>
         </section>

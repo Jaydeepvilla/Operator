@@ -57,6 +57,12 @@ export const registrationSchema = z.object({
   acceptTerms: z.boolean().refine((val) => val === true, "Accept the Terms of Service to continue"),
   acceptPrivacy: z.boolean().refine((val) => val === true, "Accept the Privacy Policy to continue"),
   marketingConsent: z.boolean().optional().default(false),
+  planIntent: z.object({
+    plan: z.string().optional(),
+    interval: z.string().optional(),
+    currency: z.string().optional(),
+    offer: z.string().optional(),
+  }).optional(),
 });
 
 export const forgotPasswordSchema = z.object({

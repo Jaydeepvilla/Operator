@@ -108,6 +108,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (subStatus.isRestricted || subStatus.state === "PAUSED") {
+      console.warn(`[Voice Webhook Inbound] Organization ${orgId} is restricted/paused.`);
+      return new NextResponse(
+        `<Response><Say>Phone answering is currently suspended. Please update your account billing to resume service. Goodbye.</Say><Hangup/></Response>`,
+        { status: 403, headers: { "Content-Type": "text/xml" } }
+      );
+    }
+
+    // P4 / P6 Trial Voice limit enforcement: 30 minutes cap during trial
+    if (subStatus.isTrial && ((subStatus.usage?.voiceMinutes?.current || 0) >= 30 || (subStatus.trialVoiceMinutesUsed || 0) >= 30)) {
+      console.warn(`[Voice Webhook Inbound] Organization ${orgId} reached trial voice cap (30 minutes).`);
+      return new NextResponse(
+        `<Response><Say>You have reached the 30-minute voice limit for your trial. Please activate your full subscription to continue. Goodbye.</Say><Hangup/></Response>`,
+        { status: 403, headers: { "Content-Type": "text/xml" } }
+      );
+    }
+
     // Evaluate Routing Actions
     const routing = await voiceRouting.getCallRoutingAction(orgId);
     let xmlResponse = "";

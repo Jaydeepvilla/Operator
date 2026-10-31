@@ -259,6 +259,21 @@ export function SignInForm() {
     }
   }, [urlError]);
 
+  // Persist plan intent if arriving via pricing selection
+  React.useEffect(() => {
+    const plan = searchParams.get("plan");
+    const interval = searchParams.get("interval");
+    const currency = searchParams.get("currency");
+    if (plan) {
+      fetch(
+        `/api/billing/plan-intent?plan=${encodeURIComponent(plan)}&interval=${encodeURIComponent(
+          interval || "monthly"
+        )}&currency=${encodeURIComponent(currency || "")}`,
+        { method: "POST" }
+      ).catch(() => {});
+    }
+  }, [searchParams]);
+
   // Email validation state
   const [emailTouched, setEmailTouched] = React.useState(false);
   const emailFormatOk = emailTouched && isEmailFormat(email);
@@ -466,7 +481,16 @@ export function SignUpForm() {
   const toast = useToast();
 
   const handleGoogleClick = () => {
-    window.location.href = "/api/auth/login/google?intent=signup";
+    const plan = searchParams.get("plan");
+    const interval = searchParams.get("interval");
+    const currency = searchParams.get("currency");
+    const offer = searchParams.get("offer");
+    const params = new URLSearchParams({ intent: "signup" });
+    if (plan) params.set("plan", plan);
+    if (interval) params.set("interval", interval);
+    if (currency) params.set("currency", currency);
+    if (offer) params.set("offer", offer);
+    window.location.href = `/api/auth/login/google?${params.toString()}`;
   };
 
   const handleAppleClick = () => {
@@ -491,6 +515,21 @@ export function SignUpForm() {
       setErrorMsg(urlError);
     }
   }, [urlError]);
+
+  // Persist plan intent if arriving via pricing selection
+  React.useEffect(() => {
+    const plan = searchParams.get("plan");
+    const interval = searchParams.get("interval");
+    const currency = searchParams.get("currency");
+    if (plan) {
+      fetch(
+        `/api/billing/plan-intent?plan=${encodeURIComponent(plan)}&interval=${encodeURIComponent(
+          interval || "monthly"
+        )}&currency=${encodeURIComponent(currency || "")}`,
+        { method: "POST" }
+      ).catch(() => {});
+    }
+  }, [searchParams]);
 
   // Live email validation
   const [emailChecking, setEmailChecking] = React.useState(false);
@@ -573,6 +612,10 @@ export function SignUpForm() {
 
     setIsLoading(true);
     try {
+      const plan = searchParams.get("plan");
+      const interval = searchParams.get("interval");
+      const currency = searchParams.get("currency");
+      const offer = searchParams.get("offer");
       const result = await registerAction({
         firstName,
         lastName,
@@ -582,6 +625,7 @@ export function SignUpForm() {
         acceptTerms,
         acceptPrivacy,
         marketingConsent,
+        planIntent: plan ? { plan, interval, currency, offer } : undefined,
       });
       if (result.success) {
         if (result.requiresVerification) {

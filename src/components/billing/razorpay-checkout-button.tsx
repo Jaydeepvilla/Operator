@@ -133,8 +133,10 @@ export function RazorpayCheckoutButton({
         throw new Error(orderData.error || "Failed to create order on server.");
       }
 
-      const keyId =
-        process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_TsrjKrqgpr3af8";
+      const keyId = orderData.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+      if (!keyId) {
+        throw new Error("Razorpay public key is missing on the client. Cannot initialize checkout.");
+      }
 
       // 3. Configure Razorpay Standard Checkout modal options
       const options = {

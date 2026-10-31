@@ -243,7 +243,17 @@ export class RouteDecisionEngine {
 
     // ── 6. SUBSCRIPTION / BILLING BLOCKER ───────────────────────────────────
     const subStatus = context.subscription.status;
-    const isSuspendedOrExpired = subStatus === "SUSPENDED" || subStatus === "EXPIRED";
+    const hasMethod = context.subscription.hasPaymentMethod;
+    const isNoPlanOrPending =
+      subStatus === "NO_PLAN" ||
+      subStatus === "CHECKOUT_PENDING" ||
+      subStatus === "NONE" ||
+      (subStatus === "TRIALING" && !hasMethod);
+    const isSuspendedOrExpired =
+      subStatus === "SUSPENDED" ||
+      subStatus === "EXPIRED" ||
+      subStatus === "PAUSED" ||
+      subStatus === "CANCELED";
     const graceRemaining = context.subscription.gracePeriodDaysRemaining;
     const isGraceExpired =
       (subStatus === "PAYMENT_FAILED" || subStatus === "PAST_DUE") &&
@@ -251,9 +261,39 @@ export class RouteDecisionEngine {
       graceRemaining !== undefined &&
       graceRemaining <= 0;
 
+    const allowedBillingRoutes = [
+      "/billing",
+      "/billing/checkout",
+      "/billing/choose-plan",
+      "/billing/success",
+      "/billing/reactivate",
+      "/settings/account",
+    ];
+    const isAtAllowedBilling = allowedBillingRoutes.some((r) => requestedBase.startsWith(r));
+
+    if (isNoPlanOrPending) {
+      if (isAtAllowedBilling) {
+        decision = {
+          destination: requested,
+          reason: "ALREADY_AT_DESTINATION",
+          priority: "BILLING_BLOCKER",
+          priorityLevel: ROUTE_DECISION_PRIORITY.BILLING_BLOCKER,
+          replace: false,
+        };
+      } else {
+        decision = {
+          destination: "/billing/checkout",
+          reason: "NO_ACTIVE_PLAN_OR_TRIAL",
+          priority: "BILLING_BLOCKER",
+          priorityLevel: ROUTE_DECISION_PRIORITY.BILLING_BLOCKER,
+          replace: true,
+        };
+      }
+      return RouteDecisionEngine.finalize(context, decision);
+    }
+
     if (isSuspendedOrExpired || isGraceExpired) {
-      const allowedBillingRoutes = ["/billing", "/billing/reactivate", "/settings/account"];
-      if (allowedBillingRoutes.some((r) => requestedBase.startsWith(r))) {
+      if (isAtAllowedBilling) {
         decision = {
           destination: requested,
           reason: "ALREADY_AT_DESTINATION",

@@ -157,9 +157,9 @@ function isValidSecretKey(key?: string | null): boolean {
   if (
     trimmed.includes("your_") ||
     trimmed.includes("placeholder") ||
-    trimmed.includes("sk_test_xxx") ||
-    trimmed.includes("sk_live_xxx") ||
-    trimmed === "sk_test_..."
+    trimmed.includes("dummy") ||
+    trimmed.endsWith("_xxx") ||
+    trimmed.endsWith("...")
   ) {
     return false;
   }
@@ -317,7 +317,7 @@ export async function getPaymentProviderConfig(
     const secretKey = process.env.STRIPE_SECRET_KEY;
     const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || process.env.STRIPE_PUBLISHABLE_KEY;
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    const isSandbox = secretKey?.startsWith("sk_test_") ?? true;
+    const isSandbox = !secretKey?.includes("_live_");
     const environment = isSandbox ? "sandbox" : "production";
 
     if (!secretKey) {

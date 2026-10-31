@@ -49,7 +49,7 @@ test.describe('Operator Phase 3 — Billing & Webhook Reliability Suite', () => 
     const payload = {
       event: 'order.paid',
       order_id: `order_${Date.now()}`,
-      amount: 4900,
+      amount: 7900,
       currency: 'USD',
       notes: { organizationId: testOrgId },
     };
@@ -167,7 +167,7 @@ test.describe('Operator Phase 3 — Billing & Webhook Reliability Suite', () => 
       order: {
         entity: {
           id: `order_${Date.now()}`,
-          amount: 4900,
+          amount: 7900,
           currency: 'USD',
           notes: { organizationId: unknownOrgId, planId: 'starter' },
         }
@@ -245,7 +245,7 @@ test.describe('Operator Phase 3 — Billing & Webhook Reliability Suite', () => 
       provider: 'razorpay',
       providerEventId: authorizedEventId,
       eventType: 'payment.authorized',
-      payload: { id: paymentEntityId, amount: 4900, status: 'authorized' },
+      payload: { id: paymentEntityId, amount: 7900, status: 'authorized' },
     });
 
     const capturedResult = await webhookProcessor.processEvent({
@@ -257,7 +257,7 @@ test.describe('Operator Phase 3 — Billing & Webhook Reliability Suite', () => 
           payment: {
             entity: {
               id: paymentEntityId,
-              amount: 4900,
+              amount: 7900,
               currency: 'USD',
               notes: { organizationId: testOrgId, planId: 'starter' },
             }

@@ -1,39 +1,52 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRazorpayClient } from "@/lib/razorpay";
+import { priceBookService } from "@/server/services/billing/price-book-service";
+import { normalizePlanId } from "@/lib/billing/catalog";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    let { amount, currency = "INR", receipt, notes } = body;
+    const { planId = "starter", interval = "monthly", receipt, notes = {} } = body;
 
-    const keyId = process.env.RAZORPAY_KEY_ID || "rzp_test_TsrjKrqgpr3af8";
-    const keySecret = process.env.RAZORPAY_KEY_SECRET || "6vwhav2pRm3Zs0qkkjrOuM5a";
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
     if (!keyId || !keySecret) {
       return NextResponse.json(
-        { error: "Razorpay credentials are not configured on the server." },
-        { status: 401 }
+        { error: "Razorpay payment provider is not configured on the server." },
+        { status: 503 }
       );
     }
 
-    // Validate amount
-    const parsedAmount = Number(amount);
-    if (isNaN(parsedAmount) || parsedAmount < 100) {
+    const normPlan = normalizePlanId(planId);
+    const normInterval = interval === "yearly" ? "year" : "month";
+
+    // Strictly resolve price from authoritative published price book - IGNORE any client-supplied amount
+    const priceInfo = await priceBookService.getPublishedPrice({
+      currency: "INR",
+      plan: normPlan,
+      interval: normInterval,
+    });
+
+    const parsedAmount = priceInfo.amountMinor;
+    if (parsedAmount < 100) {
       return NextResponse.json(
-        {
-          error: "Invalid amount. Minimum amount must be at least 100 paise (₹1.00).",
-        },
+        { error: "Invalid price resolution from published price book." },
         { status: 400 }
       );
     }
 
     const razorpay = getRazorpayClient();
-
     const orderOptions = {
-      amount: Math.round(parsedAmount),
-      currency: (currency || "INR").toUpperCase(),
+      amount: parsedAmount,
+      currency: "INR",
       receipt: receipt || `rcpt_${Date.now()}`,
-      notes: notes || {},
+      notes: {
+        ...notes,
+        planId: normPlan,
+        interval: normInterval,
+        authoritativePriceMinor: String(parsedAmount),
+      },
     };
 
     const order = await razorpay.orders.create(orderOptions);
@@ -45,22 +58,14 @@ export async function POST(req: NextRequest) {
       currency: order.currency,
       receipt: order.receipt,
       status: order.status,
+      keyId,
     });
   } catch (error: any) {
-    console.error("Razorpay order creation error:", error);
-
+    console.error("[Create Order] Order creation error:", error?.message);
     const statusCode = error?.statusCode || error?.status || 500;
-    const errorMessage =
-      error?.error?.description ||
-      error?.message ||
-      "Failed to create Razorpay order.";
-
     return NextResponse.json(
-      {
-        error: errorMessage,
-        details: error?.error || undefined,
-      },
-      { status: statusCode === 401 ? 401 : 500 }
+      { error: error?.message || "Failed to create order on server." },
+      { status: statusCode }
     );
   }
 }

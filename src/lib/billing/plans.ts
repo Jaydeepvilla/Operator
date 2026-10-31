@@ -1,23 +1,38 @@
 /**
- * Operator Dynamic Plan Catalog
- * Single Source of Truth for Plan Configurations, Pricing, Limits, and Entitlements.
- * Never hardcode plan names or limits elsewhere in the application.
+ * Operator Plan Configurations & Regional Pricing
+ * Bridges to the Authoritative Catalog in src/lib/billing/catalog.ts
  *
- * Updated with exact regional pricing (US $, UK £, India ₹),
- * telephony rules (Phone calls start at Pro), and entitlement caps.
+ * Single Source of Truth for Plan Configurations, Pricing, Limits, and Entitlements.
  */
 
-export type PlanId = "starter" | "professional" | "business" | string;
+import {
+  PlanId,
+  SupportedCurrency,
+  BillingInterval,
+  MASTER_PLANS,
+  REGION_CONFIGS,
+  computeRegionalPrices,
+  formatMoney,
+  normalizePlanId,
+  isAllowedPlanId,
+  isAllowedInterval,
+  BASE_PRICES_USD,
+} from "./catalog";
+
+export type { PlanId, SupportedCurrency, BillingInterval };
+export { formatMoney, normalizePlanId, isAllowedPlanId, isAllowedInterval };
 
 export type UsageLimitBehavior = "BLOCK" | "SOFT_LIMIT" | "OVERAGE" | "UPGRADE_REQUIRED";
 
 export interface PlanLimits {
   conversations: number;
   voiceMinutes: number; // Regional minutes applied via getLocalizedPlan
-  calendars: number | null; // null represents unlimited calendars
+  trialVoiceMinutes: number; // 30 min cap during trial
+  calendars: number | null;
   knowledgeArticles: number;
   teamMembers: number;
   locations: number;
+  support: string;
 }
 
 export interface PlanFeatures {
@@ -27,14 +42,14 @@ export interface PlanFeatures {
   whatsapp: boolean;
   instagramFacebook: boolean;
   voiceAI: boolean;
-  missedCallTextBack: boolean;
+  missedCallTextBack: boolean; // Coming soon (Honesty Rule)
   callRecordingsTranscripts: boolean;
   callTransfer: boolean;
   smsWhatsappReminders: boolean;
   depositsPaymentLinks: boolean;
-  roiDashboard: boolean;
+  roiDashboard: boolean | "basic" | "full" | "full_csv";
   advancedLeadQualification: boolean;
-  crmWebhookIntegrations: boolean;
+  crmWebhookIntegrations: boolean; // Coming soon (Honesty Rule)
   customCallRouting: boolean;
   teamRolesAuditLog: boolean;
   dedicatedOnboarding: boolean;
@@ -51,7 +66,8 @@ export interface PlanConfig {
   cardCopy: string;
   price: number; // Monthly price in active currency
   monthlyPrice: number;
-  yearlyPrice: number; // Discounted monthly rate when billed annually (10 months for 12)
+  yearlyPrice: number; // Discounted monthly rate or yearly rate
+  yearlyTotal: number;
   currency: string;
   currencySymbol: string;
   trialDays: number;
@@ -64,94 +80,77 @@ export interface PlanConfig {
 }
 
 export const SUPPORTED_BILLING_CURRENCIES = ["USD", "GBP", "INR", "EUR"] as const;
-export type SupportedCurrency = (typeof SUPPORTED_BILLING_CURRENCIES)[number];
 
-export interface RegionalRules {
-  currency: SupportedCurrency;
-  symbol: string;
-  marketName: string;
-  headlineHero: string;
-  extraVoiceMinute: string;
-  extraConversations: string;
-  setupFee: string;
-  plans: Record<
-    "starter" | "professional" | "business",
-    {
-      price: number;
-      monthlyPrice: number;
-      yearlyPrice: number; // Pay for 10 months, get 12
-      voiceMinutes: number;
-    }
-  >;
-}
-
-export const REGIONAL_CONFIGS: Record<SupportedCurrency, RegionalRules> = {
+// Base published rates for quick static resolution (matches P3 exactly)
+export const REGIONAL_CONFIGS_STATIC = {
   USD: {
     currency: "USD",
     symbol: "$",
+    locale: "en-US",
     marketName: "United States",
     headlineHero: "Stop losing customers to voicemail.",
     extraVoiceMinute: "$0.45",
     extraConversations: "$25",
     setupFee: "$149",
     plans: {
-      starter: { price: 79, monthlyPrice: 79, yearlyPrice: 66, voiceMinutes: 0 },
-      professional: { price: 199, monthlyPrice: 199, yearlyPrice: 166, voiceMinutes: 250 },
-      business: { price: 399, monthlyPrice: 399, yearlyPrice: 333, voiceMinutes: 600 },
+      starter: { price: 79, monthlyPrice: 79, yearlyPrice: 66, yearlyTotal: 790, voiceMinutes: 0 },
+      professional: { price: 199, monthlyPrice: 199, yearlyPrice: 166, yearlyTotal: 1990, voiceMinutes: 250 },
+      business: { price: 399, monthlyPrice: 399, yearlyPrice: 333, yearlyTotal: 3990, voiceMinutes: 600 },
     },
   },
   GBP: {
     currency: "GBP",
     symbol: "£",
+    locale: "en-GB",
     marketName: "United Kingdom",
     headlineHero: "Stop losing customers to voicemail.",
     extraVoiceMinute: "£0.35",
-    extraConversations: "£20",
-    setupFee: "£119",
+    extraConversations: "£19",
+    setupFee: "£109",
     plans: {
-      starter: { price: 59, monthlyPrice: 59, yearlyPrice: 49, voiceMinutes: 0 },
-      professional: { price: 159, monthlyPrice: 159, yearlyPrice: 133, voiceMinutes: 250 },
-      business: { price: 319, monthlyPrice: 319, yearlyPrice: 266, voiceMinutes: 600 },
+      starter: { price: 59, monthlyPrice: 59, yearlyPrice: 49, yearlyTotal: 589, voiceMinutes: 0 },
+      professional: { price: 149, monthlyPrice: 149, yearlyPrice: 124, yearlyTotal: 1489, voiceMinutes: 250 },
+      business: { price: 299, monthlyPrice: 299, yearlyPrice: 248, yearlyTotal: 2979, voiceMinutes: 600 },
     },
   },
   INR: {
     currency: "INR",
     symbol: "₹",
+    locale: "en-IN",
     marketName: "India",
     headlineHero: "Reply to every WhatsApp enquiry, even at 2 AM.",
-    extraVoiceMinute: "₹10",
-    extraConversations: "₹1,500",
-    setupFee: "₹2,999",
+    extraVoiceMinute: "₹26",
+    extraConversations: "₹1,430",
+    setupFee: "₹4,499",
     plans: {
-      starter: { price: 2499, monthlyPrice: 2499, yearlyPrice: 2083, voiceMinutes: 0 },
-      professional: { price: 6999, monthlyPrice: 6999, yearlyPrice: 5833, voiceMinutes: 150 },
-      business: { price: 14999, monthlyPrice: 14999, yearlyPrice: 12499, voiceMinutes: 400 },
+      starter: { price: 2499, monthlyPrice: 2499, yearlyPrice: 2083, yearlyTotal: 24999, voiceMinutes: 0 },
+      professional: { price: 5999, monthlyPrice: 5999, yearlyPrice: 4999, yearlyTotal: 62499, voiceMinutes: 100 },
+      business: { price: 12499, monthlyPrice: 12499, yearlyPrice: 10416, yearlyTotal: 124999, voiceMinutes: 300 },
     },
   },
   EUR: {
     currency: "EUR",
     symbol: "€",
+    locale: "de-DE",
     marketName: "Europe",
     headlineHero: "Stop losing customers to voicemail.",
     extraVoiceMinute: "€0.40",
     extraConversations: "€22",
     setupFee: "€139",
     plans: {
-      starter: { price: 75, monthlyPrice: 75, yearlyPrice: 63, voiceMinutes: 0 },
-      professional: { price: 189, monthlyPrice: 189, yearlyPrice: 158, voiceMinutes: 250 },
-      business: { price: 379, monthlyPrice: 379, yearlyPrice: 316, voiceMinutes: 600 },
+      starter: { price: 75, monthlyPrice: 75, yearlyPrice: 63, yearlyTotal: 750, voiceMinutes: 0 },
+      professional: { price: 189, monthlyPrice: 189, yearlyPrice: 158, yearlyTotal: 1890, voiceMinutes: 250 },
+      business: { price: 379, monthlyPrice: 379, yearlyPrice: 316, yearlyTotal: 3790, voiceMinutes: 600 },
     },
   },
 };
 
-/**
- * Backward compatibility alias for test suites and existing services
- */
+export const REGIONAL_CONFIGS = REGIONAL_CONFIGS_STATIC as any;
 export const REGIONAL_PRICING = {
-  USD: REGIONAL_CONFIGS.USD.plans,
-  GBP: REGIONAL_CONFIGS.GBP.plans,
-  INR: REGIONAL_CONFIGS.INR.plans,
-  EUR: REGIONAL_CONFIGS.EUR.plans,
+  USD: REGIONAL_CONFIGS_STATIC.USD.plans,
+  GBP: REGIONAL_CONFIGS_STATIC.GBP.plans,
+  INR: REGIONAL_CONFIGS_STATIC.INR.plans,
+  EUR: REGIONAL_CONFIGS_STATIC.EUR.plans,
 };
 
 /**
@@ -161,25 +160,28 @@ export const PLAN_CATALOG: Record<string, PlanConfig> = {
   starter: {
     id: "starter",
     name: "Starter",
-    bestFor: "One-location businesses that want chat and WhatsApp booking",
+    bestFor: "One-location businesses that want automated chat & WhatsApp booking",
     description: "Answer website and WhatsApp enquiries and book appointments automatically.",
     cardCopy: "Answer website and WhatsApp enquiries and book appointments automatically.",
     price: 79,
     monthlyPrice: 79,
     yearlyPrice: 66,
+    yearlyTotal: 790,
     currency: "USD",
     currencySymbol: "$",
     trialDays: 14,
-    trialNote: "14-day free trial on Starter",
+    trialNote: "14-day free trial on Starter • Card on file required • $0 today",
     highlight: false,
     badge: null,
     limits: {
       conversations: 500,
       voiceMinutes: 0,
+      trialVoiceMinutes: 0,
       calendars: 1,
       knowledgeArticles: 20,
-      teamMembers: 2,
+      teamMembers: 1,
       locations: 1,
+      support: "Email support",
     },
     features: {
       websiteWidget: true,
@@ -193,7 +195,7 @@ export const PLAN_CATALOG: Record<string, PlanConfig> = {
       callTransfer: false,
       smsWhatsappReminders: false,
       depositsPaymentLinks: false,
-      roiDashboard: false, // Basic analytics only
+      roiDashboard: false,
       advancedLeadQualification: false,
       crmWebhookIntegrations: false,
       customCallRouting: false,
@@ -203,31 +205,33 @@ export const PLAN_CATALOG: Record<string, PlanConfig> = {
       analyticsExport: false,
       slaGuarantee: false,
     },
-    usageLimitBehavior: "UPGRADE_REQUIRED",
+    usageLimitBehavior: "BLOCK",
   },
-
   professional: {
     id: "professional",
     name: "Pro",
-    bestFor: "Clinics, salons and offices that want calls answered and fewer no-shows",
-    description: "Everything in Starter, plus voice AI call assistance, missed-call text-back, reminders and deposits.",
-    cardCopy: "Everything in Starter, plus voice AI call assistance, missed-call text-back, reminders and deposits.",
+    bestFor: "Growing businesses needing a full AI phone receptionist + WhatsApp",
+    description: "Never miss a customer call or inquiry. Includes 24/7 phone answering and staff transfer.",
+    cardCopy: "Never miss a customer call or inquiry. Includes 24/7 phone answering and staff transfer.",
     price: 199,
     monthlyPrice: 199,
     yearlyPrice: 166,
+    yearlyTotal: 1990,
     currency: "USD",
     currencySymbol: "$",
-    trialDays: 7,
-    trialNote: "7-day pilot with money-back guarantee",
+    trialDays: 14,
+    trialNote: "14-day free trial on Pro • 30 mins voice during trial • $0 today",
     highlight: true,
     badge: "Most Popular",
     limits: {
       conversations: 2000,
       voiceMinutes: 250,
-      calendars: 3,
+      trialVoiceMinutes: 30,
+      calendars: 1,
       knowledgeArticles: 100,
-      teamMembers: 5,
+      teamMembers: 3,
       locations: 1,
+      support: "Priority email support",
     },
     features: {
       websiteWidget: true,
@@ -236,46 +240,48 @@ export const PLAN_CATALOG: Record<string, PlanConfig> = {
       email: true,
       instagramFacebook: true,
       voiceAI: true,
-      missedCallTextBack: true,
+      missedCallTextBack: false, // Coming soon
       callRecordingsTranscripts: true,
       callTransfer: true,
       smsWhatsappReminders: true,
       depositsPaymentLinks: true,
       roiDashboard: true,
       advancedLeadQualification: true,
-      crmWebhookIntegrations: false,
+      crmWebhookIntegrations: false, // Coming soon
       customCallRouting: false,
       teamRolesAuditLog: false,
       dedicatedOnboarding: false,
       customAiTraining: true,
-      analyticsExport: false,
+      analyticsExport: true,
       slaGuarantee: false,
     },
     usageLimitBehavior: "OVERAGE",
   },
-
   business: {
     id: "business",
     name: "Business",
-    bestFor: "Multi-location practices and busy front desks",
-    description: "Everything in Pro for up to 5 locations, with integrations, custom call routing and onboarding help.",
-    cardCopy: "Everything in Pro for up to 5 locations, with integrations, custom call routing and onboarding help.",
+    bestFor: "Multi-location clinics, salons, and offices requiring custom rules",
+    description: "Enterprise receptionist with multi-location scheduling, custom routing rules, and audit logs.",
+    cardCopy: "Enterprise receptionist with multi-location scheduling, custom routing rules, and audit logs.",
     price: 399,
     monthlyPrice: 399,
     yearlyPrice: 333,
+    yearlyTotal: 3990,
     currency: "USD",
     currencySymbol: "$",
-    trialDays: 7,
-    trialNote: "7-day pilot with money-back guarantee",
+    trialDays: 14,
+    trialNote: "14-day free trial on Business • 30 mins voice during trial • $0 today",
     highlight: false,
-    badge: "Scale & Enterprise",
+    badge: "Scale",
     limits: {
       conversations: 4000,
       voiceMinutes: 600,
-      calendars: 10,
+      trialVoiceMinutes: 30,
+      calendars: null, // Unlimited
       knowledgeArticles: 500,
-      teamMembers: 20,
+      teamMembers: 10,
       locations: 5,
+      support: "Priority email + dedicated onboarding call",
     },
     features: {
       websiteWidget: true,
@@ -284,14 +290,14 @@ export const PLAN_CATALOG: Record<string, PlanConfig> = {
       email: true,
       instagramFacebook: true,
       voiceAI: true,
-      missedCallTextBack: true,
+      missedCallTextBack: false, // Coming soon
       callRecordingsTranscripts: true,
       callTransfer: true,
       smsWhatsappReminders: true,
       depositsPaymentLinks: true,
       roiDashboard: true,
       advancedLeadQualification: true,
-      crmWebhookIntegrations: true,
+      crmWebhookIntegrations: false, // Coming soon
       customCallRouting: true,
       teamRolesAuditLog: true,
       dedicatedOnboarding: true,
@@ -303,10 +309,13 @@ export const PLAN_CATALOG: Record<string, PlanConfig> = {
   },
 };
 
+// Aliases for quick lookup
+PLAN_CATALOG.pro = PLAN_CATALOG.professional;
+
 /**
  * Resolves standard billing currency from ISO country code.
  */
-export function getCurrencyForCountry(countryCode?: string | null): SupportedCurrency {
+export function getCurrencyForCountry(countryCode?: string | null): string {
   if (!countryCode) return "USD";
   const upper = countryCode.toUpperCase().trim();
   if (upper === "IN") return "INR";
@@ -321,13 +330,7 @@ export function getCurrencyForCountry(countryCode?: string | null): SupportedCur
  * Returns a plan configuration record by ID with safe fallback to Starter.
  */
 export function getPlan(planId: string | null | undefined): PlanConfig {
-  const normalized = (planId || "starter").toLowerCase();
-  if (normalized.includes("biz") || normalized.includes("enterprise")) {
-    return PLAN_CATALOG.business;
-  }
-  if (normalized.includes("pro")) {
-    return PLAN_CATALOG.professional;
-  }
+  const normalized = normalizePlanId(planId);
   return PLAN_CATALOG[normalized] || PLAN_CATALOG.starter;
 }
 
@@ -339,22 +342,23 @@ export function getLocalizedPlan(
   currency?: string | null,
   countryCode?: string | null
 ): PlanConfig {
-  const basePlan = getPlan(planId);
-  const targetCurrency: SupportedCurrency = (
-    currency && SUPPORTED_BILLING_CURRENCIES.includes(currency.toUpperCase() as SupportedCurrency)
+  const normPlanId = normalizePlanId(planId);
+  const basePlan = PLAN_CATALOG[normPlanId];
+  const targetCurrency = (
+    currency && ["USD", "GBP", "INR", "EUR"].includes(currency.toUpperCase())
       ? currency.toUpperCase()
       : getCurrencyForCountry(countryCode)
-  ) as SupportedCurrency;
+  );
 
-  const regional = REGIONAL_CONFIGS[targetCurrency] || REGIONAL_CONFIGS.USD;
-  const planKey = (basePlan.id === "business" ? "business" : basePlan.id === "professional" ? "professional" : "starter") as "starter" | "professional" | "business";
-  const rates = regional.plans[planKey];
+  const regional = (REGIONAL_CONFIGS_STATIC as any)[targetCurrency] || REGIONAL_CONFIGS_STATIC.USD;
+  const rates = regional.plans[normPlanId];
 
   return {
     ...basePlan,
     price: rates.price,
     monthlyPrice: rates.monthlyPrice,
     yearlyPrice: rates.yearlyPrice,
+    yearlyTotal: rates.yearlyTotal,
     currency: targetCurrency,
     currencySymbol: regional.symbol,
     limits: {
@@ -368,7 +372,7 @@ export function getLocalizedPlan(
  * Returns all active commercial plans localized to a specific currency/country.
  */
 export function getLocalizedPlans(currency?: string | null, countryCode?: string | null): PlanConfig[] {
-  const planIds = ["starter", "professional", "business"];
+  const planIds: PlanId[] = ["starter", "professional", "business"];
   return planIds.map((id) => getLocalizedPlan(id, currency, countryCode));
 }
 

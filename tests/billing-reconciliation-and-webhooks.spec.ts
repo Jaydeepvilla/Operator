@@ -98,7 +98,7 @@ test.describe('Operator Phase 8 — Staging Webhooks, Currency Integrity & Billi
 
     const bizGbp = getLocalizedPlan('business', 'GBP');
     expect(bizGbp.currency).toBe('GBP');
-    expect(bizGbp.price).toBe(319);
+    expect(bizGbp.price).toBe(299);
   });
 
   // =========================================================================

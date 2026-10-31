@@ -251,6 +251,41 @@ export class WebhookProcessor {
         break;
       }
 
+      case "subscription.authenticated": {
+        const subObj = 
+          event.payload?.subscription?.entity || 
+          event.subscription?.entity || 
+          event;
+        const orgId = subObj?.notes?.organizationId;
+        const planId = (subObj?.notes?.planId || "starter").toLowerCase();
+        const interval = subObj?.notes?.interval || "monthly";
+
+        if (orgId) {
+          const [org] = await db
+            .select({ id: organizations.id })
+            .from(organizations)
+            .where(eq(organizations.id, orgId))
+            .limit(1);
+
+          if (!org) {
+            console.warn(`[WebhookProcessor] Razorpay subscription.authenticated ${eventId} references unknown organization ${orgId}. Skipping.`);
+            break;
+          }
+
+          // Activate 14-day trial with payment method saved (Req 4, 7)
+          await subscriptionEngine.activateTrialWithPaymentMethod({
+            organizationId: orgId,
+            planId,
+            paymentProvider: "razorpay",
+            providerSubscriptionId: subObj.id,
+            providerCustomerId: subObj.customer_id,
+            billingInterval: interval === "yearly" ? "yearly" : "monthly",
+            currency: "INR",
+          });
+        }
+        break;
+      }
+
       case "subscription.activated":
       case "subscription.charged": {
         const subObj = 
@@ -259,6 +294,7 @@ export class WebhookProcessor {
           event;
         const orgId = subObj?.notes?.organizationId;
         const planId = (subObj?.notes?.planId || "starter").toLowerCase();
+        const interval = subObj?.notes?.interval || "monthly";
 
         if (orgId) {
           const [org] = await db
@@ -277,41 +313,43 @@ export class WebhookProcessor {
             planId,
             paymentProvider: "razorpay",
             providerSubscriptionId: subObj.id,
+            providerCustomerId: subObj.customer_id,
+            billingInterval: interval === "yearly" ? "yearly" : "monthly",
+            currency: "INR",
           });
         }
         break;
       }
 
-      case "payment.failed": {
-        const paymentObj = 
-          event.payload?.payment?.entity || 
-          event.payment?.entity || 
+      case "subscription.pending": {
+        const subObj = 
+          event.payload?.subscription?.entity || 
+          event.subscription?.entity || 
           event;
-        const orgId = paymentObj?.notes?.organizationId;
+        const orgId = subObj?.notes?.organizationId;
         if (orgId) {
-          const currentStatus = await subscriptionEngine.getSubscriptionStatus(orgId);
-          const incomingEventTimestamp = event.created_at ? event.created_at * 1000 : Date.now();
-          const currentStateTimestamp = currentStatus.currentPeriodStart ? new Date(currentStatus.currentPeriodStart).getTime() : 0;
-
-          const reversalCheck = billingSecurityService.preventStateReversal({
-            currentStatus: currentStatus.state,
-            currentStateTimestamp,
-            incomingStatus: "PAST_DUE",
-            incomingEventTimestamp,
-          });
-
-          if (!reversalCheck.allowed) {
-            console.warn(`[WebhookProcessor] Discarded replayed payment.failed event for org ${orgId}: ${reversalCheck.reason}`);
-            break;
-          }
-
-          await subscriptionEngine.recordPaymentFailure(orgId, paymentObj.error_description || "Payment authorization failed");
+          await subscriptionEngine.recordPaymentFailure(orgId, "Razorpay subscription payment pending / authentication retry");
         }
         break;
       }
 
-      case "subscription.halted":
-      case "subscription.cancelled": {
+      case "subscription.halted": {
+        const subObj = 
+          event.payload?.subscription?.entity || 
+          event.subscription?.entity || 
+          event;
+        const orgId = subObj?.notes?.organizationId;
+        if (orgId) {
+          await db
+            .update(subscriptions)
+            .set({ status: "paused", updatedAt: new Date() })
+            .where(eq(subscriptions.organizationId, orgId));
+        }
+        break;
+      }
+
+      case "subscription.cancelled":
+      case "subscription.completed": {
         const subObj = 
           event.payload?.subscription?.entity || 
           event.subscription?.entity || 
@@ -389,6 +427,8 @@ export class WebhookProcessor {
         const session = event.data?.object as any;
         const orgId = session?.client_reference_id || session?.metadata?.organizationId;
         const planId = (session?.metadata?.planId || "starter").toLowerCase();
+        const interval = session?.metadata?.interval || "monthly";
+        const currency = session?.metadata?.currency || "USD";
 
         if (orgId) {
           const [org] = await db
@@ -402,13 +442,34 @@ export class WebhookProcessor {
             break;
           }
 
-          await subscriptionEngine.convertTrialToPaid({
-            organizationId: orgId,
-            planId,
-            paymentProvider: "stripe",
-            providerSubscriptionId: session.subscription as string,
-            providerCustomerId: session.customer as string,
-          });
+          if (session.mode === "subscription") {
+            await subscriptionEngine.activateTrialWithPaymentMethod({
+              organizationId: orgId,
+              planId,
+              paymentProvider: "stripe",
+              providerSubscriptionId: session.subscription as string,
+              providerCustomerId: session.customer as string,
+              billingInterval: interval === "yearly" ? "yearly" : "monthly",
+              currency,
+            });
+          } else {
+            await subscriptionEngine.convertTrialToPaid({
+              organizationId: orgId,
+              planId,
+              paymentProvider: "stripe",
+              providerSubscriptionId: session.subscription as string,
+              providerCustomerId: session.customer as string,
+            });
+          }
+        }
+        break;
+      }
+
+      case "customer.subscription.trial_will_end": {
+        const sub = event.data?.object as any;
+        const orgId = sub?.metadata?.organizationId;
+        if (orgId) {
+          console.info(`[WebhookProcessor] Stripe customer.subscription.trial_will_end event received for org ${orgId}.`);
         }
         break;
       }
@@ -467,6 +528,7 @@ export class WebhookProcessor {
         break;
       }
 
+      case "invoice.paid":
       case "invoice.payment_succeeded": {
         const invoice = event.data?.object as any;
         const subId = invoice?.subscription as string | undefined;
@@ -475,6 +537,13 @@ export class WebhookProcessor {
             where: eq(subscriptions.stripeSubscriptionId, subId),
           });
           if (subRecord) {
+            await subscriptionEngine.convertTrialToPaid({
+              organizationId: subRecord.organizationId,
+              planId: subRecord.planId,
+              paymentProvider: "stripe",
+              providerSubscriptionId: subId,
+              providerCustomerId: invoice.customer as string,
+            });
             await subscriptionEngine.recordPaymentRecovery(subRecord.organizationId);
           }
         }

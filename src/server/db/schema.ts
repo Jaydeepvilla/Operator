@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, pgEnum, uuid, integer, jsonb, vector, index, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, pgEnum, uuid, integer, jsonb, vector, index, uniqueIndex, numeric } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const roleEnum = pgEnum("role", ["owner", "admin", "manager", "staff"]);
@@ -7,7 +7,8 @@ export const subscriptionStatusEnum = pgEnum("subscription_status", [
   "trialing",
   "past_due",
   "canceled",
-  "unpaid"
+  "unpaid",
+  "paused"
 ]);
 
 export const answerTypeEnum = pgEnum("answer_type", [
@@ -166,6 +167,13 @@ export const subscriptions = pgTable("subscriptions", {
   canceledAt: timestamp("canceled_at"),
   endedAt: timestamp("ended_at"),
   priceId: text("price_id"),
+  paymentProvider: text("payment_provider"), // 'stripe' | 'razorpay'
+  hasPaymentMethod: boolean("has_payment_method").default(false).notNull(),
+  billingInterval: text("billing_interval").default("monthly").notNull(), // 'monthly' | 'yearly'
+  currency: text("currency").default("USD").notNull(),
+  trialVoiceMinutesUsed: numeric("trial_voice_minutes_used", { precision: 8, scale: 2 }).default("0").notNull(),
+  setupFeeCharged: boolean("setup_fee_charged").default(false).notNull(),
+  metadata: jsonb("metadata").default({}).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -2640,6 +2648,44 @@ export const rateLimitKeys = pgTable("rate_limit_keys", {
 }, (table) => [
   uniqueIndex("rate_limit_keys_scope_key_unique").on(table.scope, table.key),
 ]);
+
+export const fxRates = pgTable("fx_rates", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  currency: text("currency").notNull(), // 'INR', 'GBP', etc.
+  ratePerUsd: numeric("rate_per_usd", { precision: 14, scale: 6 }).notNull(),
+  source: text("source").notNull(), // 'open.er-api.com', 'manual_override'
+  fetchedAt: timestamp("fetched_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const priceBooks = pgTable("price_books", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  version: text("version").notNull(), // e.g. 'v1.0.0' or '2026-10-31'
+  currency: text("currency").notNull(), // 'USD', 'GBP', 'INR'
+  plan: text("plan").notNull(), // 'starter', 'professional', 'business', 'setup_fee', 'overage_voice', 'extra_500_convs'
+  interval: text("interval").notNull(), // 'month', 'year', 'one_time', 'usage'
+  amountMinor: integer("amount_minor").notNull(), // minor units (cents/paise/pence)
+  fxRateUsed: numeric("fx_rate_used", { precision: 14, scale: 6 }).notNull(),
+  factorUsed: numeric("factor_used", { precision: 6, scale: 4 }).notNull(),
+  providerPlanId: text("provider_plan_id"), // Stripe price ID or Razorpay plan ID
+  status: text("status").default("draft").notNull(), // 'draft', 'published', 'archived'
+  publishedAt: timestamp("published_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("idx_price_books_ver_cur_plan_interval").on(table.version, table.currency, table.plan, table.interval),
+]);
+
+export const pendingCheckouts = pgTable("pending_checkouts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }),
+  planId: text("plan_id").notNull(),
+  interval: text("interval").default("monthly").notNull(),
+  currency: text("currency").default("USD").notNull(),
+  status: text("status").default("pending").notNull(), // 'pending', 'completed', 'abandoned'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
 
 export const revenueMetrics = pgTable("revenue_metrics", {
   id: uuid("id").defaultRandom().primaryKey(),

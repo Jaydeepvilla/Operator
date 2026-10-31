@@ -7,6 +7,7 @@ import {
 } from "../../db/schema";
 import { subscriptionEngine } from "./subscription-engine";
 import { entitlementService } from "./entitlement-service";
+import { formatMoney } from "@/lib/billing/catalog";
 
 export type TrialReminderKey =
   | "TRIAL_STARTED"
@@ -88,27 +89,34 @@ export class TrialReminderEngine {
       return dispatched;
     }
 
+    const cur = status.currency || "USD";
+    const chargeDateFormatted = status.trialEndsAt
+      ? new Date(status.trialEndsAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+      : "in 1 day";
+    const localizedPrice = formatMoney(status.plan.price * 100, cur);
+    const cancelLink = "/billing?action=cancel";
+
     // Trial Reminders Timeline
     if (daysRemaining <= 1) {
-      // 24 hours remaining
+      // 1 day (24 hours) remaining: Requirement 8 (amount, date, cancel link)
       const dispatchedReminder = await this.sendReminderIfEligible(organizationId, "TRIAL_REMINDER_DAY_13_24H", {
-        title: "24 Hours Remaining in Your Free Trial",
-        description: `Your ${status.plan.name} trial ends in 24 hours. Activate your subscription to ensure zero disruption to incoming customer calls.`,
+        title: "First Charge Tomorrow: Your Free Trial Ends in 24 Hours",
+        description: `Your trial will end on ${chargeDateFormatted} and your first charge of ${localizedPrice} will be processed. You can cancel anytime before renewal with zero charge at ${cancelLink}.`,
         category: "alert",
         priority: "urgent",
         severity: "warning",
-        actionUrl: "/billing",
+        actionUrl: cancelLink,
       });
       if (dispatchedReminder) dispatched.push(dispatchedReminder);
-    } else if (daysRemaining <= 2) {
-      // 2 days remaining
+    } else if (daysRemaining <= 3) {
+      // 3 days remaining: Requirement 8 (amount, date, cancel link)
       const dispatchedReminder = await this.sendReminderIfEligible(organizationId, "TRIAL_REMINDER_DAY_12", {
-        title: "2 Days Remaining in Your Trial",
-        description: `You have 2 days left in your ${status.plan.name} free trial. Review your usage and confirm your subscription.`,
+        title: "3 Days Remaining: Your Trial Converts Soon",
+        description: `Your free trial concludes on ${chargeDateFormatted}. Your scheduled first charge is ${localizedPrice}. Need to modify or cancel? You can self-cancel with zero charge at ${cancelLink}.`,
         category: "alert",
         priority: "high",
         severity: "warning",
-        actionUrl: "/billing",
+        actionUrl: cancelLink,
       });
       if (dispatchedReminder) dispatched.push(dispatchedReminder);
     } else if (daysRemaining <= 4) {

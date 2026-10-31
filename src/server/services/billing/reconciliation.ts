@@ -1,6 +1,6 @@
 import { db } from "../../db";
 import { subscriptions, auditLogs, billingAccounts } from "../../db/schema";
-import { eq, or, isNotNull, and } from "drizzle-orm";
+import { eq, or, isNotNull, and, desc } from "drizzle-orm";
 import { getPaymentProviderConfig } from "./config";
 import Stripe from "stripe";
 import { logger } from "@/lib/logger";
@@ -121,6 +121,7 @@ export class BillingReconciliationService {
           )
         )
       )
+      .orderBy(desc(subscriptions.updatedAt))
       .limit(limit);
 
     for (const sub of localSubs) {
@@ -264,6 +265,7 @@ export class BillingReconciliationService {
           )
         )
       )
+      .orderBy(desc(subscriptions.updatedAt))
       .limit(limit);
 
     for (const sub of localSubs) {

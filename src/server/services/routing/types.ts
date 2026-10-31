@@ -32,6 +32,7 @@ export type RouteDecisionReason =
   | "REQUIRED_VERIFICATION"
   | "ONBOARDING_INCOMPLETE"
   | "ONBOARDING_ALREADY_COMPLETED"
+  | "NO_ACTIVE_PLAN_OR_TRIAL"
   | "SUBSCRIPTION_SUSPENDED"
   | "SUBSCRIPTION_EXPIRED"
   | "PAYMENT_FAILED_GRACE_EXPIRED"
@@ -111,8 +112,21 @@ export interface RoutingContext {
   };
 
   subscription: {
-    status: "TRIALING" | "ACTIVE" | "PAST_DUE" | "PAYMENT_FAILED" | "CANCELING" | "CANCELED" | "EXPIRED" | "SUSPENDED" | "NONE";
+    status:
+      | "TRIALING"
+      | "ACTIVE"
+      | "PAST_DUE"
+      | "PAYMENT_FAILED"
+      | "CANCELING"
+      | "CANCELED"
+      | "EXPIRED"
+      | "SUSPENDED"
+      | "NONE"
+      | "NO_PLAN"
+      | "CHECKOUT_PENDING"
+      | "PAUSED";
     planId: string;
+    hasPaymentMethod?: boolean;
     trialEndsAt?: Date | null;
     trialDaysRemaining?: number;
     currentPeriodEnd?: Date | null;

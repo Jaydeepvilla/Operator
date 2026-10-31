@@ -314,7 +314,7 @@ export function LandingPageClient() {
             {/* Trust row */}
             <div className="hero-trust-row flex flex-wrap items-center justify-center gap-space-6 mb-space-12 text-caption text-muted-foreground">
               <span className="flex items-center gap-space-1.5">
-                <Check className="h-3.5 w-3.5 text-primary" /> No credit card required
+                <Check className="h-3.5 w-3.5 text-primary" /> 14-day free trial ($0 today)
               </span>
               <span className="hidden sm:block h-3 w-px bg-border-muted" />
               <span className="flex items-center gap-space-1.5">
@@ -322,7 +322,7 @@ export function LandingPageClient() {
               </span>
               <span className="hidden sm:block h-3 w-px bg-border-muted" />
               <span className="flex items-center gap-space-1.5">
-                <Check className="h-3.5 w-3.5 text-primary" /> Cancel anytime
+                <Check className="h-3.5 w-3.5 text-primary" /> Cancel anytime before trial ends
               </span>
             </div>
 
@@ -850,7 +850,7 @@ export function LandingPageClient() {
           </div>
           <div className="flex items-center justify-center gap-space-4 text-caption text-muted-foreground">
             <span className="flex items-center gap-space-1">
-              <Check className="h-3 w-3 text-primary" /> No credit card
+              <Check className="h-3 w-3 text-primary" /> 14-day trial ($0 today)
             </span>
             <span className="h-3 w-px bg-[hsl(var(--foreground)/0.1)]" />
             <span className="flex items-center gap-space-1">

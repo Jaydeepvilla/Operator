@@ -12,6 +12,8 @@ import {
 import { getPlan, PlanConfig, PLAN_CATALOG } from "@/lib/billing/plans";
 
 export type SubscriptionState =
+  | "NO_PLAN"
+  | "CHECKOUT_PENDING"
   | "TRIALING"
   | "ACTIVE"
   | "PAST_DUE"
@@ -19,12 +21,18 @@ export type SubscriptionState =
   | "CANCELING"
   | "CANCELED"
   | "EXPIRED"
-  | "SUSPENDED";
+  | "SUSPENDED"
+  | "PAUSED";
 
 export interface DynamicSubscriptionStatus {
   state: SubscriptionState;
   plan: PlanConfig;
   planId: string;
+  hasPaymentMethod: boolean;
+  paymentProvider?: "razorpay" | "stripe" | null;
+  billingInterval?: "monthly" | "yearly";
+  currency?: string;
+  trialVoiceMinutesUsed?: number;
   isTrial: boolean;
   trialDaysRemaining: number;
   trialStartedAt: Date | null;
@@ -33,7 +41,7 @@ export interface DynamicSubscriptionStatus {
   currentPeriodEnd: Date;
   cancelAtPeriodEnd: boolean;
   gracePeriodDaysRemaining: number | null;
-  isRestricted: boolean; // True when SUSPENDED or EXPIRED
+  isRestricted: boolean; // True when NO_PLAN, CHECKOUT_PENDING, SUSPENDED, PAUSED, EXPIRED or CANCELED
   usage: {
     conversations: { current: number; limit: number | null; percentage: number };
     voiceMinutes: { current: number; limit: number | null; percentage: number };
@@ -59,13 +67,39 @@ export class SubscriptionEngine {
       .where(eq(subscriptions.organizationId, organizationId))
       .limit(1);
 
-    // If subscription doesn't exist yet, automatically initialize 14-day trial
+    // If subscription doesn't exist yet, return NO_PLAN state (do not auto-create trial without payment method)
     if (!sub) {
-      sub = await this.initializeTrialSubscription(organizationId, "starter");
+      return {
+        state: "NO_PLAN",
+        plan: getPlan("starter"),
+        planId: "starter",
+        hasPaymentMethod: false,
+        paymentProvider: null,
+        isTrial: false,
+        trialDaysRemaining: 0,
+        trialStartedAt: null,
+        trialEndsAt: null,
+        currentPeriodStart: now,
+        currentPeriodEnd: now,
+        cancelAtPeriodEnd: false,
+        gracePeriodDaysRemaining: null,
+        isRestricted: true,
+        usage: {
+          conversations: { current: 0, limit: 0, percentage: 100 },
+          voiceMinutes: { current: 0, limit: 0, percentage: 100 },
+          calendars: { current: 0, limit: 0, percentage: 100 },
+        },
+      };
     }
 
     const plan = getPlan(sub.planId);
-    let state: SubscriptionState = (sub.status?.toUpperCase() as SubscriptionState) || "TRIALING";
+    let state: SubscriptionState = (sub.status?.toUpperCase() as SubscriptionState) || "NO_PLAN";
+    const hasPaymentMethod = Boolean(sub.hasPaymentMethod);
+
+    // Requirement: Trial requires card or UPI on file. Existing trialing rows without a payment method must add one.
+    if (state === "TRIALING" && !hasPaymentMethod) {
+      state = "CHECKOUT_PENDING";
+    }
 
     // 2. Dynamic Trial Calculation
     const trialStartedAt = sub.trialStart ? new Date(sub.trialStart) : new Date(sub.createdAt);
@@ -109,20 +143,20 @@ export class SubscriptionEngine {
         });
       }
     } else if (state === "PAST_DUE") {
-      // Check grace period
+      // Check grace period (5 days)
       const failureDate = sub.updatedAt ? new Date(sub.updatedAt) : now;
       const gracePeriodMs = PAYMENT_GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000;
       const graceExpiresAt = new Date(failureDate.getTime() + gracePeriodMs);
 
       if (now.getTime() >= graceExpiresAt.getTime()) {
-        state = "SUSPENDED";
+        state = "PAUSED";
         await db
           .update(subscriptions)
-          .set({ status: "unpaid", updatedAt: now })
+          .set({ status: "paused", updatedAt: now })
           .where(eq(subscriptions.id, sub.id));
 
-        await this.logAuditEvent(organizationId, "SUBSCRIPTION_SUSPENDED", "subscription", sub.id, {
-          reason: "Grace period expired without payment recovery",
+        await this.logAuditEvent(organizationId, "SUBSCRIPTION_PAUSED", "subscription", sub.id, {
+          reason: "5-day grace period expired without payment recovery",
         });
       }
     } else if (state === "ACTIVE" && sub.cancelAtPeriodEnd) {
@@ -160,20 +194,35 @@ export class SubscriptionEngine {
     const calUsage = usageList.find((u) => u.metricName === "calendar_connections")?.currentValue || 0;
 
     const convLimit = plan.limits.conversations;
-    const voiceLimit = plan.limits.voiceMinutes;
+    // P4 / P6: During trial, voice is capped at 30 minutes for Pro and Business, 0 for Starter
+    let voiceLimit = plan.limits.voiceMinutes;
+    if (state === "TRIALING" || state === "CHECKOUT_PENDING" || state === "NO_PLAN") {
+      voiceLimit = plan.id === "starter" ? 0 : 30;
+    }
     const calLimit = plan.limits.calendars;
 
     const convPercentage = convLimit ? Math.min(100, Math.round((convUsage / convLimit) * 100)) : 0;
     const voicePercentage = voiceLimit ? Math.min(100, Math.round((voiceUsage / voiceLimit) * 100)) : 0;
     const calPercentage = calLimit ? Math.min(100, Math.round((calUsage / calLimit) * 100)) : 0;
 
-    // Is restricted: Operational capabilities blocked when EXPIRED or SUSPENDED
-    const isRestricted = state === "EXPIRED" || state === "SUSPENDED" || state === "CANCELED";
+    // Operational capabilities blocked when not active/trialing-with-method/past_due-in-grace
+    const isRestricted =
+      state === "NO_PLAN" ||
+      state === "CHECKOUT_PENDING" ||
+      state === "EXPIRED" ||
+      state === "SUSPENDED" ||
+      state === "PAUSED" ||
+      state === "CANCELED";
 
     return {
       state,
       plan,
       planId: plan.id,
+      hasPaymentMethod,
+      paymentProvider: sub.paymentProvider as any,
+      billingInterval: (sub.billingInterval as any) || "monthly",
+      currency: sub.currency || "USD",
+      trialVoiceMinutesUsed: Number(sub.trialVoiceMinutesUsed ?? 0),
       isTrial: state === "TRIALING",
       trialDaysRemaining,
       trialStartedAt,
@@ -238,6 +287,108 @@ export class SubscriptionEngine {
   }
 
   /**
+   * Activates a 14-day trial with verified payment method saved.
+   * Required for entering the valid 'trialing' state in the state machine.
+   */
+  async activateTrialWithPaymentMethod(params: {
+    organizationId: string;
+    planId: string;
+    paymentProvider: "razorpay" | "stripe";
+    providerSubscriptionId?: string;
+    providerCustomerId?: string;
+    billingInterval?: "monthly" | "yearly";
+    currency?: string;
+  }) {
+    const {
+      organizationId,
+      planId,
+      paymentProvider,
+      providerSubscriptionId,
+      providerCustomerId,
+      billingInterval,
+      currency,
+    } = params;
+    const plan = getPlan(planId);
+    const now = new Date();
+    const trialEndsAt = new Date(now.getTime() + TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000);
+
+    // Ensure plan exists in subscription_plans table
+    await db
+      .insert(subscriptionPlans)
+      .values({
+        id: plan.id,
+        name: plan.name,
+        description: plan.description,
+        price: String(plan.price),
+        interval: "month",
+        features: Object.keys(plan.features).filter((k) => (plan.features as any)[k]),
+      })
+      .onConflictDoNothing();
+
+    const [sub] = await db
+      .insert(subscriptions)
+      .values({
+        organizationId,
+        planId: plan.id,
+        status: "trialing",
+        hasPaymentMethod: true,
+        paymentProvider,
+        billingInterval: billingInterval || "monthly",
+        currency: currency || "USD",
+        trialStart: now,
+        trialEnd: trialEndsAt,
+        currentPeriodStart: now,
+        currentPeriodEnd: trialEndsAt,
+        cancelAtPeriodEnd: false,
+        razorpaySubscriptionId: paymentProvider === "razorpay" ? providerSubscriptionId : undefined,
+        stripeSubscriptionId: paymentProvider === "stripe" ? providerSubscriptionId : undefined,
+        trialVoiceMinutesUsed: "0",
+        setupFeeCharged: false,
+      })
+      .onConflictDoUpdate({
+        target: subscriptions.organizationId,
+        set: {
+          planId: plan.id,
+          status: "trialing",
+          hasPaymentMethod: true,
+          paymentProvider,
+          billingInterval: billingInterval || "monthly",
+          currency: currency || "USD",
+          trialStart: now,
+          trialEnd: trialEndsAt,
+          currentPeriodStart: now,
+          currentPeriodEnd: trialEndsAt,
+          cancelAtPeriodEnd: false,
+          razorpaySubscriptionId: paymentProvider === "razorpay" ? providerSubscriptionId : undefined,
+          stripeSubscriptionId: paymentProvider === "stripe" ? providerSubscriptionId : undefined,
+          updatedAt: now,
+        },
+      })
+      .returning();
+
+    await this.syncUsageCounterLimits(organizationId, plan);
+
+    if (providerCustomerId) {
+      await db
+        .update(billingAccounts)
+        .set({
+          razorpayCustomerId: paymentProvider === "razorpay" ? providerCustomerId : undefined,
+          stripeCustomerId: paymentProvider === "stripe" ? providerCustomerId : undefined,
+          updatedAt: now,
+        })
+        .where(eq(billingAccounts.organizationId, organizationId));
+    }
+
+    await this.logAuditEvent(organizationId, "TRIAL_ACTIVATED_WITH_PAYMENT_METHOD", "subscription", sub.id, {
+      planId: plan.id,
+      paymentProvider,
+      trialEndsAt: trialEndsAt.toISOString(),
+    });
+
+    return sub;
+  }
+
+  /**
    * Central trial-to-paid conversion function.
    * Converts trial -> ACTIVE, sets billing period, resets usage, and logs audit events.
    */
@@ -247,8 +398,18 @@ export class SubscriptionEngine {
     paymentProvider: "razorpay" | "stripe";
     providerSubscriptionId?: string;
     providerCustomerId?: string;
+    billingInterval?: "monthly" | "yearly";
+    currency?: string;
   }) {
-    const { organizationId, planId, paymentProvider, providerSubscriptionId, providerCustomerId } = params;
+    const {
+      organizationId,
+      planId,
+      paymentProvider,
+      providerSubscriptionId,
+      providerCustomerId,
+      billingInterval,
+      currency,
+    } = params;
     const plan = getPlan(planId);
     const now = new Date();
     const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -271,9 +432,14 @@ export class SubscriptionEngine {
       .set({
         planId: plan.id,
         status: "active",
+        hasPaymentMethod: true,
+        paymentProvider,
+        billingInterval: billingInterval || "monthly",
+        currency: currency || "USD",
         currentPeriodStart: now,
         currentPeriodEnd: periodEnd,
         cancelAtPeriodEnd: false,
+        setupFeeCharged: true,
         razorpaySubscriptionId: paymentProvider === "razorpay" ? providerSubscriptionId : undefined,
         stripeSubscriptionId: paymentProvider === "stripe" ? providerSubscriptionId : undefined,
         updatedAt: now,
@@ -289,9 +455,14 @@ export class SubscriptionEngine {
           organizationId,
           planId: plan.id,
           status: "active",
+          hasPaymentMethod: true,
+          paymentProvider,
+          billingInterval: billingInterval || "monthly",
+          currency: currency || "USD",
           currentPeriodStart: now,
           currentPeriodEnd: periodEnd,
           cancelAtPeriodEnd: false,
+          setupFeeCharged: true,
           razorpaySubscriptionId: paymentProvider === "razorpay" ? providerSubscriptionId : undefined,
           stripeSubscriptionId: paymentProvider === "stripe" ? providerSubscriptionId : undefined,
         })
@@ -300,9 +471,14 @@ export class SubscriptionEngine {
           set: {
             planId: plan.id,
             status: "active",
+            hasPaymentMethod: true,
+            paymentProvider,
+            billingInterval: billingInterval || "monthly",
+            currency: currency || "USD",
             currentPeriodStart: now,
             currentPeriodEnd: periodEnd,
             cancelAtPeriodEnd: false,
+            setupFeeCharged: true,
             razorpaySubscriptionId: paymentProvider === "razorpay" ? providerSubscriptionId : undefined,
             stripeSubscriptionId: paymentProvider === "stripe" ? providerSubscriptionId : undefined,
             updatedAt: now,

@@ -5,6 +5,7 @@ import { resolveOrCreateOAuthIdentity } from "@/lib/auth/identity";
 import { resolveUserDestination, validateIntendedDestination } from "@/lib/auth/router";
 import { createSession } from "@/lib/auth/session";
 import { auditService } from "@/server/services/audit";
+import { deserializePlanIntent, persistPendingCheckout, PLAN_INTENT_COOKIE } from "@/lib/billing/plan-intent";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -149,6 +150,19 @@ export async function GET(request: NextRequest) {
       userAgent,
     });
 
+    // Check and persist plan intent if user arrived via pricing flow
+    const planIntentRaw = request.cookies.get(PLAN_INTENT_COOKIE)?.value;
+    const planIntent = deserializePlanIntent(planIntentRaw);
+    if (planIntent) {
+      await persistPendingCheckout({
+        userId: identity.user.id,
+        organizationId: identity.organization?.id,
+        planId: planIntent.planId,
+        interval: planIntent.interval,
+        currency: planIntent.currency,
+      });
+    }
+
     // 5. Authoritatively Resolve Target Destination
     const { destination } = await resolveUserDestination(
       identity.user.id,
@@ -158,6 +172,12 @@ export async function GET(request: NextRequest) {
 
     const sessionExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     const refreshExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    // If new user or plan intent active, ensure routing to checkout to save payment method
+    let resolvedDestination = destination;
+    if (planIntent || identity.isNewUser) {
+      resolvedDestination = "/billing/checkout";
+    }
 
     // 6. Direct to Login-Success Transition Screen with Cookies
     // Determine UX mode:
@@ -173,7 +193,7 @@ export async function GET(request: NextRequest) {
       uiMode = "signin";
     }
 
-    const safeDestination = validateIntendedDestination(destination) || "/dashboard";
+    const safeDestination = validateIntendedDestination(resolvedDestination) || "/billing/checkout";
     const successUrl = new URL("/login-success", request.url);
     successUrl.searchParams.set("redirect", safeDestination);
     successUrl.searchParams.set("firstTime", String(identity.isNewUser));

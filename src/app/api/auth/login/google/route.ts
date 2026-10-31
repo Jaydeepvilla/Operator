@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGoogleOAuthConfig, getGoogleRedirectUri } from "@/lib/auth/google-config";
 import { validateIntendedDestination } from "@/lib/auth/router";
+import { validatePlanIntent, serializePlanIntent, PLAN_INTENT_COOKIE } from "@/lib/billing/plan-intent";
 import crypto from "crypto";
 
 export async function GET(request: NextRequest) {
@@ -29,6 +30,12 @@ export async function GET(request: NextRequest) {
   const intendedRedirect = validateIntendedDestination(rawRedirect);
   const intent = request.nextUrl.searchParams.get("intent") || "login"; // "login" | "signup"
 
+  // Capture plan intent if passed
+  const plan = request.nextUrl.searchParams.get("plan");
+  const interval = request.nextUrl.searchParams.get("interval");
+  const currency = request.nextUrl.searchParams.get("currency");
+  const planIntent = validatePlanIntent(plan, interval, currency);
+
   const response = NextResponse.redirect(googleAuthUrl.toString());
   response.cookies.set("google_oauth_state", state, {
     httpOnly: true,
@@ -46,6 +53,16 @@ export async function GET(request: NextRequest) {
     path: "/",
     maxAge: 60 * 15,
   });
+
+  if (planIntent) {
+    response.cookies.set(PLAN_INTENT_COOKIE, serializePlanIntent(planIntent), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60,
+    });
+  }
 
   if (intendedRedirect) {
     response.cookies.set("intended_redirect", intendedRedirect, {
