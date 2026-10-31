@@ -217,6 +217,12 @@ export default function UnifiedInboxPage() {
       const res = await getInboxThreadsAction();
       if (res.success && res.threads) {
         setThreads(res.threads);
+        setSelectedThread((prev: any) => {
+          if (prev && res.threads.some((t: any) => t.id === prev.id)) {
+            return res.threads.find((t: any) => t.id === prev.id);
+          }
+          return res.threads.length > 0 ? res.threads[0] : null;
+        });
       } else {
         setErrorMsg(res.error || "We couldn't load conversations. Try again.");
       }
