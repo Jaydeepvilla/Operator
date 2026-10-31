@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth/client";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 import {
@@ -123,6 +124,7 @@ const PRICING_FAQS = [
 ];
 
 export default function PricingPage() {
+  const { isSignedIn } = useAuth();
   const [selectedCurrency, setSelectedCurrency] = useState<SupportedCurrency>("USD");
   const [yearly, setYearly] = useState(false);
 
@@ -130,6 +132,22 @@ export default function PricingPage() {
   const plans = useMemo(() => {
     return getLocalizedPlans(selectedCurrency);
   }, [selectedCurrency]);
+
+  const getPlanHref = (planId: string) => {
+    const intervalParam = yearly ? "yearly" : "monthly";
+    if (isSignedIn) {
+      return `/billing/checkout?plan=${planId}&interval=${intervalParam}&currency=${selectedCurrency}`;
+    }
+    return `/sign-up?plan=${planId}&interval=${intervalParam}&currency=${selectedCurrency}`;
+  };
+
+  const getOfferHref = () => {
+    const intervalParam = yearly ? "yearly" : "monthly";
+    if (isSignedIn) {
+      return `/billing/checkout?plan=professional&interval=${intervalParam}&currency=${selectedCurrency}&offer=launch30`;
+    }
+    return `/sign-up?plan=professional&interval=${intervalParam}&currency=${selectedCurrency}&offer=launch30`;
+  };
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background text-foreground selection:bg-primary/20">
@@ -185,7 +203,8 @@ export default function PricingPage() {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-space-3 mb-space-4">
               <SessionAwareCta
-                signedInText="Go to Dashboard"
+                signedInText="Choose a Plan"
+                signedInHref="/billing/choose-plan"
                 signedOutText="Start Free Trial"
                 signedOutHref="/sign-up"
                 size="lg"
@@ -387,10 +406,8 @@ export default function PricingPage() {
                           : "border border-border/80 text-foreground hover:bg-muted/40"
                       )}
                     >
-                      <Link
-                        href={`/sign-up?plan=${plan.id}&interval=${yearly ? "yearly" : "monthly"}&currency=${selectedCurrency}`}
-                      >
-                        Start 14-Day Free Trial
+                      <Link href={getPlanHref(plan.id)}>
+                        {plan.id === "starter" ? "Start 14-Day Free Trial" : "Start 7-Day Pilot"}
                       </Link>
                     </Button>
 
@@ -419,9 +436,7 @@ export default function PricingPage() {
               </div>
             </div>
             <Button asChild size="sm" variant="outline" className="font-semibold shrink-0">
-              <Link
-                href={`/sign-up?plan=professional&interval=${yearly ? "yearly" : "monthly"}&currency=${selectedCurrency}&offer=launch30`}
-              >
+              <Link href={getOfferHref()}>
                 Claim Launch Offer
               </Link>
             </Button>
@@ -615,7 +630,8 @@ export default function PricingPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-space-3 justify-center">
                 <SessionAwareCta
-                  signedInText="Go to Dashboard"
+                  signedInText="Choose a Plan"
+                  signedInHref="/billing/choose-plan"
                   signedOutText="Start Free Trial"
                   signedOutHref="/sign-up"
                   size="lg"

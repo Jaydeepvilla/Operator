@@ -120,6 +120,18 @@ export class RouteDecisionEngine {
       return RouteDecisionEngine.finalize(context, decision);
     }
 
+    // For authenticated users, allow viewing public marketing/informational pages (except auth entry pages)
+    if (isPublicPath(requestedBase) && requestedBase !== "/sign-in" && requestedBase !== "/sign-up" && requestedBase !== "/") {
+      decision = {
+        destination: requested,
+        reason: "ALREADY_AT_DESTINATION",
+        priority: "EXPLICIT_DESTINATION",
+        priorityLevel: ROUTE_DECISION_PRIORITY.EXPLICIT_DESTINATION,
+        replace: false,
+      };
+      return RouteDecisionEngine.finalize(context, decision);
+    }
+
     // ── 2. ACCOUNT/BUSINESS EXISTENCE ───────────────────────────────────────
     if (!context.businessId || !context.business) {
       if (requestedBase === "/onboarding") {
@@ -205,43 +217,7 @@ export class RouteDecisionEngine {
       return RouteDecisionEngine.finalize(context, decision);
     }
 
-    // ── 5. ONBOARDING ───────────────────────────────────────────────────────
-    if (!context.onboarding.isCompleted && context.onboarding.status !== "completed") {
-      if (requestedBase === "/onboarding") {
-        decision = {
-          destination: requested,
-          reason: "ALREADY_AT_DESTINATION",
-          priority: "ONBOARDING",
-          priorityLevel: ROUTE_DECISION_PRIORITY.ONBOARDING,
-          replace: false,
-        };
-      } else {
-        const step = context.onboarding.currentStep;
-        const stepParam = step && step !== "url" && step !== "not_started" ? `?step=${step}` : "";
-        decision = {
-          destination: `/onboarding${stepParam}`,
-          reason: "ONBOARDING_INCOMPLETE",
-          priority: "ONBOARDING",
-          priorityLevel: ROUTE_DECISION_PRIORITY.ONBOARDING,
-          replace: true,
-        };
-      }
-      return RouteDecisionEngine.finalize(context, decision);
-    }
-
-    // If onboarding IS completed, prevent trapping user on /onboarding
-    if (context.onboarding.isCompleted && requestedBase === "/onboarding") {
-      decision = {
-        destination: "/dashboard",
-        reason: "ONBOARDING_ALREADY_COMPLETED",
-        priority: "ONBOARDING",
-        priorityLevel: ROUTE_DECISION_PRIORITY.ONBOARDING,
-        replace: true,
-      };
-      return RouteDecisionEngine.finalize(context, decision);
-    }
-
-    // ── 6. SUBSCRIPTION / BILLING BLOCKER ───────────────────────────────────
+    // ── 5. SUBSCRIPTION / BILLING BLOCKER ───────────────────────────────────
     const subStatus = context.subscription.status;
     const hasMethod = context.subscription.hasPaymentMethod;
     const isNoPlanOrPending =
@@ -311,6 +287,42 @@ export class RouteDecisionEngine {
           replace: true,
         };
       }
+      return RouteDecisionEngine.finalize(context, decision);
+    }
+
+    // ── 6. ONBOARDING ───────────────────────────────────────────────────────
+    if (!context.onboarding.isCompleted && context.onboarding.status !== "completed") {
+      if (requestedBase === "/onboarding") {
+        decision = {
+          destination: requested,
+          reason: "ALREADY_AT_DESTINATION",
+          priority: "ONBOARDING",
+          priorityLevel: ROUTE_DECISION_PRIORITY.ONBOARDING,
+          replace: false,
+        };
+      } else {
+        const step = context.onboarding.currentStep;
+        const stepParam = step && step !== "url" && step !== "not_started" ? `?step=${step}` : "";
+        decision = {
+          destination: `/onboarding${stepParam}`,
+          reason: "ONBOARDING_INCOMPLETE",
+          priority: "ONBOARDING",
+          priorityLevel: ROUTE_DECISION_PRIORITY.ONBOARDING,
+          replace: true,
+        };
+      }
+      return RouteDecisionEngine.finalize(context, decision);
+    }
+
+    // If onboarding IS completed, prevent trapping user on /onboarding
+    if (context.onboarding.isCompleted && requestedBase === "/onboarding") {
+      decision = {
+        destination: "/dashboard",
+        reason: "ONBOARDING_ALREADY_COMPLETED",
+        priority: "ONBOARDING",
+        priorityLevel: ROUTE_DECISION_PRIORITY.ONBOARDING,
+        replace: true,
+      };
       return RouteDecisionEngine.finalize(context, decision);
     }
 

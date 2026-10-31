@@ -143,6 +143,24 @@ export function proxy(request: NextRequest) {
       return response;
     }
 
+    // If an authenticated user lands on sign-up with a plan parameter, redirect straight to checkout
+    if (sessionToken && pathname === "/sign-up") {
+      const plan = request.nextUrl.searchParams.get("plan");
+      if (plan) {
+        const interval = request.nextUrl.searchParams.get("interval") || "monthly";
+        const currency = request.nextUrl.searchParams.get("currency") || "USD";
+        const offer = request.nextUrl.searchParams.get("offer");
+        const checkoutUrl = new URL("/billing/checkout", request.url);
+        checkoutUrl.searchParams.set("plan", plan);
+        checkoutUrl.searchParams.set("interval", interval);
+        checkoutUrl.searchParams.set("currency", currency);
+        if (offer) checkoutUrl.searchParams.set("offer", offer);
+        const res = NextResponse.redirect(checkoutUrl);
+        res.headers.set("x-request-id", requestId);
+        return res;
+      }
+    }
+
     if (pathname.startsWith("/api/widget") || pathname.startsWith("/widget-frame") || pathname.startsWith("/widget.js")) {
       if (request.method === "OPTIONS") {
         return new NextResponse(null, {
