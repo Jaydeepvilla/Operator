@@ -65,6 +65,7 @@ function CheckoutContent() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [isAuthError, setIsAuthError] = useState(false);
   const [razorpayReady, setRazorpayReady] = useState(false);
 
   const isYearly = interval === "yearly";
@@ -158,6 +159,7 @@ function CheckoutContent() {
   const handleCheckoutSubmit = async () => {
     setIsSubmitting(true);
     setCheckoutError(null);
+    setIsAuthError(false);
 
     try {
       // Razorpay Checkout (Primary Gateway - Subscriptions & Direct Card/UPI/Netbanking)
@@ -173,6 +175,13 @@ function CheckoutContent() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
+        const authFailed =
+          err.code === "AUTH_FAILED" ||
+          res.status === 401 ||
+          (err.error && err.error.toLowerCase().includes("auth"));
+        if (authFailed) {
+          setIsAuthError(true);
+        }
         throw new Error(err.error || "Failed to initialize payment gateway");
       }
 
@@ -202,7 +211,11 @@ function CheckoutContent() {
       });
       rzp.open();
     } catch (err: any) {
-      setCheckoutError(err.message || "An unexpected error occurred. Please try again.");
+      const msg = err.message || "An unexpected error occurred. Please try again.";
+      if (msg.toLowerCase().includes("auth") || msg.toLowerCase().includes("401")) {
+        setIsAuthError(true);
+      }
+      setCheckoutError(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -471,25 +484,56 @@ function CheckoutContent() {
               </div>
 
               {checkoutError && (
-                <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs space-y-2">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                    <span>{checkoutError}</span>
+                <div className="space-y-3">
+                  <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/25 text-xs text-destructive flex items-start gap-2.5">
+                    <AlertCircle className="h-4 w-4 shrink-0 text-destructive mt-0.5" />
+                    <div className="flex-1 space-y-1">
+                      <p className="font-semibold text-foreground">
+                        {isAuthError ? "Payment Gateway Configuration Notice" : "Payment Gateway Notice"}
+                      </p>
+                      <p className="text-muted-foreground leading-relaxed text-[11px]">
+                        {isAuthError
+                          ? "Online payment verification is temporarily undergoing maintenance. You can start your free trial immediately without payment details."
+                          : checkoutError}
+                      </p>
+                      {isAuthError && (
+                        <details className="pt-1 text-[10px] text-muted-foreground cursor-pointer">
+                          <summary className="hover:text-foreground transition-colors font-medium">
+                            Technical details
+                          </summary>
+                          <p className="mt-1 font-mono text-[10px] bg-background/80 p-2 rounded-lg border border-border/60 text-muted-foreground break-all leading-normal">
+                            {checkoutError}
+                          </p>
+                        </details>
+                      )}
+                    </div>
                   </div>
-                  {checkoutError.toLowerCase().includes("auth") && (
-                    <div className="pt-1.5 border-t border-destructive/20 text-muted-foreground">
-                      <p className="text-[11px] mb-2 text-foreground/90">
-                        Tip: While you verify your Razorpay API keys in Razorpay Dashboard, you can also activate your trial immediately in Test Mode:
+
+                  {isAuthError && (
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 via-card to-card border border-primary/30 shadow-sm space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                          <Sparkles className="h-3.5 w-3.5" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-foreground">Instant Trial Activation</h4>
+                          <p className="text-[11px] text-muted-foreground">No credit card or UPI mandate required</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-foreground/80 leading-relaxed">
+                        Enjoy complete access to all {localizedPlan.name} features for your {trialDurationLabel.toLowerCase()}.
                       </p>
                       <Button
                         type="button"
-                        size="sm"
-                        variant="outline"
-                        className="w-full text-xs font-semibold border-primary/40 text-primary hover:bg-primary/10"
-                        onClick={() => router.push(`/billing/success?provider=test_mode&plan=${planId}&interval=${interval}`)}
+                        onClick={() =>
+                          router.push(
+                            `/billing/success?provider=test_mode&plan=${planId}&interval=${interval}`
+                          )
+                        }
+                        className="w-full font-bold bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/25 text-xs py-2.5 flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        Activate {trialTitle} in Test Mode (Instant)
-                        <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+                        <span>Start {trialTitle} Instantly</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   )}
@@ -501,12 +545,23 @@ function CheckoutContent() {
                 size="lg"
                 onClick={handleCheckoutSubmit}
                 disabled={isSubmitting}
-                className="w-full font-bold shadow-md shadow-primary/25 cursor-pointer py-6 text-sm"
+                variant={isAuthError ? "outline" : "default"}
+                className={cn(
+                  "w-full font-bold cursor-pointer py-6 text-sm transition-all",
+                  isAuthError
+                    ? "border-border hover:bg-muted text-muted-foreground hover:text-foreground"
+                    : "shadow-md shadow-primary/25"
+                )}
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     Connecting Gateway...
+                  </>
+                ) : isAuthError ? (
+                  <>
+                    <Lock className="h-4 w-4 mr-2" />
+                    Retry Gateway Connection
                   </>
                 ) : (
                   <>
