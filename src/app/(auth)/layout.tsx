@@ -3,7 +3,7 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth/server";
-import { getPlanIntentFromCookies } from "@/lib/billing/plan-intent";
+import { getPlanIntentFromCookies } from "@/server/services/billing/plan-intent-server";
 import { evaluateRouteGuard } from "@/server/services/routing/route-guard";
 
 export const dynamic = "force-dynamic";

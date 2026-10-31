@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import crypto from "crypto";
-import { validateIntendedDestination } from "@/lib/auth/router";
+import { validateIntendedDestination } from "@/lib/auth/destination-validator";
 
 // Match public routes
 const PUBLIC_PATHS = [

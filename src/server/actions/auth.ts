@@ -29,7 +29,8 @@ import crypto from "crypto";
 import { notificationService } from "../services/notification";
 import { auditService } from "../services/audit";
 import { loginSchema, registrationSchema, forgotPasswordSchema, resetPasswordSchema } from "@/lib/validators";
-import { validatePlanIntent, getPlanIntentFromCookies, setPlanIntentCookie, persistPendingCheckout } from "@/lib/billing/plan-intent";
+import { validatePlanIntent } from "@/lib/billing/plan-intent";
+import { getPlanIntentFromCookies, setPlanIntentCookie, persistPendingCheckout } from "@/server/services/billing/plan-intent-server";
 
 async function getSafeRequestMetadata() {
   try {

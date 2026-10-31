@@ -5,7 +5,8 @@ import { resolveOrCreateOAuthIdentity } from "@/lib/auth/identity";
 import { resolveUserDestination, validateIntendedDestination } from "@/lib/auth/router";
 import { createSession } from "@/lib/auth/session";
 import { auditService } from "@/server/services/audit";
-import { deserializePlanIntent, persistPendingCheckout, PLAN_INTENT_COOKIE } from "@/lib/billing/plan-intent";
+import { deserializePlanIntent, PLAN_INTENT_COOKIE } from "@/lib/billing/plan-intent";
+import { persistPendingCheckout } from "@/server/services/billing/plan-intent-server";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;

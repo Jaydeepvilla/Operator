@@ -3,8 +3,8 @@ import {
   validatePlanIntent,
   serializePlanIntent,
   PLAN_INTENT_COOKIE,
-  getPlanIntentFromCookies,
 } from "@/lib/billing/plan-intent";
+import { getPlanIntentFromCookies } from "@/server/services/billing/plan-intent-server";
 
 export async function GET() {
   const intent = await getPlanIntentFromCookies();

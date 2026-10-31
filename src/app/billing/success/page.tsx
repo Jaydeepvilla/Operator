@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, Loader2, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/shared/button";
 import { formatMoney } from "@/lib/billing/catalog";
 
-export default function BillingSuccessPage() {
+function BillingSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -152,6 +152,20 @@ export default function BillingSuccessPage() {
         Operator AI • 256-bit Secure Mandate
       </footer>
     </div>
+  );
+}
+
+export default function BillingSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+        </div>
+      }
+    >
+      <BillingSuccessContent />
+    </Suspense>
   );
 }
 

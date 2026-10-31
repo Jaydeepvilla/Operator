@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGoogleOAuthConfig, getGoogleRedirectUri } from "@/lib/auth/google-config";
-import { validateIntendedDestination } from "@/lib/auth/router";
+import { validateIntendedDestination } from "@/lib/auth/destination-validator";
 import { validatePlanIntent, serializePlanIntent, PLAN_INTENT_COOKIE } from "@/lib/billing/plan-intent";
 import crypto from "crypto";
 
