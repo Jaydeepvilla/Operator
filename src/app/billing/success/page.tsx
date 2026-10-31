@@ -6,6 +6,7 @@ import Link from "next/link";
 import { CheckCircle2, Loader2, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/shared/button";
 import { formatMoney } from "@/lib/billing/catalog";
+import { Logo } from "@/components/shared/logo";
 
 function BillingSuccessContent() {
   const router = useRouter();
@@ -55,12 +56,12 @@ function BillingSuccessContent() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between selection:bg-primary/20">
       <header className="border-b border-border/80 bg-card/60 backdrop-blur-md px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg tracking-tight">
-          <span className="text-primary font-black">OPERATOR</span>
-          <span className="text-muted-foreground text-xs font-semibold px-2 py-0.5 rounded-full bg-muted">
+        <div className="flex items-center gap-3">
+          <Logo href="/" />
+          <span className="text-muted-foreground text-xs font-semibold px-2.5 py-0.5 rounded-full bg-muted border border-border/50">
             Payment Confirmation
           </span>
-        </Link>
+        </div>
       </header>
 
       <main className="flex-1 max-w-xl mx-auto px-6 py-16 w-full flex items-center justify-center">

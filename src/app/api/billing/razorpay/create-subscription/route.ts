@@ -39,7 +39,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Fail closed if payment credentials are not configured
-    const config = await getPaymentProviderConfig("razorpay", orgId);
+    // Use platform Razorpay credentials for SaaS subscription billing
+    const config = await getPaymentProviderConfig("razorpay");
     if (!config.secretKey || !config.publishableKey) {
       return NextResponse.json(
         { error: "Razorpay payment provider is not configured.", code: "PAYMENT_CONFIGURATION_UNAVAILABLE" },
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
     // 14-day trial period start timestamp (Unix timestamp in seconds)
     const nowSec = Math.floor(Date.now() / 1000);
     const startAt = nowSec + 14 * 24 * 60 * 60;
+    const roundedAmountPaise = Math.round(amountPaise);
 
     // 1. Resolve or create Razorpay Plan
     let rzpPlanId = priceRow.providerPlanId;
@@ -69,7 +71,7 @@ export async function POST(req: NextRequest) {
           interval: 1,
           item: {
             name: `Operator AI ${planId.toUpperCase()} (${interval})`,
-            amount: amountPaise,
+            amount: roundedAmountPaise,
             currency: "INR",
             description: `Subscription for ${planId} plan on Operator AI`,
           },
@@ -79,7 +81,31 @@ export async function POST(req: NextRequest) {
       if (!planRes.ok) {
         const errText = await planRes.text();
         console.error("Razorpay Plan creation error:", errText);
-        return NextResponse.json({ error: "Failed to initialize plan on payment gateway" }, { status: 502 });
+        let errorDetail = "";
+        try {
+          const parsed = JSON.parse(errText);
+          errorDetail = parsed.error?.description || parsed.error?.message || "";
+        } catch {
+          errorDetail = errText;
+        }
+
+        const isSubscriptionFeatureDisabled =
+          errorDetail.toLowerCase().includes("subscription") ||
+          errorDetail.toLowerCase().includes("not enabled") ||
+          errorDetail.toLowerCase().includes("not activated");
+
+        return NextResponse.json(
+          {
+            error: isSubscriptionFeatureDisabled
+              ? "Razorpay Subscriptions (e-Mandate) is not yet active on your Razorpay dashboard. Please activate Subscriptions in your Razorpay account settings to accept automated trial mandates."
+              : errorDetail
+              ? `Payment gateway error: ${errorDetail}`
+              : "Failed to initialize plan on payment gateway",
+            details: errText,
+            code: "GATEWAY_ERROR",
+          },
+          { status: 502 }
+        );
       }
 
       const planData = await planRes.json();
@@ -113,7 +139,31 @@ export async function POST(req: NextRequest) {
     if (!subRes.ok) {
       const errText = await subRes.text();
       console.error("Razorpay Subscription creation error:", errText);
-      return NextResponse.json({ error: "Failed to create subscription mandate" }, { status: 502 });
+      let errorDetail = "";
+      try {
+        const parsed = JSON.parse(errText);
+        errorDetail = parsed.error?.description || parsed.error?.message || "";
+      } catch {
+        errorDetail = errText;
+      }
+
+      const isSubscriptionFeatureDisabled =
+        errorDetail.toLowerCase().includes("subscription") ||
+        errorDetail.toLowerCase().includes("not enabled") ||
+        errorDetail.toLowerCase().includes("recurring");
+
+      return NextResponse.json(
+        {
+          error: isSubscriptionFeatureDisabled
+            ? "Razorpay Subscriptions is not yet active on your Razorpay dashboard. Please activate Subscriptions in your Razorpay account settings."
+            : errorDetail
+            ? `Payment gateway error: ${errorDetail}`
+            : "Failed to create subscription mandate",
+          details: errText,
+          code: "SUBSCRIPTION_MANDATE_ERROR",
+        },
+        { status: 502 }
+      );
     }
 
     const subData = await subRes.json();

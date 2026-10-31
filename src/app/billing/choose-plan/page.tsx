@@ -10,25 +10,26 @@ import {
   type SupportedCurrency,
   getLocalizedPlans,
 } from "@/lib/billing/plans";
+import { Logo } from "@/components/shared/logo";
 
 export default function ChoosePlanPage() {
-  const [selectedCurrency, setSelectedCurrency] = useState<SupportedCurrency>("USD");
+  const [selectedCurrency, setSelectedCurrency] = useState<SupportedCurrency>("INR");
   const [yearly, setYearly] = useState(false);
 
-  const regionConfig = REGIONAL_CONFIGS[selectedCurrency] || REGIONAL_CONFIGS.USD;
+  const regionConfig = REGIONAL_CONFIGS[selectedCurrency] || REGIONAL_CONFIGS.INR;
   const plans = getLocalizedPlans(selectedCurrency);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between selection:bg-primary/20">
       <header className="border-b border-border/80 bg-card/60 backdrop-blur-md px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg tracking-tight">
-          <span className="text-primary font-black">OPERATOR</span>
-          <span className="text-muted-foreground text-xs font-semibold px-2 py-0.5 rounded-full bg-muted">
+        <div className="flex items-center gap-3">
+          <Logo href="/" />
+          <span className="text-muted-foreground text-xs font-semibold px-2.5 py-0.5 rounded-full bg-muted border border-border/50">
             Choose Plan
           </span>
-        </Link>
+        </div>
         <div className="flex items-center gap-2">
-          {(["USD", "GBP", "INR"] as SupportedCurrency[]).map((cur) => (
+          {(["INR", "USD", "GBP"] as SupportedCurrency[]).map((cur) => (
             <button
               key={cur}
               type="button"

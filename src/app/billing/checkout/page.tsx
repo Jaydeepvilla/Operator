@@ -26,6 +26,7 @@ import {
   REGIONAL_FACTORS,
 } from "@/lib/billing/catalog";
 import { validatePlanIntent } from "@/lib/billing/plan-intent";
+import { Logo } from "@/components/shared/logo";
 
 declare global {
   interface Window {
@@ -50,7 +51,7 @@ function CheckoutContent() {
 
   const planId: PlanId = validated?.planId || "professional";
   const [interval, setInterval] = useState<BillingInterval>(validated?.interval || "monthly");
-  const [currency, setCurrency] = useState<SupportedCurrency>(validated?.currency || "USD");
+  const [currency, setCurrency] = useState<SupportedCurrency>(validated?.currency || "INR");
 
   const [couponCode, setCouponCode] = useState(rawOffer?.toUpperCase() || "");
   const [appliedCoupon, setAppliedCoupon] = useState<{
@@ -159,73 +160,47 @@ function CheckoutContent() {
     setCheckoutError(null);
 
     try {
-      if (currency === "INR") {
-        // India: Razorpay Subscriptions (e-mandate / UPI AutoPay)
-        const res = await fetch("/api/billing/razorpay/create-subscription", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            planId,
-            interval,
-            couponCode: appliedCoupon?.code,
-          }),
-        });
+      // Razorpay Checkout (Primary Gateway - Subscriptions & Direct Card/UPI/Netbanking)
+      const res = await fetch("/api/billing/razorpay/create-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planId,
+          interval,
+          couponCode: appliedCoupon?.code,
+        }),
+      });
 
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || "Failed to initialize payment mandate");
-        }
-
-        const data = await res.json();
-
-        if (!window.Razorpay) {
-          throw new Error("Razorpay checkout SDK failed to load. Please refresh.");
-        }
-
-        const options = {
-          key: data.keyId,
-          subscription_id: data.subscriptionId,
-          name: "Operator AI",
-          description: `14-day free trial on ${plan.displayName} Plan ($0 today)`,
-          image: "https://operator.nexxtechnologies.com/logo.png",
-          handler: function (response: any) {
-            router.push(`/billing/success?provider=razorpay&subscription_id=${response.razorpay_subscription_id}`);
-          },
-          theme: {
-            color: "#6366f1",
-          },
-        };
-
-        const rzp = new window.Razorpay(options);
-        rzp.on("payment.failed", function (response: any) {
-          setCheckoutError(response.error?.description || "Payment mandate authentication failed");
-        });
-        rzp.open();
-      } else {
-        // US / UK / Global: Stripe Checkout in subscription mode with 14-day trial
-        const res = await fetch("/api/billing/stripe/create-checkout-session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            planId,
-            interval,
-            currency,
-            couponCode: appliedCoupon?.code,
-          }),
-        });
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || "Failed to initialize Stripe checkout");
-        }
-
-        const data = await res.json();
-        if (data.checkoutUrl) {
-          window.location.href = data.checkoutUrl;
-        } else {
-          throw new Error("No checkout redirect URL received");
-        }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to initialize payment gateway");
       }
+
+      const data = await res.json();
+
+      if (!window.Razorpay) {
+        throw new Error("Razorpay checkout SDK failed to load. Please refresh.");
+      }
+
+      const options = {
+        key: data.keyId,
+        subscription_id: data.subscriptionId,
+        name: "Operator AI",
+        description: `14-day free trial on ${plan.displayName} Plan ($0 today)`,
+        image: "https://operator.nexxtechnologies.com/logo.png",
+        handler: function (response: any) {
+          router.push(`/billing/success?provider=razorpay&subscription_id=${response.razorpay_subscription_id}`);
+        },
+        theme: {
+          color: "#6366f1",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", function (response: any) {
+        setCheckoutError(response.error?.description || "Payment mandate authentication failed");
+      });
+      rzp.open();
     } catch (err: any) {
       setCheckoutError(err.message || "An unexpected error occurred. Please try again.");
     } finally {
@@ -244,14 +219,14 @@ function CheckoutContent() {
 
       {/* Header */}
       <header className="border-b border-border/80 bg-card/60 backdrop-blur-md px-6 py-4 flex items-center justify-between">
-        <Link href="/pricing" className="flex items-center gap-2 font-bold text-lg tracking-tight">
-          <span className="text-primary font-black">OPERATOR</span>
-          <span className="text-muted-foreground text-xs font-semibold px-2 py-0.5 rounded-full bg-muted">
+        <div className="flex items-center gap-3">
+          <Logo href="/pricing" />
+          <span className="text-muted-foreground text-xs font-semibold px-2.5 py-0.5 rounded-full bg-muted border border-border/50">
             Checkout
           </span>
-        </Link>
+        </div>
         <div className="flex items-center gap-2">
-          {(["USD", "GBP", "INR"] as SupportedCurrency[]).map((cur) => (
+          {(["INR", "USD", "GBP"] as SupportedCurrency[]).map((cur) => (
             <button
               key={cur}
               type="button"

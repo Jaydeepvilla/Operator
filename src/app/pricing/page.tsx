@@ -125,10 +125,10 @@ const PRICING_FAQS = [
 
 export default function PricingPage() {
   const { isSignedIn } = useAuth();
-  const [selectedCurrency, setSelectedCurrency] = useState<SupportedCurrency>("USD");
+  const [selectedCurrency, setSelectedCurrency] = useState<SupportedCurrency>("INR");
   const [yearly, setYearly] = useState(false);
 
-  const regionConfig = REGIONAL_CONFIGS[selectedCurrency] || REGIONAL_CONFIGS.USD;
+  const regionConfig = REGIONAL_CONFIGS[selectedCurrency] || REGIONAL_CONFIGS.INR;
   const plans = useMemo(() => {
     return getLocalizedPlans(selectedCurrency);
   }, [selectedCurrency]);
@@ -164,7 +164,7 @@ export default function PricingPage() {
           <GsapScrollSection animation="fade-up" className="relative mx-auto max-w-4xl px-space-6 text-center">
             {/* Regional Currency Selector Tabs */}
             <div className="inline-flex items-center gap-1 p-1 rounded-full border border-border/80 bg-card/60 backdrop-blur-md mb-space-6 shadow-xs">
-              {(["USD", "GBP", "INR"] as SupportedCurrency[]).map((cur) => {
+              {(["INR", "USD", "GBP"] as SupportedCurrency[]).map((cur) => {
                 const reg = REGIONAL_CONFIGS[cur];
                 const isActive = selectedCurrency === cur;
                 return (
