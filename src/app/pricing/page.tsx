@@ -51,8 +51,8 @@ const COMPARISON_ROWS: ComparisonRow[] = [
   {
     name: "Appointment booking & calendar sync",
     starter: "1 business calendar",
-    pro: "1 business calendar",
-    business: "1 business calendar",
+    pro: "Up to 3 staff calendars",
+    business: "Up to 10 staff calendars",
   },
   { name: "Locations", starter: "1", pro: "1", business: "Up to 5" },
   { name: "Lead capture & shared inbox", starter: true, pro: true, business: true },
