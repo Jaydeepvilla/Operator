@@ -21,8 +21,17 @@ export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
     attachments?: any[]
   ): Promise<SendMessageResult> {
     try {
-      const accessToken = connectionConfig.accessToken;
-      const phoneId = connectionConfig.phoneId;
+      const accessToken = (
+        process.env.META_ACCESS_TOKEN ||
+        connectionConfig.accessToken ||
+        ""
+      ).trim().replace(/^["']|["']$/g, "");
+
+      const phoneId = (
+        connectionConfig.phoneId ||
+        process.env.META_PHONE_NUMBER_ID ||
+        ""
+      ).trim().replace(/^["']|["']$/g, "");
 
       if (!accessToken || !phoneId) {
         throw new Error("Missing required WhatsApp access token or phone ID in channel configuration.");
@@ -80,8 +89,17 @@ export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
     variables: Record<string, string>
   ): Promise<SendMessageResult> {
     try {
-      const accessToken = connectionConfig.accessToken;
-      const phoneId = connectionConfig.phoneId;
+      const accessToken = (
+        process.env.META_ACCESS_TOKEN ||
+        connectionConfig.accessToken ||
+        ""
+      ).trim().replace(/^["']|["']$/g, "");
+
+      const phoneId = (
+        connectionConfig.phoneId ||
+        process.env.META_PHONE_NUMBER_ID ||
+        ""
+      ).trim().replace(/^["']|["']$/g, "");
 
       if (!accessToken || !phoneId) {
         throw new Error("Missing required WhatsApp access token or phone ID in channel configuration.");
