@@ -10,9 +10,10 @@ import {
   inboxThreads, 
   inboxParticipants, 
   channelSettings,
-  communicationLogs
+  communicationLogs,
+  appointments
 } from "../../db/schema";
-import { eq, and, or } from "drizzle-orm";
+import { eq, and, or, desc } from "drizzle-orm";
 import { WebhookMessagePayload, ProviderRegistry } from "./types";
 import { orchestratorService } from "../orchestrator";
 import { crmDeduplicationService } from "../crm/deduplication";
@@ -197,6 +198,26 @@ export const omnichannelRouter = {
         if (channelType === "whatsapp") {
           try {
             const business = await businessContextService.getContext(organizationId);
+
+            // Fetch past appointment history to check if customer has a real saved last_service
+            let lastService: string | undefined = undefined;
+            if (leadProfileId) {
+              try {
+                const pastApt = await db.query.appointments.findFirst({
+                  where: and(
+                    eq(appointments.organizationId, organizationId),
+                    eq(appointments.leadProfileId, leadProfileId),
+                    eq(appointments.status, "confirmed")
+                  ),
+                  orderBy: [desc(appointments.startTime)],
+                  with: { service: true }
+                });
+                if (pastApt?.service?.name) {
+                  lastService = pastApt.service.name;
+                }
+              } catch {}
+            }
+
             const waContext = {
               business_name: business.name || "Nexx Technologies",
               phone: business.phone || "+91 99135 37377",
@@ -206,6 +227,7 @@ export const omnichannelRouter = {
               hours_week: "Mon-Sat: 9:00 AM - 8:00 PM, Sun: Closed",
               service_list: (business.services || []).map(s => `${s.name} (₹${s.price})`).join(", ") || "Consultation & Services",
               customer_name: senderName && senderName !== "WhatsApp User" ? senderName : undefined,
+              last_service: lastService,
             };
 
             const waResolution = resolveWhatsAppResponse(content, waContext, new Date());

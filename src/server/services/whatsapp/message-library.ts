@@ -37,9 +37,49 @@ export function isInside24HourWindow(lastCustomerMessageAt?: Date | number | str
 }
 
 /**
+ * Safe fallbacks for non-critical cosmetic variables so raw {{...}} brackets never reach users
+ */
+const SAFE_VARIABLE_FALLBACKS: Record<string, string> = {
+  customer_name: "",
+  last_service: "appointment",
+  last_staff: "our specialist",
+  service: "service",
+  services: "our services",
+  duration: "45 min",
+  address: "our office",
+  parking_info: "Parking is available nearby.",
+  payment_methods: "UPI, Cards, and Cash",
+  cancel_policy: "Free cancellation up to 24 hours before your slot",
+  cancel_policy_short: "Free up to 24h before",
+  holiday_name: "the upcoming holiday",
+  walkin_policy: "Walk-ins are welcome based on availability.",
+  deposit_policy: "A deposit may be required to confirm your booking.",
+  late_policy: "We hold your slot for up to 15 minutes.",
+  noshow_policy: "Please inform us if you cannot make it.",
+  refund_policy: "Refunds are processed within 24-48 business hours.",
+  hold_minutes: "15",
+  response_time: "shortly",
+  minutes_left: "15",
+  booking_ref: "your booking",
+  phone: "our office",
+  website: "https://nexxtechnologies.com",
+  maps_link: "https://maps.google.com",
+  hours_today: "9:00 AM to 8:00 PM",
+  hours_week: "Monday to Saturday: 9:00 AM - 8:00 PM",
+  staff: "our team",
+  doctor: "our specialist",
+  price: "standard pricing",
+  deposit: "deposit amount",
+  day: "today",
+  time: "your scheduled time",
+  date: "your appointment date",
+};
+
+/**
  * Clean Variable Substitution Engine
  * Replaces {{variable}} with verified context values.
- * Identifies missing variables to prevent guessing/hallucination.
+ * Identifies missing variables to prevent guessing/hallucination,
+ * and eliminates any raw {{...}} placeholders before dispatch.
  */
 export function substituteVariables(
   content: string,
@@ -59,8 +99,21 @@ export function substituteVariables(
       return String(value);
     }
     missingVariables.push(varName);
-    return `{{${varName}}}`;
+
+    // Apply safe fallback if defined, else strip cleanly so raw braces never show
+    if (SAFE_VARIABLE_FALLBACKS[varName.toLowerCase()] !== undefined) {
+      return SAFE_VARIABLE_FALLBACKS[varName.toLowerCase()];
+    }
+    return "";
   });
+
+  // Polish formatting and clean any awkward spacing/commas
+  result = result
+    .replace(/Welcome back,\s*!/g, "Welcome back!")
+    .replace(/Hi\s*,/g, "Hi,")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+([.,!?])/g, "$1")
+    .trim();
 
   return { text: result, missingVariables };
 }
@@ -1689,6 +1742,11 @@ export function getWhatsAppReply(
   language: WhatsAppLanguage = "en",
   industry: WhatsAppIndustry = "general"
 ): WhatsAppReplyPayload & { handoverToHuman?: boolean; priorityHumanHandover?: boolean } {
+  // Rule Section 2.2: Greeting Returning Customer is ONLY used when customer's history is saved
+  if (id === "greeting_returning" && (!context.last_service || context.last_service.trim() === "")) {
+    return getWhatsAppReply("greeting_new", context, language, industry);
+  }
+
   // Check in basics, business_info, booking, care, and industry add-ons
   const template =
     BASICS_REPLIES[id] ||
@@ -1711,6 +1769,11 @@ export function getWhatsAppReply(
     rawBody = template.hindi.body;
     if (template.hindi.buttons) buttons = template.hindi.buttons;
     if (template.hindi.listButton) listButton = template.hindi.listButton;
+  }
+
+  // Personalize greeting_new if customer_name is available
+  if (id === "greeting_new" && context.customer_name && context.customer_name.trim() !== "") {
+    rawBody = rawBody.replace(/Hi! 👋/g, `Hi ${context.customer_name}! 👋`);
   }
 
   const substituted = substituteVariables(rawBody, context);

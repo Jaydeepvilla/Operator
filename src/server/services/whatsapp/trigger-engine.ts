@@ -201,7 +201,7 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "service_price",
     priority: 5,
     patterns: [
-      /\b(price|pricing|cost|rate|fee|charges|how much (for|is))\b/i,
+      /\b(price|prices|pricing|cost|costs|rate|rates|fee|fees|charges|charge|how much (for|is)?)\b/i,
       /\b(kitna kharcha|kitne paise|kitna charge|rates kya hai)\b/i,
     ],
   },
@@ -209,7 +209,7 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "services_list",
     priority: 5,
     patterns: [
-      /\b(services|treatments|menu|catalog|what services|what do you do)\b/i,
+      /\b(services|treatments|service menu|treatment menu|rate card|catalog|what services|what do you do|what do you offer)\b/i,
       /\b(kya kya services|service list|list bhejo)\b/i,
     ],
   },
@@ -403,10 +403,11 @@ export function resolveWhatsAppResponse(
   requiresHandover: boolean;
 } {
   const isInside = isInside24HourWindow(lastCustomerMessageAt);
+  const hasSavedHistory = Boolean(context.last_service && context.last_service.trim() !== "");
   const match = matchWhatsAppIntent(
     messageText,
     mediaType,
-    !!context.customer_name && context.customer_name !== "Valued Customer"
+    hasSavedHistory
   );
 
   const rule = INTENT_RULES.find((r) => r.intent === match.intent);
