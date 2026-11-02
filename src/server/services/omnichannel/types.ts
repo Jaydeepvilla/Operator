@@ -35,6 +35,18 @@ export interface WebhookStatusPayload {
   updatedAt: Date;
 }
 
+export interface InteractiveMessagePayload {
+  type: "button" | "list";
+  header?: string;
+  footer?: string;
+  buttons?: Array<{ id: string; title: string }>;
+  listButton?: string;
+  sections?: Array<{
+    title: string;
+    rows: Array<{ id: string; title: string; description?: string }>;
+  }>;
+}
+
 export interface CommunicationProvider {
   id: string; // e.g. 'whatsapp-meta', 'sms-twilio', 'email-smtp'
   name: string;
@@ -47,7 +59,8 @@ export interface MessagingProvider extends CommunicationProvider {
     connectionConfig: Record<string, any>,
     recipientId: string,
     content: string,
-    attachments?: AttachmentInput[]
+    attachments?: AttachmentInput[],
+    interactive?: InteractiveMessagePayload
   ): Promise<SendMessageResult>;
   
   sendTemplateMessage(

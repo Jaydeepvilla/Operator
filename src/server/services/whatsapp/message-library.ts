@@ -40,6 +40,7 @@ export function isInside24HourWindow(lastCustomerMessageAt?: Date | number | str
  * Safe fallbacks for non-critical cosmetic variables so raw {{...}} brackets never reach users
  */
 const SAFE_VARIABLE_FALLBACKS: Record<string, string> = {
+  business_name: "Operator",
   customer_name: "",
   last_service: "appointment",
   last_staff: "our specialist",
@@ -62,7 +63,7 @@ const SAFE_VARIABLE_FALLBACKS: Record<string, string> = {
   minutes_left: "15",
   booking_ref: "your booking",
   phone: "our office",
-  website: "https://nexxtechnologies.com",
+  website: "https://operator.ai",
   maps_link: "https://maps.google.com",
   hours_today: "9:00 AM to 8:00 PM",
   hours_week: "Monday to Saturday: 9:00 AM - 8:00 PM",
@@ -128,26 +129,26 @@ export const BASICS_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "2.1",
     name: "Greeting New Customer",
     category: "service",
-    body: "Hi! 👋 Welcome to {{business_name}}. I can help you book an appointment, check prices or answer questions. What would you like to do?",
+    body: "Welcome to {{business_name}}.\nYour 24/7 Intelligent Desk.\n\nHow can we assist you today?",
     buttons: [
-      { id: "btn_book", title: "Book appointment" },
-      { id: "btn_prices", title: "Services & prices" },
-      { id: "btn_human", title: "Talk to a person" },
+      { id: "btn_book", title: "📅 Book Appointment" },
+      { id: "btn_prices", title: "📋 Services & Rates" },
+      { id: "btn_menu", title: "📌 Main Menu" },
     ],
     hinglish: {
-      body: "Hi! 👋 {{business_name}} mein aapka swagat hai. Main aapki kaise madad kar sakti hu?",
+      body: "{{business_name}} mein aapka swagat hai.\nAapki 24/7 digital desk.\n\nHum aapki kya madad kar sakte hain?",
       buttons: [
-        { id: "btn_book", title: "Book appointment" },
-        { id: "btn_prices", title: "Services & prices" },
-        { id: "btn_human", title: "Talk to a person" },
+        { id: "btn_book", title: "📅 Book Appointment" },
+        { id: "btn_prices", title: "📋 Services & Rates" },
+        { id: "btn_menu", title: "📌 Main Menu" },
       ],
     },
     hindi: {
-      body: "नमस्ते! 👋 {{business_name}} में आपका स्वागत है। मैं आपकी क्या मदद कर सकती हूँ?",
+      body: "{{business_name}} में आपका स्वागत है।\nआपकी 24/7 डिजिटल डेस्क।\n\nहम आपकी क्या मदद कर सकते हैं?",
       buttons: [
         { id: "btn_book", title: "बुक अपॉइंटमेंट" },
-        { id: "btn_prices", title: "सेवाएं व मूल्य" },
-        { id: "btn_human", title: "व्यक्ति से बात करें" },
+        { id: "btn_prices", title: "सेवाएं व दरें" },
+        { id: "btn_menu", title: "मुख्य मेनू" },
       ],
     },
   },
@@ -158,26 +159,26 @@ export const BASICS_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "2.2",
     name: "Greeting Returning Customer",
     category: "service",
-    body: "Welcome back, {{customer_name}}! 😊 Would you like to book your usual {{last_service}} again?",
+    body: "Welcome back to {{business_name}}, {{customer_name}}! 😊\n\nWould you like to book your usual {{last_service}} again, or explore other options?",
     buttons: [
-      { id: "btn_book_usual", title: "Yes, book it" },
-      { id: "btn_other_service", title: "Something else" },
-      { id: "btn_human", title: "Talk to a person" },
+      { id: "btn_book_usual", title: "✅ Book Usual Slot" },
+      { id: "btn_other_service", title: "📋 Other Services" },
+      { id: "btn_menu", title: "📌 Main Menu" },
     ],
     hinglish: {
       body: "Welcome back, {{customer_name}}! 😊 Kya aap apna usual {{last_service}} fir se book karna chahenge?",
       buttons: [
-        { id: "btn_book_usual", title: "Haan, book karo" },
-        { id: "btn_other_service", title: "Kuch aur" },
-        { id: "btn_human", title: "Talk to person" },
+        { id: "btn_book_usual", title: "✅ Book Usual Slot" },
+        { id: "btn_other_service", title: "📋 Other Services" },
+        { id: "btn_menu", title: "📌 Main Menu" },
       ],
     },
     hindi: {
       body: "वापसी पर स्वागत है {{customer_name}}! 😊 क्या आप अपना पसंदीदा {{last_service}} दोबारा बुक करना चाहते हैं?",
       buttons: [
         { id: "btn_book_usual", title: "हाँ, बुक करें" },
-        { id: "btn_other_service", title: "कुछ और" },
-        { id: "btn_human", title: "व्यक्ति से बात करें" },
+        { id: "btn_other_service", title: "अन्य सेवाएं" },
+        { id: "btn_menu", title: "मुख्य मेनू" },
       ],
     },
   },
@@ -188,21 +189,26 @@ export const BASICS_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "2.3",
     name: "Main Menu",
     category: "service",
-    body: "Here's what I can help with. Tap Choose an option.",
+    body: "Please choose an option below to proceed:",
     listButton: "Choose an option",
-    listTitle: "Main Menu",
+    listTitle: "Operator Menu",
     listSections: [
       {
-        title: "Actions",
+        title: "Bookings & Services",
         rows: [
-          { id: "menu_book", title: "Book appointment", description: "Schedule a new booking" },
-          { id: "menu_reschedule", title: "Reschedule or cancel", description: "Change or cancel booking" },
-          { id: "menu_services", title: "Services & prices", description: "Browse menu & rate card" },
-          { id: "menu_hours", title: "Opening hours", description: "Check working timings" },
-          { id: "menu_location", title: "Location & parking", description: "Address, map and parking" },
-          { id: "menu_offers", title: "Offers", description: "Current packages & discounts" },
-          { id: "menu_my_booking", title: "My booking", description: "View your upcoming booking" },
-          { id: "menu_human", title: "Talk to a person", description: "Connect with front desk team" },
+          { id: "menu_book", title: "📅 Book Appointment", description: "Schedule a new booking" },
+          { id: "menu_reschedule", title: "🔄 Reschedule/Cancel", description: "Change or cancel booking" },
+          { id: "menu_services", title: "💼 Services & Rates", description: "Browse menu & rate card" },
+          { id: "menu_my_booking", title: "🔍 My Booking", description: "View your upcoming booking" },
+        ],
+      },
+      {
+        title: "Business & Support",
+        rows: [
+          { id: "menu_hours", title: "🕒 Opening Hours", description: "Check working timings" },
+          { id: "menu_location", title: "📍 Location & Map", description: "Address, map and parking" },
+          { id: "menu_offers", title: "🎁 Special Offers", description: "Current packages & discounts" },
+          { id: "menu_human", title: "👤 Talk to Desk", description: "Connect with front desk team" },
         ],
       },
     ],
@@ -230,20 +236,23 @@ export const BASICS_REPLIES: Record<string, WhatsAppFreeReply> = {
     category: "service",
     body: "You're welcome! 😊 Is there anything else I can help with?",
     buttons: [
-      { id: "btn_book", title: "Book appointment" },
-      { id: "btn_done", title: "That's all" },
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
+      { id: "btn_done", title: "✅ That's all" },
     ],
     hinglish: {
       body: "Shukriya! 😊 Kya main kisi aur cheez mein madad kar sakti hu?",
       buttons: [
-        { id: "btn_book", title: "Book appointment" },
+        { id: "btn_book", title: "📅 Book Slot" },
+        { id: "btn_menu", title: "🔙 Main Menu" },
         { id: "btn_done", title: "Bas itna hi" },
       ],
     },
     hindi: {
       body: "आपका स्वागत है! 😊 क्या मैं किसी अन्य चीज़ में आपकी मदद कर सकती हूँ?",
       buttons: [
-        { id: "btn_book", title: "बुक अपॉइंटमेंट" },
+        { id: "btn_book", title: "बुक स्लॉट" },
+        { id: "btn_menu", title: "मुख्य मेनू" },
         { id: "btn_done", title: "बस इतना ही" },
       ],
     },
@@ -270,11 +279,11 @@ export const BASICS_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "2.7",
     name: "Not Understood Once",
     category: "service",
-    body: "Sorry, I didn't quite get that. Could you say it in a different way? Or pick one below.",
+    body: "I didn't quite catch that. Please select an option below or return to the main menu:",
     buttons: [
-      { id: "btn_book", title: "Book appointment" },
-      { id: "btn_prices", title: "Services & prices" },
-      { id: "btn_human", title: "Talk to a person" },
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_human", title: "👤 Talk to Desk" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
   },
 
@@ -294,13 +303,28 @@ export const BASICS_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "2.9",
     name: "Handover During Opening Hours",
     category: "care",
-    body: "Of course. I've asked {{business_name}}'s team to join this chat, and someone will reply shortly. To help them, please tell me what you need.",
+    body: "👤 Front Desk Notified:\nOur representative has been alerted and will join this conversation shortly. You can leave your message here or return to menu.",
+    buttons: [
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_hours", title: "🕒 Working Hours" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
+    ],
     handoverToHuman: true,
     hinglish: {
-      body: "Bilkul. Maine {{owner_name}} ko aapka message bhej diya hai. Wo jaldi hi yahin reply karenge. Tab tak koi aur sawaal ho to boliye.",
+      body: "Bilkul. Maine hamari team ko aapka message bhej diya hai. Wo jaldi hi yahin reply karenge. Tab tak aap menu se option chun sakte hain.",
+      buttons: [
+        { id: "btn_book", title: "📅 Book Slot" },
+        { id: "btn_hours", title: "🕒 Working Hours" },
+        { id: "btn_menu", title: "🔙 Main Menu" },
+      ],
     },
     hindi: {
-      body: "ज़रूर। मैंने {{owner_name}} को आपका संदेश भेज दिया है। हमारी टीम जल्द ही यहाँ जवाब देगी।",
+      body: "ज़रूर। मैंने हमारी टीम को आपका संदेश भेज दिया है। वे जल्द ही यहाँ जवाब देंगे।",
+      buttons: [
+        { id: "btn_book", title: "बुक स्लॉट" },
+        { id: "btn_hours", title: "कार्य समय" },
+        { id: "btn_menu", title: "मुख्य मेनू" },
+      ],
     },
   },
 
@@ -310,10 +334,11 @@ export const BASICS_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "2.10",
     name: "Handover Outside Opening Hours",
     category: "care",
-    body: "Our team is away right now. We open {{next_open}}. I've saved your message and someone will reply then. I can still help you book or answer questions now.",
+    body: "🌙 Outside Working Hours:\nOur team is away right now. We open {{next_open}}. I've saved your message and someone will reply then.",
     buttons: [
-      { id: "btn_book", title: "Book appointment" },
-      { id: "btn_ask", title: "Ask a question" },
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_hours", title: "🕒 Working Hours" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
     handoverToHuman: true,
   },
@@ -334,6 +359,10 @@ export const BASICS_REPLIES: Record<string, WhatsAppFreeReply> = {
     name: "Handback to Assistant",
     category: "service",
     body: "Thanks for chatting with {{staff}}. I'm here if you need anything else.",
+    buttons: [
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
+    ],
   },
 
   // 2.13 Closed now
@@ -342,16 +371,18 @@ export const BASICS_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "2.13",
     name: "Business Closed Now",
     category: "service",
-    body: "Hi! {{business_name}} is closed right now. We open {{next_open}}. I can still help you book, check prices or answer questions.",
+    body: "{{business_name}} is closed right now. We open {{next_open}}. You can still book, check prices or navigate options:",
     buttons: [
-      { id: "btn_book", title: "Book appointment" },
-      { id: "btn_prices", title: "Services & prices" },
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_prices", title: "📋 Services & Rates" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
     hinglish: {
-      body: "Hi! {{business_name}} abhi band hai. Hum {{next_open}} ko khulenge. Par aap abhi booking kar sakte hain ya prices check kar sakte hain.",
+      body: "{{business_name}} abhi band hai. Hum {{next_open}} ko khulenge. Par aap abhi booking kar sakte hain ya menu dekh sakte hain.",
       buttons: [
-        { id: "btn_book", title: "Book appointment" },
-        { id: "btn_prices", title: "Services & prices" },
+        { id: "btn_book", title: "📅 Book Slot" },
+        { id: "btn_prices", title: "📋 Services & Rates" },
+        { id: "btn_menu", title: "🔙 Main Menu" },
       ],
     },
   },
@@ -367,16 +398,18 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.1",
     name: "Opening Hours",
     category: "service",
-    body: "We're open {{hours_week}}. Today: {{hours_today}}. Would you like to book a time?",
+    body: "🕒 Working Hours:\n• Today: {{hours_today}}\n• Weekly: {{hours_week}}\n\nWould you like to reserve a time slot or get directions?",
     buttons: [
-      { id: "btn_book", title: "Book appointment" },
-      { id: "btn_location", title: "Location & parking" },
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_location", title: "📍 Location & Map" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
     hinglish: {
       body: "Hum aaj {{hours_today}} tak khule hain. Poore hafte ka time: {{hours_week}}. Kya aap appointment book karna chahenge?",
       buttons: [
-        { id: "btn_book", title: "Book appointment" },
-        { id: "btn_location", title: "Location" },
+        { id: "btn_book", title: "📅 Book Slot" },
+        { id: "btn_location", title: "📍 Location & Map" },
+        { id: "btn_menu", title: "🔙 Main Menu" },
       ],
     },
   },
@@ -387,10 +420,11 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.2",
     name: "Holiday Closure",
     category: "service",
-    body: "{{business_name}} is closed on {{holiday_name}}. We reopen {{next_open}}. Would you like to book a slot for after that?",
+    body: "📅 Holiday Notice:\n{{business_name}} is closed on {{holiday_name}}. We reopen {{next_open}}.",
     buttons: [
-      { id: "btn_book", title: "Book slot" },
-      { id: "btn_hours", title: "Opening hours" },
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_hours", title: "🕒 Working Hours" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
   },
 
@@ -400,16 +434,18 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.3",
     name: "Location",
     category: "service",
-    body: "We're at {{address}}. Map: {{maps_link}}",
+    body: "📍 Address & Location:\n{{address}}\nMap: {{maps_link}}",
     buttons: [
-      { id: "btn_book", title: "Book appointment" },
-      { id: "btn_call", title: "Call us" },
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_call", title: "📞 Call Desk" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
     hinglish: {
       body: "Hamara address: {{address}}. Map: {{maps_link}}. Landmark ke liye {{phone}} par call kar sakte hain.",
       buttons: [
-        { id: "btn_book", title: "Book appointment" },
-        { id: "btn_call", title: "Call karein" },
+        { id: "btn_book", title: "📅 Book Slot" },
+        { id: "btn_call", title: "📞 Call Desk" },
+        { id: "btn_menu", title: "🔙 Main Menu" },
       ],
     },
   },
@@ -420,10 +456,11 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.4",
     name: "Parking and Transport",
     category: "service",
-    body: "{{parking_info}}",
+    body: "🚗 Parking & Transit Details:\n{{parking_info}}",
     buttons: [
-      { id: "btn_location", title: "Location & map" },
-      { id: "btn_book", title: "Book appointment" },
+      { id: "btn_location", title: "📍 View Map" },
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
   },
 
@@ -433,7 +470,12 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.5",
     name: "Phone and Contact",
     category: "service",
-    body: "You can call us on {{phone}} during {{hours_today}}, or keep chatting here. Email: {{email}}.",
+    body: "📞 Direct Contact:\nYou can call us on {{phone}} during {{hours_today}}, or email {{email}}.",
+    buttons: [
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_human", title: "👤 Talk to Desk" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
+    ],
   },
 
   // 3.6 Services list
@@ -442,7 +484,12 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.6",
     name: "Services List",
     category: "service",
-    body: "Here's what we offer at {{business_name}}. Tap Choose a category.",
+    body: "💼 Services & Offerings at {{business_name}}:\n{{service_list}}\n\nPlease select an action below:",
+    buttons: [
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_human", title: "👤 Talk to Desk" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
+    ],
     listButton: "Choose category",
     listTitle: "Service Categories",
   },
@@ -453,18 +500,18 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.7",
     name: "Price of One Service",
     category: "service",
-    body: "{{service}}: {{price}}, about {{duration}}. {{service_note}} Would you like to book it?",
+    body: "💼 {{service}} Details:\n• Estimated Rate: {{price}}\n• Duration: {{duration}}\n\nWould you like to schedule this appointment?",
     buttons: [
-      { id: "btn_book_this", title: "Book this" },
-      { id: "btn_other_services", title: "Other services" },
-      { id: "btn_human", title: "Talk to a person" },
+      { id: "btn_book_this", title: "📅 Book This Slot" },
+      { id: "btn_services", title: "📋 Other Services" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
     hinglish: {
       body: "{{service}} ka rate {{price}} hai aur isme lagbhag {{duration}} lagte hain. Kya main booking kar du?",
       buttons: [
-        { id: "btn_book_this", title: "Haan book karo" },
-        { id: "btn_other_services", title: "Dusri service" },
-        { id: "btn_human", title: "Talk to person" },
+        { id: "btn_book_this", title: "📅 Book This Slot" },
+        { id: "btn_services", title: "📋 Other Services" },
+        { id: "btn_menu", title: "🔙 Main Menu" },
       ],
     },
   },
@@ -475,7 +522,12 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.8",
     name: "Starting / Budget Price",
     category: "service",
-    body: "Our services start from {{lowest_price}}. Tell me what you're looking for and I'll share the exact price.",
+    body: "💡 Starting Rates:\nOur services start from {{lowest_price}}. What would you like to schedule?",
+    buttons: [
+      { id: "btn_services", title: "📋 View Services" },
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
+    ],
   },
 
   // 3.9 Service details
@@ -484,10 +536,11 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.9",
     name: "Service Details",
     category: "service",
-    body: "{{service_description}}",
+    body: "ℹ️ Service Details:\n{{service_description}}",
     buttons: [
-      { id: "btn_book_this", title: "Book this" },
-      { id: "btn_human", title: "Talk to a person" },
+      { id: "btn_book_this", title: "📅 Book This Slot" },
+      { id: "btn_human", title: "👤 Talk to Desk" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
   },
 
@@ -497,10 +550,11 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.10",
     name: "Staff Information",
     category: "service",
-    body: "{{staff}} does {{staff_services}}. Want me to check their next free times?",
+    body: "👤 Specialist Information:\n{{staff}} specializes in {{staff_services}}. Want me to check their availability?",
     buttons: [
-      { id: "btn_check_times", title: "Check times" },
-      { id: "btn_any_staff", title: "Any available staff" },
+      { id: "btn_check_times", title: "📅 Check Times" },
+      { id: "btn_human", title: "👤 Talk to Desk" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
   },
 
@@ -510,10 +564,11 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.11",
     name: "Cancellation Policy",
     category: "service",
-    body: "Cancellation policy: {{cancel_policy}}",
+    body: "📋 Cancellation Policy:\n{{cancel_policy}}",
     buttons: [
-      { id: "btn_book", title: "Book appointment" },
-      { id: "btn_human", title: "Talk to a person" },
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_human", title: "👤 Talk to Desk" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
   },
   "policy_deposit": {
@@ -521,10 +576,11 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.11",
     name: "Deposit Policy",
     category: "service",
-    body: "A deposit of {{deposit}} holds your booking for {{service}}. {{deposit_policy}}",
+    body: "💳 Advance Deposit Policy:\nA deposit of {{deposit}} holds your booking for {{service}}. {{deposit_policy}}",
     buttons: [
-      { id: "btn_book", title: "Book now" },
-      { id: "btn_human", title: "Talk to a person" },
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_human", title: "👤 Talk to Desk" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
   },
   "policy_late": {
@@ -532,22 +588,36 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.11",
     name: "Late Arrival Policy",
     category: "service",
-    body: "Late arrival: {{late_policy}}",
+    body: "⏱️ Late Arrival Policy:\n{{late_policy}}",
+    buttons: [
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_human", title: "👤 Talk to Desk" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
+    ],
   },
   "policy_noshow": {
     id: "policy_noshow",
     section: "3.11",
     name: "No-Show Policy",
     category: "service",
-    body: "No-show policy: {{noshow_policy}}",
+    body: "⚠️ No-Show Policy:\n{{noshow_policy}}",
+    buttons: [
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_human", title: "👤 Talk to Desk" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
+    ],
   },
   "policy_refund": {
     id: "policy_refund",
     section: "3.11",
     name: "Refund Policy",
     category: "care",
-    body: "Refund policy: {{refund_policy}}",
-    buttons: [{ id: "btn_human", title: "Talk to a person" }],
+    body: "🔄 Refund Policy:\n{{refund_policy}}",
+    buttons: [
+      { id: "btn_human", title: "👤 Talk to Desk" },
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
+    ],
     handoverToHuman: true,
   },
   "policy_walkin": {
@@ -555,8 +625,12 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.11",
     name: "Walk-in Policy",
     category: "service",
-    body: "{{walkin_policy}} Booking guarantees your slot.",
-    buttons: [{ id: "btn_book", title: "Book guaranteed slot" }],
+    body: "🚶 Walk-in Policy:\n{{walkin_policy}} Booking guarantees your priority slot.",
+    buttons: [
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_hours", title: "🕒 Working Hours" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
+    ],
   },
 
   // 3.12 Payment methods
@@ -565,7 +639,12 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.12",
     name: "Payment Methods",
     category: "service",
-    body: "We accept {{payment_methods}}. {{deposit_note}}",
+    body: "💳 Payment Methods Accepted:\nWe accept {{payment_methods}}. {{deposit_note}}",
+    buttons: [
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_offers", title: "🎁 Special Offers" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
+    ],
   },
 
   // 3.13 Offers and packages
@@ -574,10 +653,11 @@ export const BUSINESS_INFO_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "3.13",
     name: "Offers and Packages",
     category: "service",
-    body: "Current offers at {{business_name}}: {{offers_list}} Would you like to use one for a booking?",
+    body: "🎁 Active Packages & Offers at {{business_name}}:\n{{offers_list}}\n\nWould you like to use one for a booking?",
     buttons: [
-      { id: "btn_book_offer", title: "Book with offer" },
-      { id: "btn_human", title: "Talk to a person" },
+      { id: "btn_book_offer", title: "📅 Book with Offer" },
+      { id: "btn_services", title: "📋 View Services" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
   },
 
@@ -739,18 +819,18 @@ export const BOOKING_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "4.7",
     name: "Booking Confirmed No Deposit",
     category: "service",
-    body: "You're booked! ✅ {{service}} with {{staff}} on {{date}} at {{time}}. Address: {{address}}. Booking ref: {{booking_ref}}. To change or cancel, just reply here.",
+    body: "You're booked! ✅ {{service}} with {{staff}} on {{date}} at {{time}}.\nAddress: {{address}}\nRef: {{booking_ref}}",
     buttons: [
-      { id: "btn_directions", title: "Directions" },
-      { id: "btn_reschedule", title: "Reschedule" },
-      { id: "btn_cancel", title: "Cancel" },
+      { id: "btn_directions", title: "📍 Directions" },
+      { id: "btn_reschedule", title: "🔄 Reschedule/Cancel" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
     hinglish: {
-      body: "Aapki booking confirm ho gayi hai! ✅ {{service}}, {{staff}} ke saath, {{date}} ko {{time}} baje. Address: {{address}}. Booking ref: {{booking_ref}}. Badalna ya cancel karna ho to yahin reply kijiye.",
+      body: "Aapki booking confirm ho gayi hai! ✅ {{service}}, {{staff}} ke saath, {{date}} ko {{time}} baje. Address: {{address}}. Ref: {{booking_ref}}.",
       buttons: [
-        { id: "btn_directions", title: "Directions" },
-        { id: "btn_reschedule", title: "Reschedule" },
-        { id: "btn_cancel", title: "Cancel" },
+        { id: "btn_directions", title: "📍 Directions" },
+        { id: "btn_reschedule", title: "🔄 Reschedule/Cancel" },
+        { id: "btn_menu", title: "🔙 Main Menu" },
       ],
     },
   },
@@ -813,11 +893,11 @@ export const BOOKING_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "4.13",
     name: "Check My Booking",
     category: "service",
-    body: "Your next booking is {{service}} with {{staff}} on {{date}} at {{time}}. Ref {{booking_ref}}.",
+    body: "🔍 Your Next Booking:\n• Service: {{service}}\n• Specialist: {{staff}}\n• Time: {{date}} at {{time}}\n• Reference: {{booking_ref}}",
     buttons: [
-      { id: "btn_reschedule", title: "Reschedule" },
-      { id: "btn_cancel", title: "Cancel" },
-      { id: "btn_directions", title: "Directions" },
+      { id: "btn_reschedule", title: "🔄 Reschedule/Cancel" },
+      { id: "btn_directions", title: "📍 Directions" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
   },
 
@@ -1077,10 +1157,11 @@ export const CARE_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "5.10",
     name: "Bot Identity Transparency",
     category: "service",
-    body: "I'm the virtual assistant for {{business_name}}. I can help with bookings, prices and questions, and I can connect you to a team member any time.",
+    body: "🤖 I am Operator, an autonomous AI receptionist for {{business_name}}.\n\nI can assist with bookings, pricing, and business info, or connect you directly with a team member.",
     buttons: [
-      { id: "btn_human", title: "Talk to a person" },
-      { id: "btn_continue", title: "Continue here" },
+      { id: "btn_book", title: "📅 Book Slot" },
+      { id: "btn_human", title: "👤 Talk to Desk" },
+      { id: "btn_menu", title: "🔙 Main Menu" },
     ],
   },
 
@@ -1773,7 +1854,9 @@ export function getWhatsAppReply(
 
   // Personalize greeting_new if customer_name is available
   if (id === "greeting_new" && context.customer_name && context.customer_name.trim() !== "") {
-    rawBody = rawBody.replace(/Hi! 👋/g, `Hi ${context.customer_name}! 👋`);
+    rawBody = rawBody
+      .replace(/How can we assist you today\?/g, `Hello ${context.customer_name}, how can we assist you today?`)
+      .replace(/Hum aapki kya madad/g, `Hello ${context.customer_name}, hum aapki kya madad`);
   }
 
   const substituted = substituteVariables(rawBody, context);
@@ -1803,6 +1886,7 @@ export function getWhatsAppReply(
     buttons,
     listButton,
     listRows,
+    listSections: template.listSections,
     handoverToHuman: template.handoverToHuman,
     priorityHumanHandover: template.priorityHumanHandover,
   };

@@ -90,10 +90,19 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "handover_open",
     priority: 2,
     patterns: [
-      /\b(talk to (a )?person|speak to human|real person|agent|executive|manager|call me|human support)\b/i,
+      /\b(talk to (a )?person|speak to human|real person|agent|executive|manager|call me|human support|talk to desk|front desk|alert reception|👤 talk)\b/i,
       /\b(kisi se baat karao|insan se baat|call karo mujhe|manager bulao)\b/i,
     ],
     requiresHumanHandover: true,
+  },
+  {
+    intent: "main_menu",
+    priority: 2,
+    patterns: [
+      /^(menu|options|help|what can you do|\?|1|0|back|home|start|main menu)$/i,
+      /\b(main menu|back to menu|go back|options dikhao|madad|wapas|piche|🔙 main menu|📌 main menu)\b/i,
+      /\b(menu dikhao|menu chahiye|start menu)\b/i,
+    ],
   },
   {
     intent: "bot_identity",
@@ -191,7 +200,7 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "booking_start",
     priority: 4,
     patterns: [
-      /\b(book( an)? appointment|book a slot|schedule|reserve|booking karni|appointment chahiye)\b/i,
+      /\b(book( an)? appointment|book a slot|schedule|reserve|booking karni|appointment chahiye|book this|book slot|📅 book|book new slot|book guaranteed slot)\b/i,
       /\b(book|booking|appointment|slot chahiye)\b/i,
     ],
   },
@@ -209,7 +218,7 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "services_list",
     priority: 5,
     patterns: [
-      /\b(services|treatments|service menu|treatment menu|rate card|catalog|what services|what do you do|what do you offer)\b/i,
+      /\b(services|treatments|service menu|treatment menu|rate card|catalog|what services|what do you do|what do you offer|services & rates|all services|other services|view services|📋 services|💼 services)\b/i,
       /\b(kya kya services|service list|list bhejo)\b/i,
     ],
   },
@@ -217,7 +226,7 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "opening_hours",
     priority: 5,
     patterns: [
-      /\b(opening hours|timings|timing|open today|closing time|what time do you open|are you open)\b/i,
+      /\b(opening hours|working hours|business hours|timings|timing|hours|open today|closing time|what time do you open|are you open|🕒 working hours)\b/i,
       /\b(kab (tak )?khula|timing|kitne baje khulta|aaj open|aaj khula)\b/i,
     ],
   },
@@ -225,7 +234,7 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "location",
     priority: 5,
     patterns: [
-      /\b(address|location|where are you located|directions|google map|how to reach)\b/i,
+      /\b(address|location|where are you( located)?|where is your (office|shop|clinic|salon|desk|branch)|directions|google map|how to reach|view map|📍 location|📍 view map|📍 directions)\b/i,
       /\b(kaha par hai|address batao|location send karo|rasta batao)\b/i,
     ],
   },
@@ -265,7 +274,7 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "offers_packages",
     priority: 5,
     patterns: [
-      /\b(offers|discount|coupons|promo code|package deals|any deal|special offer)\b/i,
+      /\b(offers|discount|coupons|promo code|package deals|any deal|special offer|offers & plans|🎁 offers|🎁 special offers)\b/i,
       /\b(koi offer hai|discount milega|koi coupon)\b/i,
     ],
   },
@@ -279,14 +288,6 @@ export const INTENT_RULES: IntentRule[] = [
   },
 
   // ── Tier 6: Conversational Polish ─────────────────────────────────────
-  {
-    intent: "main_menu",
-    priority: 6,
-    patterns: [
-      /^(menu|options|help|what can you do|\?|1)$/i,
-      /\b(main menu|options dikhao|madad)\b/i,
-    ],
-  },
   {
     intent: "greeting_new",
     priority: 6,

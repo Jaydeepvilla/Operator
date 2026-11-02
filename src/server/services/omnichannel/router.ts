@@ -193,6 +193,8 @@ export const omnichannelRouter = {
         let intentKey = "general_inquiry";
         let citations: any[] = [];
         let shouldEscalate = false;
+        let waInteractivePayload: any = undefined;
+        let waRawBody: string | undefined = undefined;
 
         // Specialized WhatsApp Message Library integration
         if (channelType === "whatsapp") {
@@ -218,11 +220,15 @@ export const omnichannelRouter = {
               } catch {}
             }
 
+            const defaultBusinessName = (business.name && business.name !== "Nexx Technologies" && business.name !== "Our Business")
+              ? business.name
+              : "Operator";
+
             const waContext = {
-              business_name: business.name || "Nexx Technologies",
+              business_name: defaultBusinessName,
               phone: business.phone || "+91 99135 37377",
               address: business.address || "Main Office",
-              maps_link: business.website || "https://nexxtechnologies.com",
+              maps_link: business.website || "https://operator.ai",
               hours_today: "9:00 AM to 8:00 PM",
               hours_week: "Mon-Sat: 9:00 AM - 8:00 PM, Sun: Closed",
               service_list: (business.services || []).map(s => `${s.name} (₹${s.price})`).join(", ") || "Consultation & Services",
@@ -235,9 +241,52 @@ export const omnichannelRouter = {
             if (waResolution.matchedIntent !== "knowledge_gap") {
               intentKey = waResolution.matchedIntent;
               shouldEscalate = waResolution.requiresHandover;
-              replyContent = waResolution.reply.body;
+              const rawBody = waResolution.reply.body;
+              waRawBody = rawBody;
 
-              // Format buttons or options cleanly
+              // Build Native Interactive Payload for WhatsApp Cloud API
+              if (waResolution.reply.type === "interactive_buttons" && waResolution.reply.buttons && waResolution.reply.buttons.length > 0) {
+                waInteractivePayload = {
+                  type: "button",
+                  header: "Operator",
+                  footer: "Operator • 24/7 Digital Desk",
+                  buttons: waResolution.reply.buttons.slice(0, 3).map((b, idx) => ({
+                    id: b.id || `btn_${idx}`,
+                    title: b.title.slice(0, 20),
+                  })),
+                };
+              } else if (waResolution.reply.type === "list") {
+                const sections = (waResolution.reply as any).listSections && (waResolution.reply as any).listSections.length > 0
+                  ? (waResolution.reply as any).listSections.map((sec: any) => ({
+                      title: (sec.title || "Options").slice(0, 24),
+                      rows: (sec.rows || []).slice(0, 10).map((r: any, rIdx: number) => ({
+                        id: (r.id || `opt_${rIdx}`).slice(0, 200),
+                        title: r.title.slice(0, 24),
+                        description: r.description ? r.description.slice(0, 72) : undefined,
+                      })),
+                    }))
+                  : [
+                      {
+                        title: "Select an Option",
+                        rows: (waResolution.reply.listRows || []).slice(0, 10).map((r, idx) => ({
+                          id: r.id || `opt_${idx}`,
+                          title: r.title.slice(0, 24),
+                          description: r.description ? r.description.slice(0, 72) : undefined,
+                        })),
+                      },
+                    ];
+
+                waInteractivePayload = {
+                  type: "list",
+                  header: "Operator Menu",
+                  footer: "Operator • 24/7 Digital Desk",
+                  listButton: (waResolution.reply.listButton || "Choose an option").slice(0, 20),
+                  sections,
+                };
+              }
+
+              // Also prepare clean text for DB storage / fallback channels
+              replyContent = rawBody;
               if (waResolution.reply.buttons && waResolution.reply.buttons.length > 0) {
                 replyContent += "\n\n" + waResolution.reply.buttons.map((b, i) => `${i + 1}️⃣ ${b.title}`).join("\n");
               } else if (waResolution.reply.listRows && waResolution.reply.listRows.length > 0) {
@@ -278,13 +327,14 @@ export const omnichannelRouter = {
           channelId,
           conversationId,
           recipientId: senderUserId,
-          content: replyContent,
+          content: waInteractivePayload ? (waRawBody || replyContent) : replyContent,
           isAiGenerated: true,
           metadata: {
             citations,
             intent: intentKey,
             isEscalated: shouldEscalate,
             confidenceScore: 0.98,
+            interactive: waInteractivePayload,
           }
         });
       }
@@ -424,8 +474,15 @@ export const omnichannelRouter = {
         })
         .returning();
 
-      // Trigger provider API call
-      const res = await provider.sendMessage(organizationId, config, recipientId, sanitizedContent);
+      // Trigger provider API call (with interactive action payload if supplied)
+      const res = await provider.sendMessage(
+        organizationId,
+        config,
+        recipientId,
+        sanitizedContent,
+        undefined,
+        metadata?.interactive
+      );
 
       // Validate delivery status transition & prevent failed from reporting as delivered
       const nextStatus = MessagingSecurityService.validateMessageStateTransition(

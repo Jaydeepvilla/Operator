@@ -4,7 +4,8 @@ import {
   SendMessageResult, 
   WebhookMessagePayload, 
   WebhookStatusPayload,
-  ProviderRegistry
+  ProviderRegistry,
+  InteractiveMessagePayload
 } from "./types";
 
 export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
@@ -12,13 +13,14 @@ export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
   name = "Meta WhatsApp Business API";
   channelType = "whatsapp" as const;
 
-  // 1. Send text or media message
+  // 1. Send text or media message (with full native Meta Interactive Button/List support)
   async sendMessage(
     organizationId: string,
     connectionConfig: Record<string, any>,
     recipientId: string,
     content: string,
-    attachments?: any[]
+    attachments?: any[],
+    interactive?: InteractiveMessagePayload
   ): Promise<SendMessageResult> {
     try {
       const accessToken = (
@@ -37,23 +39,111 @@ export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
         throw new Error("Missing required WhatsApp access token or phone ID in channel configuration.");
       }
 
-      const response = await fetch(`https://graph.facebook.com/v18.0/${phoneId}/messages`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
+      // Build payload: Interactive (Buttons or List) vs Standard Text
+      let requestBody: any = null;
+
+      if (interactive && interactive.type === "button" && interactive.buttons && interactive.buttons.length > 0) {
+        requestBody = {
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: recipientId,
+          type: "interactive",
+          interactive: {
+            type: "button",
+            ...(interactive.header ? { header: { type: "text", text: interactive.header.slice(0, 60) } } : {}),
+            body: {
+              text: content.slice(0, 1024),
+            },
+            ...(interactive.footer ? { footer: { text: interactive.footer.slice(0, 60) } } : {}),
+            action: {
+              buttons: interactive.buttons.slice(0, 3).map((b, idx) => ({
+                type: "reply",
+                reply: {
+                  id: (b.id || `btn_${idx}`).slice(0, 256),
+                  title: b.title.slice(0, 20),
+                },
+              })),
+            },
+          },
+        };
+      } else if (interactive && interactive.type === "list" && interactive.sections && interactive.sections.length > 0) {
+        requestBody = {
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: recipientId,
+          type: "interactive",
+          interactive: {
+            type: "list",
+            ...(interactive.header ? { header: { type: "text", text: interactive.header.slice(0, 60) } } : {}),
+            body: {
+              text: content.slice(0, 1024),
+            },
+            ...(interactive.footer ? { footer: { text: interactive.footer.slice(0, 60) } } : {}),
+            action: {
+              button: (interactive.listButton || "Choose an option").slice(0, 20),
+              sections: interactive.sections.map((sec) => ({
+                title: (sec.title || "Options").slice(0, 24),
+                rows: sec.rows.slice(0, 10).map((r, rIdx) => ({
+                  id: (r.id || `opt_${rIdx}`).slice(0, 200),
+                  title: r.title.slice(0, 24),
+                  ...(r.description ? { description: r.description.slice(0, 72) } : {}),
+                })),
+              })),
+            },
+          },
+        };
+      } else {
+        requestBody = {
           messaging_product: "whatsapp",
           recipient_type: "individual",
           to: recipientId,
           type: "text",
           text: {
             preview_url: false,
-            body: content
-          }
-        })
+            body: content,
+          },
+        };
+      }
+
+      let response = await fetch(`https://graph.facebook.com/v18.0/${phoneId}/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(requestBody),
       });
+
+      // If interactive send failed, fallback immediately to formatted text so message is never lost
+      if (!response.ok && interactive) {
+        const errText = await response.text();
+        console.warn(`[WhatsApp Provider] Interactive message failed (${response.status}: ${errText}), attempting text fallback`);
+
+        let fallbackText = content;
+        if (interactive.type === "button" && interactive.buttons) {
+          fallbackText += "\n\n" + interactive.buttons.map((b, i) => `${i + 1}️⃣ ${b.title}`).join("\n");
+        } else if (interactive.type === "list" && interactive.sections) {
+          fallbackText += "\n\n*Options:*\n" + interactive.sections.flatMap((s) => s.rows).map((r) => `• *${r.title}*${r.description ? ` - ${r.description}` : ""}`).join("\n");
+        }
+
+        response = await fetch(`https://graph.facebook.com/v18.0/${phoneId}/messages`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to: recipientId,
+            type: "text",
+            text: {
+              preview_url: false,
+              body: fallbackText,
+            },
+          }),
+        });
+      }
 
       if (!response.ok) {
         const errText = await response.text();
@@ -68,14 +158,14 @@ export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
 
       return {
         success: true,
-        externalId: messageId
+        externalId: messageId,
       };
     } catch (e: any) {
       console.error("[WhatsApp Provider] Send failed:", e);
       return {
         success: false,
         errorCode: "WHATSAPP_SEND_FAILED",
-        errorMessage: e?.message || "Meta API request failed"
+        errorMessage: e?.message || "Meta API request failed",
       };
     }
   }
@@ -236,7 +326,7 @@ export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
           } else if (msg.type === "button") {
             content = msg.button?.text || "";
           } else if (msg.type === "interactive") {
-            content = msg.interactive?.button_reply?.title || msg.interactive?.list_reply?.title || "";
+            content = msg.interactive?.button_reply?.title || msg.interactive?.list_reply?.title || msg.interactive?.button_reply?.id || msg.interactive?.list_reply?.id || "";
           }
 
           messages.push({

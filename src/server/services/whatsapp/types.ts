@@ -85,6 +85,7 @@ export interface WhatsAppReplyPayload {
   body: string;
   buttons?: WhatsAppReplyButton[];
   listRows?: WhatsAppListRow[];
+  listSections?: WhatsAppListSection[];
   listButton?: string;
   header?: string;
   footer?: string;
