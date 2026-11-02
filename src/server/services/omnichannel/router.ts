@@ -27,7 +27,21 @@ import "./sinch";
 import "./resend";
 import "./whatsapp";
 
+// In-memory cache for channel credentials to eliminate redundant DB calls on outbound messages
+const channelConfigCache = new Map<string, { channel: any; connection: any; expiresAt: number }>();
+const CHANNEL_CONFIG_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+
 export const omnichannelRouter = {
+  /**
+   * Clear cached channel configuration
+   */
+  invalidateChannelCache(organizationId?: string, channelId?: string) {
+    if (organizationId && channelId) {
+      channelConfigCache.delete(`${organizationId}:${channelId}`);
+    } else {
+      channelConfigCache.clear();
+    }
+  },
   /**
    * Route incoming message payload received via webhooks
    */
@@ -228,7 +242,7 @@ export const omnichannelRouter = {
               business_name: defaultBusinessName,
               phone: business.phone || "+91 99135 37377",
               address: business.address || "Main Office",
-              maps_link: business.website || "https://operator.ai",
+              maps_link: business.website || "https://operator.nexxtechnologies.com/",
               hours_today: "9:00 AM to 8:00 PM",
               hours_week: "Mon-Sat: 9:00 AM - 8:00 PM, Sun: Closed",
               service_list: (business.services || []).map(s => `${s.name} (₹${s.price})`).join(", ") || "Consultation & Services",
@@ -292,15 +306,6 @@ export const omnichannelRouter = {
               } else if (waResolution.reply.listRows && waResolution.reply.listRows.length > 0) {
                 replyContent += "\n\n*Options:*\n" + waResolution.reply.listRows.map(r => `• *${r.title}*${r.description ? ` - ${r.description}` : ""}`).join("\n");
               }
-
-              // Record assistant message to conversationMessages
-              await db.insert(conversationMessages).values({
-                organizationId,
-                conversationId,
-                sender: "assistant",
-                content: replyContent,
-                confidenceScore: "0.98"
-              });
             }
           } catch (waErr) {
             console.error("[Omnichannel Router] WhatsApp library fallback to orchestrator:", waErr);
@@ -375,20 +380,28 @@ export const omnichannelRouter = {
     const { organizationId, channelId, conversationId, recipientId, content, isAiGenerated = false, metadata = {} } = options;
 
     try {
-      // Find channel config and connections
-      const channel = await db.query.communicationChannels.findFirst({
-        where: and(
-          eq(communicationChannels.organizationId, organizationId),
-          eq(communicationChannels.id, channelId)
-        )
-      });
-
-      const connection = await db.query.channelConnections.findFirst({
-        where: and(
-          eq(channelConnections.organizationId, organizationId),
-          eq(channelConnections.channelId, channelId)
-        )
-      });
+      // Find channel config and connections with hot in-memory cache to eliminate DB roundtrip latency
+      const cacheKey = `${organizationId}:${channelId}`;
+      let cachedConfig = channelConfigCache.get(cacheKey);
+      if (!cachedConfig || cachedConfig.expiresAt < Date.now()) {
+        const [foundChannel, foundConnection] = await Promise.all([
+          db.query.communicationChannels.findFirst({
+            where: and(
+              eq(communicationChannels.organizationId, organizationId),
+              eq(communicationChannels.id, channelId)
+            )
+          }),
+          db.query.channelConnections.findFirst({
+            where: and(
+              eq(channelConnections.organizationId, organizationId),
+              eq(channelConnections.channelId, channelId)
+            )
+          })
+        ]);
+        cachedConfig = { channel: foundChannel, connection: foundConnection, expiresAt: Date.now() + CHANNEL_CONFIG_CACHE_TTL_MS };
+        channelConfigCache.set(cacheKey, cachedConfig);
+      }
+      const { channel, connection } = cachedConfig;
 
       // 1. Channel Operationality Check
       MessagingSecurityService.assertChannelOperational({
@@ -445,37 +458,9 @@ export const omnichannelRouter = {
       const provider = ProviderRegistry.getMessagingProvider(channel.type);
       if (!provider) throw new Error(`No provider registered for channel type: ${channel.type}`);
 
-      // Save outgoing message to DB logs first (as queued status)
+      // High-performance dispatch: start sending immediately to minimize delivery delay
       const senderVal = isAiGenerated ? "assistant" : "staff";
-      
-      const [aiMsg] = await db
-        .insert(conversationMessages)
-        .values({
-          organizationId,
-          conversationId,
-          sender: senderVal,
-          content: sanitizedContent,
-          confidenceScore: "1.0"
-        })
-        .returning();
-
-      const [chanMsg] = await db
-        .insert(channelMessages)
-        .values({
-          organizationId,
-          channelId,
-          conversationId,
-          direction: "outgoing",
-          senderId: channel.type === "email" ? (config.user || "assistant@operator.ai") : (config.fromNumber || "business-handle"),
-          recipientId,
-          content: sanitizedContent,
-          status: "queued",
-          metadata: { isAiGenerated, ...metadata }
-        })
-        .returning();
-
-      // Trigger provider API call (with interactive action payload if supplied)
-      const res = await provider.sendMessage(
+      const sendPromise = provider.sendMessage(
         organizationId,
         config,
         recipientId,
@@ -483,6 +468,36 @@ export const omnichannelRouter = {
         undefined,
         metadata?.interactive
       );
+
+      // Concurrently persist message records to DB
+      const dbLogsPromise = Promise.all([
+        db
+          .insert(conversationMessages)
+          .values({
+            organizationId,
+            conversationId,
+            sender: senderVal,
+            content: sanitizedContent,
+            confidenceScore: "1.0"
+          })
+          .returning(),
+        db
+          .insert(channelMessages)
+          .values({
+            organizationId,
+            channelId,
+            conversationId,
+            direction: "outgoing",
+            senderId: channel.type === "email" ? (config.user || "assistant@operator.ai") : (config.fromNumber || "business-handle"),
+            recipientId,
+            content: sanitizedContent,
+            status: "queued",
+            metadata: { isAiGenerated, ...metadata }
+          })
+          .returning()
+      ]);
+
+      const [res, [, [chanMsg]]] = await Promise.all([sendPromise, dbLogsPromise]);
 
       // Validate delivery status transition & prevent failed from reporting as delivered
       const nextStatus = MessagingSecurityService.validateMessageStateTransition(

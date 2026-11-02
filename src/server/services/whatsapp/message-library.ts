@@ -63,7 +63,7 @@ const SAFE_VARIABLE_FALLBACKS: Record<string, string> = {
   minutes_left: "15",
   booking_ref: "your booking",
   phone: "our office",
-  website: "https://operator.ai",
+  website: "https://operator.nexxtechnologies.com/",
   maps_link: "https://maps.google.com",
   hours_today: "9:00 AM to 8:00 PM",
   hours_week: "Monday to Saturday: 9:00 AM - 8:00 PM",

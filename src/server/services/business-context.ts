@@ -74,8 +74,24 @@ function formatWeeklyHours(hoursObj: any): string {
   return lines.length > 0 ? lines.join(", ") : "Standard business hours apply.";
 }
 
+const contextCache = new Map<string, { data: BusinessContext; expiresAt: number }>();
+const CACHE_TTL_MS = 60 * 1000; // 60s hot in-memory cache to eliminate repetitive DB latency
+
 export const businessContextService = {
+  invalidateCache(organizationId?: string) {
+    if (organizationId) {
+      contextCache.delete(organizationId);
+    } else {
+      contextCache.clear();
+    }
+  },
+
   async getContext(organizationId: string): Promise<BusinessContext> {
+    const cached = contextCache.get(organizationId);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.data;
+    }
+
     let org: any = null;
     let profile: any = null;
     let settings: any = null;
@@ -183,7 +199,7 @@ export const businessContextService = {
       hasFaqs: cleanFaqs.length > 0,
     };
 
-    return {
+    const result: BusinessContext = {
       organizationId,
       name: orgName,
       industry: orgIndustry,
@@ -202,5 +218,12 @@ export const businessContextService = {
       staff: cleanStaff,
       capabilities,
     };
+
+    contextCache.set(organizationId, {
+      data: result,
+      expiresAt: Date.now() + CACHE_TTL_MS,
+    });
+
+    return result;
   },
 };
