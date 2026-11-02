@@ -74,7 +74,7 @@ export default function PrivacyPage() {
             {/* Content */}
             <div className="lg:col-span-8">
               <Section id="overview" title="Overview">
-                <p>Operator Technologies (&quot;Operator&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) operates the Operator platform at operator.ai. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.</p>
+                <p>Operator Technologies (&quot;Operator&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) operates the Operator platform at operator.nexxtechnologies.com. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.</p>
                 <p>By using our service, you agree to the collection and use of information in accordance with this policy. If you are using our service on behalf of a business or organization, you represent that you are authorized to agree to this policy on their behalf.</p>
                 <p>This policy applies to: (a) business customers who purchase Operator subscriptions; (b) end users who interact with Operator AI instances deployed by our business customers; and (c) visitors to our marketing website.</p>
               </Section>

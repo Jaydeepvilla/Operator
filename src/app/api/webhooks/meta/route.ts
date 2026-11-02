@@ -7,6 +7,9 @@ import { omnichannelRouter } from "@/server/services/omnichannel/router";
 import crypto from "crypto";
 
 // Auto import/trigger registry files to compile decorators
+// In-memory cache for Meta connection lookup to eliminate 200-300ms roundtrip per webhook
+const metaConnectionCache = new Map<string, { connection: any; expiresAt: number }>();
+const META_CONNECTION_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 import "@/server/services/omnichannel/whatsapp";
 import "@/server/services/omnichannel/instagram";
 import "@/server/services/omnichannel/facebook";
@@ -103,13 +106,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, message: "No actionable external metadata found" });
     }
 
-    // Lookup connection in database to find organizationId and channelId
-    const connection = await db.query.channelConnections.findFirst({
-      where: eq(channelConnections.externalId, externalIdLookup),
-      with: {
-        channel: true
+    // Lookup connection in cache or database to find organizationId and channelId
+    let connection: any = undefined;
+    const cachedConn = metaConnectionCache.get(externalIdLookup);
+    if (cachedConn && cachedConn.expiresAt > Date.now()) {
+      connection = cachedConn.connection;
+    } else {
+      connection = await db.query.channelConnections.findFirst({
+        where: eq(channelConnections.externalId, externalIdLookup),
+        with: {
+          channel: true
+        }
+      });
+      if (connection) {
+        metaConnectionCache.set(externalIdLookup, {
+          connection,
+          expiresAt: Date.now() + META_CONNECTION_CACHE_TTL_MS,
+        });
       }
-    });
+    }
 
     if (!connection) {
       console.warn(`[Meta Webhook] No active channel connection found for external ID: ${externalIdLookup}`);

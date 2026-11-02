@@ -203,8 +203,8 @@ export default function TermsPage() {
               <Section id="contact-terms" title="17. Contact">
                 <p>For questions about these Terms, contact us at:</p>
                 <div className="radius-xl border border-border/40 bg-card/30 p-space-5 mt-space-3 space-y-space-2">
-                  <p><strong className="text-foreground">Legal inquiries:</strong> legal@operator.ai</p>
-                  <p><strong className="text-foreground">General support:</strong> support@operator.ai</p>
+                  <p><strong className="text-foreground">Legal inquiries:</strong> legal@nexxtechnologies.com</p>
+                  <p><strong className="text-foreground">General support:</strong> support@nexxtechnologies.com</p>
                   <p><strong className="text-foreground">Response time:</strong> Within 5 business days</p>
                 </div>
               </Section>

@@ -13,7 +13,7 @@ import {
   communicationLogs,
   appointments
 } from "../../db/schema";
-import { eq, and, or, desc } from "drizzle-orm";
+import { eq, and, or, desc, sql } from "drizzle-orm";
 import { WebhookMessagePayload, ProviderRegistry } from "./types";
 import { orchestratorService } from "../orchestrator";
 import { crmDeduplicationService } from "../crm/deduplication";
@@ -31,6 +31,13 @@ import "./whatsapp";
 const channelConfigCache = new Map<string, { channel: any; connection: any; expiresAt: number }>();
 const CHANNEL_CONFIG_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
+// In-memory cache for channel AI settings
+const channelSettingsCache = new Map<string, { data: any; expiresAt: number }>();
+
+// In-memory cache for active thread IDs per contact to skip redundant SELECT/INSERT on continuous chat
+const activeThreadCache = new Map<string, { conversationId: string; threadId: string; expiresAt: number }>();
+const ACTIVE_THREAD_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
 export const omnichannelRouter = {
   /**
    * Clear cached channel configuration
@@ -38,8 +45,11 @@ export const omnichannelRouter = {
   invalidateChannelCache(organizationId?: string, channelId?: string) {
     if (organizationId && channelId) {
       channelConfigCache.delete(`${organizationId}:${channelId}`);
+      channelSettingsCache.delete(`${organizationId}:${channelId}`);
     } else {
       channelConfigCache.clear();
+      channelSettingsCache.clear();
+      activeThreadCache.clear();
     }
   },
   /**
@@ -79,127 +89,147 @@ export const omnichannelRouter = {
       });
 
       if (!isNew) {
-        // Update conversation counts on existing contact profile
-        const lead = await db.query.leadProfiles.findFirst({
-          where: eq(leadProfiles.id, leadProfileId)
-        });
-        if (lead) {
-          await db
-            .update(leadProfiles)
-            .set({ 
-              conversationCount: (lead.conversationCount || 0) + 1,
-              updatedAt: new Date()
-            })
-            .where(eq(leadProfiles.id, leadProfileId));
-        }
-      }
-
-      // 2. Find or Create Conversation linked to this lead and channel
-      // Try to find an active thread first
-      let thread = await db.query.inboxThreads.findFirst({
-        where: and(
-          eq(inboxThreads.organizationId, organizationId),
-          eq(inboxThreads.channelId, channelId),
-          eq(inboxThreads.status, "open")
-        )
-      });
-
-      let conversationId: string;
-
-      if (!thread) {
-        // Create standard conversation
-        const [newConv] = await db
-          .insert(conversations)
-          .values({
-            organizationId,
-            leadProfileId,
-            status: "active",
-            metadata: { sourceChannel: channelType }
-          })
-          .returning();
-
-        conversationId = newConv.id;
-
-        // Create thread
-        const [newThread] = await db
-          .insert(inboxThreads)
-          .values({
-            organizationId,
-            conversationId,
-            channelId,
-            status: "open",
-            unreadCount: 1
-          })
-          .returning();
-
-        thread = newThread;
-
-        // Save thread participant
-        const participantName = senderName || `${channelType.toUpperCase()} User`;
-        await db
-          .insert(inboxParticipants)
-          .values({
-            organizationId,
-            threadId: thread.id,
-            participantType: "contact",
-            participantId: leadProfileId,
-            name: participantName
-          });
-      } else {
-        conversationId = thread.conversationId;
-        
-        // Increment unread count
-        await db
-          .update(inboxThreads)
+        // Non-blocking conversation count increment (no redundant SELECT)
+        db.update(leadProfiles)
           .set({ 
-            unreadCount: (thread.unreadCount || 0) + 1,
+            conversationCount: sql`${leadProfiles.conversationCount} + 1`,
             updatedAt: new Date()
           })
-          .where(eq(inboxThreads.id, thread.id));
+          .where(eq(leadProfiles.id, leadProfileId))
+          .catch(() => {});
       }
 
-      // 3. Save incoming message to Drizzle standard conversations and omnichannel channel logs
-      await db.insert(conversationMessages).values({
-        organizationId,
-        conversationId,
-        sender: "user",
-        content,
-        confidenceScore: "1.0"
-      });
+      // 2. Find or Create Conversation linked to this lead and channel with in-memory caching
+      const threadCacheKey = `${organizationId}:${channelId}:${senderUserId}`;
+      let cachedThread = activeThreadCache.get(threadCacheKey);
+      let conversationId: string;
+      let threadId: string;
+      let isThreadEscalated = false;
+      let isThreadPaused = false;
 
-      const [chanMsg] = await db
-        .insert(channelMessages)
-        .values({
-          organizationId,
-          channelId,
+      if (cachedThread && cachedThread.expiresAt > Date.now()) {
+        conversationId = cachedThread.conversationId;
+        threadId = cachedThread.threadId;
+      } else {
+        // Try to find an active thread first
+        const thread = await db.query.inboxThreads.findFirst({
+          where: and(
+            eq(inboxThreads.organizationId, organizationId),
+            eq(inboxThreads.channelId, channelId),
+            eq(inboxThreads.status, "open")
+          )
+        });
+
+        if (!thread) {
+          // Create standard conversation
+          const [newConv] = await db
+            .insert(conversations)
+            .values({
+              organizationId,
+              leadProfileId,
+              status: "active",
+              metadata: { sourceChannel: channelType }
+            })
+            .returning();
+
+          conversationId = newConv.id;
+
+          // Create thread
+          const [newThread] = await db
+            .insert(inboxThreads)
+            .values({
+              organizationId,
+              conversationId,
+              channelId,
+              status: "open",
+              unreadCount: 1
+            })
+            .returning();
+
+          threadId = newThread.id;
+
+          // Save thread participant asynchronously
+          const participantName = senderName || `${channelType.toUpperCase()} User`;
+          db.insert(inboxParticipants)
+            .values({
+              organizationId,
+              threadId: threadId,
+              participantType: "contact",
+              participantId: leadProfileId,
+              name: participantName
+            })
+            .catch(() => {});
+        } else {
+          conversationId = thread.conversationId;
+          threadId = thread.id;
+          isThreadEscalated = thread.assignedStaffId !== null;
+          isThreadPaused = thread.aiAutonomy === "paused";
+        }
+
+        activeThreadCache.set(threadCacheKey, {
           conversationId,
-          direction: "incoming",
-          senderId: senderUserId,
-          recipientId: recipientUserId,
+          threadId,
+          expiresAt: Date.now() + ACTIVE_THREAD_CACHE_TTL_MS,
+        });
+      }
+
+      // 3. Save incoming message records in a single parallel batch to avoid serial DB roundtrips
+      const [, [chanMsg]] = await Promise.all([
+        db.insert(conversationMessages).values({
+          organizationId,
+          conversationId,
+          sender: "user",
           content,
-          status: "read",
-          externalId: externalMessageId,
-          metadata
-        })
-        .returning();
+          confidenceScore: "1.0"
+        }),
+        db
+          .insert(channelMessages)
+          .values({
+            organizationId,
+            channelId,
+            conversationId,
+            direction: "incoming",
+            senderId: senderUserId,
+            recipientId: recipientUserId,
+            content,
+            status: "read",
+            externalId: externalMessageId,
+            metadata
+          })
+          .returning(),
+        db
+          .update(inboxThreads)
+          .set({ 
+            unreadCount: sql`${inboxThreads.unreadCount} + 1`,
+            updatedAt: new Date() 
+          })
+          .where(eq(inboxThreads.id, threadId))
+          .catch(() => {})
+      ]);
 
-      // Update thread lastMessageId
-      await db
-        .update(inboxThreads)
-        .set({ lastMessageId: chanMsg.id, updatedAt: new Date() })
-        .where(eq(inboxThreads.id, thread.id));
+      // Update thread lastMessageId asynchronously without blocking message routing
+      if (chanMsg?.id) {
+        db.update(inboxThreads)
+          .set({ lastMessageId: chanMsg.id })
+          .where(eq(inboxThreads.id, threadId))
+          .catch(() => {});
+      }
 
-      // 4. Resolve Channel settings to check if AI responses are enabled
-      const settings = await db.query.channelSettings.findFirst({
-        where: and(
-          eq(channelSettings.organizationId, organizationId),
-          eq(channelSettings.channelId, channelId)
-        )
-      });
+      // 4. Resolve Channel settings from in-memory cache to check if AI responses are enabled
+      const settingsKey = `${organizationId}:${channelId}`;
+      let cachedSettings = channelSettingsCache.get(settingsKey);
+      if (!cachedSettings || cachedSettings.expiresAt < Date.now()) {
+        const found = await db.query.channelSettings.findFirst({
+          where: and(
+            eq(channelSettings.organizationId, organizationId),
+            eq(channelSettings.channelId, channelId)
+          )
+        });
+        cachedSettings = { data: found, expiresAt: Date.now() + 2 * 60 * 1000 };
+        channelSettingsCache.set(settingsKey, cachedSettings);
+      }
 
-      const aiEnabled = settings ? settings.aiEnabled : true;
-      const isThreadEscalated = thread.assignedStaffId !== null; // If staff assigned, manual mode active
-      const isThreadPaused = thread.aiAutonomy === "paused";
+      const aiEnabled = cachedSettings.data ? cachedSettings.data.aiEnabled : true;
 
       // 5. Trigger AI process and reply if applicable
       if (aiEnabled && !isThreadEscalated && !isThreadPaused) {
@@ -215,9 +245,11 @@ export const omnichannelRouter = {
           try {
             const business = await businessContextService.getContext(organizationId);
 
-            // Fetch past appointment history to check if customer has a real saved last_service
+            // Fetch past appointment history only when relevant (e.g., returning greeting)
             let lastService: string | undefined = undefined;
-            if (leadProfileId) {
+            const lowerContent = (content || "").toLowerCase().trim();
+            const needsHistoryCheck = lowerContent === "hi" || lowerContent === "hello" || lowerContent.includes("again") || lowerContent.includes("usual");
+            if (leadProfileId && needsHistoryCheck) {
               try {
                 const pastApt = await db.query.appointments.findFirst({
                   where: and(
@@ -488,7 +520,7 @@ export const omnichannelRouter = {
             channelId,
             conversationId,
             direction: "outgoing",
-            senderId: channel.type === "email" ? (config.user || "assistant@operator.ai") : (config.fromNumber || "business-handle"),
+            senderId: channel.type === "email" ? (config.user || "assistant@operator.nexxtechnologies.com") : (config.fromNumber || "business-handle"),
             recipientId,
             content: sanitizedContent,
             status: "queued",

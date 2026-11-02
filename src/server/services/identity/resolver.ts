@@ -25,34 +25,51 @@ export interface ResolveIdentityResult {
   normalizedEmail?: string | null;
 }
 
+const orgCountryCache = new Map<string, { country: string; expiresAt: number }>();
+const ORG_COUNTRY_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
 export const identityResolverService = {
   /**
    * Resolves or retrieves organization country context.
    */
   async getOrganizationCountry(organizationId: string): Promise<string> {
+    const cached = orgCountryCache.get(organizationId);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.country;
+    }
+
     try {
+      let resolvedCountry = "IN";
       const [loc] = await db
         .select({ countryCode: businessLocalization.countryCode })
         .from(businessLocalization)
         .where(eq(businessLocalization.organizationId, organizationId));
-      if (loc?.countryCode) return loc.countryCode;
+      if (loc?.countryCode) {
+        resolvedCountry = loc.countryCode;
+      } else {
+        const [org] = await db
+          .select({ phone: organizations.phone, timezone: organizations.timezone })
+          .from(organizations)
+          .where(eq(organizations.id, organizationId));
 
-      const [org] = await db
-        .select({ phone: organizations.phone, timezone: organizations.timezone })
-        .from(organizations)
-        .where(eq(organizations.id, organizationId));
-
-      if (org?.phone) {
-        const p = normalizePhoneNumber(org.phone);
-        if (p.success && p.country) return p.country;
+        if (org?.phone) {
+          const p = normalizePhoneNumber(org.phone);
+          if (p.success && p.country) resolvedCountry = p.country;
+        } else if (org?.timezone?.includes("Kolkata") || org?.timezone?.includes("Calcutta") || org?.timezone?.includes("India")) {
+          resolvedCountry = "IN";
+        } else if (org?.timezone?.includes("London")) {
+          resolvedCountry = "GB";
+        } else if (org?.timezone?.includes("New_York") || org?.timezone?.includes("Chicago") || org?.timezone?.includes("Los_Angeles")) {
+          resolvedCountry = "US";
+        }
       }
 
-      if (org?.timezone?.includes("Kolkata") || org?.timezone?.includes("Calcutta") || org?.timezone?.includes("India")) {
-        return "IN";
-      }
-      if (org?.timezone?.includes("London")) {
-        return "GB";
-      }
+      orgCountryCache.set(organizationId, {
+        country: resolvedCountry,
+        expiresAt: Date.now() + ORG_COUNTRY_CACHE_TTL_MS,
+      });
+
+      return resolvedCountry;
     } catch {
       // ignore
     }
