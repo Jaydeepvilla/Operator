@@ -218,6 +218,14 @@ export const orchestratorService = {
         sessionState.conversationContext = {};
       }
 
+      // Reset stale or superseded multi-step booking/rescheduling flows on greetings or explicit restart
+      const isGreetingOrReset = /^(hi|hello|hey|hola|namaste|hlo|helo|good\s*(morning|afternoon|evening)|menu|help|options|start over|restart|reset)$/i.test(userMessage.trim());
+      if (isGreetingOrReset) {
+        sessionState.bookingFlow = null;
+        sessionState.reschedulingFlow = null;
+        sessionState.currentQuestionId = null;
+      }
+
       // Check for existing active appointments
       let hasActiveAppointment = false;
       try {
@@ -374,8 +382,48 @@ export const orchestratorService = {
         };
       }
 
+      // --- INTERCEPT GREETINGS & RESTART FLOWS ---
+      if (intentResult.intent === "greeting" || isGreetingOrReset) {
+        sessionState.bookingFlow = null;
+        sessionState.reschedulingFlow = null;
+
+        const responseText = `Hi! 👋 Welcome to ${business.name}. I can help you book an appointment, check prices, or answer questions. What would you like to do?\n\n• Book appointment\n• Services & prices\n• Talk to a person`;
+        const dynamicActions = actionEngine.determineNextBestActions(business, {
+          intent: "greeting",
+          lastUserMessage: userMessage,
+        });
+
+        await messagesRepository.create({
+          organizationId,
+          conversationId: activeConversationId,
+          sender: "assistant",
+          content: responseText,
+          intentDetected: "greeting",
+          confidenceScore: "0.98",
+        });
+
+        sessionState.conversationContext.lastIntent = "greeting";
+        sessionState.conversationContext.lastAssistantMessage = responseText;
+        await sessionsRepository.upsert({
+          organizationId,
+          conversationId: activeConversationId,
+          state: sessionState,
+        });
+
+        return {
+          conversationId: activeConversationId,
+          assistantMessage: responseText,
+          citations: [],
+          intent: "greeting",
+          confidence: 0.98,
+          entities: {},
+          actions: dynamicActions,
+          isEscalated: false,
+        };
+      }
+
       // --- INTERCEPT APPOINTMENT RESCHEDULING FLOW ---
-      if (intentResult.intent === "reschedule" || sessionState.reschedulingFlow) {
+      if ((intentResult.intent === "reschedule" || sessionState.reschedulingFlow) && !isGreetingOrReset) {
         if (!sessionState.reschedulingFlow) {
           const activeApts = await db
             .select()
@@ -647,7 +695,7 @@ export const orchestratorService = {
       }
 
       // --- INTERCEPT APPOINTMENT BOOKING STATE MACHINE FLOW ---
-      if (intentResult.intent === "booking" || sessionState.bookingFlow) {
+      if ((intentResult.intent === "booking" || sessionState.bookingFlow) && !isGreetingOrReset) {
         if (!business.capabilities.hasBooking) {
           const responseText = `Online booking is currently disabled for ${business.name}. Please contact our front desk at ${business.phone || 'our team'} to schedule an appointment.`;
           const dynamicActions = actionEngine.determineNextBestActions(business, {

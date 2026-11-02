@@ -17,6 +17,8 @@ import { WebhookMessagePayload, ProviderRegistry } from "./types";
 import { orchestratorService } from "../orchestrator";
 import { crmDeduplicationService } from "../crm/deduplication";
 import { MessagingSecurityService } from "../messaging-security";
+import { resolveWhatsAppResponse } from "../whatsapp";
+import { businessContextService } from "../business-context";
 
 // Register providers
 import "./vonage";
@@ -186,13 +188,67 @@ export const omnichannelRouter = {
 
       // 5. Trigger AI process and reply if applicable
       if (aiEnabled && !isThreadEscalated && !isThreadPaused) {
-        // Run Operator AI Orchestrator
-        const aiResponse = await orchestratorService.processMessage({
-          organizationId,
-          conversationId,
-          userMessage: content,
-          metadata: { channelType }
-        });
+        let replyContent = "";
+        let intentKey = "general_inquiry";
+        let citations: any[] = [];
+        let shouldEscalate = false;
+
+        // Specialized WhatsApp Message Library integration
+        if (channelType === "whatsapp") {
+          try {
+            const business = await businessContextService.getContext(organizationId);
+            const waContext = {
+              business_name: business.name || "Nexx Technologies",
+              phone: business.phone || "+91 99135 37377",
+              address: business.address || "Main Office",
+              maps_link: business.website || "https://nexxtechnologies.com",
+              hours_today: "9:00 AM to 8:00 PM",
+              hours_week: "Mon-Sat: 9:00 AM - 8:00 PM, Sun: Closed",
+              service_list: (business.services || []).map(s => `${s.name} (₹${s.price})`).join(", ") || "Consultation & Services",
+              customer_name: senderName && senderName !== "WhatsApp User" ? senderName : undefined,
+            };
+
+            const waResolution = resolveWhatsAppResponse(content, waContext, new Date());
+
+            if (waResolution.matchedIntent !== "knowledge_gap") {
+              intentKey = waResolution.matchedIntent;
+              shouldEscalate = waResolution.requiresHandover;
+              replyContent = waResolution.reply.body;
+
+              // Format buttons or options cleanly
+              if (waResolution.reply.buttons && waResolution.reply.buttons.length > 0) {
+                replyContent += "\n\n" + waResolution.reply.buttons.map((b, i) => `${i + 1}️⃣ ${b.title}`).join("\n");
+              } else if (waResolution.reply.listRows && waResolution.reply.listRows.length > 0) {
+                replyContent += "\n\n*Options:*\n" + waResolution.reply.listRows.map(r => `• *${r.title}*${r.description ? ` - ${r.description}` : ""}`).join("\n");
+              }
+
+              // Record assistant message to conversationMessages
+              await db.insert(conversationMessages).values({
+                organizationId,
+                conversationId,
+                sender: "assistant",
+                content: replyContent,
+                confidenceScore: "0.98"
+              });
+            }
+          } catch (waErr) {
+            console.error("[Omnichannel Router] WhatsApp library fallback to orchestrator:", waErr);
+          }
+        }
+
+        // If not matched to standard WhatsApp template or on knowledge_gap / other channels:
+        if (!replyContent) {
+          const aiResponse = await orchestratorService.processMessage({
+            organizationId,
+            conversationId,
+            userMessage: content,
+            metadata: { channelType }
+          });
+          replyContent = aiResponse.assistantMessage;
+          intentKey = aiResponse.intent || "general_inquiry";
+          citations = aiResponse.citations || [];
+          shouldEscalate = aiResponse.isEscalated || false;
+        }
 
         // Send reply back via provider with RAG citations & AI intent metadata
         await this.sendOutgoingMessage({
@@ -200,13 +256,13 @@ export const omnichannelRouter = {
           channelId,
           conversationId,
           recipientId: senderUserId,
-          content: aiResponse.assistantMessage,
+          content: replyContent,
           isAiGenerated: true,
           metadata: {
-            citations: aiResponse.citations || [],
-            intent: aiResponse.intent || "general_inquiry",
-            isEscalated: aiResponse.isEscalated || false,
-            confidenceScore: 0.96,
+            citations,
+            intent: intentKey,
+            isEscalated: shouldEscalate,
+            confidenceScore: 0.98,
           }
         });
       }
