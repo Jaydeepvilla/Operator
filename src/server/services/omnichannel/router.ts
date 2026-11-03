@@ -109,13 +109,20 @@ export const omnichannelRouter = {
         content,
       });
 
-      // 1. Resolve unified Contact/Lead profile with omnichannel deduplication across channels
-      const { leadProfileId, isNew } = await crmDeduplicationService.resolveUnifiedProfile({
-        organizationId,
-        channelType,
-        senderUserId,
-        senderName,
-      });
+      // 1. Concurrently resolve unified Contact/Lead profile and prefetch business context
+      const businessPromise = (channelType === "whatsapp")
+        ? businessContextService.getContext(organizationId)
+        : Promise.resolve(null as any);
+
+      const [{ leadProfileId, isNew }, business] = await Promise.all([
+        crmDeduplicationService.resolveUnifiedProfile({
+          organizationId,
+          channelType,
+          senderUserId,
+          senderName,
+        }),
+        businessPromise,
+      ]);
 
       if (!isNew) {
         // Non-blocking conversation count increment (no redundant SELECT)
@@ -202,8 +209,12 @@ export const omnichannelRouter = {
         });
       }
 
-      // 3. Save incoming message records in a single parallel batch to avoid serial DB roundtrips
-      const [, [chanMsg]] = await Promise.all([
+      // 3. Save incoming message records and load conversation state concurrently in a single parallel batch
+      const statePromise = (channelType === "whatsapp")
+        ? whatsAppStateMachine.getState(organizationId, conversationId)
+        : Promise.resolve(null as any);
+
+      const [, [chanMsg], , state] = await Promise.all([
         db.insert(conversationMessages).values({
           organizationId,
           conversationId,
@@ -233,7 +244,8 @@ export const omnichannelRouter = {
             updatedAt: new Date() 
           })
           .where(eq(inboxThreads.id, threadId))
-          .catch(() => {})
+          .catch(() => {}),
+        statePromise,
       ]);
 
       // Update thread lastMessageId asynchronously without blocking message routing
@@ -272,34 +284,36 @@ export const omnichannelRouter = {
         // Specialized WhatsApp Experience with State Machine, Action Dispatcher & Dynamic Menus
         if (channelType === "whatsapp") {
           try {
-            const business = await businessContextService.getContext(organizationId);
-            const bizName = (business.name && business.name !== "Nexx Technologies" && business.name !== "Our Business")
-              ? business.name
+            const biz = business || await businessContextService.getContext(organizationId);
+            const bizName = (biz.name && biz.name !== "Nexx Technologies" && biz.name !== "Our Business")
+              ? biz.name
               : "Reception Desk";
 
             const interactiveId = (metadata?.interactiveId as string) || undefined;
             const lowerContent = (content || "").toLowerCase().trim();
-            const state = await whatsAppStateMachine.getState(organizationId, conversationId);
+            const convState = state || await whatsAppStateMachine.getState(organizationId, conversationId);
 
             let resolvedPayload: WhatsAppReplyPayload | null = null;
 
             // 1. Check for Greeting intent when user is IDLE
             const isGreeting = /^(hi|hello|hey|hola|kem\s*cho|namaste|hlo|helo|good\s*(morning|afternoon|evening)|start)$/i.test(lowerContent);
-            if (isGreeting && state.stage === "IDLE" && !interactiveId) {
-              // Check for active upcoming appointment in DB
+            if (isGreeting && convState.stage === "IDLE" && !interactiveId) {
+              // Check for active upcoming appointment in DB only if returning customer
               let activeApt: any = null;
-              try {
-                activeApt = await db.query.appointments.findFirst({
-                  where: and(
-                    eq(appointments.organizationId, organizationId),
-                    eq(appointments.leadProfileId, leadProfileId),
-                    eq(appointments.status, "confirmed"),
-                    gte(appointments.startTime, new Date())
-                  ),
-                  orderBy: [desc(appointments.startTime)],
-                  with: { service: true },
-                });
-              } catch {}
+              if (!isNew) {
+                try {
+                  activeApt = await db.query.appointments.findFirst({
+                    where: and(
+                      eq(appointments.organizationId, organizationId),
+                      eq(appointments.leadProfileId, leadProfileId),
+                      eq(appointments.status, "confirmed"),
+                      gte(appointments.startTime, new Date())
+                    ),
+                    orderBy: [desc(appointments.startTime)],
+                    with: { service: true },
+                  });
+                } catch {}
+              }
 
               const customerCtx: CustomerPersonalizationContext = {
                 customerName: senderName && senderName !== "WhatsApp User" ? senderName : undefined,
@@ -314,7 +328,7 @@ export const omnichannelRouter = {
                 language: detectLanguage(content),
               };
 
-              resolvedPayload = dynamicExperienceEngine.generateGreeting(business, customerCtx);
+              resolvedPayload = dynamicExperienceEngine.generateGreeting(biz, customerCtx);
               intentKey = "greeting";
             }
 
@@ -328,7 +342,7 @@ export const omnichannelRouter = {
                 senderName,
                 rawText: content,
                 interactiveId,
-                business,
+                business: biz,
               });
               if (resolvedPayload) {
                 intentKey = interactiveId || "action_executed";
@@ -339,14 +353,14 @@ export const omnichannelRouter = {
             if (!resolvedPayload) {
               const waContext = {
                 business_name: bizName,
-                phone: business.phone || "+91 99135 37377",
-                address: business.address || "Main Office",
-                maps_link: business.website || "https://operator.nexxtechnologies.com/",
-                hours_today: business.businessHoursFormatted || "9:00 AM to 8:00 PM",
-                hours_week: business.businessHoursFormatted || "Mon-Sat: 9:00 AM - 8:00 PM, Sun: Closed",
-                service_list: (business.services || []).map(s => `${s.name} (₹${s.price})`).join(", ") || "Consultation & Services",
+                phone: biz.phone || "+91 99135 37377",
+                address: biz.address || "Main Office",
+                maps_link: biz.website || "https://operator.nexxtechnologies.com/",
+                hours_today: biz.businessHoursFormatted || "9:00 AM to 8:00 PM",
+                hours_week: biz.businessHoursFormatted || "Mon-Sat: 9:00 AM - 8:00 PM, Sun: Closed",
+                service_list: (biz.services || []).map((s: any) => `${s.name} (₹${s.price})`).join(", ") || "Consultation & Services",
                 customer_name: senderName && senderName !== "WhatsApp User" ? senderName : undefined,
-                available_services: (business.services || []).map(s => ({
+                available_services: (biz.services || []).map((s: any) => ({
                   id: s.id,
                   name: s.name,
                   price: s.price,
@@ -425,6 +439,7 @@ export const omnichannelRouter = {
             isEscalated: shouldEscalate,
             confidenceScore: 0.98,
             interactive: waInteractivePayload,
+            idempotencyKey: externalMessageId ? `reply:${externalMessageId}` : undefined,
           }
         });
 
@@ -610,50 +625,45 @@ export const omnichannelRouter = {
         error: res.errorMessage
       });
 
-      // Update message delivery status
-      await db
-        .update(channelMessages)
-        .set({
-          status: deliveryStatus.status,
-          externalId: res.externalId,
-          metadata: { ...chanMsg.metadata as any, error: deliveryStatus.error }
-        })
-        .where(eq(channelMessages.id, chanMsg.id));
-
-      // Update unified threads log
-      const thread = await db.query.inboxThreads.findFirst({
-        where: and(
-          eq(inboxThreads.organizationId, organizationId),
-          eq(inboxThreads.conversationId, conversationId)
-        )
-      });
-
-      if (thread) {
-        await db
+      // Concurrently update message delivery status, thread state, and outbound audit logs
+      await Promise.all([
+        db
+          .update(channelMessages)
+          .set({
+            status: deliveryStatus.status,
+            externalId: res.externalId,
+            metadata: { ...chanMsg.metadata as any, error: deliveryStatus.error }
+          })
+          .where(eq(channelMessages.id, chanMsg.id)),
+        db
           .update(inboxThreads)
           .set({ 
             lastMessageId: chanMsg.id, 
             unreadCount: 0, // Outgoing message clears unread state
             updatedAt: new Date() 
           })
-          .where(eq(inboxThreads.id, thread.id));
-      }
-
-      // Log outbound event with credential masking
-      await db.insert(communicationLogs).values({
-        organizationId,
-        level: res.success ? "info" : "error",
-        message: res.success
-          ? `Dispatched outgoing ${channel.type} message to ${recipientId}`
-          : `Failed to dispatch outgoing ${channel.type} message to ${recipientId}: ${res.errorMessage}`,
-        channel: channel.type,
-        payload: MessagingSecurityService.sanitizeCommunicationLogPayload({
-          recipientId,
-          externalId: res.externalId,
-          status: deliveryStatus.status,
-          error: deliveryStatus.error,
-        }),
-      });
+          .where(
+            and(
+              eq(inboxThreads.organizationId, organizationId),
+              eq(inboxThreads.conversationId, conversationId)
+            )
+          )
+          .catch(() => {}),
+        db.insert(communicationLogs).values({
+          organizationId,
+          level: res.success ? "info" : "error",
+          message: res.success
+            ? `Dispatched outgoing ${channel.type} message to ${recipientId}`
+            : `Failed to dispatch outgoing ${channel.type} message to ${recipientId}: ${res.errorMessage}`,
+          channel: channel.type,
+          payload: MessagingSecurityService.sanitizeCommunicationLogPayload({
+            recipientId,
+            externalId: res.externalId,
+            status: deliveryStatus.status,
+            error: deliveryStatus.error,
+          }),
+        }).catch(() => {})
+      ]);
 
     } catch (e: any) {
       console.error("[Omnichannel Router] Error sending outgoing message:", e);

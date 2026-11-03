@@ -176,8 +176,9 @@ export const MessagingSecurityService = {
     recipientId: string;
     content: string;
     idempotencyKey?: string;
+    windowMs?: number;
   }): { isDuplicate: boolean; messageId: string } {
-    const { organizationId, recipientId, content, idempotencyKey } = params;
+    const { organizationId, recipientId, content, idempotencyKey, windowMs = 5000 } = params;
 
     const key =
       idempotencyKey ||
@@ -189,8 +190,11 @@ export const MessagingSecurityService = {
     const now = Date.now();
     const existing = messageDeduplicationLedger.get(key);
 
-    // 10-minute deduplication window
-    if (existing && now - existing.timestamp < 10 * 60 * 1000) {
+    // If an explicit idempotencyKey was provided, use 10-minute retry protection
+    // If falling back to content hash, use a 5-second burst protection window so users can re-open menus
+    const effectiveWindow = idempotencyKey ? 10 * 60 * 1000 : windowMs;
+
+    if (existing && now - existing.timestamp < effectiveWindow) {
       return { isDuplicate: true, messageId: existing.messageId };
     }
 
@@ -589,8 +593,8 @@ export const MessagingSecurityService = {
     const {
       organizationId,
       recipient,
-      maxPerOrgPerMinute = 100,
-      maxPerRecipientTenMinutes = 5,
+      maxPerOrgPerMinute = 200,
+      maxPerRecipientTenMinutes = 60,
     } = params;
 
     const now = Date.now();
@@ -626,6 +630,11 @@ export const MessagingSecurityService = {
     recipientVelocityTracker.set(recipientKey, recTimestamps);
 
     return { allowed: true };
+  },
+
+  resetRecipientVelocity(organizationId: string, recipient: string) {
+    const recipientKey = `${organizationId}:${recipient.trim().toLowerCase()}`;
+    recipientVelocityTracker.delete(recipientKey);
   },
 
   /**
