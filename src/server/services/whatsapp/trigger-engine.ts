@@ -90,7 +90,8 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "handover_open",
     priority: 2,
     patterns: [
-      /\b(talk to (a )?person|speak to human|real person|agent|executive|manager|call me|human support|talk to desk|front desk|alert reception|👤 talk)\b/i,
+      /^(menu_human|btn_human|btn_call|btn_consult)$/i,
+      /\b(talk to (a )?person|speak to human|real person|agent|executive|manager|call me|human support|talk to desk|front desk|alert reception|👤 talk|connect with front desk team)\b/i,
       /\b(kisi se baat karao|insan se baat|call karo mujhe|manager bulao)\b/i,
     ],
     requiresHumanHandover: true,
@@ -99,7 +100,7 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "main_menu",
     priority: 2,
     patterns: [
-      /^(menu|options|help|what can you do|\?|1|0|back|home|start|main menu)$/i,
+      /^(btn_menu|menu_main|🔙 main menu|📌 main menu|main menu|menu|options|help|what can you do|\?|1|0|back|home|start)$/i,
       /\b(main menu|back to menu|go back|options dikhao|madad|wapas|piche|🔙 main menu|📌 main menu)\b/i,
       /\b(menu dikhao|menu chahiye|start menu)\b/i,
     ],
@@ -118,7 +119,8 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "booking_cancel",
     priority: 3,
     patterns: [
-      /\b(cancel( my)? booking|cancel appointment|cannot make it|can't come|won't be able to come)\b/i,
+      /^(btn_confirm_cancel|btn_cancel|cancel)$/i,
+      /\b(cancel( my)? booking|cancel appointment|cannot make it|can't come|won't be able to come|yes,? cancel)\b/i,
       /\b(booking cancel|appointment radd|nahi aa paunga|cancel kardo)\b/i,
     ],
   },
@@ -126,7 +128,8 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "booking_reschedule",
     priority: 3,
     patterns: [
-      /\b(reschedule|change (my )?(date|time|appointment|slot)|postpone|prepone|move appointment)\b/i,
+      /^(menu_reschedule|btn_reschedule|btn_change_time|btn_other_time|btn_other_date)$/i,
+      /\b(reschedule|change (my )?(date|time|appointment|slot)|postpone|prepone|move appointment|change or cancel booking)\b/i,
       /\b(date badalna|time change|slot change|dusre din)\b/i,
     ],
   },
@@ -150,12 +153,46 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "booking_my_appointment",
     priority: 3,
     patterns: [
-      /\b(my booking|my appointment|check appointment|when is my slot|confirm my time)\b/i,
+      /^(menu_my_booking|btn_check_times)$/i,
+      /\b(my booking|my appointment|check appointment|when is my slot|confirm my time|view your upcoming booking)\b/i,
       /\b(meri booking|mera appointment|kab hai mera slot|appointment status)\b/i,
     ],
   },
 
-  // ── Tier 4: Booking Intent ───────────────────────────────────────────
+  // ── Tier 4: Booking Intent & Interactive Flow ─────────────────────────
+  {
+    intent: "booking_confirmed_free",
+    priority: 4,
+    patterns: [
+      /^(btn_confirm|confirm|yes,? confirm|haan confirm|confirm booking|✅ confirm|yes confirm it)$/i,
+    ],
+  },
+  {
+    intent: "booking_summary",
+    priority: 4,
+    patterns: [
+      /^(time_.*|btn_pick_time)$/i,
+      /^((0?[1-9]|1[0-2])(:[0-5][0-9])?\s*(am|pm))$/i,
+      /\b(morning slot|afternoon slot|evening slot)\b/i,
+    ],
+  },
+  {
+    intent: "booking_offer_times",
+    priority: 4,
+    patterns: [
+      /^(day_today|day_tomorrow|day_pick|btn_today|btn_tomorrow|btn_other_day|btn_pick_date)$/i,
+      /^(today|tomorrow|aaj|kal|pick a date|choose date)$/i,
+      /\b(today slot|tomorrow slot|kal ka slot|aaj ka slot)\b/i,
+    ],
+  },
+  {
+    intent: "booking_ask_day",
+    priority: 4,
+    patterns: [
+      /^(srv_.*|select_service_.*)$/i,
+      /\b(general consultation|standard service|comprehensive service|cleaning|consultation)\b/i,
+    ],
+  },
   {
     intent: "booking_urgent_today",
     priority: 4,
@@ -200,7 +237,8 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "booking_start",
     priority: 4,
     patterns: [
-      /\b(book( an)? appointment|book a slot|schedule|reserve|booking karni|appointment chahiye|book this|book slot|📅 book|book new slot|book guaranteed slot)\b/i,
+      /^(btn_book|menu_book|btn_book_usual|btn_book_this|btn_book_offer|btn_book_doc|btn_keep_booking)$/i,
+      /\b(book( an)? appointment|book a slot|schedule|reserve|booking karni|appointment chahiye|book this|book slot|📅 book|book new slot|book guaranteed slot|🗓️ book appointment|schedule a new booking)\b/i,
       /\b(book|booking|appointment|slot chahiye)\b/i,
     ],
   },
@@ -218,7 +256,8 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "services_list",
     priority: 5,
     patterns: [
-      /\b(services|treatments|service menu|treatment menu|rate card|catalog|what services|what do you do|what do you offer|services & rates|all services|other services|view services|📋 services|💼 services)\b/i,
+      /^(btn_services|btn_prices|menu_services|btn_other_service|btn_change_service)$/i,
+      /\b(services|treatments|service menu|treatment menu|rate card|catalog|what services|what do you do|what do you offer|services & rates|all services|other services|view services|📋 services|💼 services|browse menu & rate card)\b/i,
       /\b(kya kya services|service list|list bhejo)\b/i,
     ],
   },
@@ -226,7 +265,8 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "opening_hours",
     priority: 5,
     patterns: [
-      /\b(opening hours|working hours|business hours|timings|timing|hours|open today|closing time|what time do you open|are you open|🕒 working hours)\b/i,
+      /^(menu_hours|btn_hours)$/i,
+      /\b(opening hours|working hours|business hours|timings|timing|hours|open today|closing time|what time do you open|are you open|🕒 working hours|check working timings)\b/i,
       /\b(kab (tak )?khula|timing|kitne baje khulta|aaj open|aaj khula)\b/i,
     ],
   },
@@ -234,7 +274,8 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "location",
     priority: 5,
     patterns: [
-      /\b(address|location|where are you( located)?|where is your (office|shop|clinic|salon|desk|branch)|directions|google map|how to reach|view map|📍 location|📍 view map|📍 directions)\b/i,
+      /^(menu_location|btn_location|btn_directions|btn_parking)$/i,
+      /\b(address|location|where are you( located)?|where is your (office|shop|clinic|salon|desk|branch)|directions|google map|how to reach|view map|📍 location|📍 view map|📍 directions|address, map and parking)\b/i,
       /\b(kaha par hai|address batao|location send karo|rasta batao)\b/i,
     ],
   },
@@ -274,7 +315,8 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "offers_packages",
     priority: 5,
     patterns: [
-      /\b(offers|discount|coupons|promo code|package deals|any deal|special offer|offers & plans|🎁 offers|🎁 special offers)\b/i,
+      /^(menu_offers|btn_offers)$/i,
+      /\b(offers|discount|coupons|promo code|package deals|any deal|special offer|offers & plans|🎁 offers|🎁 special offers|current packages & discounts)\b/i,
       /\b(koi offer hai|discount milega|koi coupon)\b/i,
     ],
   },
@@ -300,6 +342,7 @@ export const INTENT_RULES: IntentRule[] = [
     intent: "thanks_ok",
     priority: 6,
     patterns: [
+      /^(btn_done)$/i,
       /^(thanks|thank you|thx|ok|okay|got it|cool|great|perfect|sure)$/i,
       /\b(dhanyawad|shukriya|theek hai|sahi hai|bohot achha)\b/i,
     ],
@@ -320,9 +363,12 @@ export const INTENT_RULES: IntentRule[] = [
 export function matchWhatsAppIntent(
   messageText: string,
   mediaType?: "audio" | "image" | "document" | "location",
-  isReturningCustomer?: boolean
+  isReturningCustomer?: boolean,
+  interactiveId?: string
 ): WhatsAppTriggerMatch {
   const clean = (messageText || "").trim();
+  const idStr = (interactiveId || "").trim();
+  const candidateTexts = idStr ? [idStr, clean] : [clean];
 
   // Tier 7 Media attachment matching
   if (mediaType === "audio") {
@@ -347,11 +393,16 @@ export function matchWhatsAppIntent(
   const matches: Array<{ rule: IntentRule; matchText: string }> = [];
 
   for (const rule of INTENT_RULES) {
+    let matched = false;
     for (const pat of rule.patterns) {
-      if (pat.test(clean)) {
-        matches.push({ rule, matchText: clean });
-        break;
+      for (const textToTest of candidateTexts) {
+        if (pat.test(textToTest)) {
+          matches.push({ rule, matchText: textToTest });
+          matched = true;
+          break;
+        }
       }
+      if (matched) break;
     }
   }
 
@@ -396,7 +447,8 @@ export function resolveWhatsAppResponse(
   messageText: string,
   context: WhatsAppVariableContext,
   lastCustomerMessageAt?: Date | string | null,
-  mediaType?: "audio" | "image" | "document" | "location"
+  mediaType?: "audio" | "image" | "document" | "location",
+  interactiveId?: string
 ): {
   reply: WhatsAppReplyPayload;
   matchedIntent: WhatsAppIntentKey;
@@ -408,8 +460,30 @@ export function resolveWhatsAppResponse(
   const match = matchWhatsAppIntent(
     messageText,
     mediaType,
-    hasSavedHistory
+    hasSavedHistory,
+    interactiveId
   );
+
+  // Contextual slot filling for interactive booking transitions
+  if (match.intent === "booking_ask_day") {
+    let selectedServiceName = messageText;
+    if (interactiveId && context.available_services) {
+      const found = context.available_services.find((s) => `srv_${s.id}` === interactiveId);
+      if (found) selectedServiceName = found.name;
+    }
+    context.service = selectedServiceName || "Consultation";
+  } else if (match.intent === "booking_offer_times") {
+    context.date = (messageText.toLowerCase().includes("tomorrow") || (interactiveId && interactiveId.includes("tomorrow"))) ? "Tomorrow" : "Today";
+  } else if (match.intent === "booking_summary") {
+    context.time = messageText.match(/((1[0-2]|[1-9])(:[0-5][0-9])?\s*(am|pm))/i)?.[0] || "10:00 AM";
+    context.price = context.price || "₹499";
+    context.service = context.service || "Appointment";
+  } else if (match.intent === "booking_confirmed_free") {
+    context.booking_ref = context.booking_ref || `#BK-${Math.floor(1000 + Math.random() * 9000)}`;
+    context.service = context.service || "Appointment";
+    context.date = context.date || "Tomorrow";
+    context.time = context.time || "10:00 AM";
+  }
 
   const rule = INTENT_RULES.find((r) => r.intent === match.intent);
   const requiresHandover = rule?.requiresHumanHandover ?? false;

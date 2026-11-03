@@ -99,7 +99,17 @@ export interface WhatsAppTriggerMatch {
   compoundIntents?: WhatsAppIntentKey[];
 }
 
+export interface WhatsAppServiceItem {
+  id: string;
+  name: string;
+  price?: string | null;
+  duration?: number | null;
+  description?: string | null;
+}
+
 export interface WhatsAppVariableContext {
+  available_services?: WhatsAppServiceItem[];
+  service_list?: string;
   waitlist_position?: number | string;
   hold_mins?: number | string;
   customer_name?: string;

@@ -72,8 +72,8 @@ const SAFE_VARIABLE_FALLBACKS: Record<string, string> = {
   price: "standard pricing",
   deposit: "deposit amount",
   day: "today",
-  time: "your scheduled time",
-  date: "your appointment date",
+  date: "your selected date",
+  time: "10:00 AM",
 };
 
 /**
@@ -710,12 +710,27 @@ export const BOOKING_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "4.1",
     name: "Start a Booking",
     category: "service",
-    body: "Sure! Which service would you like?",
+    body: "Please choose a service below to schedule your appointment:",
+    listButton: "Select Service",
+    listTitle: "Our Services",
+    listSections: [
+      {
+        title: "Available Services",
+        rows: [
+          { id: "srv_consultation", title: "General Consultation", description: "Standard consultation • 30 mins" },
+          { id: "srv_standard", title: "Standard Service", description: "Regular appointment • 45 mins" },
+          { id: "srv_premium", title: "Comprehensive Service", description: "Full session • 60 mins" },
+          { id: "menu_main", title: "🔙 Main Menu", description: "Return to main menu" },
+        ],
+      },
+    ],
     hinglish: {
-      body: "Zaroor! Aap kaunsi service book karna chahte hain?",
+      body: "Kripya appointment ke liye neeche di gayi service chunein:",
+      listButton: "Service Chunein",
     },
     hindi: {
-      body: "ज़रूर! आप कौन सी सर्विस बुक करना चाहते हैं?",
+      body: "कृपया अपॉइंटमेंट के लिए नीचे दी गई सेवाओं में से चुनें:",
+      listButton: "सेवा चुनें",
     },
   },
 
@@ -725,26 +740,26 @@ export const BOOKING_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "4.2",
     name: "Ask for Day",
     category: "service",
-    body: "Great choice. Which day works for you?",
+    body: "Great choice! Which day works for you for {{service}}?",
     buttons: [
       { id: "day_today", title: "Today" },
       { id: "day_tomorrow", title: "Tomorrow" },
-      { id: "day_pick", title: "Pick a date" },
+      { id: "menu_main", title: "🔙 Main Menu" },
     ],
     hinglish: {
-      body: "Aapko kaunsa din theek rahega?",
+      body: "Badhiya! {{service}} ke liye kaunsa din theek rahega?",
       buttons: [
         { id: "day_today", title: "Aaj" },
         { id: "day_tomorrow", title: "Kal" },
-        { id: "day_pick", title: "Doosra din" },
+        { id: "menu_main", title: "🔙 Main Menu" },
       ],
     },
     hindi: {
-      body: "आपके लिए कौन सा दिन सुविधाजनक रहेगा?",
+      body: "बहुत बढ़िया! {{service}} के लिए कौन सा दिन सुविधाजनक रहेगा?",
       buttons: [
         { id: "day_today", title: "आज" },
         { id: "day_tomorrow", title: "कल" },
-        { id: "day_pick", title: "तारीख चुनें" },
+        { id: "menu_main", title: "🔙 मुख्य मेनू" },
       ],
     },
   },
@@ -755,9 +770,30 @@ export const BOOKING_REPLIES: Record<string, WhatsAppFreeReply> = {
     section: "4.3",
     name: "Offer Free Times",
     category: "service",
-    body: "Here are the free times on {{date}}. Tap Choose a time.",
+    body: "Here are the available time slots on {{date}}. Tap Choose a time:",
     listButton: "Choose a time",
     listTitle: "Available Times",
+    listSections: [
+      {
+        title: "Available Slots",
+        rows: [
+          { id: "time_1000", title: "10:00 AM", description: "Morning slot" },
+          { id: "time_1130", title: "11:30 AM", description: "Morning slot" },
+          { id: "time_1400", title: "02:00 PM", description: "Afternoon slot" },
+          { id: "time_1630", title: "04:30 PM", description: "Evening slot" },
+          { id: "time_1800", title: "06:00 PM", description: "Evening slot" },
+          { id: "menu_main", title: "🔙 Main Menu", description: "Return to main menu" },
+        ],
+      },
+    ],
+    hinglish: {
+      body: "{{date}} ke uplabdh slots neeche diye gaye hain:",
+      listButton: "Time Chunein",
+    },
+    hindi: {
+      body: "{{date}} के उपलब्ध स्लॉट नीचे दिए गए हैं:",
+      listButton: "समय चुनें",
+    },
   },
 
   // 4.4 Fully booked / alternate times
@@ -799,16 +835,16 @@ export const BOOKING_REPLIES: Record<string, WhatsAppFreeReply> = {
     category: "service",
     body: "Please check your booking:\n• Service: {{service}}\n• With: {{staff}}\n• When: {{date}} at {{time}}\n• Price: {{price}}\n\nShall I confirm it?",
     buttons: [
-      { id: "btn_confirm", title: "Confirm" },
-      { id: "btn_change_time", title: "Change time" },
-      { id: "btn_cancel", title: "Cancel" },
+      { id: "btn_confirm", title: "✅ Confirm" },
+      { id: "btn_change_time", title: "🔄 Change time" },
+      { id: "menu_main", title: "🔙 Main Menu" },
     ],
     hinglish: {
       body: "Aapki booking details:\n• Service: {{service}}\n• Stylist/Staff: {{staff}}\n• Time: {{date}} ko {{time}} baje\n• Price: {{price}}\n\nKya main confirm kar du?",
       buttons: [
         { id: "btn_confirm", title: "Haan confirm" },
         { id: "btn_change_time", title: "Time badlo" },
-        { id: "btn_cancel", title: "Cancel" },
+        { id: "menu_main", title: "🔙 Main Menu" },
       ],
     },
   },
@@ -1852,6 +1888,22 @@ export function getWhatsAppReply(
     if (template.hindi.listButton) listButton = template.hindi.listButton;
   }
 
+  // Dynamically populate available services for booking_start if configured
+  if (id === "booking_start" && context.available_services && context.available_services.length > 0) {
+    const serviceRows = context.available_services.slice(0, 9).map((srv, idx) => ({
+      id: srv.id && srv.id.startsWith("srv_") ? srv.id : `srv_${srv.id || idx}`,
+      title: srv.name.slice(0, 24),
+      description: `${srv.price ? `₹${srv.price}` : "Available"}${srv.duration ? ` • ${srv.duration}m` : ""}`.slice(0, 72),
+    }));
+    serviceRows.push({
+      id: "menu_main",
+      title: "🔙 Main Menu",
+      description: "Return to main menu",
+    });
+    listRows = serviceRows;
+    listButton = "Select Service";
+  }
+
   // Personalize greeting_new if customer_name is available
   if (id === "greeting_new" && context.customer_name && context.customer_name.trim() !== "") {
     rawBody = rawBody
@@ -1880,13 +1932,19 @@ export function getWhatsAppReply(
     ? "interactive_buttons"
     : "text";
 
+  const resolvedSections = template.listSections && (!context.available_services || id !== "booking_start")
+    ? template.listSections
+    : listRows && listRows.length > 0
+    ? [{ title: "Available Options", rows: listRows }]
+    : undefined;
+
   return {
     type: replyType,
     body: substituted.text,
     buttons,
     listButton,
     listRows,
-    listSections: template.listSections,
+    listSections: resolvedSections,
     handoverToHuman: template.handoverToHuman,
     priorityHumanHandover: template.priorityHumanHandover,
   };

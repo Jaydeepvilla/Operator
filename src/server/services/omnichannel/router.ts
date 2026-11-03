@@ -280,9 +280,17 @@ export const omnichannelRouter = {
               service_list: (business.services || []).map(s => `${s.name} (₹${s.price})`).join(", ") || "Consultation & Services",
               customer_name: senderName && senderName !== "WhatsApp User" ? senderName : undefined,
               last_service: lastService,
+              available_services: (business.services || []).map(s => ({
+                id: s.id,
+                name: s.name,
+                price: s.price,
+                duration: s.duration,
+                description: s.description,
+              })),
             };
 
-            const waResolution = resolveWhatsAppResponse(content, waContext, new Date());
+            const interactiveId = (metadata?.interactiveId as string) || undefined;
+            const waResolution = resolveWhatsAppResponse(content, waContext, new Date(), undefined, interactiveId);
 
             if (waResolution.matchedIntent !== "knowledge_gap") {
               intentKey = waResolution.matchedIntent;

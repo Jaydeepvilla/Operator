@@ -304,6 +304,8 @@ export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
           
           let content = "";
           const attachments: any[] = [];
+          let interactiveId: string | undefined = undefined;
+          let interactiveTitle: string | undefined = undefined;
 
           if (msg.type === "text") {
             content = msg.text?.body || "";
@@ -325,8 +327,12 @@ export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
             });
           } else if (msg.type === "button") {
             content = msg.button?.text || "";
+            interactiveId = msg.button?.payload;
+            interactiveTitle = msg.button?.text;
           } else if (msg.type === "interactive") {
-            content = msg.interactive?.button_reply?.title || msg.interactive?.list_reply?.title || msg.interactive?.button_reply?.id || msg.interactive?.list_reply?.id || "";
+            interactiveId = msg.interactive?.button_reply?.id || msg.interactive?.list_reply?.id;
+            interactiveTitle = msg.interactive?.button_reply?.title || msg.interactive?.list_reply?.title;
+            content = interactiveTitle || interactiveId || "";
           }
 
           messages.push({
@@ -340,7 +346,9 @@ export class WhatsAppProvider implements MessagingProvider, WebhookProvider {
             content,
             attachments,
             metadata: {
-              rawMetaMessage: msg
+              rawMetaMessage: msg,
+              interactiveId,
+              interactiveTitle
             }
           });
         }
