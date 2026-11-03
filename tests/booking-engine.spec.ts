@@ -102,7 +102,7 @@ test.describe('Operator Phase 3 — Booking Engine & Concurrency Safety Suite', 
   });
 
   test('Booking A — Slot Booking: Database persistence and confirmation', async () => {
-    const targetDate = '2026-11-03'; // Tuesday
+    const targetDate = '2026-11-05'; // Tuesday
     const slots = await availabilityService.getAvailableSlots(testOrgId, serviceId, targetDate, staffId);
     expect(slots.length).toBeGreaterThan(0);
 
@@ -136,7 +136,7 @@ test.describe('Operator Phase 3 — Booking Engine & Concurrency Safety Suite', 
   });
 
   test('Booking B — Double-Booking Rejection: Advisory lock and conflict rejection', async () => {
-    const targetDate = '2026-11-03';
+    const targetDate = '2026-11-05';
     const slots = await availabilityService.getAvailableSlots(testOrgId, serviceId, targetDate, staffId);
     expect(slots.length).toBeGreaterThan(1);
 
@@ -193,7 +193,7 @@ test.describe('Operator Phase 3 — Booking Engine & Concurrency Safety Suite', 
 
   test('Booking C — Cancellation & Rescheduling: Lifecycle updates in database', async () => {
     test.setTimeout(60000);
-    const targetDate = '2026-11-03';
+    const targetDate = '2026-11-05';
     const slots = await availabilityService.getAvailableSlots(testOrgId, serviceId, targetDate, staffId);
     expect(slots.length).toBeGreaterThan(2);
 
@@ -244,7 +244,7 @@ test.describe('Operator Phase 3 — Booking Engine & Concurrency Safety Suite', 
   });
 
   test('Booking D — Timezone & Boundary Accuracy: Preserves exact UTC instant across local conversions', async () => {
-    const targetDate = '2026-11-03';
+    const targetDate = '2026-11-05';
     const slots = await availabilityService.getAvailableSlots(testOrgId, serviceId, targetDate, staffId);
     expect(slots.length).toBeGreaterThan(3);
 

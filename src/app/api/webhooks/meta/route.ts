@@ -10,6 +10,9 @@ import crypto from "crypto";
 // In-memory cache for Meta connection lookup to eliminate 200-300ms roundtrip per webhook
 const metaConnectionCache = new Map<string, { connection: any; expiresAt: number }>();
 const META_CONNECTION_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+// In-memory deduplication cache for Meta webhook signatures (idempotency guard)
+const metaSignatureDedupCache = new Map<string, number>();
 import "@/server/services/omnichannel/whatsapp";
 import "@/server/services/omnichannel/instagram";
 import "@/server/services/omnichannel/facebook";
@@ -71,6 +74,18 @@ export async function POST(req: NextRequest) {
     if (signatureHash !== expectedHash) {
       console.warn("[Meta Webhook] Signature verification failed");
       return new NextResponse("Invalid webhook signature", { status: 401 });
+    }
+
+    // Idempotency: Deduplicate identical webhook payloads arriving within 30s
+    if (metaSignatureDedupCache.has(signatureHash)) {
+      return NextResponse.json({ success: true, duplicate: true });
+    }
+    metaSignatureDedupCache.set(signatureHash, Date.now());
+    if (metaSignatureDedupCache.size > 1000) {
+      const cutoff = Date.now() - 30 * 1000;
+      for (const [k, v] of metaSignatureDedupCache) {
+        if (v < cutoff) metaSignatureDedupCache.delete(k);
+      }
     }
 
     const body = JSON.parse(rawBody);

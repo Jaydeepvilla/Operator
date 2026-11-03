@@ -31,6 +31,7 @@ export interface CreateBookingInput {
   customerName: string;
   customerEmail?: string | null;
   customerPhone?: string | null;
+  leadProfileId?: string | null;
   isPublic?: boolean;
   requirePayment?: boolean;
   channel?: "widget" | "hosted_booking" | "voice" | "whatsapp" | "sms" | "email" | "dashboard";
@@ -143,6 +144,7 @@ export const sharedBusinessActions: SharedBusinessActionsGateway = {
       customerName,
       customerEmail,
       customerPhone,
+      leadProfileId,
       isPublic,
       requirePayment,
       channel = "hosted_booking",
@@ -161,6 +163,7 @@ export const sharedBusinessActions: SharedBusinessActionsGateway = {
         customerName: customerName.trim(),
         customerEmail: customerEmail?.trim() || null,
         customerPhone: customerPhone?.trim() || null,
+        leadProfileId: leadProfileId || undefined,
         isPublic: isPublic ?? true,
         requirePayment,
       });

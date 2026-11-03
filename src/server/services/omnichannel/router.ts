@@ -13,12 +13,21 @@ import {
   communicationLogs,
   appointments
 } from "../../db/schema";
-import { eq, and, or, desc, sql } from "drizzle-orm";
+import { eq, and, or, desc, sql, gte } from "drizzle-orm";
 import { WebhookMessagePayload, ProviderRegistry } from "./types";
 import { orchestratorService } from "../orchestrator";
 import { crmDeduplicationService } from "../crm/deduplication";
 import { MessagingSecurityService } from "../messaging-security";
 import { resolveWhatsAppResponse } from "../whatsapp";
+import { 
+  whatsAppStateMachine, 
+  whatsAppActionDispatcher, 
+  dynamicExperienceEngine, 
+  CustomerPersonalizationContext, 
+  detectLanguage, 
+  whatsAppMetricsService, 
+  WhatsAppReplyPayload 
+} from "../whatsapp";
 import { businessContextService } from "../business-context";
 
 // Register providers
@@ -37,6 +46,9 @@ const channelSettingsCache = new Map<string, { data: any; expiresAt: number }>()
 // In-memory cache for active thread IDs per contact to skip redundant SELECT/INSERT on continuous chat
 const activeThreadCache = new Map<string, { conversationId: string; threadId: string; expiresAt: number }>();
 const ACTIVE_THREAD_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+// In-memory deduplication cache for incoming webhook messages
+const processedMessageIds = new Map<string, number>();
 
 export const omnichannelRouter = {
   /**
@@ -69,6 +81,23 @@ export const omnichannelRouter = {
     } = payload;
 
     try {
+      const t_start = Date.now();
+
+      // Deduplication check: prevent duplicate webhook event processing (<1ms)
+      if (externalMessageId) {
+        if (processedMessageIds.has(externalMessageId)) {
+          console.log(`[Omnichannel Router] Suppressed duplicate incoming message: ${externalMessageId}`);
+          return;
+        }
+        processedMessageIds.set(externalMessageId, Date.now());
+        if (processedMessageIds.size > 2000) {
+          const threshold = Date.now() - 10 * 60 * 1000;
+          for (const [k, v] of processedMessageIds) {
+            if (v < threshold) processedMessageIds.delete(k);
+          }
+        }
+      }
+
       // 0. Security Inbound Checks: process opt-out keywords (TCPA/GDPR) & block admin execution
       MessagingSecurityService.processInboundOptOut({
         organizationId,
@@ -240,115 +269,131 @@ export const omnichannelRouter = {
         let waInteractivePayload: any = undefined;
         let waRawBody: string | undefined = undefined;
 
-        // Specialized WhatsApp Message Library integration
+        // Specialized WhatsApp Experience with State Machine, Action Dispatcher & Dynamic Menus
         if (channelType === "whatsapp") {
           try {
             const business = await businessContextService.getContext(organizationId);
+            const bizName = (business.name && business.name !== "Nexx Technologies" && business.name !== "Our Business")
+              ? business.name
+              : "Reception Desk";
 
-            // Fetch past appointment history only when relevant (e.g., returning greeting)
-            let lastService: string | undefined = undefined;
+            const interactiveId = (metadata?.interactiveId as string) || undefined;
             const lowerContent = (content || "").toLowerCase().trim();
-            const needsHistoryCheck = lowerContent === "hi" || lowerContent === "hello" || lowerContent.includes("again") || lowerContent.includes("usual");
-            if (leadProfileId && needsHistoryCheck) {
+            const state = await whatsAppStateMachine.getState(organizationId, conversationId);
+
+            let resolvedPayload: WhatsAppReplyPayload | null = null;
+
+            // 1. Check for Greeting intent when user is IDLE
+            const isGreeting = /^(hi|hello|hey|hola|kem\s*cho|namaste|hlo|helo|good\s*(morning|afternoon|evening)|start)$/i.test(lowerContent);
+            if (isGreeting && state.stage === "IDLE" && !interactiveId) {
+              // Check for active upcoming appointment in DB
+              let activeApt: any = null;
               try {
-                const pastApt = await db.query.appointments.findFirst({
+                activeApt = await db.query.appointments.findFirst({
                   where: and(
                     eq(appointments.organizationId, organizationId),
                     eq(appointments.leadProfileId, leadProfileId),
-                    eq(appointments.status, "confirmed")
+                    eq(appointments.status, "confirmed"),
+                    gte(appointments.startTime, new Date())
                   ),
                   orderBy: [desc(appointments.startTime)],
-                  with: { service: true }
+                  with: { service: true },
                 });
-                if (pastApt?.service?.name) {
-                  lastService = pastApt.service.name;
-                }
               } catch {}
+
+              const customerCtx: CustomerPersonalizationContext = {
+                customerName: senderName && senderName !== "WhatsApp User" ? senderName : undefined,
+                isReturning: !isNew,
+                activeAppointment: activeApt ? {
+                  id: activeApt.id,
+                  serviceName: activeApt.service?.name || "Appointment",
+                  startTime: activeApt.startTime,
+                  formattedDate: new Date(activeApt.startTime).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }),
+                  formattedTime: new Date(activeApt.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }),
+                } : null,
+                language: detectLanguage(content),
+              };
+
+              resolvedPayload = dynamicExperienceEngine.generateGreeting(business, customerCtx);
+              intentKey = "greeting";
             }
 
-            const defaultBusinessName = (business.name && business.name !== "Nexx Technologies" && business.name !== "Our Business")
-              ? business.name
-              : "Operator";
+            // 2. Try Action Dispatcher (handles interactive button/list IDs and state shortcuts)
+            if (!resolvedPayload) {
+              resolvedPayload = await whatsAppActionDispatcher.dispatch({
+                organizationId,
+                conversationId,
+                leadProfileId,
+                senderPhone: senderUserId,
+                senderName,
+                rawText: content,
+                interactiveId,
+                business,
+              });
+              if (resolvedPayload) {
+                intentKey = interactiveId || "action_executed";
+              }
+            }
 
-            const waContext = {
-              business_name: defaultBusinessName,
-              phone: business.phone || "+91 99135 37377",
-              address: business.address || "Main Office",
-              maps_link: business.website || "https://operator.nexxtechnologies.com/",
-              hours_today: "9:00 AM to 8:00 PM",
-              hours_week: "Mon-Sat: 9:00 AM - 8:00 PM, Sun: Closed",
-              service_list: (business.services || []).map(s => `${s.name} (₹${s.price})`).join(", ") || "Consultation & Services",
-              customer_name: senderName && senderName !== "WhatsApp User" ? senderName : undefined,
-              last_service: lastService,
-              available_services: (business.services || []).map(s => ({
-                id: s.id,
-                name: s.name,
-                price: s.price,
-                duration: s.duration,
-                description: s.description,
-              })),
-            };
+            // 3. Try standard safety, opt-out, and emergency rules
+            if (!resolvedPayload) {
+              const waContext = {
+                business_name: bizName,
+                phone: business.phone || "+91 99135 37377",
+                address: business.address || "Main Office",
+                maps_link: business.website || "https://operator.nexxtechnologies.com/",
+                hours_today: business.businessHoursFormatted || "9:00 AM to 8:00 PM",
+                hours_week: business.businessHoursFormatted || "Mon-Sat: 9:00 AM - 8:00 PM, Sun: Closed",
+                service_list: (business.services || []).map(s => `${s.name} (₹${s.price})`).join(", ") || "Consultation & Services",
+                customer_name: senderName && senderName !== "WhatsApp User" ? senderName : undefined,
+                available_services: (business.services || []).map(s => ({
+                  id: s.id,
+                  name: s.name,
+                  price: s.price,
+                  duration: s.duration,
+                  description: s.description,
+                })),
+              };
 
-            const interactiveId = (metadata?.interactiveId as string) || undefined;
-            const waResolution = resolveWhatsAppResponse(content, waContext, new Date(), undefined, interactiveId);
+              const waResolution = resolveWhatsAppResponse(content, waContext, new Date(), undefined, interactiveId);
+              if (waResolution.matchedIntent !== "knowledge_gap") {
+                resolvedPayload = waResolution.reply;
+                intentKey = waResolution.matchedIntent;
+                shouldEscalate = waResolution.requiresHandover;
+              }
+            }
 
-            if (waResolution.matchedIntent !== "knowledge_gap") {
-              intentKey = waResolution.matchedIntent;
-              shouldEscalate = waResolution.requiresHandover;
-              const rawBody = waResolution.reply.body;
-              waRawBody = rawBody;
+            // 4. If payload was resolved, build native Meta interactive structure
+            if (resolvedPayload) {
+              waRawBody = resolvedPayload.body;
+              replyContent = resolvedPayload.body;
 
-              // Build Native Interactive Payload for WhatsApp Cloud API
-              if (waResolution.reply.type === "interactive_buttons" && waResolution.reply.buttons && waResolution.reply.buttons.length > 0) {
+              if (resolvedPayload.type === "interactive_buttons" && resolvedPayload.buttons && resolvedPayload.buttons.length > 0) {
                 waInteractivePayload = {
                   type: "button",
-                  header: "Operator",
-                  footer: "Operator • 24/7 Digital Desk",
-                  buttons: waResolution.reply.buttons.slice(0, 3).map((b, idx) => ({
+                  header: resolvedPayload.header || bizName.slice(0, 60),
+                  footer: resolvedPayload.footer || `${bizName} • 24/7 Digital Desk`.slice(0, 60),
+                  buttons: resolvedPayload.buttons.slice(0, 3).map((b, idx) => ({
                     id: b.id || `btn_${idx}`,
                     title: b.title.slice(0, 20),
                   })),
                 };
-              } else if (waResolution.reply.type === "list") {
-                const sections = (waResolution.reply as any).listSections && (waResolution.reply as any).listSections.length > 0
-                  ? (waResolution.reply as any).listSections.map((sec: any) => ({
-                      title: (sec.title || "Options").slice(0, 24),
-                      rows: (sec.rows || []).slice(0, 10).map((r: any, rIdx: number) => ({
-                        id: (r.id || `opt_${rIdx}`).slice(0, 200),
-                        title: r.title.slice(0, 24),
-                        description: r.description ? r.description.slice(0, 72) : undefined,
-                      })),
-                    }))
-                  : [
-                      {
-                        title: "Select an Option",
-                        rows: (waResolution.reply.listRows || []).slice(0, 10).map((r, idx) => ({
-                          id: r.id || `opt_${idx}`,
-                          title: r.title.slice(0, 24),
-                          description: r.description ? r.description.slice(0, 72) : undefined,
-                        })),
-                      },
-                    ];
-
+                replyContent += "\n\n" + resolvedPayload.buttons.map((b, i) => `${i + 1}️⃣ ${b.title}`).join("\n");
+              } else if (resolvedPayload.type === "list") {
                 waInteractivePayload = {
                   type: "list",
-                  header: "Operator Menu",
-                  footer: "Operator • 24/7 Digital Desk",
-                  listButton: (waResolution.reply.listButton || "Choose an option").slice(0, 20),
-                  sections,
+                  header: resolvedPayload.header || `${bizName} Menu`.slice(0, 60),
+                  footer: resolvedPayload.footer || `${bizName} • 24/7 Digital Desk`.slice(0, 60),
+                  listButton: (resolvedPayload.listButton || "Choose an option").slice(0, 20),
+                  sections: resolvedPayload.listSections || [],
                 };
-              }
-
-              // Also prepare clean text for DB storage / fallback channels
-              replyContent = rawBody;
-              if (waResolution.reply.buttons && waResolution.reply.buttons.length > 0) {
-                replyContent += "\n\n" + waResolution.reply.buttons.map((b, i) => `${i + 1}️⃣ ${b.title}`).join("\n");
-              } else if (waResolution.reply.listRows && waResolution.reply.listRows.length > 0) {
-                replyContent += "\n\n*Options:*\n" + waResolution.reply.listRows.map(r => `• *${r.title}*${r.description ? ` - ${r.description}` : ""}`).join("\n");
+                if (resolvedPayload.listRows && resolvedPayload.listRows.length > 0) {
+                  replyContent += "\n\n*Options:*\n" + resolvedPayload.listRows.map(r => `• *${r.title}*${r.description ? ` - ${r.description}` : ""}`).join("\n");
+                }
               }
             }
           } catch (waErr) {
-            console.error("[Omnichannel Router] WhatsApp library fallback to orchestrator:", waErr);
+            console.error("[Omnichannel Router] WhatsApp dynamic handler error, falling back to orchestrator:", waErr);
           }
         }
 
@@ -382,6 +427,20 @@ export const omnichannelRouter = {
             interactive: waInteractivePayload,
           }
         });
+
+        if (channelType === "whatsapp") {
+          whatsAppMetricsService.recordSample({
+            organizationId,
+            actionId: metadata?.interactiveId as string | undefined,
+            isAiFallback: !waInteractivePayload && Boolean(replyContent),
+            stageTimings: {
+              t_webhook_arrival: t_start,
+              t_action_executed: Date.now(),
+            },
+            totalDurationMs: Date.now() - t_start,
+            timestamp: Date.now(),
+          });
+        }
       }
 
       // Audit Log with sanitized credentials/tokens
