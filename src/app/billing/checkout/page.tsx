@@ -194,7 +194,7 @@ function CheckoutContent() {
       const options = {
         key: data.keyId,
         subscription_id: data.subscriptionId,
-        name: "Operator AI",
+        name: "Operator",
         description: `${trialTitle} on ${localizedPlan.name} Plan ($0 today)`,
         image: "https://operator.nexxtechnologies.com/logo.png",
         handler: function (response: any) {

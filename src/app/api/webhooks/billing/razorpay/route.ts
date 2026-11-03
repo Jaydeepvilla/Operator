@@ -3,6 +3,15 @@ import crypto from "crypto";
 import { razorpayProvider } from "@/server/services/billing/providers/razorpay";
 import { webhookProcessor } from "@/server/services/billing/webhook-processor";
 
+export async function GET() {
+  return NextResponse.json({
+    status: "ok",
+    service: "Razorpay Billing Webhook Listener",
+    signatureRequired: true,
+    timestamp: new Date().toISOString(),
+  });
+}
+
 export async function POST(req: Request) {
   try {
     const rawBody = await req.text();

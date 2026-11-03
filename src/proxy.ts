@@ -59,6 +59,7 @@ const PUBLIC_API_PREFIXES = [
   "/api/create-order",
   "/api/verify-payment",
   "/api/book",
+  "/api/billing/webhook",
 ];
 
 function isPublicRoute(pathname: string): boolean {

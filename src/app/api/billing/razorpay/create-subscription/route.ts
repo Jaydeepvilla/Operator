@@ -71,10 +71,10 @@ export async function POST(req: NextRequest) {
           period: interval === "yearly" ? "yearly" : "monthly",
           interval: 1,
           item: {
-            name: `Operator AI ${planId.toUpperCase()} (${interval})`,
+            name: `Operator ${planId.toUpperCase()} (${interval})`,
             amount: roundedAmountPaise,
             currency: "INR",
-            description: `Subscription for ${planId} plan on Operator AI`,
+            description: `Subscription for ${planId} plan on Operator`,
           },
         }),
       });

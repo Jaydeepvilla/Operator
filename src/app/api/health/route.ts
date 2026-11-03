@@ -63,9 +63,12 @@ export async function GET() {
   // 4. Razorpay key presence diagnostic
   const isProduction = process.env.NODE_ENV === "production";
   const rzpKey = process.env.RAZORPAY_KEY_ID || "";
+  const rzpWebhookSecret = Boolean(process.env.RAZORPAY_WEBHOOK_SECRET);
   checks.razorpay = {
     status: rzpKey ? "ok" : isProduction ? "error" : "ok",
-    error: rzpKey ? `Configured (${rzpKey.slice(0, 8)}...)` : "Missing in env",
+    error: rzpKey
+      ? `Configured (${rzpKey.slice(0, 8)}... | Webhook Secret: ${rzpWebhookSecret ? "Set" : "Not Set"})`
+      : "Missing in env",
   };
 
   // 5. Overall status using InfrastructureSecurityService
