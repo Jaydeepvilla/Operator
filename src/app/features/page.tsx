@@ -792,19 +792,20 @@ export default function FeaturesPage() {
  <p className="text-muted-foreground text-body-md md:text-body-lg mb-space-8 max-w-xl mx-auto leading-relaxed">
  Deploy Operator AI on your business phone line in 30 minutes. Full access to calendars, voice AI, and intake workflows.
  </p>
- <div className="flex flex-col sm:flex-row gap-space-4 justify-center">
- <SessionAwareCta
- signedInText="Go to Dashboard"
- signedOutText="Start Free Trial"
- signedOutHref="/sign-in"
- size="lg"
- />
- <Button asChild variant="outline" size="lg">
- <Link href="/pricing">
-                    View Pricing Schedules
-                  </Link>
-                </Button>
-              </div>
+ <div className="flex flex-col sm:flex-row gap-space-4 justify-center w-full max-w-sm sm:max-w-none mx-auto">
+            <SessionAwareCta
+              signedInText="Go to Dashboard"
+              signedOutText="Start Free Trial"
+              signedOutHref="/sign-in"
+              size="lg"
+              className="w-full sm:w-56"
+            />
+            <Button asChild variant="outline" size="lg" className="w-full sm:w-56">
+              <Link href="/pricing" className="flex items-center justify-center gap-2">
+                <span>View Pricing Schedules</span>
+              </Link>
+            </Button>
+          </div>
             </GsapScrollSection>
           </div>
         </section>

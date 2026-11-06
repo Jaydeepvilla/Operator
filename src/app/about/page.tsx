@@ -309,17 +309,20 @@ export default function AboutPage() {
  Ready to be part of the <span className="text-primary">story?</span>
  </h2>
  <p className="text-muted-foreground text-title-lg mb-space-8">Start your Operator AI workspace today. Free for 14 days.</p>
- <div className="flex flex-col sm:flex-row gap-space-4 justify-center">
- <SessionAwareCta
- signedInText="Go to Dashboard"
- signedOutText="Start free trial"
- signedOutHref="/sign-in"
- size="lg"
- />
- <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
- <Link href="/contact">Talk to Us</Link>
- </Button>
- </div>
+ <div className="flex flex-col sm:flex-row gap-space-4 justify-center w-full max-w-sm sm:max-w-none mx-auto">
+            <SessionAwareCta
+              signedInText="Go to Dashboard"
+              signedOutText="Start free trial"
+              signedOutHref="/sign-in"
+              size="lg"
+              className="w-full sm:w-52"
+            />
+            <Button asChild variant="outline" size="lg" className="w-full sm:w-52">
+              <Link href="/contact" className="flex items-center justify-center gap-2">
+                <span>Talk to Us</span>
+              </Link>
+            </Button>
+          </div>
  </div>
  </section>
  </main>

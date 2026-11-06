@@ -298,16 +298,16 @@ export function LandingPageClient() {
             </p>
 
             {/* CTAs */}
-            <div className="hero-cta-group flex flex-col sm:flex-row items-center justify-center gap-space-3 mb-space-10 w-full sm:w-auto px-4 sm:px-0">
+            <div className="hero-cta-group flex flex-col sm:flex-row items-center justify-center gap-space-3 mb-space-10 w-full max-w-sm sm:max-w-none mx-auto px-4 sm:px-0">
               <SessionAwareCta
                 signedInText="Go to Dashboard"
                 signedOutText="Start free trial"
                 size="lg"
-                className="w-full sm:w-auto"
+                className="w-full sm:w-52"
               />
-              <Button asChild variant="outline" size="lg" className="cursor-pointer w-full sm:w-auto">
+              <Button asChild variant="outline" size="lg" className="cursor-pointer w-full sm:w-52">
                 <Link href="/demo" className="flex items-center justify-center gap-space-2">
-                  Watch demo <ArrowRight className="h-3.5 w-3.5" />
+                  <span>Watch demo</span> <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                 </Link>
               </Button>
             </div>
@@ -837,15 +837,16 @@ export function LandingPageClient() {
             Every minute without Operator is another missed appointment, another
             lost lead. Fix it today.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-space-4 mb-space-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-space-4 mb-space-6 w-full max-w-sm sm:max-w-none mx-auto">
             <SessionAwareCta
               signedInText="Go to Dashboard"
               signedOutText="Start your free trial"
               size="lg"
+              className="w-full sm:w-56"
             />
-            <Button asChild variant="outline" size="lg" className="cursor-pointer">
-              <Link href="/demo" className="flex items-center gap-space-2">
-                Book a live demo <ArrowRight className="h-3.5 w-3.5" />
+            <Button asChild variant="outline" size="lg" className="cursor-pointer w-full sm:w-56">
+              <Link href="/demo" className="flex items-center justify-center gap-space-2">
+                <span>Book a live demo</span> <ArrowRight className="h-3.5 w-3.5 shrink-0" />
               </Link>
             </Button>
           </div>

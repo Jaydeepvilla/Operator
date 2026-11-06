@@ -280,9 +280,11 @@ export default function SecurityPage() {
           <div className="relative mx-auto max-w-2xl px-space-6 text-center">
             <h2 className="text-heading-lg sm:text-heading-lg  tracking-tight-sm text-foreground mb-space-4">Security questions before you buy?</h2>
             <p className="text-muted-foreground mb-space-8">Our team is happy to walk through our security architecture, answer compliance questions, or provide documentation for your procurement process.</p>
-            <div className="flex flex-col sm:flex-row gap-space-4 justify-center">
-              <Button asChild size="lg" className="w-full sm:w-auto">
-                <Link href="/contact">Talk to Security Team <ArrowRight className="h-4 w-4" /></Link>
+            <div className="flex flex-col sm:flex-row gap-space-4 justify-center w-full max-w-sm sm:max-w-none mx-auto">
+              <Button asChild size="lg" className="w-full sm:w-56">
+                <Link href="/contact" className="flex items-center justify-center gap-2">
+                  <span>Talk to Security Team</span> <ArrowRight className="h-4 w-4 shrink-0" />
+                </Link>
               </Button>
               <SessionAwareCta
                 signedInText="Go to Dashboard"
@@ -290,6 +292,7 @@ export default function SecurityPage() {
                 signedOutHref="/sign-in"
                 variant="outline"
                 size="lg"
+                className="w-full sm:w-56"
               />
             </div>
           </div>

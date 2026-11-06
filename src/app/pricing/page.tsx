@@ -201,17 +201,18 @@ export default function PricingPage() {
             </p>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-space-3 mb-space-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-space-3 mb-space-4 w-full max-w-sm sm:max-w-none mx-auto">
               <SessionAwareCta
                 signedInText="Choose a Plan"
                 signedInHref="/billing/choose-plan"
                 signedOutText="Start Free Trial"
                 signedOutHref="/sign-up"
                 size="lg"
+                className="w-full sm:w-52"
               />
-              <Button asChild variant="outline" size="lg" className="font-semibold">
-                <Link href="/demo">
-                  Book a Demo
+              <Button asChild variant="outline" size="lg" className="font-semibold w-full sm:w-52">
+                <Link href="/demo" className="flex items-center justify-center gap-2">
+                  <span>Book a Demo</span>
                 </Link>
               </Button>
             </div>
@@ -628,17 +629,18 @@ export default function PricingPage() {
               <p className="text-muted-foreground text-body-md mb-space-8 max-w-lg mx-auto leading-relaxed">
                 Start with a 14-day free trial on Starter or a 7-day pilot on Pro and Business. No long-term contracts.
               </p>
-              <div className="flex flex-col sm:flex-row gap-space-3 justify-center">
+              <div className="flex flex-col sm:flex-row gap-space-3 justify-center w-full max-w-sm sm:max-w-none mx-auto">
                 <SessionAwareCta
                   signedInText="Choose a Plan"
                   signedInHref="/billing/choose-plan"
                   signedOutText="Start Free Trial"
                   signedOutHref="/sign-up"
                   size="lg"
+                  className="w-full sm:w-56"
                 />
-                <Button asChild variant="outline" size="lg" className="font-semibold">
-                  <Link href="/demo">
-                    Schedule Live Demo
+                <Button asChild variant="outline" size="lg" className="font-semibold w-full sm:w-56">
+                  <Link href="/demo" className="flex items-center justify-center gap-2">
+                    <span>Schedule Live Demo</span>
                   </Link>
                 </Button>
               </div>
