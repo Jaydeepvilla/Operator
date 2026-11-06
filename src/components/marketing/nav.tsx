@@ -9,7 +9,6 @@ import { UserAvatarMenu } from "@/components/shared/user-avatar-menu";
 import { Logo } from "@/components/shared/logo";
 import { Menu, X, Sun, Moon, ArrowRight, ChevronRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/shared/button";
-import { getButtonClasses } from "@/design-system/button-tokens";
 
 const NAV_LINKS = [
   { label: "Features", href: "/features" },
@@ -69,30 +68,19 @@ export function MarketingNav() {
 
   return (
     <>
-      {/* Mobile Backdrop Overlay */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 bg-background/70 dark:bg-black/75 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
-          onClick={() => setMobileOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-
+      {/* ── Fixed Desktop & Mobile Top Bar ── */}
       <header
-        className={`fixed top-0 inset-x-0 z-50 w-full transition-all duration-300 px-3 sm:px-6 ${
-          isScrolled || mobileOpen ? "pt-2 sm:pt-3" : "pt-3 sm:pt-5"
+        className={`fixed top-0 inset-x-0 z-40 w-full transition-all duration-300 px-3 sm:px-6 ${
+          isScrolled ? "pt-2 sm:pt-3" : "pt-3 sm:pt-5"
         }`}
       >
         <div
           className={`mx-auto max-w-5xl transition-all duration-300 ${
-            mobileOpen
-              ? "bg-card/98 dark:bg-[#0c101d]/98 backdrop-blur-2xl border border-border shadow-2xl rounded-2xl sm:rounded-3xl p-4 sm:p-5"
-              : isScrolled
+            isScrolled
               ? "bg-card/85 backdrop-blur-md border border-border-muted shadow-sm rounded-full px-4 sm:px-6"
               : "bg-transparent border border-transparent rounded-full px-4 sm:px-6"
           }`}
         >
-          {/* Top Bar inside Nav */}
           <div className="flex h-12 sm:h-14 items-center justify-between">
             {/* Logo */}
             <Link href="/" className="shrink-0 flex items-center gap-2">
@@ -119,12 +107,10 @@ export function MarketingNav() {
             {/* Desktop Right Actions (>= 1024px) */}
             <div className="hidden lg:flex items-center gap-2">
               {/* Theme toggle */}
-              <Button
-                variant="ghost"
-                size="icon"
-                shape="circle"
+              <button
+                type="button"
                 onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-                className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
                 aria-label="Toggle theme"
               >
                 {mounted && resolvedTheme === "dark" ? (
@@ -132,7 +118,7 @@ export function MarketingNav() {
                 ) : (
                   <Moon className="h-4 w-4" />
                 )}
-              </Button>
+              </button>
 
               {/* Auth Controls */}
               <Show when="signed-out">
@@ -163,158 +149,197 @@ export function MarketingNav() {
               </Show>
             </div>
 
-            {/* Mobile & Tablet Toggle Button (< 1024px) */}
-            <div className="flex lg:hidden items-center gap-2">
-              {/* Theme toggle directly in header for quick access */}
-              <Button
-                variant="ghost"
-                size="icon"
-                shape="circle"
+            {/* Mobile & Tablet Toggle Controls (< 1024px) */}
+            <div className="flex lg:hidden items-center gap-1 sm:gap-2">
+              {/* Theme toggle directly in header */}
+              <button
+                type="button"
                 onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-                className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                className="h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
                 aria-label="Toggle theme"
               >
                 {mounted && resolvedTheme === "dark" ? (
-                  <Sun className="h-4 w-4" />
+                  <Sun className="h-4 w-4 text-amber-500" />
                 ) : (
                   <Moon className="h-4 w-4" />
                 )}
-              </Button>
+              </button>
 
-              {/* Hamburger / Close Icon */}
-              <Button
-                variant="ghost"
-                size="icon"
-                shape="circle"
-                className="h-10 w-10 text-foreground hover:bg-muted/40 transition-colors"
-                onClick={() => setMobileOpen(!mobileOpen)}
-                aria-label={mobileOpen ? "Close menu" : "Open navigation menu"}
+              {/* Native, reliable Hamburger Button (44x44px minimum touch target) */}
+              <button
+                type="button"
+                className="h-10 w-10 rounded-full flex items-center justify-center text-foreground hover:bg-muted/40 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                onClick={() => setMobileOpen(true)}
+                aria-label="Open navigation menu"
                 aria-expanded={mobileOpen}
               >
-                {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </Button>
+                <Menu className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* ── Fullscreen Mobile Drawer (< 1024px) ── */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-50 lg:hidden flex flex-col bg-background/98 dark:bg-[#080d19]/98 backdrop-blur-3xl animate-in fade-in duration-200"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation menu"
+        >
+          {/* Top Bar inside Drawer */}
+          <div className="flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6 border-b border-border/70 shrink-0">
+            <Link href="/" onClick={() => setMobileOpen(false)} className="shrink-0 flex items-center gap-2">
+              <Logo />
+            </Link>
+
+            <div className="flex items-center gap-1 sm:gap-2">
+              <button
+                type="button"
+                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+                className="h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
+                aria-label="Toggle theme"
+              >
+                {mounted && resolvedTheme === "dark" ? (
+                  <Sun className="h-4 w-4 text-amber-500" />
+                ) : (
+                  <Moon className="h-4 w-4 text-indigo-400" />
+                )}
+              </button>
+
+              {/* Explicit, high-contrast Close (X) button */}
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="h-10 w-10 rounded-full flex items-center justify-center text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label="Close navigation menu"
+              >
+                <X className="h-6 w-6" />
+              </button>
             </div>
           </div>
 
-          {/* Mobile & Tablet Dropdown Content (< 1024px) */}
-          {mobileOpen && (
-            <div className="lg:hidden border-t border-border/80 pt-4 mt-2 space-y-3 max-h-[calc(100dvh-5.5rem)] overflow-y-auto overscroll-contain pr-1">
-              {/* Primary Navigation Links */}
-              <div className="space-y-1">
-                {NAV_LINKS.map((item) => {
-                  const isActive = pathname === item.href;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-body-sm transition-colors ${
-                        isActive
-                          ? "bg-primary/10 text-primary font-semibold"
-                          : "text-foreground/90 hover:text-foreground hover:bg-muted/50 font-medium"
-                      }`}
-                    >
-                      <span>{item.label}</span>
-                      <ChevronRight className="h-4 w-4 opacity-40" />
-                    </Link>
-                  );
-                })}
-              </div>
-
-              {/* Extra Mobile Links */}
-              <div className="space-y-1 border-t border-border/60 pt-2">
-                {MOBILE_EXTRA_LINKS.map((item) => {
-                  const isActive = pathname === item.href;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className={`flex items-center justify-between px-3.5 py-2 rounded-xl text-body-sm transition-colors ${
-                        isActive
-                          ? "bg-primary/10 text-primary font-semibold"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium"
-                      }`}
-                    >
-                      <span>{item.label}</span>
-                      <ChevronRight className="h-3.5 w-3.5 opacity-40" />
-                    </Link>
-                  );
-                })}
-              </div>
-
-              {/* Theme Switcher Banner inside menu */}
-              <div className="border-t border-border/60 pt-3">
-                <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-muted/30 border border-border/50">
-                  <span className="text-caption font-medium text-muted-foreground">Appearance</span>
-                  <button
-                    type="button"
-                    onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-caption font-semibold bg-background border border-border shadow-2xs hover:bg-muted transition-colors cursor-pointer"
-                  >
-                    {mounted && resolvedTheme === "dark" ? (
-                      <>
-                        <Sun className="h-3.5 w-3.5 text-amber-500" /> Light mode
-                      </>
-                    ) : (
-                      <>
-                        <Moon className="h-3.5 w-3.5 text-indigo-500" /> Dark mode
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Call-to-Actions for Mobile */}
-              <div className="border-t border-border/60 pt-3 flex flex-col gap-2 pb-1">
-                <Show when="signed-out">
+          {/* Scrollable Nav Content */}
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-6 overscroll-contain">
+            {/* Primary Navigation Links */}
+            <div className="space-y-1.5">
+              <p className="px-3 text-caption uppercase tracking-wider font-semibold text-muted-foreground/70">
+                Navigation
+              </p>
+              {NAV_LINKS.map((item) => {
+                const isActive = pathname === item.href;
+                return (
                   <Link
-                    href="/sign-in"
+                    key={item.href}
+                    href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className={getButtonClasses(
-                      "primary",
-                      "filled",
-                      "medium",
-                      "w-full text-center flex items-center justify-center gap-2 py-3 rounded-xl font-semibold shadow-sm"
-                    )}
+                    className={`flex items-center justify-between px-4 py-3.5 rounded-xl text-base transition-colors ${
+                      isActive
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-foreground/90 hover:text-foreground hover:bg-muted/50 font-medium active:bg-muted/70"
+                    }`}
                   >
-                    <Sparkles className="h-4 w-4" />
-                    Get started free
+                    <span>{item.label}</span>
+                    <ChevronRight className="h-4 w-4 opacity-40" />
                   </Link>
-                  <Button asChild variant="outline" size="md" className="w-full">
-                    <Link href="/demo" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5">
-                      Watch live demo
-                    </Link>
-                  </Button>
-                </Show>
+                );
+              })}
+            </div>
 
-                <Show when="signed-in">
-                  {user?.onboardingCompleted ? (
-                    <Link
-                      href="/dashboard"
-                      onClick={() => setMobileOpen(false)}
-                      className="block px-4 py-3 text-body-sm font-semibold text-center text-primary-foreground bg-primary rounded-xl shadow-sm hover:bg-primary/90 transition-colors"
-                    >
-                      Open Dashboard →
-                    </Link>
+            {/* Extra Mobile Links */}
+            <div className="space-y-1.5 border-t border-border/60 pt-4">
+              <p className="px-3 text-caption uppercase tracking-wider font-semibold text-muted-foreground/70">
+                Explore
+              </p>
+              {MOBILE_EXTRA_LINKS.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm transition-colors ${
+                      isActive
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium active:bg-muted/70"
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <ChevronRight className="h-3.5 w-3.5 opacity-40" />
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Appearance Toggle Card */}
+            <div className="border-t border-border/60 pt-4">
+              <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-muted/30 border border-border/50">
+                <span className="text-sm font-medium text-muted-foreground">Appearance</span>
+                <button
+                  type="button"
+                  onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-caption font-semibold bg-background border border-border shadow-xs hover:bg-muted transition-colors cursor-pointer"
+                >
+                  {mounted && resolvedTheme === "dark" ? (
+                    <>
+                      <Sun className="h-3.5 w-3.5 text-amber-500" /> Light mode
+                    </>
                   ) : (
-                    <Link
-                      href="/onboarding"
-                      onClick={() => setMobileOpen(false)}
-                      className="block px-4 py-3 text-body-sm font-semibold text-center text-primary border border-primary/25 bg-primary/10 rounded-xl hover:bg-primary/15 transition-colors"
-                    >
-                      Complete Setup →
-                    </Link>
+                    <>
+                      <Moon className="h-3.5 w-3.5 text-indigo-400" /> Dark mode
+                    </>
                   )}
-                  <div className="flex items-center justify-center pt-2">
-                    <UserAvatarMenu />
-                  </div>
-                </Show>
+                </button>
               </div>
             </div>
-          )}
+
+            {/* Call-to-Actions for Mobile */}
+            <div className="border-t border-border/60 pt-4 flex flex-col gap-3 pb-8">
+              <Show when="signed-out">
+                <Link
+                  href="/sign-in"
+                  onClick={() => setMobileOpen(false)}
+                  className="w-full text-center flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md hover:bg-primary/90 active:scale-[0.98] transition-all"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Get started free
+                </Link>
+                <Link
+                  href="/demo"
+                  onClick={() => setMobileOpen(false)}
+                  className="w-full text-center flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium border border-border hover:bg-muted/50 active:scale-[0.98] transition-all text-foreground"
+                >
+                  Watch live demo
+                </Link>
+              </Show>
+
+              <Show when="signed-in">
+                {user?.onboardingCompleted ? (
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMobileOpen(false)}
+                    className="block px-4 py-3.5 text-sm font-semibold text-center text-primary-foreground bg-primary rounded-xl shadow-md hover:bg-primary/90 transition-colors"
+                  >
+                    Open Dashboard →
+                  </Link>
+                ) : (
+                  <Link
+                    href="/onboarding"
+                    onClick={() => setMobileOpen(false)}
+                    className="block px-4 py-3.5 text-sm font-semibold text-center text-primary border border-primary/25 bg-primary/10 rounded-xl hover:bg-primary/15 transition-colors"
+                  >
+                    Complete Setup →
+                  </Link>
+                )}
+                <div className="flex items-center justify-center pt-2">
+                  <UserAvatarMenu />
+                </div>
+              </Show>
+            </div>
+          </div>
         </div>
-      </header>
+      )}
     </>
   );
 }

@@ -69,4 +69,63 @@ test.describe('Operator Phase 3 — Frontend, Accessibility & Responsiveness Sui
     expect(page.url()).toContain('/pricing');
   });
 
+  test('A11y E — Mobile Hamburger Menu Full Lifecycle across Mobile & Tablet Viewports', async ({ page }) => {
+    const viewports = [
+      { name: 'Mobile Small (360x740)', width: 360, height: 740 },
+      { name: 'iPhone SE (375x667)', width: 375, height: 667 },
+      { name: 'Mobile Large / iPhone 14 (430x932)', width: 430, height: 932 },
+      { name: 'Mobile Landscape (844x390)', width: 844, height: 390 },
+      { name: 'Tablet Portrait iPad (768x1024)', width: 768, height: 1024 },
+    ];
+
+    for (const vp of viewports) {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.goto('/');
+      await page.waitForLoadState('domcontentloaded');
+
+      // 1. Verify Hamburger button is visible
+      const menuBtn = page.getByRole('button', { name: /open navigation menu/i });
+      await expect(menuBtn).toBeVisible();
+
+      // 2. Open Hamburger menu
+      await menuBtn.click();
+
+      // 3. Verify mobile drawer is open and accessible
+      const drawer = page.getByRole('dialog', { name: /navigation menu/i });
+      await expect(drawer).toBeVisible();
+
+      // Verify essential links inside drawer
+      await expect(drawer.getByRole('link', { name: 'Features' })).toBeVisible();
+      await expect(drawer.getByRole('link', { name: 'Pricing' })).toBeVisible();
+      await expect(drawer.getByRole('link', { name: 'Integrations' })).toBeVisible();
+
+      // 4. Close via X button
+      const closeBtn = drawer.getByRole('button', { name: /close navigation menu/i });
+      await expect(closeBtn).toBeVisible();
+      await closeBtn.click();
+      await expect(drawer).not.toBeVisible();
+
+      // 5. Open again and close via Escape key
+      await menuBtn.click();
+      await expect(drawer).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(drawer).not.toBeVisible();
+    }
+  });
+
+  test('A11y F — Zero Horizontal Overflow on All Device Widths (320px to 1920px)', async ({ page }) => {
+    const testWidths = [320, 360, 375, 414, 768, 1024, 1280, 1440, 1920];
+
+    for (const width of testWidths) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      await page.waitForLoadState('domcontentloaded');
+
+      // Check document does not horizontally overflow viewport
+      const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+      const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
+      expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 1); // 1px rounding tolerance
+    }
+  });
+
 });

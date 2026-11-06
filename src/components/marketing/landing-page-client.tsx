@@ -283,7 +283,7 @@ export function LandingPageClient() {
             </Link>
 
             {/* Headline */}
-            <h1 className="hero-headline text-3xl sm:text-4xl md:text-5xl lg:text-display-xl tracking-tight leading-[1.15] sm:leading-tight text-foreground font-semibold max-w-3xl mb-space-5 px-2 sm:px-0">
+            <h1 className="hero-headline text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-display-xl tracking-tight leading-[1.15] sm:leading-tight text-foreground font-semibold max-w-3xl mb-space-5 px-2 sm:px-0 break-words">
               Stop losing customers
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-[hsl(270_75%_58%)] to-[hsl(280_75%_55%)]">
@@ -569,9 +569,9 @@ export function LandingPageClient() {
                     </p>
                   </div>
 
-                  {/* Connector arrow (hidden on last card and mobile) */}
+                  {/* Connector arrow (hidden on last card and on mobile/tablet) */}
                   {i < HOW_IT_WORKS.length - 1 && (
-                    <div className="hidden md:flex absolute -right-[28px] top-1/2 -translate-y-1/2 z-20 h-8 w-8 items-center justify-center rounded-full bg-background border border-border-muted">
+                    <div className="hidden lg:flex absolute -right-[28px] top-1/2 -translate-y-1/2 z-20 h-8 w-8 items-center justify-center rounded-full bg-background border border-border-muted shadow-xs">
                       <ArrowRight className="h-3.5 w-3.5 text-primary" />
                     </div>
                   )}
@@ -734,7 +734,7 @@ export function LandingPageClient() {
             animation="fade-up"
             staggerSelector=".pricing-card"
             stagger={0.15}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-space-6 mb-space-10"
+            className="grid grid-cols-1 md:grid-cols-3 gap-space-6 mb-space-10"
           >
             {PLANS.map((plan) => (
               <div
@@ -782,7 +782,7 @@ export function LandingPageClient() {
 
           {/* Comparison badges */}
           <GsapReveal animation="fade-up" delay={0.2}>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-3 mb-space-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 gap-space-3 mb-space-8">
               {[
                 { label: "vs. Hiring staff", value: "Save 90% on costs" },
                 { label: "vs. Answering service", value: "10× faster response" },

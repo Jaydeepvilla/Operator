@@ -234,24 +234,24 @@ function ChatPane({
   chatContainerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   return (
-    <div className="flex flex-col justify-between h-[480px] bg-white dark:bg-[#090e1a] p-5 sm:p-6 relative">
+    <div className="flex flex-col justify-between h-[380px] sm:h-[420px] lg:h-[480px] bg-white dark:bg-[#090e1a] p-3.5 sm:p-5 md:p-6 relative">
       {/* Pane Header */}
-      <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/80 dark:border-white/10">
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-sm shadow-indigo-500/25 ring-1 ring-white/20">
-            <Bot className="h-4 w-4" />
+      <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-white/10">
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-sm shadow-indigo-500/25 ring-1 ring-white/20 shrink-0">
+            <Bot className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-foreground tracking-tight">Operator AI Receptionist</span>
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-caption font-semibold bg-primary/10 text-primary uppercase tracking-wide">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="text-xs sm:text-sm font-semibold text-foreground tracking-tight">Operator AI Receptionist</span>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] sm:text-caption font-semibold bg-primary/10 text-primary uppercase tracking-wide">
                 Autonomous
               </span>
             </div>
-            <p className="text-xs text-muted-foreground">Session #4819 • Lead Intake & Booking</p>
+            <p className="text-[11px] sm:text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-none">Session #4819 • Lead Intake & Booking</p>
           </div>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground font-mono bg-slate-50 dark:bg-[#131b2e] px-2.5 py-1 rounded-md border border-slate-200/80 dark:border-white/10">
+        <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground font-mono bg-slate-50 dark:bg-[#131b2e] px-2.5 py-1 rounded-md border border-slate-200/80 dark:border-white/10 shrink-0">
           <Activity className="h-3 w-3 text-emerald-500 animate-pulse" />
           <span>380ms Latency</span>
         </div>
@@ -346,7 +346,7 @@ function ChatPane({
 /* ─── Right Pane: Live Calendar & CRM Engine ─── */
 function MetricsPane({ phase }: { phase: SimulationPhase }) {
   return (
-    <div className="flex flex-col justify-between h-[480px] bg-white dark:bg-[#090e1a] p-5 sm:p-6 border-t lg:border-t-0 lg:border-l border-slate-200/80 dark:border-white/10">
+    <div className="flex flex-col justify-between h-[380px] sm:h-[420px] lg:h-[480px] bg-white dark:bg-[#090e1a] p-3.5 sm:p-5 md:p-6 border-t lg:border-t-0 lg:border-l border-slate-200/80 dark:border-white/10 overflow-y-auto">
       {/* Pane Header */}
       <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/80 dark:border-white/10">
         <div className="flex items-center gap-2.5">
@@ -491,6 +491,7 @@ export function ProductSimulation() {
   const [currentPhase, setCurrentPhase] = useState<SimulationPhase>(PHASE_MAP.idle);
   const [simStep, setSimStep] = useState(0);
   const [isRunning, setIsRunning] = useState(true);
+  const [mobilePane, setMobilePane] = useState<"chat" | "crm">("chat");
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const resetSimulation = useCallback(() => {
@@ -585,13 +586,48 @@ export function ProductSimulation() {
       <div className="absolute -inset-1 sm:-inset-2 rounded-3xl bg-gradient-to-r from-primary/15 via-primary-light/10 to-primary/15 blur-2xl opacity-50 dark:opacity-30 pointer-events-none -z-10" />
 
       {/* ── Browser Window Shell Container ── */}
-      <div className="relative rounded-3xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-[#090e1a] shadow-[0_20px_70px_-15px_rgba(99,102,241,0.12),0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="relative rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-[#090e1a] shadow-[0_20px_70px_-15px_rgba(99,102,241,0.12),0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden">
         <BrowserHeader onReset={resetSimulation} isRunning={isRunning} />
 
-        {/* ── Two-pane grid layout inside browser window ── */}
+        {/* ── Mobile & Tablet Viewport Switcher (< 1024px) ── */}
+        <div className="flex lg:hidden items-center border-b border-slate-200/80 dark:border-white/10 bg-slate-50 dark:bg-[#0c1222] p-1.5 gap-1.5">
+          <button
+            type="button"
+            onClick={() => setMobilePane("chat")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              mobilePane === "chat"
+                ? "bg-white dark:bg-[#151f35] text-primary shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            <span>Live Chat</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobilePane("crm")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              mobilePane === "crm"
+                ? "bg-white dark:bg-[#151f35] text-primary shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <CalendarIcon className="h-3.5 w-3.5" />
+            <span>Calendar & State</span>
+            {currentPhase.hasNotification && (
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse ml-0.5" />
+            )}
+          </button>
+        </div>
+
+        {/* ── Panes: Stacks on mobile with tab toggle, Side-by-side on desktop ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-200/80 dark:divide-white/10 bg-white dark:bg-[#090e1a]">
-          <ChatPane chatLog={chatLog} chatContainerRef={chatContainerRef} />
-          <MetricsPane phase={currentPhase} />
+          <div className={mobilePane === "chat" ? "block" : "hidden lg:block"}>
+            <ChatPane chatLog={chatLog} chatContainerRef={chatContainerRef} />
+          </div>
+          <div className={mobilePane === "crm" ? "block" : "hidden lg:block"}>
+            <MetricsPane phase={currentPhase} />
+          </div>
         </div>
       </div>
     </div>
