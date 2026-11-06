@@ -7,7 +7,7 @@ import { useTheme } from "next-themes";
 import { Show, useAuth } from "@/lib/auth/client";
 import { UserAvatarMenu } from "@/components/shared/user-avatar-menu";
 import { Logo } from "@/components/shared/logo";
-import { Menu, X, Sun, Moon, ArrowRight, ChevronRight, Sparkles } from "lucide-react";
+import { Menu, X, Sun, Moon, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/shared/button";
 
 const NAV_LINKS = [
@@ -223,8 +223,8 @@ export function MarketingNav() {
           {/* Scrollable Nav Content */}
           <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-6 overscroll-contain">
             {/* Primary Navigation Links */}
-            <div className="space-y-1.5">
-              <p className="px-3 text-caption uppercase tracking-wider font-semibold text-muted-foreground/70">
+            <div className="space-y-1">
+              <p className="px-4 text-caption uppercase tracking-wider font-semibold text-muted-foreground/70 mb-1">
                 Navigation
               </p>
               {NAV_LINKS.map((item) => {
@@ -234,22 +234,21 @@ export function MarketingNav() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center justify-between px-4 py-3.5 rounded-xl text-base transition-colors ${
+                    className={`block px-4 py-3 rounded-xl text-base transition-colors ${
                       isActive
                         ? "bg-primary/10 text-primary font-semibold"
                         : "text-foreground/90 hover:text-foreground hover:bg-muted/50 font-medium active:bg-muted/70"
                     }`}
                   >
-                    <span>{item.label}</span>
-                    <ChevronRight className="h-4 w-4 opacity-40" />
+                    {item.label}
                   </Link>
                 );
               })}
             </div>
 
             {/* Extra Mobile Links */}
-            <div className="space-y-1.5 border-t border-border/60 pt-4">
-              <p className="px-3 text-caption uppercase tracking-wider font-semibold text-muted-foreground/70">
+            <div className="space-y-1 border-t border-border/60 pt-4">
+              <p className="px-4 text-caption uppercase tracking-wider font-semibold text-muted-foreground/70 mb-1">
                 Explore
               </p>
               {MOBILE_EXTRA_LINKS.map((item) => {
@@ -259,14 +258,13 @@ export function MarketingNav() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm transition-colors ${
+                    className={`block px-4 py-2.5 rounded-xl text-sm transition-colors ${
                       isActive
                         ? "bg-primary/10 text-primary font-semibold"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium active:bg-muted/70"
                     }`}
                   >
-                    <span>{item.label}</span>
-                    <ChevronRight className="h-3.5 w-3.5 opacity-40" />
+                    {item.label}
                   </Link>
                 );
               })}
