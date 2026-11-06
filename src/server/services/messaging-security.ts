@@ -177,8 +177,14 @@ export const MessagingSecurityService = {
     content: string;
     idempotencyKey?: string;
     windowMs?: number;
+    isNavigation?: boolean;
   }): { isDuplicate: boolean; messageId: string } {
-    const { organizationId, recipientId, content, idempotencyKey, windowMs = 5000 } = params;
+    const { organizationId, recipientId, content, idempotencyKey, windowMs = 5000, isNavigation = false } = params;
+
+    // Interactive menus and customer navigation requests should never be blocked by content idempotency
+    if (isNavigation && !idempotencyKey) {
+      return { isDuplicate: false, messageId: `msg_${crypto.randomUUID()}` };
+    }
 
     const key =
       idempotencyKey ||

@@ -241,8 +241,11 @@ test.describe('WhatsApp Zero-Friction Conversational Engine — End-to-End Suite
     expect(stateStep2.stage).toBe('SELECTING_DATE');
     expect(stateStep2.draftBooking?.serviceId).toBe(testServiceId);
 
-    // Stage 3: Select Date -> Presents actual time openings
-    const targetDate = '2026-11-05';
+    // Stage 3: Select Date -> Presents actual time openings (picks next non-Sunday day)
+    const targetD = new Date();
+    targetD.setDate(targetD.getDate() + 1);
+    if (targetD.getDay() === 0) targetD.setDate(targetD.getDate() + 1);
+    const targetDate = targetD.toISOString().split('T')[0];
     const step3 = await whatsAppActionDispatcher.dispatch({
       organizationId: testOrgId,
       conversationId: testConvId,

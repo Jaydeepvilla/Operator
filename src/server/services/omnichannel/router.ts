@@ -147,14 +147,31 @@ export const omnichannelRouter = {
         conversationId = cachedThread.conversationId;
         threadId = cachedThread.threadId;
       } else {
-        // Try to find an active thread first
-        const thread = await db.query.inboxThreads.findFirst({
-          where: and(
-            eq(inboxThreads.organizationId, organizationId),
-            eq(inboxThreads.channelId, channelId),
-            eq(inboxThreads.status, "open")
-          )
-        });
+        // Try to find an active conversation & thread for this specific lead profile
+        let thread: any = null;
+        if (leadProfileId) {
+          const activeConv = await db.query.conversations.findFirst({
+            where: and(
+              eq(conversations.organizationId, organizationId),
+              eq(conversations.leadProfileId, leadProfileId),
+              eq(conversations.status, "active")
+            ),
+            orderBy: [desc(conversations.createdAt)],
+          });
+          if (activeConv) {
+            thread = await db.query.inboxThreads.findFirst({
+              where: and(
+                eq(inboxThreads.organizationId, organizationId),
+                eq(inboxThreads.conversationId, activeConv.id),
+                eq(inboxThreads.channelId, channelId),
+                eq(inboxThreads.status, "open")
+              ),
+            });
+            if (thread) {
+              conversationId = activeConv.id;
+            }
+          }
+        }
 
         if (!thread) {
           // Create standard conversation
@@ -285,9 +302,9 @@ export const omnichannelRouter = {
         if (channelType === "whatsapp") {
           try {
             const biz = business || await businessContextService.getContext(organizationId);
-            const bizName = (biz.name && biz.name !== "Nexx Technologies" && biz.name !== "Our Business")
+            const bizName = (biz.name && biz.name !== "Our Business")
               ? biz.name
-              : "Reception Desk";
+              : "Operator";
 
             const interactiveId = (metadata?.interactiveId as string) || undefined;
             const lowerContent = (content || "").toLowerCase().trim();
@@ -551,11 +568,13 @@ export const omnichannelRouter = {
       });
 
       // 4. Retry Deduplication
+      const isNav = Boolean(metadata?.interactive || metadata?.intent?.includes("menu") || metadata?.intent?.includes("location") || metadata?.intent?.includes("book"));
       const idemp = MessagingSecurityService.checkMessageIdempotency({
         organizationId,
         recipientId,
         content,
         idempotencyKey: metadata?.idempotencyKey as string | undefined,
+        isNavigation: isNav,
       });
       if (idemp.isDuplicate) {
         console.info(`[Omnichannel Router] Suppressed duplicate message send for recipient ${recipientId}`);
@@ -625,8 +644,8 @@ export const omnichannelRouter = {
         error: res.errorMessage
       });
 
-      // Concurrently update message delivery status, thread state, and outbound audit logs
-      await Promise.all([
+      // Concurrently update message delivery status, thread state, and outbound audit logs in background
+      Promise.all([
         db
           .update(channelMessages)
           .set({
@@ -663,7 +682,9 @@ export const omnichannelRouter = {
             error: deliveryStatus.error,
           }),
         }).catch(() => {})
-      ]);
+      ]).catch((auditErr) => {
+        console.error("[Omnichannel Router] Background post-send audit error:", auditErr);
+      });
 
     } catch (e: any) {
       console.error("[Omnichannel Router] Error sending outgoing message:", e);

@@ -193,10 +193,10 @@ function BrowserHeader({ onReset, isRunning }: { onReset: () => void; isRunning:
       </div>
 
       {/* Modern Address Bar */}
-      <div className="flex-1 max-w-xs sm:max-w-md mx-3 sm:mx-6">
-        <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-full bg-slate-100/80 dark:bg-[#050811] border border-slate-200/80 dark:border-white/10 text-xs font-mono text-muted-foreground">
-          <Lock className="h-3 w-3 text-emerald-500" />
-          <span className="text-foreground/90 font-medium">operator-widget.vercel.app</span>
+      <div className="flex-1 min-w-0 max-w-[170px] xs:max-w-xs sm:max-w-md mx-2 sm:mx-6">
+        <div className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-slate-100/80 dark:bg-[#050811] border border-slate-200/80 dark:border-white/10 text-[11px] sm:text-xs font-mono text-muted-foreground truncate">
+          <Lock className="h-3 w-3 text-emerald-500 shrink-0" />
+          <span className="text-foreground/90 font-medium truncate">operator.nexxtechnologies.com</span>
         </div>
       </div>
 

@@ -61,8 +61,11 @@ export const whatsAppActionDispatcher = {
     if (
       actionId === "act_main_menu" ||
       actionId === "menu_main" ||
+      actionId === "btn_menu" ||
+      actionId === "menu" ||
       cleanText === "main menu" ||
       cleanText === "menu" ||
+      cleanText === "options" ||
       cleanText.includes("main menu")
     ) {
       await whatsAppStateMachine.resetState(organizationId, conversationId);
@@ -85,11 +88,20 @@ export const whatsAppActionDispatcher = {
       actionId === "act_book_start" ||
       actionId === "btn_book" ||
       actionId === "menu_book" ||
+      actionId === "btn_book_usual" ||
+      actionId === "btn_book_this" ||
+      actionId === "btn_book_offer" ||
+      actionId === "btn_book_doc" ||
+      actionId === "btn_keep_booking" ||
+      actionId === "btn_other_service" ||
       cleanText === "book appointment" ||
+      cleanText === "book slot" ||
       cleanText === "booking karni hai" ||
       cleanText === "schedule a new booking" ||
       cleanText.includes("book appointment") ||
-      cleanText.includes("schedule a new booking")
+      cleanText.includes("schedule a new booking") ||
+      cleanText.includes("book a slot") ||
+      cleanText.includes("book slot")
     ) {
       return await this.handleBookStart(organizationId, conversationId, business);
     }
@@ -160,6 +172,7 @@ export const whatsAppActionDispatcher = {
     if (
       actionId === "act_my_booking" ||
       actionId === "menu_my_booking" ||
+      actionId === "btn_my_booking" ||
       cleanText === "my booking" ||
       cleanText === "my bookings" ||
       cleanText.includes("my booking") ||
@@ -195,6 +208,9 @@ export const whatsAppActionDispatcher = {
     // 8. Reschedule Appointment
     if (
       actionId.startsWith("act_reschedule_start:") ||
+      actionId === "btn_reschedule" ||
+      actionId === "btn_change_time" ||
+      actionId === "btn_other_time" ||
       cleanText === "reschedule appointment" ||
       cleanText === "change time" ||
       cleanText.includes("reschedule")
@@ -208,12 +224,15 @@ export const whatsAppActionDispatcher = {
       actionId === "act_services_list" ||
       actionId === "act_prices" ||
       actionId === "btn_services" ||
+      actionId === "btn_prices" ||
+      actionId === "btn_other" ||
       actionId === "menu_services" ||
       cleanText === "services" ||
       cleanText === "prices" ||
       cleanText.includes("services & rates") ||
       cleanText.includes("services & prices") ||
-      cleanText.includes("rate card")
+      cleanText.includes("rate card") ||
+      cleanText.includes("pricing")
     ) {
       return await this.handleServicesAndPricing(business);
     }
@@ -223,11 +242,14 @@ export const whatsAppActionDispatcher = {
       actionId === "act_human" ||
       actionId === "menu_human" ||
       actionId === "btn_human" ||
+      actionId === "btn_call" ||
+      actionId === "btn_consult" ||
       cleanText.includes("talk to person") ||
       cleanText.includes("talk to desk") ||
       cleanText.includes("talk to a person") ||
       cleanText.includes("human support") ||
-      cleanText.includes("real person")
+      cleanText.includes("real person") ||
+      cleanText.includes("call me")
     ) {
       return await this.handleHumanHandover(organizationId, conversationId, business);
     }
@@ -236,9 +258,15 @@ export const whatsAppActionDispatcher = {
     if (
       actionId === "act_location" ||
       actionId === "menu_location" ||
+      actionId === "btn_location" ||
+      actionId === "btn_directions" ||
+      actionId === "btn_parking" ||
       cleanText.includes("location") ||
       cleanText.includes("address") ||
-      cleanText.includes("where are you located")
+      cleanText.includes("where are you located") ||
+      cleanText.includes("kaha par hai") ||
+      cleanText.includes("directions") ||
+      cleanText.includes("map")
     ) {
       return await this.handleLocation(business);
     }
@@ -246,11 +274,28 @@ export const whatsAppActionDispatcher = {
     if (
       actionId === "act_hours" ||
       actionId === "menu_hours" ||
+      actionId === "btn_hours" ||
       cleanText.includes("opening hours") ||
       cleanText.includes("working hours") ||
-      cleanText.includes("timings")
+      cleanText.includes("timings") ||
+      cleanText.includes("timing") ||
+      cleanText.includes("open today")
     ) {
       return await this.handleOpeningHours(business);
+    }
+
+    // 12. Special Offers & Discounts
+    if (
+      actionId === "menu_offers" ||
+      actionId === "btn_offers" ||
+      actionId === "act_offers" ||
+      cleanText.includes("special offer") ||
+      cleanText.includes("offers") ||
+      cleanText.includes("discount") ||
+      cleanText.includes("coupons") ||
+      cleanText.includes("package")
+    ) {
+      return await this.handleOffers(business);
     }
 
     // ── Conversational Context State Transitions (Natural Language Shortcuts) ─
@@ -907,6 +952,22 @@ export const whatsAppActionDispatcher = {
       buttons: [
         { id: "act_book_start", title: "📅 Book Appointment" },
         { id: "act_hours", title: "🕒 Opening Hours" },
+        { id: "act_main_menu", title: "📌 Main Menu" },
+      ],
+    };
+  },
+
+  async handleOffers(business: BusinessContext): Promise<WhatsAppReplyPayload> {
+    const bizName = business.name || "Operator";
+
+    return {
+      type: "interactive_buttons",
+      header: `${bizName} Offers`.slice(0, 60),
+      body: `🎁 *Current Special Offers & Packages at ${bizName}:*\n\n• First-Time Client Special: 10% off your initial booking\n• Value Consultation Packages: Available across signature services\n\nWould you like to schedule an appointment or browse our services?`,
+      footer: `${bizName} • 24/7 Digital Desk`.slice(0, 60),
+      buttons: [
+        { id: "act_book_start", title: "📅 Book Now" },
+        { id: "act_services_list", title: "📋 View Services" },
         { id: "act_main_menu", title: "📌 Main Menu" },
       ],
     };

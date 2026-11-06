@@ -75,7 +75,7 @@ function formatWeeklyHours(hoursObj: any): string {
 }
 
 const contextCache = new Map<string, { data: BusinessContext; expiresAt: number }>();
-const CACHE_TTL_MS = 60 * 1000; // 60s hot in-memory cache to eliminate repetitive DB latency
+const CACHE_TTL_MS = 15 * 60 * 1000; // 15m hot in-memory cache to eliminate repetitive DB latency
 
 export const businessContextService = {
   invalidateCache(organizationId?: string) {
@@ -192,7 +192,7 @@ export const businessContextService = {
     const capabilities: BusinessCapabilities = {
       hasServices: cleanServices.length > 0,
       hasPricing: cleanServices.some((s) => s.price && s.price !== "0" && s.price !== "0.00"),
-      hasBooking: cleanServices.length > 0 && cleanStaff.length > 0 && (bookingPrefs as Record<string, any>)?.publicBookingEnabled === true,
+      hasBooking: cleanServices.length > 0 && ((bookingPrefs as Record<string, any>)?.publicBookingEnabled !== false),
       hasBusinessHours: rawHours !== null && Object.keys(rawHours || {}).length > 0,
       hasLocation: Boolean(orgAddress && orgAddress.trim().length > 0),
       hasPhone: Boolean(orgPhone && orgPhone.trim().length > 0),

@@ -28,7 +28,23 @@ export interface ResolveIdentityResult {
 const orgCountryCache = new Map<string, { country: string; expiresAt: number }>();
 const ORG_COUNTRY_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
+// Hot in-memory cache for resolved customer identities to eliminate 4 sequential DB queries per webhook
+const identityCache = new Map<string, { result: ResolveIdentityResult; expiresAt: number }>();
+const IDENTITY_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
 export const identityResolverService = {
+  /**
+   * Invalidate identity cache for an organization
+   */
+  invalidateIdentityCache(organizationId?: string) {
+    if (organizationId) {
+      for (const [k] of identityCache) {
+        if (k.startsWith(`${organizationId}:`)) identityCache.delete(k);
+      }
+    } else {
+      identityCache.clear();
+    }
+  },
   /**
    * Resolves or retrieves organization country context.
    */
@@ -83,6 +99,25 @@ export const identityResolverService = {
    */
   async resolveCustomerIdentity(input: ResolveIdentityInput): Promise<ResolveIdentityResult> {
     const { organizationId, channel = "widget", channelUserId, name, metadata = {} } = input;
+
+    // Fast-path hot in-memory cache lookup
+    const cacheKey = `${organizationId}:${channel}:${channelUserId || input.phone || input.email || ""}`;
+    if (channelUserId || input.phone || input.email) {
+      const cached = identityCache.get(cacheKey);
+      if (cached && cached.expiresAt > Date.now()) {
+        return cached.result;
+      }
+    }
+
+    const saveCacheAndReturn = (res: ResolveIdentityResult): ResolveIdentityResult => {
+      if (channelUserId || input.phone || input.email) {
+        identityCache.set(cacheKey, {
+          result: res,
+          expiresAt: Date.now() + IDENTITY_CACHE_TTL_MS,
+        });
+      }
+      return res;
+    };
 
     // 1. Resolve Country Context
     const orgCountry = input.defaultCountry || (await this.getOrganizationCountry(organizationId));
@@ -155,14 +190,14 @@ export const identityResolverService = {
               .where(eq(leadProfiles.id, existingProfile.id));
           }
 
-          return {
+          return saveCacheAndReturn({
             leadProfileId: existingProfile.id,
             isNew: false,
             profile: { ...existingProfile, ...updates },
             matchType: "channel_mapping",
             normalizedPhone: existingProfile.normalizedPhone || normalizedPhone,
             normalizedEmail: existingProfile.normalizedEmail || normalizedEmail,
-          };
+          });
         }
       }
     }
@@ -226,14 +261,14 @@ export const identityResolverService = {
             .where(eq(leadProfiles.id, matchingProfile.id));
         }
 
-        return {
+        return saveCacheAndReturn({
           leadProfileId: matchingProfile.id,
           isNew: false,
           profile: { ...matchingProfile, ...updates },
           matchType: "phone_match",
           normalizedPhone,
           normalizedEmail: matchingProfile.normalizedEmail || normalizedEmail,
-        };
+        });
       }
     }
 
@@ -295,14 +330,14 @@ export const identityResolverService = {
             .where(eq(leadProfiles.id, matchingProfile.id));
         }
 
-        return {
+        return saveCacheAndReturn({
           leadProfileId: matchingProfile.id,
           isNew: false,
           profile: { ...matchingProfile, ...updates },
           matchType: "email_match",
           normalizedPhone: matchingProfile.normalizedPhone || normalizedPhone,
           normalizedEmail,
-        };
+        });
       }
     }
 
@@ -340,14 +375,14 @@ export const identityResolverService = {
         });
       }
 
-      return {
+      return saveCacheAndReturn({
         leadProfileId: newProfile.id,
         isNew: true,
         profile: newProfile,
         matchType: "created",
         normalizedPhone,
         normalizedEmail,
-      };
+      });
     } catch (err: any) {
       // If concurrent insert race condition occurred on (organizationId, normalizedPhone):
       if (normalizedPhone && (err?.code === "23505" || err?.message?.includes("unique") || err?.message?.includes("duplicate"))) {
@@ -362,14 +397,14 @@ export const identityResolverService = {
           );
 
         if (existing) {
-          return {
+          return saveCacheAndReturn({
             leadProfileId: existing.id,
             isNew: false,
             profile: existing,
             matchType: "phone_match",
             normalizedPhone,
             normalizedEmail: existing.normalizedEmail || normalizedEmail,
-          };
+          });
         }
       }
 

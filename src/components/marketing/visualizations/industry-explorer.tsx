@@ -176,7 +176,7 @@ export function InteractiveIndustryExplorer() {
 
         {/* ━━━ Industry Tab Bar ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <div className="border-b border-[hsl(var(--foreground)/0.06)] bg-[hsl(var(--foreground)/0.015)]">
-          <div className="grid grid-cols-3 sm:grid-cols-6">
+          <div className="grid grid-cols-3 sm:grid-cols-6 divide-y sm:divide-y-0 divide-[hsl(var(--foreground)/0.04)]">
             {INDUSTRY_KEYS.map((key) => {
               const ind = INDUSTRIES_DATA[key];
               const isActive = activeTab === key;
@@ -186,7 +186,7 @@ export function InteractiveIndustryExplorer() {
                   type="button"
                   onClick={() => setActiveTab(key)}
                   className={[
-                    "relative flex flex-col items-center gap-space-1.5 py-space-4 px-space-2 text-caption transition-colors duration-200 cursor-pointer select-none",
+                    "relative flex flex-col items-center gap-1 sm:gap-space-1.5 py-3 sm:py-space-4 px-1.5 sm:px-space-2 text-caption transition-colors duration-200 cursor-pointer select-none",
                     "border-r border-[hsl(var(--foreground)/0.04)] last:border-r-0",
                     isActive
                       ? "text-primary bg-primary/[0.04]"
@@ -201,15 +201,15 @@ export function InteractiveIndustryExplorer() {
 
                   {/* Icon container */}
                   <span className={[
-                    "flex items-center justify-center h-7 w-7 radius-lg transition-colors duration-200",
+                    "flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 radius-lg transition-colors duration-200",
                     isActive ? "bg-primary/10" : ""
                   ].join(" ")}>
                     {ind.icon}
                   </span>
 
                   <span className={[
-                    "truncate w-full text-center text-caption transition-all duration-200",
-                    isActive ? "font-semibold" : "font-medium"
+                    "truncate w-full text-center text-[11px] sm:text-caption transition-all duration-200",
+                    isActive ? "font-semibold text-primary" : "font-medium"
                   ].join(" ")}>
                     {ind.name}
                   </span>
@@ -220,7 +220,7 @@ export function InteractiveIndustryExplorer() {
         </div>
 
         {/* ━━━ Content Panel ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-        <div className="p-space-6 md:p-space-8 lg:p-space-10 grid grid-cols-1 lg:grid-cols-2 gap-space-8 lg:gap-space-10 items-start">
+        <div className="p-4 sm:p-6 md:p-8 lg:p-10 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
 
           {/* ── Left: Info Cards ──────────────────────────────── */}
           <div className="space-y-space-4 ie-msg-enter" key={`info-${activeTab}`}>

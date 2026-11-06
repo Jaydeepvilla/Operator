@@ -266,24 +266,24 @@ export function LandingPageClient() {
           <div className="absolute bottom-0 left-0 w-full max-w-[600px] md:w-[600px] h-[400px] bg-[radial-gradient(ellipse_at_center,hsl(280_75%_55%/0.04),transparent_70%)]" />
         </div>
 
-        <div ref={heroContentRef} className="relative mx-auto max-w-screen-xl px-space-6">
-          <div className="flex flex-col items-center text-center mt-space-8">
+        <div ref={heroContentRef} className="relative mx-auto max-w-screen-xl px-4 sm:px-6">
+          <div className="flex flex-col items-center text-center mt-12 sm:mt-16 md:mt-20">
             {/* Announcement pill */}
             <Link
               href="/changelog"
-              className="hero-pill inline-flex items-center gap-space-2 radius-full border border-border-muted bg-bg-layer-2/40 py-space-1 pl-space-1 pr-space-4 hover:border-foreground/20 hover:bg-bg-layer-2/60 transition-all group mb-space-8"
+              className="hero-pill inline-flex items-center gap-space-2 radius-full border border-border-muted bg-bg-layer-2/40 py-space-1 pl-space-1 pr-space-4 hover:border-foreground/20 hover:bg-bg-layer-2/60 transition-all group mb-space-8 max-w-[90vw] truncate"
             >
-              <span className="inline-flex items-center gap-space-1.5 bg-primary/10 text-primary px-space-3 py-space-1 radius-full text-caption font-medium">
+              <span className="inline-flex items-center gap-space-1.5 bg-primary/10 text-primary px-space-3 py-space-1 radius-full text-caption font-medium shrink-0">
                 <Sparkles className="h-3 w-3 shrink-0" /> What&apos;s new
               </span>
-              <span className="text-caption text-muted-foreground font-medium flex items-center gap-space-1">
+              <span className="text-caption text-muted-foreground font-medium flex items-center gap-space-1 truncate">
                 Version 2.1 is live
-                <ChevronRight className="h-3 w-3 text-muted-foreground/60 group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight className="h-3 w-3 text-muted-foreground/60 group-hover:translate-x-0.5 transition-transform shrink-0" />
               </span>
             </Link>
 
             {/* Headline */}
-            <h1 className="hero-headline text-display-lg md:text-display-xl tracking-tight text-foreground font-semibold max-w-3xl mb-space-5">
+            <h1 className="hero-headline text-3xl sm:text-4xl md:text-5xl lg:text-display-xl tracking-tight leading-[1.15] sm:leading-tight text-foreground font-semibold max-w-3xl mb-space-5 px-2 sm:px-0">
               Stop losing customers
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-[hsl(270_75%_58%)] to-[hsl(280_75%_55%)]">
@@ -292,27 +292,28 @@ export function LandingPageClient() {
             </h1>
 
             {/* Subtitle */}
-            <p className="hero-subtitle mx-auto max-w-xl text-body-lg text-muted-foreground leading-relaxed mb-space-8">
+            <p className="hero-subtitle mx-auto max-w-xl text-base sm:text-lg md:text-body-lg text-muted-foreground leading-relaxed mb-space-8 px-2 sm:px-0">
               Operator is the AI receptionist that answers every call, books
               appointments, and qualifies leads — 24/7, in under 2 seconds.
             </p>
 
             {/* CTAs */}
-            <div className="hero-cta-group flex flex-col sm:flex-row items-center gap-space-3 mb-space-10">
+            <div className="hero-cta-group flex flex-col sm:flex-row items-center justify-center gap-space-3 mb-space-10 w-full sm:w-auto px-4 sm:px-0">
               <SessionAwareCta
                 signedInText="Go to Dashboard"
                 signedOutText="Start free trial"
                 size="lg"
+                className="w-full sm:w-auto"
               />
               <Button asChild variant="outline" size="lg" className="cursor-pointer w-full sm:w-auto">
-                <Link href="/demo" className="flex items-center gap-space-2">
+                <Link href="/demo" className="flex items-center justify-center gap-space-2">
                   Watch demo <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
             </div>
 
             {/* Trust row */}
-            <div className="hero-trust-row flex flex-wrap items-center justify-center gap-space-6 mb-space-12 text-caption text-muted-foreground">
+            <div className="hero-trust-row flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 sm:gap-6 mb-space-12 text-caption text-muted-foreground">
               <span className="flex items-center gap-space-1.5">
                 <Check className="h-3.5 w-3.5 text-primary" /> 14-day free trial ($0 today)
               </span>
@@ -328,8 +329,8 @@ export function LandingPageClient() {
 
             {/* Dashboard Preview */}
             <div className="hero-preview relative w-full max-w-5xl">
-              <div className="absolute -inset-space-8 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.06),transparent_70%)] pointer-events-none z-0" />
-              <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl dark:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.7)] border border-border bg-card max-h-[420px] md:max-h-[480px] flex flex-col [mask-image:linear-gradient(to_bottom,black_60%,transparent_100%)]">
+              <div className="absolute -inset-2 sm:-inset-4 md:-inset-8 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.06),transparent_70%)] pointer-events-none z-0" />
+              <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl dark:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.7)] border border-border bg-card max-h-[380px] sm:max-h-[440px] md:max-h-[480px] flex flex-col [mask-image:linear-gradient(to_bottom,black_60%,transparent_100%)]">
                 {/* Browser chrome */}
                 <div className="flex items-center justify-between px-space-4 py-space-2.5 bg-muted/40 dark:bg-card/70 border-b border-border backdrop-blur-md shrink-0">
                   <div className="flex items-center gap-space-2">
